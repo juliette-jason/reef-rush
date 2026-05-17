@@ -683,8 +683,8 @@ const KRAKEN_BITE_HOLD_MS = 2800;
 const CAST_DOWN_MS = 780;
 const CAST_UP_MS = 520;
 const REEL_EXTRA_MS_PER_EXTRA_FISH = 420;
-const TOUCH_CAST_SWIPE_MIN_PX = 46;
-const TOUCH_CAST_SWIPE_RATIO = 1.15;
+const TOUCH_CAST_SWIPE_MIN_PX = 28;
+const TOUCH_CAST_SWIPE_RATIO = 0.75;
 
 function lineAnchorY() {
   return dpr * 6;
@@ -4526,30 +4526,37 @@ function isTouchAimEvent(e) {
   return e.pointerType === "touch";
 }
 
-function beginTouchAim(e) {
+function beginTouchAim(pointerId, clientX, clientY) {
   touchAim = {
-    pointerId: e.pointerId,
-    startX: e.clientX,
-    startY: e.clientY,
+    pointerId,
+    startX: clientX,
+    startY: clientY,
+    lastX: clientX,
+    lastY: clientY,
     castStarted: false,
   };
 }
 
-function updateTouchAim(e) {
-  if (!touchAim || touchAim.pointerId !== e.pointerId) return;
-  const dx = e.clientX - touchAim.startX;
-  const dy = e.clientY - touchAim.startY;
+function updateTouchAim(pointerId, clientX, clientY, done = false) {
+  if (!touchAim || touchAim.pointerId !== pointerId) return false;
+  touchAim.lastX = clientX;
+  touchAim.lastY = clientY;
+  const dx = clientX - touchAim.startX;
+  const dy = clientY - touchAim.startY;
 
   if (!touchAim.castStarted && dy > TOUCH_CAST_SWIPE_MIN_PX && dy > Math.abs(dx) * TOUCH_CAST_SWIPE_RATIO) {
     touchAim.castStarted = true;
     startCast();
-    return;
+    if (done) touchAim = null;
+    return true;
   }
 
   if (Math.abs(dx) > Math.abs(dy) * 1.25 || dy < -8) {
-    touchAim.startX = e.clientX;
-    touchAim.startY = e.clientY;
+    touchAim.startX = clientX;
+    touchAim.startY = clientY;
   }
+  if (done) touchAim = null;
+  return false;
 }
 
 canvas.addEventListener("pointerdown", (e) => {
@@ -4563,7 +4570,7 @@ canvas.addEventListener("pointerdown", (e) => {
   hook.x = hook.targetX;
   if (isTouchAimEvent(e)) {
     e.preventDefault();
-    beginTouchAim(e);
+    beginTouchAim(e.pointerId, e.clientX, e.clientY);
   }
 });
 
@@ -4572,7 +4579,7 @@ canvas.addEventListener("pointermove", (e) => {
   if (e.pointerType === "mouse" && e.buttons !== 1) return;
   if (isTouchAimEvent(e)) e.preventDefault();
   setHookTargetX(e.clientX);
-  if (isTouchAimEvent(e)) updateTouchAim(e);
+  if (isTouchAimEvent(e)) updateTouchAim(e.pointerId, e.clientX, e.clientY);
 });
 
 function releaseCanvasPointer(e) {
@@ -4591,7 +4598,7 @@ canvas.addEventListener("pointerup", (e) => {
   setHookTargetX(e.clientX);
   if (isTouchAimEvent(e)) {
     e.preventDefault();
-    if (touchAim?.pointerId === e.pointerId) touchAim = null;
+    updateTouchAim(e.pointerId, e.clientX, e.clientY, true);
     return;
   }
   performSnag();
@@ -4600,6 +4607,47 @@ canvas.addEventListener("pointerup", (e) => {
 canvas.addEventListener("pointercancel", (e) => {
   releaseCanvasPointer(e);
   if (touchAim?.pointerId === e.pointerId) touchAim = null;
+});
+
+canvas.addEventListener(
+  "touchstart",
+  (e) => {
+    if (!playing || e.changedTouches.length < 1) return;
+    const touch = e.changedTouches[0];
+    e.preventDefault();
+    setHookTargetX(touch.clientX);
+    hook.x = hook.targetX;
+    beginTouchAim("touch", touch.clientX, touch.clientY);
+  },
+  { passive: false },
+);
+
+canvas.addEventListener(
+  "touchmove",
+  (e) => {
+    if (!playing || e.changedTouches.length < 1) return;
+    const touch = e.changedTouches[0];
+    e.preventDefault();
+    setHookTargetX(touch.clientX);
+    updateTouchAim("touch", touch.clientX, touch.clientY);
+  },
+  { passive: false },
+);
+
+canvas.addEventListener(
+  "touchend",
+  (e) => {
+    if (!playing || e.changedTouches.length < 1) return;
+    const touch = e.changedTouches[0];
+    e.preventDefault();
+    setHookTargetX(touch.clientX);
+    updateTouchAim("touch", touch.clientX, touch.clientY, true);
+  },
+  { passive: false },
+);
+
+canvas.addEventListener("touchcancel", () => {
+  if (touchAim?.pointerId === "touch") touchAim = null;
 });
 
 // keyboard: aim with arrows, Enter = cast down + hook, Space = quick snag
