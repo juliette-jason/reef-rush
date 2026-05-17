@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#062a4a" />
+    <title>Reef Rush — Fishing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@600;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="hud">
+        <div class="hud__brand">
+          <span class="hud__title">Reef Rush</span>
+          <span class="hud__subtitle">Catch &amp; score</span>
+        </div>
+        <div class="hud__stats">
+          <div class="stat stat--coins" title="Spend in the fishing shop">
+            <span class="stat__label">Coins</span>
+            <span id="coinDisplay" class="stat__value">0</span>
+          </div>
+          <div class="stat stat--score">
+            <span class="stat__label">Score</span>
+            <span id="scoreDisplay" class="stat__value">0</span>
+          </div>
+          <div class="stat stat--time">
+            <span class="stat__label">Time</span>
+            <span id="timeDisplay" class="stat__value">1:00</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="canvas-wrap">
+        <canvas id="gameCanvas" aria-label="Fishing game playfield"></canvas>
+        <div id="toast" class="toast" hidden></div>
+      </div>
+
+      <p class="hint" id="controlHint">Aim left/right · Enter casts from the top through the water · Space or lift = surface snag</p>
+
+      <section id="panelStart" class="panel panel--start">
+        <h1 class="panel__headline">Reef Rush</h1>
+        <p class="panel__lede">Pick a reef, grab a rod, choose bait, and chase rarities — strong scores earn coins for the fishing shop.</p>
+        <div class="leaderboard-block">
+          <h2 class="leaderboard-block__title">Top 10 scores</h2>
+          <ol id="leaderboardStart" class="leaderboard" aria-label="Best scores"></ol>
+        </div>
+        <div class="start-toolbar">
+          <p class="start-toolbar__coins">
+            <span class="start-toolbar__label">Your coins</span>
+            <strong id="coinDisplayStart" class="start-toolbar__value">0</strong>
+          </p>
+          <button type="button" id="btnOpenIntro" class="btn btn--secondary btn--help">How to play</button>
+          <button type="button" id="btnToggleMusic" class="btn btn--secondary btn--music" aria-pressed="false">Music</button>
+          <button type="button" id="btnOpenShop" class="btn btn--secondary btn--shop">Fishing shop</button>
+          <button type="button" id="btnResetProgress" class="btn btn--secondary btn--reset">Reset progress</button>
+        </div>
+        <fieldset class="rods rods--with-map">
+          <legend class="rods__legend">Choose your reef</legend>
+          <div class="reef-picker">
+            <div id="reefChoices" class="rods__grid rods__grid--reefs"></div>
+            <div class="reef-map-panel">
+              <div class="reef-map-panel__title">World map</div>
+              <div class="reef-map" id="reefMap">
+                <svg class="reef-map__ocean" viewBox="0 0 200 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="chartWater" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#0c5a82" />
+                      <stop offset="50%" stop-color="#083654" />
+                      <stop offset="100%" stop-color="#041a2c" />
+                    </linearGradient>
+                    <linearGradient id="mapLand" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#8ab17d" />
+                      <stop offset="50%" stop-color="#5f8c62" />
+                      <stop offset="100%" stop-color="#3f6f55" />
+                    </linearGradient>
+                  </defs>
+                  <rect width="200" height="100" fill="url(#chartWater)" />
+                  <g stroke="rgba(255, 255, 255, 0.08)" stroke-width="0.35">
+                    <path d="M0 25 H200 M0 50 H200 M0 75 H200" />
+                    <path d="M40 0 V100 M80 0 V100 M120 0 V100 M160 0 V100" />
+                  </g>
+                  <g fill="url(#mapLand)" stroke="rgba(219, 245, 213, 0.55)" stroke-width="0.45" stroke-linejoin="round">
+                    <path d="M18 20 L32 13 L49 16 L60 24 L56 36 L45 38 L39 47 L30 45 L20 36 Z" />
+                    <path d="M50 40 L61 48 L64 60 L58 73 L53 89 L45 78 L40 64 L43 51 Z" />
+                    <path d="M73 31 L90 24 L105 27 L111 36 L101 43 L83 42 L72 38 Z" />
+                    <path d="M98 42 L112 43 L121 56 L116 75 L106 84 L97 70 L91 55 Z" />
+                    <path d="M111 24 L137 17 L170 23 L190 35 L184 49 L160 51 L146 45 L128 50 L112 42 Z" />
+                    <path d="M167 65 L184 69 L191 82 L181 91 L161 87 L154 76 Z" />
+                    <path d="M28 78 L42 80 L46 87 L36 91 L23 87 Z" />
+                    <path d="M138 55 L146 61 L143 69 L132 66 L130 59 Z" />
+                  </g>
+                </svg>
+                <div id="reefMapBoat" class="reef-map__boat" aria-hidden="true">
+                  <svg viewBox="0 0 32 32" width="32" height="32" fill="none">
+                    <path
+                      d="M6 20 L16 8 L26 20 Z"
+                      fill="#fff8e7"
+                      stroke="#c9a227"
+                      stroke-width="1.2"
+                    />
+                    <path d="M16 8 L16 22" stroke="#c9a227" stroke-width="1" />
+                    <ellipse cx="16" cy="23" rx="10" ry="3" fill="#1a3a52" stroke="#4dfff3" stroke-width="0.8" />
+                  </svg>
+                </div>
+              </div>
+              <p id="reefMapCaption" class="reef-map-panel__caption">Hover a reef to see it on the chart.</p>
+            </div>
+          </div>
+        </fieldset>
+        <fieldset class="rods">
+          <legend class="rods__legend">Choose your bait</legend>
+          <p class="rods__hint">Premium bait is used for one round when you start (stock shown on each option).</p>
+          <div id="baitChoices" class="rods__grid"></div>
+        </fieldset>
+        <fieldset class="rods">
+          <legend class="rods__legend">Choose your rod</legend>
+          <div id="rodChoices" class="rods__grid"></div>
+        </fieldset>
+        <button type="button" id="btnStart" class="btn btn--primary btn--start">
+          Start Game
+          <span id="btnStartSub" class="btn__sub">Round length depends on reef · tap to play</span>
+        </button>
+      </section>
+
+      <section id="panelShop" class="panel panel--shop" hidden>
+        <h2 class="panel__headline">Fishing shop</h2>
+        <p class="panel__lede panel__lede--shop">Earn coins from your score each round. Spend coins here on bait packs and new rods.</p>
+        <p class="shop-balance">Balance: <strong id="coinDisplayShop">0</strong> coins</p>
+        <div id="shopGuide" class="shop-guide" hidden>
+          <div class="shop-guide__sailor" aria-hidden="true">
+            <span class="shop-guide__hat"></span>
+            <span class="shop-guide__hair"></span>
+            <span class="shop-guide__ear shop-guide__ear--left"></span>
+            <span class="shop-guide__ear shop-guide__ear--right"></span>
+            <span class="shop-guide__face"></span>
+            <span class="shop-guide__eyebrow shop-guide__eyebrow--left"></span>
+            <span class="shop-guide__eyebrow shop-guide__eyebrow--right"></span>
+            <span class="shop-guide__nose"></span>
+            <span class="shop-guide__mustache"></span>
+            <span class="shop-guide__mouth"></span>
+            <span class="shop-guide__neck"></span>
+            <span class="shop-guide__body"></span>
+            <span class="shop-guide__arm shop-guide__arm--left"></span>
+            <span class="shop-guide__arm shop-guide__arm--right"></span>
+            <span class="shop-guide__leg shop-guide__leg--left"></span>
+            <span class="shop-guide__leg shop-guide__leg--right"></span>
+          </div>
+          <div class="shop-guide__bubble">
+            <strong>Ahoy, fisher!</strong>
+            <p>I run this Fishing shop. Spend coins from your catches on bait for one-round boosts, or save up for stronger rods. Better gear helps you bring more fish back to the store before the kraken finds your net.</p>
+            <button type="button" id="btnShopGuideDone" class="btn btn--secondary shop-guide__btn">Thanks, sailor</button>
+          </div>
+        </div>
+        <ul id="shopList" class="shop-list" aria-label="Fishing shop items for sale"></ul>
+        <button type="button" id="btnOpenShopGuide" class="shop-guide-launch" aria-label="Ask the sailor about the shop">
+          <span class="shop-guide-launch__face" aria-hidden="true"></span>
+          <span class="shop-guide-launch__text">About shop</span>
+        </button>
+        <button type="button" id="btnCloseShop" class="btn btn--primary">Back</button>
+      </section>
+
+      <section id="panelGameOver" class="panel panel--over" hidden>
+        <h2 class="panel__headline">Round complete</h2>
+        <p class="panel__scoreline">Final score: <strong id="finalScore">0</strong></p>
+        <p id="coinsEarnedLine" class="panel__coinline" hidden></p>
+        <div id="initialsPanel" class="initials-panel" hidden>
+          <p class="initials-panel__msg">That score makes the top 10. Save it with your initials (up to 3 letters).</p>
+          <div class="initials-panel__row">
+            <label class="sr-only" for="initialsInput">Initials</label>
+            <input
+              id="initialsInput"
+              class="initials-input"
+              type="text"
+              maxlength="3"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false"
+              placeholder="ABC"
+              aria-describedby="initialsHint"
+            />
+            <span id="initialsHint" class="initials-hint">Letters only</span>
+            <button type="button" id="btnSaveScore" class="btn btn--secondary">Save score</button>
+          </div>
+        </div>
+        <ul id="catchSummary" class="summary"></ul>
+        <div class="leaderboard-block leaderboard-block--compact">
+          <h2 class="leaderboard-block__title">Leaderboard</h2>
+          <ol id="leaderboardOver" class="leaderboard" aria-label="Best scores"></ol>
+        </div>
+        <button type="button" id="btnAgain" class="btn btn--primary">Play again</button>
+      </section>
+
+      <section id="panelIntro" class="panel panel--intro" hidden>
+        <h2 class="panel__headline">Your Fishing Story</h2>
+        <p class="panel__lede panel__lede--intro">
+          You are a fisher bringing fresh catches back to the store. Fill your net with valuable fish, earn coins, and buy better gear, but beware: the deadly kraken prowls the water and can steal fish from your catch.
+        </p>
+        <div class="intro-card">
+          <h3>How to Play</h3>
+          <ul class="intro-list">
+            <li>Move left and right to aim your line.</li>
+            <li>Press Enter to cast deep through the water.</li>
+            <li>Press Space, tap, or lift to snag fish near the hook.</li>
+            <li>Avoid catching the kraken, or it can rip your net and cost you fish.</li>
+            <li>Score well to earn coins for the Fishing shop.</li>
+          </ul>
+          <h3>Fish Rarity</h3>
+          <p class="intro-rarity">
+            Fish can be Common, Uncommon, Rare, Epic, or Legendary. Rarer fish are harder to find, but they are worth much more for your score.
+          </p>
+        </div>
+        <button type="button" id="btnIntroDone" class="btn btn--primary">Got it</button>
+      </section>
+    </div>
+
+    <script src="game.js" defer></script>
+  </body>
+</html>
