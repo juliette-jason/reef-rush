@@ -683,6 +683,8 @@ const KRAKEN_BITE_HOLD_MS = 2800;
 const CAST_DOWN_MS = 780;
 const CAST_UP_MS = 520;
 const REEL_EXTRA_MS_PER_EXTRA_FISH = 420;
+const TOUCH_CAST_SWIPE_MIN_PX = 46;
+const TOUCH_CAST_SWIPE_RATIO = 1.15;
 
 function lineAnchorY() {
   return dpr * 6;
@@ -800,6 +802,7 @@ let celebration = { particles: [], rings: [] };
 /** Released catch: fish arc from above and splash into the water. */
 let releasedFishFx = [];
 let catchFlash = 0;
+let touchAim = null;
 let clam = {
   phase: "closed",
   timer: 0,
@@ -1591,13 +1594,15 @@ function startRound() {
   hook.snagPulse = 0;
   hook.fishCaughtThisCast = 0;
   hook.castReelDuration = CAST_UP_MS;
+  touchAim = null;
   celebration.particles.length = 0;
   celebration.rings.length = 0;
   releasedFishFx.length = 0;
   catchFlash = 0;
   hook.krakenBiteLocked = false;
-  controlHint.textContent =
-    "Move left/right to aim from the top · Enter casts the line through the whole water column · Space or lift = quick surface snag";
+  controlHint.textContent = isTouchControlsPreferred()
+    ? "Drag left/right to aim · swipe down to cast the line through the water"
+    : "Move left/right to aim from the top · Enter casts the line through the whole water column · Space or lift = quick surface snag";
   startReefMusic();
 }
 
@@ -1612,6 +1617,7 @@ function endRound() {
   hook.snagPulse = 0;
   hook.fishCaughtThisCast = 0;
   hook.castReelDuration = CAST_UP_MS;
+  touchAim = null;
   celebration.particles.length = 0;
   celebration.rings.length = 0;
   releasedFishFx.length = 0;
@@ -4512,6 +4518,40 @@ function setHookTargetX(clientX) {
   hook.targetX = Math.max(margin, Math.min(w - margin, x));
 }
 
+function isTouchControlsPreferred() {
+  return typeof window.matchMedia === "function" && window.matchMedia("(pointer: coarse)").matches;
+}
+
+function isTouchAimEvent(e) {
+  return e.pointerType === "touch";
+}
+
+function beginTouchAim(e) {
+  touchAim = {
+    pointerId: e.pointerId,
+    startX: e.clientX,
+    startY: e.clientY,
+    castStarted: false,
+  };
+}
+
+function updateTouchAim(e) {
+  if (!touchAim || touchAim.pointerId !== e.pointerId) return;
+  const dx = e.clientX - touchAim.startX;
+  const dy = e.clientY - touchAim.startY;
+
+  if (!touchAim.castStarted && dy > TOUCH_CAST_SWIPE_MIN_PX && dy > Math.abs(dx) * TOUCH_CAST_SWIPE_RATIO) {
+    touchAim.castStarted = true;
+    startCast();
+    return;
+  }
+
+  if (Math.abs(dx) > Math.abs(dy) * 1.25 || dy < -8) {
+    touchAim.startX = e.clientX;
+    touchAim.startY = e.clientY;
+  }
+}
+
 canvas.addEventListener("pointerdown", (e) => {
   if (!playing) return;
   try {
@@ -4521,12 +4561,18 @@ canvas.addEventListener("pointerdown", (e) => {
   }
   setHookTargetX(e.clientX);
   hook.x = hook.targetX;
+  if (isTouchAimEvent(e)) {
+    e.preventDefault();
+    beginTouchAim(e);
+  }
 });
 
 canvas.addEventListener("pointermove", (e) => {
   if (!playing) return;
   if (e.pointerType === "mouse" && e.buttons !== 1) return;
+  if (isTouchAimEvent(e)) e.preventDefault();
   setHookTargetX(e.clientX);
+  if (isTouchAimEvent(e)) updateTouchAim(e);
 });
 
 function releaseCanvasPointer(e) {
@@ -4543,11 +4589,17 @@ canvas.addEventListener("pointerup", (e) => {
   releaseCanvasPointer(e);
   if (!playing) return;
   setHookTargetX(e.clientX);
+  if (isTouchAimEvent(e)) {
+    e.preventDefault();
+    if (touchAim?.pointerId === e.pointerId) touchAim = null;
+    return;
+  }
   performSnag();
 });
 
 canvas.addEventListener("pointercancel", (e) => {
   releaseCanvasPointer(e);
+  if (touchAim?.pointerId === e.pointerId) touchAim = null;
 });
 
 // keyboard: aim with arrows, Enter = cast down + hook, Space = quick snag
