@@ -683,8 +683,7 @@ const KRAKEN_BITE_HOLD_MS = 2800;
 const CAST_DOWN_MS = 780;
 const CAST_UP_MS = 520;
 const REEL_EXTRA_MS_PER_EXTRA_FISH = 420;
-const TOUCH_CAST_SWIPE_MIN_PX = 28;
-const TOUCH_CAST_SWIPE_RATIO = 0.75;
+const TOUCH_TAP_CAST_MAX_MOVE_PX = 18;
 
 function lineAnchorY() {
   return dpr * 6;
@@ -1601,7 +1600,7 @@ function startRound() {
   catchFlash = 0;
   hook.krakenBiteLocked = false;
   controlHint.textContent = isTouchControlsPreferred()
-    ? "Drag left/right to aim · swipe down to cast the line through the water"
+    ? "Drag left/right to aim · tap to cast the line"
     : "Move left/right to aim from the top · Enter casts the line through the whole water column · Space or lift = quick surface snag";
   startReefMusic();
 }
@@ -4533,30 +4532,28 @@ function beginTouchAim(pointerId, clientX, clientY) {
     startY: clientY,
     lastX: clientX,
     lastY: clientY,
-    castStarted: false,
+    moved: false,
   };
 }
 
-function updateTouchAim(pointerId, clientX, clientY, done = false) {
+function updateTouchAim(pointerId, clientX, clientY) {
   if (!touchAim || touchAim.pointerId !== pointerId) return false;
   touchAim.lastX = clientX;
   touchAim.lastY = clientY;
   const dx = clientX - touchAim.startX;
   const dy = clientY - touchAim.startY;
+  const movedDistance = Math.hypot(dx, dy);
+  if (movedDistance > TOUCH_TAP_CAST_MAX_MOVE_PX) touchAim.moved = true;
+  return touchAim.moved;
+}
 
-  if (!touchAim.castStarted && dy > TOUCH_CAST_SWIPE_MIN_PX && dy > Math.abs(dx) * TOUCH_CAST_SWIPE_RATIO) {
-    touchAim.castStarted = true;
-    startCast();
-    if (done) touchAim = null;
-    return true;
-  }
-
-  if (Math.abs(dx) > Math.abs(dy) * 1.25 || dy < -8) {
-    touchAim.startX = clientX;
-    touchAim.startY = clientY;
-  }
-  if (done) touchAim = null;
-  return false;
+function finishTouchAim(pointerId, clientX, clientY) {
+  if (!touchAim || touchAim.pointerId !== pointerId) return false;
+  updateTouchAim(pointerId, clientX, clientY);
+  const shouldCast = !touchAim.moved;
+  touchAim = null;
+  if (shouldCast) startCast();
+  return shouldCast;
 }
 
 canvas.addEventListener("pointerdown", (e) => {
@@ -4598,7 +4595,7 @@ canvas.addEventListener("pointerup", (e) => {
   setHookTargetX(e.clientX);
   if (isTouchAimEvent(e)) {
     e.preventDefault();
-    updateTouchAim(e.pointerId, e.clientX, e.clientY, true);
+    finishTouchAim(e.pointerId, e.clientX, e.clientY);
     return;
   }
   performSnag();
@@ -4641,7 +4638,7 @@ canvas.addEventListener(
     const touch = e.changedTouches[0];
     e.preventDefault();
     setHookTargetX(touch.clientX);
-    updateTouchAim("touch", touch.clientX, touch.clientY, true);
+    finishTouchAim("touch", touch.clientX, touch.clientY);
   },
   { passive: false },
 );
