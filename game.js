@@ -589,27 +589,79 @@ function getReef() {
 
 const LEADERBOARD_KEY = "reefRushLeaderboard_v2";
 const LEADERBOARD_MAX = 10;
+const SUPABASE_REST_URL = "https://htnpfzjhicyzkqfgyhuu.supabase.co/rest/v1";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_SARvsULPYyIUImdhXMjQUQ_T6RtwvZM";
+const LEADERBOARD_TABLE_URL = `${SUPABASE_REST_URL}/leaderboard`;
+let leaderboardRows = [];
+let leaderboardLoading = false;
+let leaderboardLoadId = 0;
 
-function loadLeaderboard() {
+function normalizeLeaderboardRows(rows) {
+  if (!Array.isArray(rows)) return [];
+  return rows
+    .map((e) => ({
+      initials: String(e.initials || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3),
+      score: Math.max(0, Math.floor(Number(e.score) || 0)),
+      reefId: e.reefId || e.reef_id || "",
+      at: e.at || e.created_at || "",
+    }))
+    .filter((e) => e.initials && e.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, LEADERBOARD_MAX);
+}
+
+function leaderboardHeaders(extra = {}) {
+  return {
+    apikey: SUPABASE_PUBLISHABLE_KEY,
+    Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+    ...extra,
+  };
+}
+
+function loadLocalLeaderboard() {
   try {
     const raw = localStorage.getItem(LEADERBOARD_KEY);
     if (!raw) return [];
     const arr = JSON.parse(raw);
-    if (!Array.isArray(arr)) return [];
-    return arr
-      .filter((e) => e && typeof e.score === "number" && typeof e.initials === "string")
-      .sort((a, b) => b.score - a.score)
-      .slice(0, LEADERBOARD_MAX);
+    return normalizeLeaderboardRows(arr);
   } catch {
     return [];
   }
 }
 
-function saveLeaderboard(rows) {
+function saveLocalLeaderboard(rows) {
   try {
-    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(rows.slice(0, LEADERBOARD_MAX)));
+    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(normalizeLeaderboardRows(rows)));
   } catch {
     /* ignore quota */
+  }
+}
+
+function loadLeaderboard() {
+  return leaderboardRows.length ? leaderboardRows : loadLocalLeaderboard();
+}
+
+async function fetchSharedLeaderboard() {
+  const loadId = ++leaderboardLoadId;
+  leaderboardLoading = true;
+  renderLeaderboardOl(leaderboardStart);
+  renderLeaderboardOl(leaderboardOver);
+  try {
+    const url = `${LEADERBOARD_TABLE_URL}?select=initials,score,reef_id,created_at&order=score.desc,created_at.asc&limit=${LEADERBOARD_MAX}`;
+    const res = await fetch(url, { headers: leaderboardHeaders() });
+    if (!res.ok) throw new Error(`Leaderboard fetch failed: ${res.status}`);
+    const rows = normalizeLeaderboardRows(await res.json());
+    if (loadId !== leaderboardLoadId) return;
+    leaderboardRows = rows;
+    saveLocalLeaderboard(rows);
+  } catch (err) {
+    console.warn(err);
+    if (loadId === leaderboardLoadId) leaderboardRows = loadLocalLeaderboard();
+  } finally {
+    if (loadId === leaderboardLoadId) {
+      leaderboardLoading = false;
+      refreshLeaderboardViews(false);
+    }
   }
 }
 
@@ -619,26 +671,47 @@ function qualifiesForLeaderboard(score, rows) {
   return score >= rows[rows.length - 1].score;
 }
 
-function addLeaderboardEntry(initials, score, reefId) {
-  const rows = loadLeaderboard();
-  rows.push({
+async function addLeaderboardEntry(initials, score, reefId) {
+  const entry = {
     initials: initials.slice(0, 3).toUpperCase(),
     score,
     reefId: reefId || "",
     at: Date.now(),
-  });
+  };
+  const rows = [...loadLeaderboard(), entry];
   rows.sort((a, b) => b.score - a.score);
-  saveLeaderboard(rows);
+  leaderboardRows = normalizeLeaderboardRows(rows);
+  saveLocalLeaderboard(leaderboardRows);
+  try {
+    const res = await fetch(LEADERBOARD_TABLE_URL, {
+      method: "POST",
+      headers: leaderboardHeaders({
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      }),
+      body: JSON.stringify({
+        initials: entry.initials,
+        score: entry.score,
+        reef_id: entry.reefId,
+      }),
+    });
+    if (!res.ok) throw new Error(`Leaderboard save failed: ${res.status}`);
+    await fetchSharedLeaderboard();
+    return true;
+  } catch (err) {
+    console.warn(err);
+    refreshLeaderboardViews(false);
+    return false;
+  }
 }
 
-function renderLeaderboardOl(el) {
+function renderLeaderboardOl(el, rows = loadLeaderboard()) {
   if (!el) return;
-  const rows = loadLeaderboard();
   el.innerHTML = "";
   if (rows.length === 0) {
     const li = document.createElement("li");
     li.className = "leaderboard__empty";
-    li.textContent = "No scores yet — be the first.";
+    li.textContent = leaderboardLoading ? "Loading global scores..." : "No global scores yet — be the first.";
     el.appendChild(li);
     return;
   }
@@ -663,9 +736,11 @@ function renderLeaderboardOl(el) {
   });
 }
 
-function refreshLeaderboardViews() {
-  renderLeaderboardOl(leaderboardStart);
-  renderLeaderboardOl(leaderboardOver);
+function refreshLeaderboardViews(syncShared = true) {
+  const rows = loadLeaderboard();
+  renderLeaderboardOl(leaderboardStart, rows);
+  renderLeaderboardOl(leaderboardOver, rows);
+  if (syncShared) fetchSharedLeaderboard();
 }
 
 const PEARL_POINTS = 420;
@@ -4687,15 +4762,17 @@ btnOpenIntro?.addEventListener("click", openIntro);
 btnResetProgress?.addEventListener("click", resetProgress);
 panelStart?.addEventListener("pointerdown", unlockHomeAudio, { once: true });
 
-function saveCurrentScoreToBoard() {
+async function saveCurrentScoreToBoard() {
   const board = loadLeaderboard();
   if (!qualifiesForLeaderboard(lastRoundScore, board)) return;
   const raw = (initialsInput?.value || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3);
   const ini = raw.length >= 1 ? raw : "AAA";
-  addLeaderboardEntry(ini, lastRoundScore, lastRoundReefId);
+  if (btnSaveScore) btnSaveScore.disabled = true;
+  const savedGlobally = await addLeaderboardEntry(ini, lastRoundScore, lastRoundReefId);
+  if (btnSaveScore) btnSaveScore.disabled = false;
   if (initialsPanel) initialsPanel.hidden = true;
-  refreshLeaderboardViews();
-  showToast("Score saved to leaderboard", 1400);
+  refreshLeaderboardViews(false);
+  showToast(savedGlobally ? "Score saved to global leaderboard" : "Score saved on this device", 1700);
 }
 
 btnSaveScore?.addEventListener("click", saveCurrentScoreToBoard);
