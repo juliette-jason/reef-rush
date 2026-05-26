@@ -1093,9 +1093,22 @@ function playKrakenBadSound() {
   playNoiseHit(now + 0.04, 0.28, 0.032);
 }
 
+function isChromebookOrIPad() {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent || "";
+  if (ua.includes("CrOS")) return true;
+  if (/iPad/.test(ua)) return true;
+  // Modern iPads report as "Macintosh" but expose touch points.
+  if (navigator.platform === "MacIntel" && (navigator.maxTouchPoints || 0) > 1) return true;
+  return false;
+}
+
+const HOME_MUSIC_VOLUME_BOOST = isChromebookOrIPad() ? 2.4 : 1;
+
 function scheduleSailingMusicBar() {
   if (!musicCtx || !musicEnabled || playing) return;
   const now = musicCtx.currentTime + 0.04;
+  const v = HOME_MUSIC_VOLUME_BOOST;
   // Original soft yacht-rock radio bed: smooth major-7/add-9 colors, not a cover melody.
   const chords = [
     [220.0, 277.18, 329.63, 415.3, 493.88],
@@ -1105,17 +1118,17 @@ function scheduleSailingMusicBar() {
   ];
   const chord = chords[musicStep % chords.length];
   const bass = chord[0] / 2;
-  playMusicNote(bass, now, 0.62, 0.044, "sine");
-  playMusicNote(bass * 2, now + 0.84, 0.44, 0.026, "sine");
+  playMusicNote(bass, now, 0.62, 0.044 * v, "sine");
+  playMusicNote(bass * 2, now + 0.84, 0.44, 0.026 * v, "sine");
   for (let i = 0; i < chord.length; i++) {
-    playMusicNote(chord[i], now + i * 0.035, 1.72, 0.014, "triangle");
-    playMusicNote(chord[i] * 1.003, now + i * 0.035, 1.72, 0.006, "sine");
+    playMusicNote(chord[i], now + i * 0.035, 1.72, 0.014 * v, "triangle");
+    playMusicNote(chord[i] * 1.003, now + i * 0.035, 1.72, 0.006 * v, "sine");
   }
-  playMusicNote(chord[2] * 2, now + 0.52, 0.24, 0.012, "sine");
-  playMusicNote(chord[4] * 1.5, now + 0.98, 0.32, 0.011, "sine");
-  playMusicNote(chord[3] * 2, now + 1.28, 0.26, 0.009, "triangle");
-  playNoiseHit(now + 0.58, 0.09, 0.006);
-  playNoiseHit(now + 1.36, 0.12, 0.008);
+  playMusicNote(chord[2] * 2, now + 0.52, 0.24, 0.012 * v, "sine");
+  playMusicNote(chord[4] * 1.5, now + 0.98, 0.32, 0.011 * v, "sine");
+  playMusicNote(chord[3] * 2, now + 1.28, 0.26, 0.009 * v, "triangle");
+  playNoiseHit(now + 0.58, 0.09, 0.006 * v);
+  playNoiseHit(now + 1.36, 0.12, 0.008 * v);
   musicStep++;
 }
 
