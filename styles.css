@@ -797,6 +797,40 @@ body {
   }
 }
 
+@media (max-width: 560px) {
+  .panel--start .start-toolbar {
+    top: max(8px, env(safe-area-inset-top, 0px));
+    right: max(8px, env(safe-area-inset-right, 0px));
+    max-width: min(180px, 46vw);
+    padding: 8px 9px;
+    gap: 6px;
+    border-radius: 12px;
+  }
+
+  .panel--start .start-toolbar__label {
+    font-size: 0.5rem;
+    letter-spacing: 0.1em;
+  }
+
+  .panel--start .start-toolbar__value {
+    font-size: 1.05rem;
+  }
+
+  .panel--start .btn--help,
+  .panel--start .btn--reset,
+  .panel--start .btn--shop,
+  .panel--start .btn--music {
+    padding: 6px 8px;
+    font-size: 0.7rem;
+    border-radius: 9px;
+    min-height: 0;
+  }
+
+  .panel--start {
+    padding-top: max(72px, env(safe-area-inset-top, 0px));
+  }
+}
+
 .shop-list {
   list-style: none;
   margin: 0 auto 22px;
