@@ -277,8 +277,19 @@ const META_KEY = "reefRushMeta_v1";
 const INTRO_SEEN_KEY = "reefRushIntroSeen_v1";
 const SHOP_GUIDE_SEEN_KEY = "reefRushShopGuideSeen_v1";
 
+const TREASURE_CHESTS_TO_UNLOCK_ADVENTURE = 50;
+const ADVENTURE_LEVEL_COUNT = 15;
+
 function defaultMeta() {
-  return { coins: 0, baitCounts: {}, selectedBaitId: "standard", ownedRodIds: [FREE_ROD_ID], selectedRodId: FREE_ROD_ID };
+  return {
+    coins: 0,
+    baitCounts: {},
+    selectedBaitId: "standard",
+    ownedRodIds: [FREE_ROD_ID],
+    selectedRodId: FREE_ROD_ID,
+    totalTreasureChests: 0,
+    adventureHighestLevel: 0,
+  };
 }
 
 let gameMeta = defaultMeta();
@@ -307,6 +318,8 @@ function loadMeta() {
       selectedBaitId,
       ownedRodIds,
       selectedRodId,
+      totalTreasureChests: Math.max(0, Math.floor(Number(o.totalTreasureChests) || 0)),
+      adventureHighestLevel: Math.max(0, Math.min(ADVENTURE_LEVEL_COUNT, Math.floor(Number(o.adventureHighestLevel) || 0))),
     };
   } catch {
     return defaultMeta();
@@ -583,8 +596,68 @@ const REEFS = [
   },
 ];
 
+function buildAdventureLevels() {
+  const levels = [];
+  for (let i = 0; i < ADVENTURE_LEVEL_COUNT; i++) {
+    const reef = REEFS[i % REEFS.length];
+    const tier = Math.floor(i / REEFS.length);
+    levels.push({
+      level: i + 1,
+      id: `adv_${i + 1}`,
+      name: `Voyage ${i + 1}`,
+      subtitle: reef.name,
+      reefId: reef.id,
+      passScore: 3000 + i * 1000,
+      roundMs: Math.max(46_000, reef.roundMs - tier * 3500 - i * 600),
+      spawnMin: Math.max(160, reef.spawnMin - i * 18),
+      spawnMax: Math.max(380, reef.spawnMax - i * 45),
+      maxFish: Math.min(22, reef.maxFish + Math.floor(i / 2)),
+      fishSpeed: reef.fishSpeed * (1 + i * 0.035),
+      rareRollMult: Math.max(0.55, reef.rareRollMult * (0.98 - i * 0.012)),
+    });
+  }
+  return levels;
+}
+
+const ADVENTURE_LEVELS = buildAdventureLevels();
+
+/** null when playing classic reef rush; set during an adventure level round. */
+let adventureSession = null;
+/** Last adventure level index chosen (for retry). */
+let pendingAdventureLevelIndex = 0;
+
+function isAdventureUnlocked() {
+  return (gameMeta.totalTreasureChests || 0) >= TREASURE_CHESTS_TO_UNLOCK_ADVENTURE;
+}
+
+function isAdventureLevelPlayable(levelNum) {
+  if (!isAdventureUnlocked()) return false;
+  const highest = gameMeta.adventureHighestLevel || 0;
+  return levelNum <= highest + 1;
+}
+
+function getAdventureLevel(index) {
+  return ADVENTURE_LEVELS[Math.max(0, Math.min(ADVENTURE_LEVEL_COUNT - 1, index))];
+}
+
 function getReef() {
-  return REEFS.find((r) => r.id === selectedReefId) || REEFS[0];
+  const base = REEFS.find((r) => r.id === selectedReefId) || REEFS[0];
+  if (!adventureSession) return base;
+  const lvl = getAdventureLevel(adventureSession.levelIndex);
+  const reefBase = REEFS.find((r) => r.id === lvl.reefId) || base;
+  return {
+    ...reefBase,
+    name: lvl.name,
+    desc: `${lvl.subtitle} · score ${lvl.passScore}+ to continue`,
+    roundMs: lvl.roundMs,
+    spawnMin: lvl.spawnMin,
+    spawnMax: lvl.spawnMax,
+    maxFish: lvl.maxFish,
+    fishSpeed: lvl.fishSpeed,
+    rareRollMult: lvl.rareRollMult,
+    adventurePassScore: lvl.passScore,
+    adventureLevel: lvl.level,
+  };
 }
 
 const LEADERBOARD_KEY = "reefRushLeaderboard_v2";
@@ -855,6 +928,24 @@ const panelIntro = document.getElementById("panelIntro");
 const btnIntroDone = document.getElementById("btnIntroDone");
 const btnOpenIntro = document.getElementById("btnOpenIntro");
 const btnResetProgress = document.getElementById("btnResetProgress");
+const btnAdventureMode = document.getElementById("btnAdventureMode");
+const adventureLock = document.getElementById("adventureLock");
+const adventureUnlockHint = document.getElementById("adventureUnlockHint");
+const panelAdventure = document.getElementById("panelAdventure");
+const adventureLevelList = document.getElementById("adventureLevelList");
+const adventureMapBanner = document.getElementById("adventureMapBanner");
+const btnAdventureBack = document.getElementById("btnAdventureBack");
+const panelAdventureFail = document.getElementById("panelAdventureFail");
+const adventureFailScore = document.getElementById("adventureFailScore");
+const adventureFailGoal = document.getElementById("adventureFailGoal");
+const btnAdventureRetry = document.getElementById("btnAdventureRetry");
+const btnAdventureFailBack = document.getElementById("btnAdventureFailBack");
+const panelAdventureWin = document.getElementById("panelAdventureWin");
+const adventureWinLevel = document.getElementById("adventureWinLevel");
+const adventureWinScore = document.getElementById("adventureWinScore");
+const btnAdventureNext = document.getElementById("btnAdventureNext");
+const btnAdventureWinBack = document.getElementById("btnAdventureWinBack");
+const adventureGoalLine = document.getElementById("adventureGoalLine");
 
 let selectedRod = RODS[0];
 let selectedReefId = "australia";
@@ -999,11 +1090,12 @@ function closeIntro() {
 }
 
 function resetProgress() {
-  const ok = window.confirm("Reset your coins, bait, and unlocked rods?");
+  const ok = window.confirm("Reset your coins, bait, unlocked rods, and adventure progress?");
   if (!ok) return;
   gameMeta = defaultMeta();
   selectedRod = rodSpecById(FREE_ROD_ID);
   roundBait = { catchRadiusMult: 1, rareAssistAdd: 0, lightRadiusMult: 1 };
+  adventureSession = null;
   saveMeta();
   normalizeSelectedBaitId();
   normalizeSelectedRod();
@@ -1011,7 +1103,132 @@ function resetProgress() {
   buildBaitUI();
   buildRodUI();
   buildShopUI();
+  updateAdventureLaunchUI();
+  buildAdventureLevelUI();
   showToast("Progress reset", 1500);
+}
+
+function hideAllPanels() {
+  if (panelStart) panelStart.hidden = true;
+  if (panelOver) panelOver.hidden = true;
+  if (panelShop) panelShop.hidden = true;
+  if (panelIntro) panelIntro.hidden = true;
+  if (panelAdventure) panelAdventure.hidden = true;
+  if (panelAdventureFail) panelAdventureFail.hidden = true;
+  if (panelAdventureWin) panelAdventureWin.hidden = true;
+}
+
+function showHomePanel() {
+  hideAllPanels();
+  if (panelStart) panelStart.hidden = false;
+  adventureSession = null;
+  updateAdventureLaunchUI();
+  syncAdventureLaunchVisibility();
+}
+
+function syncAdventureLaunchVisibility() {
+  const onHome = panelStart && !panelStart.hidden && !playing;
+  if (btnAdventureMode) btnAdventureMode.hidden = !onHome;
+  if (adventureUnlockHint) adventureUnlockHint.hidden = !onHome;
+}
+
+function updateAdventureLaunchUI() {
+  const unlocked = isAdventureUnlocked();
+  const total = gameMeta.totalTreasureChests || 0;
+  if (adventureLock) adventureLock.hidden = unlocked;
+  if (btnAdventureMode) {
+    btnAdventureMode.classList.toggle("adventure-launch--locked", !unlocked);
+    btnAdventureMode.setAttribute("aria-disabled", unlocked ? "false" : "true");
+  }
+  if (adventureUnlockHint) {
+    adventureUnlockHint.textContent = unlocked
+      ? "Treasure map unlocked — 15 voyages await!"
+      : `Treasure chests: ${total} / ${TREASURE_CHESTS_TO_UNLOCK_ADVENTURE}`;
+  }
+  syncAdventureLaunchVisibility();
+}
+
+function buildAdventureLevelUI() {
+  if (!adventureLevelList) return;
+  adventureLevelList.innerHTML = "";
+  const highest = gameMeta.adventureHighestLevel || 0;
+  for (let i = 0; i < ADVENTURE_LEVELS.length; i++) {
+    const lvl = ADVENTURE_LEVELS[i];
+    const playable = isAdventureLevelPlayable(lvl.level);
+    const cleared = lvl.level <= highest;
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className =
+      "adventure-level" +
+      (cleared ? " adventure-level--cleared" : "") +
+      (!playable ? " adventure-level--locked" : "");
+    b.disabled = !playable;
+    b.innerHTML = `<span class="adventure-level__num">${lvl.level}</span><span class="adventure-level__body"><span class="adventure-level__name">${lvl.name}</span><span class="adventure-level__meta">${lvl.subtitle} · pass ${lvl.passScore}</span></span>${cleared ? '<span class="adventure-level__badge">✓</span>' : ""}`;
+    if (playable) {
+      b.addEventListener("click", () => startAdventureLevel(i));
+    }
+    adventureLevelList.appendChild(b);
+  }
+  if (adventureMapBanner) {
+    adventureMapBanner.hidden = !isAdventureUnlocked();
+  }
+}
+
+function openAdventureHub() {
+  if (!isAdventureUnlocked()) {
+    showToast(`Catch ${TREASURE_CHESTS_TO_UNLOCK_ADVENTURE - (gameMeta.totalTreasureChests || 0)} more treasure chests to unlock the map.`, 2400);
+    return;
+  }
+  hideAllPanels();
+  buildAdventureLevelUI();
+  if (panelAdventure) panelAdventure.hidden = false;
+}
+
+function startAdventureLevel(levelIndex) {
+  const lvl = getAdventureLevel(levelIndex);
+  if (!isAdventureLevelPlayable(lvl.level)) return;
+  pendingAdventureLevelIndex = levelIndex;
+  adventureSession = { levelIndex };
+  selectedReefId = lvl.reefId;
+  hideAllPanels();
+  if (adventureGoalLine) {
+    adventureGoalLine.hidden = false;
+    adventureGoalLine.textContent = `Goal: ${lvl.passScore} pts`;
+  }
+  startRound();
+}
+
+function endAdventureRound() {
+  const lvl = getAdventureLevel(adventureSession.levelIndex);
+  const passed = score >= lvl.passScore;
+  if (passed) {
+    gameMeta.adventureHighestLevel = Math.max(gameMeta.adventureHighestLevel || 0, lvl.level);
+    saveMeta();
+  }
+  const earned = coinsAwardedForScore(score);
+  if (earned > 0) {
+    gameMeta.coins += earned;
+    saveMeta();
+    refreshCoinDisplays();
+  }
+  roundBait = { catchRadiusMult: 1, rareAssistAdd: 0, lightRadiusMult: 1 };
+  adventureSession = null;
+  if (adventureGoalLine) adventureGoalLine.hidden = true;
+  hideAllPanels();
+  if (passed) {
+    if (adventureWinLevel) adventureWinLevel.textContent = `Level ${lvl.level} cleared!`;
+    if (adventureWinScore) adventureWinScore.textContent = `You scored ${score} (needed ${lvl.passScore}).`;
+    const hasNext = lvl.level < ADVENTURE_LEVEL_COUNT;
+    if (btnAdventureNext) {
+      btnAdventureNext.hidden = !hasNext;
+      btnAdventureNext.textContent = hasNext ? `Start level ${lvl.level + 1}` : "Back to map";
+    }
+    if (panelAdventureWin) panelAdventureWin.hidden = false;
+  } else {
+    if (adventureFailScore) adventureFailScore.textContent = `Your score: ${score}`;
+    if (adventureFailGoal) adventureFailGoal.textContent = `Needed: ${lvl.passScore}`;
+    if (panelAdventureFail) panelAdventureFail.hidden = false;
+  }
 }
 
 function updateMusicButton() {
@@ -1487,6 +1704,7 @@ function openShop() {
   showShopGuideIfNeeded();
   panelStart.hidden = true;
   panelShop.hidden = false;
+  syncAdventureLaunchVisibility();
 }
 
 function closeShop() {
@@ -1497,6 +1715,7 @@ function closeShop() {
   buildBaitUI();
   buildRodUI();
   refreshCoinDisplays();
+  syncAdventureLaunchVisibility();
 }
 
 function updateStartButtonSubtext() {
@@ -1691,6 +1910,9 @@ function startRound() {
   lastJackpotCrabCatchAt = -999999;
   panelStart.hidden = true;
   panelOver.hidden = true;
+  if (panelAdventure) panelAdventure.hidden = true;
+  if (panelAdventureFail) panelAdventureFail.hidden = true;
+  if (panelAdventureWin) panelAdventureWin.hidden = true;
   appRoot.classList.add("app--playing");
   lastPearlAt = -999999;
   clam.phase = "closed";
@@ -1716,9 +1938,10 @@ function startRound() {
   releasedFishFx.length = 0;
   catchFlash = 0;
   hook.krakenBiteLocked = false;
+  const passHint = reef.adventurePassScore ? ` · reach ${reef.adventurePassScore} pts` : "";
   controlHint.textContent = isTouchControlsPreferred()
-    ? "Drag left/right to aim · tap to cast the line"
-    : "Move left/right to aim from the top · Enter casts the line through the whole water column · Space or lift = quick surface snag";
+    ? `Drag left/right to aim · tap to cast the line${passHint}`
+    : `Move left/right to aim · Enter casts the line · Space or lift = snag${passHint}`;
   startReefMusic();
 }
 
@@ -1737,6 +1960,10 @@ function endRound() {
   releasedFishFx.length = 0;
   catchFlash = 0;
   hook.krakenBiteLocked = false;
+  if (adventureSession) {
+    endAdventureRound();
+    return;
+  }
   panelOver.hidden = false;
   finalScore.textContent = String(score);
   lastRoundScore = score;
@@ -2107,8 +2334,14 @@ function tryCatchJackpotCrab(now) {
   scoreDisplay.textContent = String(score);
   catchLog.push({ label: JACKPOT_CRAB_LABEL, pts: JACKPOT_CRAB_POINTS });
   gameMeta.coins += JACKPOT_CRAB_COIN_BONUS;
+  const wasAdventureLocked = !isAdventureUnlocked();
+  gameMeta.totalTreasureChests = (gameMeta.totalTreasureChests || 0) + 1;
   saveMeta();
   refreshCoinDisplays();
+  updateAdventureLaunchUI();
+  if (wasAdventureLocked && isAdventureUnlocked()) {
+    showToast("Treasure map unlocked! Adventure Mode is ready.", 3200);
+  }
   showToast(`MEGA JACKPOT! +${JACKPOT_CRAB_POINTS} & +${JACKPOT_CRAB_COIN_BONUS} coins`, 2600);
 }
 
@@ -4868,14 +5101,53 @@ initialsInput?.addEventListener("keydown", (e) => {
 });
 
 btnAgain.addEventListener("click", () => {
-  panelOver.hidden = true;
-  panelStart.hidden = false;
   if (initialsPanel) initialsPanel.hidden = true;
   refreshLeaderboardViews();
   normalizeSelectedBaitId();
   buildBaitUI();
   buildRodUI();
   refreshCoinDisplays();
+  showHomePanel();
+  if (homeAudioUnlocked) startHomeWaves();
+  startHomeMusic();
+});
+
+btnAdventureMode?.addEventListener("click", () => {
+  if (!isAdventureUnlocked()) {
+    updateAdventureLaunchUI();
+    showToast(`Catch ${Math.max(0, TREASURE_CHESTS_TO_UNLOCK_ADVENTURE - (gameMeta.totalTreasureChests || 0))} more treasure chests.`, 2200);
+    return;
+  }
+  openAdventureHub();
+});
+
+btnAdventureBack?.addEventListener("click", () => {
+  showHomePanel();
+  if (homeAudioUnlocked) startHomeWaves();
+  startHomeMusic();
+});
+
+btnAdventureRetry?.addEventListener("click", () => {
+  startAdventureLevel(pendingAdventureLevelIndex);
+});
+
+btnAdventureFailBack?.addEventListener("click", () => {
+  openAdventureHub();
+  if (homeAudioUnlocked) startHomeWaves();
+  startHomeMusic();
+});
+
+btnAdventureNext?.addEventListener("click", () => {
+  const highest = gameMeta.adventureHighestLevel || 0;
+  if (highest < ADVENTURE_LEVEL_COUNT) {
+    startAdventureLevel(highest);
+  } else {
+    openAdventureHub();
+  }
+});
+
+btnAdventureWinBack?.addEventListener("click", () => {
+  openAdventureHub();
   if (homeAudioUnlocked) startHomeWaves();
   startHomeMusic();
 });
@@ -4893,6 +5165,8 @@ normalizeSelectedBaitId();
 refreshCoinDisplays();
 buildBaitUI();
 refreshLeaderboardViews();
+updateAdventureLaunchUI();
+buildAdventureLevelUI();
 updateMusicButton();
 resize();
 initBubbles();
