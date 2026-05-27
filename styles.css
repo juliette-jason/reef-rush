@@ -169,7 +169,8 @@ body {
   z-index: 2;
 }
 
-.panel--start .start-toolbar__coins {
+.panel--start .start-toolbar__coins,
+.panel--start .start-toolbar__chests {
   text-align: right;
   flex: 0 0 auto;
 }
@@ -195,11 +196,16 @@ body {
   border-color: rgba(248, 113, 113, 0.42);
 }
 
-.start-toolbar__coins {
+.start-toolbar__coins,
+.start-toolbar__chests {
   margin: 0;
   flex: 1 1 auto;
   text-align: left;
   min-width: 0;
+}
+
+.start-toolbar__value--chests {
+  color: #fbbf24;
 }
 
 .start-toolbar__label {

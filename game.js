@@ -914,6 +914,7 @@ const controlHint = document.getElementById("controlHint");
 const baitChoices = document.getElementById("baitChoices");
 const coinDisplay = document.getElementById("coinDisplay");
 const coinDisplayStart = document.getElementById("coinDisplayStart");
+const treasureChestDisplayStart = document.getElementById("treasureChestDisplayStart");
 const coinDisplayShop = document.getElementById("coinDisplayShop");
 const coinsEarnedLine = document.getElementById("coinsEarnedLine");
 const panelShop = document.getElementById("panelShop");
@@ -1159,6 +1160,7 @@ function updateAdventureLaunchUI() {
       ? "Treasure map unlocked — 15 voyages await!"
       : `Treasure chests: ${total} / ${TREASURE_CHESTS_TO_UNLOCK_ADVENTURE}`;
   }
+  refreshTreasureChestDisplay();
   syncAdventureLaunchVisibility();
 }
 
@@ -1190,7 +1192,7 @@ function buildAdventureLevelUI() {
 
 function openAdventureHub() {
   if (!isAdventureUnlocked()) {
-    showToast(`Catch ${TREASURE_CHESTS_TO_UNLOCK_ADVENTURE - (gameMeta.totalTreasureChests || 0)} more treasure chests to unlock the map.`, 2400);
+    showToast(adventureUnlockBlockedMessage(), 2800);
     return;
   }
   hideAllPanels();
@@ -1564,6 +1566,17 @@ function refreshCoinDisplays() {
   if (coinDisplay) coinDisplay.textContent = t;
   if (coinDisplayStart) coinDisplayStart.textContent = t;
   if (coinDisplayShop) coinDisplayShop.textContent = t;
+  refreshTreasureChestDisplay();
+}
+
+function refreshTreasureChestDisplay() {
+  const total = gameMeta.totalTreasureChests || 0;
+  const label = `${total} / ${TREASURE_CHESTS_TO_UNLOCK_ADVENTURE}`;
+  if (treasureChestDisplayStart) treasureChestDisplayStart.textContent = label;
+}
+
+function adventureUnlockBlockedMessage() {
+  return `You need ${TREASURE_CHESTS_TO_UNLOCK_ADVENTURE} treasure chests to unlock Adventure Mode.`;
 }
 
 function setCoinDisplaysAmount(amount) {
@@ -5133,7 +5146,7 @@ btnAgain.addEventListener("click", () => {
 btnAdventureMode?.addEventListener("click", () => {
   if (!isAdventureUnlocked()) {
     updateAdventureLaunchUI();
-    showToast(`Catch ${Math.max(0, TREASURE_CHESTS_TO_UNLOCK_ADVENTURE - (gameMeta.totalTreasureChests || 0))} more treasure chests.`, 2200);
+    showToast(adventureUnlockBlockedMessage(), 2800);
     return;
   }
   openAdventureHub();
