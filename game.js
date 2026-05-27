@@ -800,8 +800,24 @@ function pickSpecies() {
 }
 
 // --- DOM ---
+function isChromebook() {
+  return typeof navigator !== "undefined" && (navigator.userAgent || "").includes("CrOS");
+}
+
+/** Chrome OS devices often struggle with full-res canvas + heavy gradients. */
+const PERF_CHROMEBOOK = isChromebook();
+
+function perfN(n) {
+  return PERF_CHROMEBOOK ? Math.max(1, Math.round(n * 0.45)) : n;
+}
+
 const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+let ctx = canvas.getContext("2d", {
+  alpha: true,
+  desynchronized: PERF_CHROMEBOOK,
+});
+let bgCacheCanvas = null;
+let bgCacheKey = "";
 const scoreDisplay = document.getElementById("scoreDisplay");
 const timeDisplay = document.getElementById("timeDisplay");
 const panelStart = document.getElementById("panelStart");
@@ -1096,7 +1112,7 @@ function playKrakenBadSound() {
 function isChromebookOrIPad() {
   if (typeof navigator === "undefined") return false;
   const ua = navigator.userAgent || "";
-  if (ua.includes("CrOS")) return true;
+  if (isChromebook()) return true;
   if (/iPad/.test(ua)) return true;
   // Modern iPads report as "Macintosh" but expose touch points.
   if (navigator.platform === "MacIntel" && (navigator.maxTouchPoints || 0) > 1) return true;
@@ -1513,6 +1529,7 @@ function buildReefUI() {
     b.innerHTML = `<span class="rod-option__name">${reef.name} <span class="rod-option__badge ${badgeClass}">${reef.difficulty}</span></span><span class="rod-option__desc">${reef.desc}</span>`;
     b.addEventListener("click", () => {
       selectedReefId = reef.id;
+      invalidateBackgroundCache();
       reefChoices.querySelectorAll(".rod-option").forEach((el) => el.classList.remove("rod-option--selected"));
       b.classList.add("rod-option--selected");
       updateStartButtonSubtext();
@@ -1553,13 +1570,18 @@ function buildRodUI() {
   updateStartButtonSubtext();
 }
 
+function invalidateBackgroundCache() {
+  bgCacheKey = "";
+}
+
 function resize() {
   const rect = canvas.getBoundingClientRect();
-  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  dpr = Math.min(window.devicePixelRatio || 1, PERF_CHROMEBOOK ? 1 : 2);
   w = Math.floor(rect.width * dpr);
   h = Math.floor(rect.height * dpr);
   canvas.width = w;
   canvas.height = h;
+  invalidateBackgroundCache();
   waterTop = h * 0.08;
   waterH = h - waterTop;
   hook.x = w * 0.5;
@@ -1599,7 +1621,8 @@ function initBubbles() {
   bubbles = [];
   const reef = getReef();
   const density = reef.id === "mariana_trench" ? 0.38 : reef.id === "japan_kuroshio" ? 1.28 : reef.id === "mediterranean" ? 0.72 : reef.id === "australia" ? 1.08 : 1;
-  const n = Math.floor((28 + Math.floor(w / 40)) * density);
+  const perfDensity = PERF_CHROMEBOOK ? density * 0.35 : density;
+  const n = Math.floor((28 + Math.floor(w / 40)) * perfDensity);
   const vyMul = reef.id === "mariana_trench" ? 0.55 : reef.id === "australia" ? 1.12 : reef.id === "mediterranean" ? 0.82 : reef.id === "caribbean" ? 1.05 : 1.18;
   for (let i = 0; i < n; i++) {
     bubbles.push({
@@ -1763,7 +1786,7 @@ function hookTipY() {
 }
 
 function spawnCatchFX(worldX, worldY, hue) {
-  const n = 38;
+  const n = perfN(38);
   for (let i = 0; i < n; i++) {
     const ang = (Math.PI * 2 * i) / n + (Math.random() - 0.5) * 0.5;
     const sp = (1.8 + Math.random() * 4.5) * dpr;
@@ -2714,8 +2737,8 @@ function drawReefAmbience(reefId, waterTopY) {
   if (reefId === "australia") {
     ctx.strokeStyle = "rgba(255, 255, 255, 0.07)";
     ctx.lineWidth = 1.2 * dpr;
-    for (let i = 0; i < 9; i++) {
-      const x0 = (i / 9) * w + Math.sin(t + i) * dpr * 12;
+    for (let i = 0; i < perfN(9); i++) {
+      const x0 = (i / perfN(9)) * w + Math.sin(t + i) * dpr * 12;
       ctx.beginPath();
       ctx.moveTo(x0, waterTopY + dpr * 30);
       ctx.bezierCurveTo(x0 + dpr * 40, waterTopY + waterH * 0.35, x0 - dpr * 30, waterTopY + waterH * 0.55, x0 + dpr * 20, h - dpr * 80);
@@ -2743,7 +2766,7 @@ function drawReefAmbience(reefId, waterTopY) {
     ctx.fillRect(0, waterTopY + waterH * 0.15, w, waterH * 0.35);
     ctx.fillStyle = "rgba(5, 8, 30, 0.22)";
     ctx.fillRect(0, waterTopY + waterH * 0.45, w, waterH * 0.4);
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < perfN(5); i++) {
       const y = waterTopY + waterH * (0.2 + i * 0.14) + Math.sin(t + i) * dpr * 6;
       ctx.strokeStyle = `rgba(160, 170, 220, ${0.04 + i * 0.015})`;
       ctx.lineWidth = (3 + i) * dpr;
@@ -2758,8 +2781,8 @@ function drawReefAmbience(reefId, waterTopY) {
     ctx.fillRect(w * 0.92, waterTopY, w * 0.08, waterH);
     ctx.strokeStyle = "rgba(120, 210, 255, 0.06)";
     ctx.lineWidth = dpr;
-    for (let i = 0; i < 16; i++) {
-      const x = (i / 16) * w + (i % 2) * dpr * 20;
+    for (let i = 0; i < perfN(16); i++) {
+      const x = (i / perfN(16)) * w + (i % 2) * dpr * 20;
       ctx.beginPath();
       ctx.moveTo(x, waterTopY);
       ctx.lineTo(x + dpr * 6, h - dpr * 40);
@@ -2775,8 +2798,8 @@ function drawReefAmbience(reefId, waterTopY) {
     ctx.fillRect(0, waterTopY, w, waterH);
     ctx.strokeStyle = "rgba(60, 85, 120, 0.12)";
     ctx.lineWidth = dpr * 2;
-    for (let i = 0; i < 8; i++) {
-      const x = (i / 7) * w + Math.sin(t + i) * dpr * 12;
+    for (let i = 0; i < perfN(8); i++) {
+      const x = (i / Math.max(1, perfN(7))) * w + Math.sin(t + i) * dpr * 12;
       ctx.beginPath();
       ctx.moveTo(x, waterTopY + waterH * 0.35);
       ctx.lineTo(x - dpr * (30 + i * 7), h);
@@ -2807,7 +2830,7 @@ function drawGreatBarrierReefBed() {
   ctx.fill();
 
   const colors = ["#fb7185", "#f9a8d4", "#fdba74", "#fde68a", "#5eead4", "#67e8f9", "#c4b5fd"];
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < perfN(30); i++) {
     const x = ((i * 83) % 1000) / 1000 * w;
     const y = h - dpr * (24 + ((i * 37) % 96));
     const sx = dpr * (18 + (i % 5) * 7);
@@ -2826,7 +2849,7 @@ function drawGreatBarrierReefBed() {
     ctx.stroke();
   }
 
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < perfN(12); i++) {
     const x = ((i * 157) % 1000) / 1000 * w;
     const y = h - dpr * (42 + (i % 4) * 24);
     const r = dpr * (18 + (i % 3) * 9);
@@ -2866,7 +2889,7 @@ function drawMesoamericanReefBed() {
   ctx.fill();
 
   const colors = ["#ff8fb3", "#fb7185", "#f97316", "#facc15", "#c084fc", "#e879f9", "#38bdf8"];
-  for (let i = 0; i < 26; i++) {
+  for (let i = 0; i < perfN(26); i++) {
     const x = ((i * 97) % 1000) / 1000 * w;
     const y = h - dpr * (22 + ((i * 43) % 82));
     const rx = dpr * (14 + (i % 5) * 6);
@@ -2877,14 +2900,16 @@ function drawMesoamericanReefBed() {
     ctx.ellipse(x, y, rx, ry, (i % 7) * 0.3, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.globalAlpha = 0.28;
-    ctx.fillStyle = "#fff7ed";
-    ctx.beginPath();
-    ctx.ellipse(x - rx * 0.2, y - ry * 0.22, rx * 0.35, ry * 0.28, -0.2, 0, Math.PI * 2);
-    ctx.fill();
+    if (!PERF_CHROMEBOOK) {
+      ctx.globalAlpha = 0.28;
+      ctx.fillStyle = "#fff7ed";
+      ctx.beginPath();
+      ctx.ellipse(x - rx * 0.2, y - ry * 0.22, rx * 0.35, ry * 0.28, -0.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
 
-  for (let i = 0; i < 11; i++) {
+  for (let i = 0; i < perfN(11); i++) {
     const x = ((i * 131) % 1000) / 1000 * w;
     const y = h - dpr * (34 + (i % 4) * 18);
     const r = dpr * (16 + (i % 4) * 5);
@@ -2922,25 +2947,31 @@ function drawWesternMediterraneanRocks() {
   ctx.closePath();
   ctx.fill();
 
-  for (let i = 0; i < 24; i++) {
+  for (let i = 0; i < perfN(24); i++) {
     const x = ((i * 109) % 1000) / 1000 * w;
     const y = h - dpr * (18 + ((i * 47) % 78));
     const rx = dpr * (18 + (i % 5) * 9);
     const ry = dpr * (10 + (i % 4) * 6);
-    const rock = ctx.createLinearGradient(x - rx, y - ry, x + rx, y + ry);
-    rock.addColorStop(0, i % 2 ? "#6d5f8f" : "#5b5577");
-    rock.addColorStop(0.55, "#373052");
-    rock.addColorStop(1, "#171323");
     ctx.globalAlpha = 0.78;
-    ctx.fillStyle = rock;
+    if (PERF_CHROMEBOOK) {
+      ctx.fillStyle = i % 2 ? "#5b5577" : "#373052";
+    } else {
+      const rock = ctx.createLinearGradient(x - rx, y - ry, x + rx, y + ry);
+      rock.addColorStop(0, i % 2 ? "#6d5f8f" : "#5b5577");
+      rock.addColorStop(0.55, "#373052");
+      rock.addColorStop(1, "#171323");
+      ctx.fillStyle = rock;
+    }
     ctx.beginPath();
     ctx.ellipse(x, y, rx, ry, (i % 6) * 0.22, 0, Math.PI * 2);
     ctx.fill();
-    ctx.globalAlpha = 0.24;
-    ctx.fillStyle = "#ddd6fe";
-    ctx.beginPath();
-    ctx.ellipse(x - rx * 0.24, y - ry * 0.28, rx * 0.34, ry * 0.22, -0.2, 0, Math.PI * 2);
-    ctx.fill();
+    if (!PERF_CHROMEBOOK) {
+      ctx.globalAlpha = 0.24;
+      ctx.fillStyle = "#ddd6fe";
+      ctx.beginPath();
+      ctx.ellipse(x - rx * 0.24, y - ry * 0.28, rx * 0.34, ry * 0.22, -0.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
   ctx.globalAlpha = 1;
 }
@@ -2965,17 +2996,21 @@ function drawKuroshioRocks() {
   ctx.closePath();
   ctx.fill();
 
-  for (let i = 0; i < 22; i++) {
+  for (let i = 0; i < perfN(22); i++) {
     const x = ((i * 137) % 1000) / 1000 * w;
     const baseY = h - dpr * (10 + ((i * 29) % 82));
     const rw = dpr * (18 + (i % 4) * 8);
     const rh = dpr * (20 + (i % 5) * 10);
-    const g = ctx.createLinearGradient(x - rw, baseY - rh, x + rw, baseY + rh);
-    g.addColorStop(0, "#164e63");
-    g.addColorStop(0.46, "#0f172a");
-    g.addColorStop(1, "#020617");
     ctx.globalAlpha = 0.82;
-    ctx.fillStyle = g;
+    if (PERF_CHROMEBOOK) {
+      ctx.fillStyle = "#0f172a";
+    } else {
+      const g = ctx.createLinearGradient(x - rw, baseY - rh, x + rw, baseY + rh);
+      g.addColorStop(0, "#164e63");
+      g.addColorStop(0.46, "#0f172a");
+      g.addColorStop(1, "#020617");
+      ctx.fillStyle = g;
+    }
     ctx.beginPath();
     ctx.moveTo(x - rw, baseY + rh * 0.45);
     ctx.lineTo(x - rw * 0.38, baseY - rh * 0.75);
@@ -3184,7 +3219,7 @@ function drawBackground() {
   ctx.fill();
 
   ctx.fillStyle = "rgba(255, 238, 190, 0.18)";
-  for (let i = 0; i < 38; i++) {
+  for (let i = 0; i < perfN(38); i++) {
     const x = ((i * 73) % 1000) / 1000 * w;
     const y = sandTop + dpr * 20 + (((i * 41) % 100) / 100) * dpr * 58;
     ctx.beginPath();
@@ -3197,6 +3232,33 @@ function drawBackground() {
   if (rid === "mediterranean") drawWesternMediterraneanRocks();
   if (rid === "japan_kuroshio") drawKuroshioRocks();
   drawReefStructure(rid, v.corals);
+}
+
+function drawCachedBackground() {
+  if (!PERF_CHROMEBOOK) {
+    drawBackground();
+    return;
+  }
+  const key = `${w}|${h}|${getReef().id}`;
+  if (!bgCacheCanvas || bgCacheKey !== key) {
+    if (!bgCacheCanvas) bgCacheCanvas = document.createElement("canvas");
+    bgCacheCanvas.width = w;
+    bgCacheCanvas.height = h;
+    const saved = ctx;
+    ctx = bgCacheCanvas.getContext("2d");
+    drawBackground();
+    ctx = saved;
+    bgCacheKey = key;
+  }
+  ctx.drawImage(bgCacheCanvas, 0, 0);
+}
+
+function countUncaughtFish() {
+  let n = 0;
+  for (const f of fishList) {
+    if (!f.caught) n++;
+  }
+  return n;
 }
 
 function drawBubbles(dt) {
@@ -4396,6 +4458,20 @@ function drawTrenchRodLight() {
   const lightMult = effectiveTrenchLightMult();
   const radius = Math.max(92 * dpr, Math.min(w, h) * 0.18) * lightMult;
   const glowBoost = Math.min(1, Math.max(0, (lightMult - 1) / 2.2));
+  if (PERF_CHROMEBOOK) {
+    ctx.save();
+    ctx.fillStyle = "rgba(0, 0, 0, 0.82)";
+    ctx.fillRect(0, 0, w, h);
+    const glow = ctx.createRadialGradient(hx, lampY, 0, hx, lampY, radius * 0.5);
+    glow.addColorStop(0, `rgba(190, 255, 255, ${0.38 + glowBoost * 0.2})`);
+    glow.addColorStop(1, "rgba(45, 212, 191, 0)");
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(hx, lampY, radius * 0.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    return;
+  }
   const darkness = ctx.createRadialGradient(hx, lampY, radius * 0.12, hx, lampY, radius);
   darkness.addColorStop(0, "rgba(0, 0, 0, 0)");
   darkness.addColorStop(0.34, `rgba(0, 0, 0, ${0.22 - glowBoost * 0.08})`);
@@ -4535,8 +4611,11 @@ function updateClam(dt) {
   }
 }
 
+let gameLoopTick = 0;
+
 function gameLoop(now) {
-  const dt = Math.min(40, now - (gameLoop.prev || now));
+  gameLoopTick++;
+  const dt = Math.min(PERF_CHROMEBOOK ? 50 : 40, now - (gameLoop.prev || now));
   gameLoop.prev = now;
 
   if (toastTimer > 0) {
@@ -4547,8 +4626,8 @@ function gameLoop(now) {
   updateCelebration(dt);
 
   ctx.clearRect(0, 0, w, h);
-  drawBackground();
-  drawBubbles(dt);
+  drawCachedBackground();
+  if (!PERF_CHROMEBOOK || gameLoopTick % 2 === 0) drawBubbles(dt);
   updateJackpotCrab(now, dt);
 
   if (playing) {
@@ -4560,7 +4639,8 @@ function gameLoop(now) {
     } else {
       spawnAcc += dt;
       const reef = getReef();
-      if (spawnAcc >= nextSpawnIn && fishList.filter((f) => !f.caught).length < reef.maxFish) {
+      const maxFish = PERF_CHROMEBOOK ? Math.max(6, Math.floor(reef.maxFish * 0.7)) : reef.maxFish;
+      if (spawnAcc >= nextSpawnIn && countUncaughtFish() < maxFish) {
         spawnFish();
         spawnAcc = 0;
         nextSpawnIn = reef.spawnMin + Math.random() * Math.max(80, reef.spawnMax - reef.spawnMin);
