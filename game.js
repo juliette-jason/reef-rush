@@ -1078,15 +1078,18 @@ function closeShopGuide() {
 function showIntroIfNeeded() {
   if (!panelIntro || hasSeenIntro()) return;
   panelIntro.hidden = false;
+  syncAdventureLaunchVisibility();
 }
 
 function openIntro() {
   if (panelIntro) panelIntro.hidden = false;
+  syncAdventureLaunchVisibility();
 }
 
 function closeIntro() {
   if (panelIntro) panelIntro.hidden = true;
   markIntroSeen();
+  syncAdventureLaunchVisibility();
 }
 
 function resetProgress() {
@@ -1126,8 +1129,19 @@ function showHomePanel() {
   syncAdventureLaunchVisibility();
 }
 
+function isHomeScreenActive() {
+  if (playing) return false;
+  if (!panelStart || panelStart.hidden) return false;
+  const blocking = [panelOver, panelShop, panelIntro, panelAdventure, panelAdventureFail, panelAdventureWin];
+  for (const panel of blocking) {
+    if (panel && !panel.hidden) return false;
+  }
+  return true;
+}
+
 function syncAdventureLaunchVisibility() {
-  const onHome = panelStart && !panelStart.hidden && !playing;
+  const onHome = isHomeScreenActive();
+  appRoot.classList.toggle("app--home-screen", onHome);
   if (btnAdventureMode) btnAdventureMode.hidden = !onHome;
   if (adventureUnlockHint) adventureUnlockHint.hidden = !onHome;
 }
@@ -1182,6 +1196,7 @@ function openAdventureHub() {
   hideAllPanels();
   buildAdventureLevelUI();
   if (panelAdventure) panelAdventure.hidden = false;
+  syncAdventureLaunchVisibility();
 }
 
 function startAdventureLevel(levelIndex) {
@@ -1229,6 +1244,7 @@ function endAdventureRound() {
     if (adventureFailGoal) adventureFailGoal.textContent = `Needed: ${lvl.passScore}`;
     if (panelAdventureFail) panelAdventureFail.hidden = false;
   }
+  syncAdventureLaunchVisibility();
 }
 
 function updateMusicButton() {
@@ -1913,6 +1929,7 @@ function startRound() {
   if (panelAdventure) panelAdventure.hidden = true;
   if (panelAdventureFail) panelAdventureFail.hidden = true;
   if (panelAdventureWin) panelAdventureWin.hidden = true;
+  syncAdventureLaunchVisibility();
   appRoot.classList.add("app--playing");
   lastPearlAt = -999999;
   clam.phase = "closed";
@@ -1965,6 +1982,7 @@ function endRound() {
     return;
   }
   panelOver.hidden = false;
+  syncAdventureLaunchVisibility();
   finalScore.textContent = String(score);
   lastRoundScore = score;
   lastRoundReefId = selectedReefId;

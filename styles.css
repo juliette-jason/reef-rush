@@ -1660,6 +1660,11 @@ body {
   display: none;
 }
 
+#app:not(.app--home-screen) .adventure-launch,
+#app:not(.app--home-screen) .adventure-launch__hint {
+  display: none !important;
+}
+
 .adventure-launch {
   position: fixed;
   left: 50%;
