@@ -277,7 +277,7 @@ const META_KEY = "reefRushMeta_v1";
 const INTRO_SEEN_KEY = "reefRushIntroSeen_v1";
 const SHOP_GUIDE_SEEN_KEY = "reefRushShopGuideSeen_v1";
 
-const TREASURE_CHESTS_TO_UNLOCK_ADVENTURE = 50;
+const TREASURE_CHESTS_TO_UNLOCK_ADVENTURE = 35;
 const ADVENTURE_LEVEL_COUNT = 15;
 
 function defaultMeta() {
