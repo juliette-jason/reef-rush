@@ -757,7 +757,6 @@ const KRAKEN_BITE_SNAP_MS = 520;
 const KRAKEN_BITE_HOLD_MS = 2800;
 const CAST_DOWN_MS = 780;
 const CAST_UP_MS = 520;
-const REEL_EXTRA_MS_PER_EXTRA_FISH = 420;
 const TOUCH_TAP_CAST_MAX_MOVE_PX = 18;
 
 function lineAnchorY() {
@@ -883,8 +882,6 @@ let hook = {
   castToY: 0,
   castRiseTargetY: 0,
   snagPulse: 0,
-  fishCaughtThisCast: 0,
-  castReelDuration: CAST_UP_MS,
   krakenBiteTipY: 0,
   krakenBiteLocked: false,
 };
@@ -1713,8 +1710,6 @@ function startRound() {
   hook.castState = "idle";
   hook.castTimer = 0;
   hook.snagPulse = 0;
-  hook.fishCaughtThisCast = 0;
-  hook.castReelDuration = CAST_UP_MS;
   touchAim = null;
   celebration.particles.length = 0;
   celebration.rings.length = 0;
@@ -1736,8 +1731,6 @@ function endRound() {
   hook.castState = "idle";
   hook.castTimer = 0;
   hook.snagPulse = 0;
-  hook.fishCaughtThisCast = 0;
-  hook.castReelDuration = CAST_UP_MS;
   touchAim = null;
   celebration.particles.length = 0;
   celebration.rings.length = 0;
@@ -1963,8 +1956,6 @@ function startCast() {
   hook.castTimer = 0;
   hook.castFromY = hook.tipY;
   hook.castToY = deepestTipY();
-  hook.fishCaughtThisCast = 0;
-  hook.castReelDuration = CAST_UP_MS;
 }
 
 function tryCatchFish(opts) {
@@ -2020,10 +2011,6 @@ function tryCatchFish(opts) {
     score += pts;
     const label = f.spec.name;
     catchLog.push({ label, pts });
-  }
-
-  if (casting) {
-    hook.fishCaughtThisCast += candidates.length;
   }
 
   scoreDisplay.textContent = String(score);
@@ -2497,8 +2484,6 @@ function tryCatchKraken(opts) {
 
   hook.castState = "idle";
   hook.castTimer = 0;
-  hook.fishCaughtThisCast = 0;
-  hook.castReelDuration = CAST_UP_MS;
   hook.krakenBiteTipY = hy;
   hook.krakenBiteLocked = true;
   hook.tipY = hy;
@@ -4539,24 +4524,19 @@ function updateHook(dt) {
         const megHit2 = tryCatchKraken({ casting: true });
         if (!megHit2) tryCatchFish({ casting: true });
         if (!megHit2) tryCatchJackpotCrab(performance.now());
-        hook.castReelDuration =
-          CAST_UP_MS + Math.max(0, hook.fishCaughtThisCast - 1) * REEL_EXTRA_MS_PER_EXTRA_FISH;
         hook.castState = "up";
         hook.castTimer = 0;
         hook.castFromY = hook.tipY;
         hook.castRiseTargetY = surfaceTipY();
       }
     } else if (hook.castState === "up") {
-      const reelMs = hook.castReelDuration > 0 ? hook.castReelDuration : CAST_UP_MS;
       hook.castTimer += dt;
-      const t = Math.min(1, hook.castTimer / reelMs);
+      const t = Math.min(1, hook.castTimer / CAST_UP_MS);
       const ease = 1 - (1 - t) * (1 - t);
       hook.tipY = hook.castFromY + (hook.castRiseTargetY - hook.castFromY) * ease;
       if (t >= 1) {
         hook.castState = "idle";
         hook.castTimer = 0;
-        hook.fishCaughtThisCast = 0;
-        hook.castReelDuration = CAST_UP_MS;
       }
     } else {
       hook.tipY = surfaceTipY();
