@@ -607,7 +607,7 @@ function buildAdventureLevels() {
       name: `Voyage ${i + 1}`,
       subtitle: reef.name,
       reefId: reef.id,
-      passScore: 3000 + i * 1000,
+      passScore: 3000 + Math.round((i * (7000 - 3000)) / (ADVENTURE_LEVEL_COUNT - 1)),
       roundMs: Math.max(46_000, reef.roundMs - tier * 3500 - i * 600),
       spawnMin: Math.max(160, reef.spawnMin - i * 18),
       spawnMax: Math.max(380, reef.spawnMax - i * 45),
