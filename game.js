@@ -1119,7 +1119,14 @@ function isChromebookOrIPad() {
   return false;
 }
 
-const HOME_MUSIC_VOLUME_BOOST = isChromebookOrIPad() ? 2.4 : 1;
+const HOME_MUSIC_VOLUME_BOOST = isChromebookOrIPad() ? 5.5 : 1;
+const DEFAULT_MUSIC_MASTER_GAIN = 0.2;
+const HOME_MUSIC_MASTER_GAIN = isChromebookOrIPad() ? 0.5 : DEFAULT_MUSIC_MASTER_GAIN;
+
+function syncMusicMasterGain() {
+  if (!musicMaster) return;
+  musicMaster.gain.value = musicEnabled && !playing && isChromebookOrIPad() ? HOME_MUSIC_MASTER_GAIN : DEFAULT_MUSIC_MASTER_GAIN;
+}
 
 function scheduleSailingMusicBar() {
   if (!musicCtx || !musicEnabled || playing) return;
@@ -1280,6 +1287,7 @@ function startHomeMusic() {
   if (!musicEnabled || playing) return;
   startHomeWaves();
   if (!musicCtx) return;
+  syncMusicMasterGain();
   if (!musicTimer) {
     scheduleSailingMusicBar();
     musicTimer = setInterval(scheduleSailingMusicBar, 1600);
@@ -1291,6 +1299,7 @@ function stopHomeMusic() {
     clearInterval(musicTimer);
     musicTimer = null;
   }
+  syncMusicMasterGain();
 }
 
 function stopHomeAudio() {
@@ -1301,6 +1310,7 @@ function stopHomeAudio() {
 function toggleHomeMusic() {
   musicEnabled = !musicEnabled;
   updateMusicButton();
+  syncMusicMasterGain();
   if (playing) {
     if (musicEnabled) startReefMusic();
     else stopReefMusic();
@@ -1638,6 +1648,7 @@ function initBubbles() {
 function startRound() {
   playing = true;
   stopHomeMusic();
+  syncMusicMasterGain();
   startHomeWaves();
   normalizeSelectedBaitId();
   const chosen = baitSpecById(gameMeta.selectedBaitId);
