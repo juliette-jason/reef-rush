@@ -277,7 +277,8 @@ const META_KEY = "reefRushMeta_v1";
 const INTRO_SEEN_KEY = "reefRushIntroSeen_v1";
 const SHOP_GUIDE_SEEN_KEY = "reefRushShopGuideSeen_v1";
 
-const TREASURE_CHESTS_TO_UNLOCK_ADVENTURE = 35;
+const TREASURE_CHESTS_TO_UNLOCK_ADVENTURE = 20;
+const SECRET_TREASURE_CHEST_GRANT = 19;
 const ADVENTURE_LEVEL_COUNT = 15;
 
 function defaultMeta() {
@@ -630,6 +631,13 @@ function isAdventureUnlocked() {
   return (gameMeta.totalTreasureChests || 0) >= TREASURE_CHESTS_TO_UNLOCK_ADVENTURE;
 }
 
+function secretSimulateAdventureUnlock() {
+  gameMeta.totalTreasureChests = SECRET_TREASURE_CHEST_GRANT;
+  saveMeta();
+  refreshCoinDisplays();
+  updateAdventureLaunchUI();
+}
+
 function isAdventureLevelPlayable(levelNum) {
   if (!isAdventureUnlocked()) return false;
   const highest = gameMeta.adventureHighestLevel || 0;
@@ -910,6 +918,8 @@ const initialsPanel = document.getElementById("initialsPanel");
 const initialsInput = document.getElementById("initialsInput");
 const btnSaveScore = document.getElementById("btnSaveScore");
 const toastEl = document.getElementById("toast");
+const treasureMapReveal = document.getElementById("treasureMapReveal");
+const btnTreasureMapRevealDone = document.getElementById("btnTreasureMapRevealDone");
 const controlHint = document.getElementById("controlHint");
 const baitChoices = document.getElementById("baitChoices");
 const coinDisplay = document.getElementById("coinDisplay");
@@ -957,6 +967,8 @@ let waterTop = 0;
 let waterH = 0;
 
 let playing = false;
+/** Pauses round timer and input while the treasure-map unlock cinematic plays. */
+let treasureMapRevealPaused = false;
 let roundEndAt = 0;
 let score = 0;
 let fishList = [];
@@ -1327,6 +1339,48 @@ function playCrabJackpotSound() {
   playMusicNote(392.0, now + 0.2, 0.58, 0.035, "sine");
   playNoiseHit(now + 0.08, 0.18, 0.045);
   playNoiseHit(now + 0.36, 0.2, 0.038);
+}
+
+function playTreasureMapUnlockSound() {
+  const ac = ensureMusicContext();
+  if (!ac || !musicMaster) return;
+  if (ac.state === "suspended") ac.resume();
+  const now = ac.currentTime + 0.02;
+  const notes = [392.0, 493.88, 587.33, 659.25, 783.99, 987.77];
+  for (let i = 0; i < notes.length; i++) {
+    playMusicNote(notes[i], now + i * 0.11, 0.42, 0.048, i % 2 === 0 ? "triangle" : "sine");
+  }
+  playMusicNote(196.0, now, 1.1, 0.038, "sine");
+  playNoiseHit(now + 0.5, 0.22, 0.03);
+  playNoiseHit(now + 1.0, 0.28, 0.028);
+}
+
+function isGameplayFrozen() {
+  return treasureMapRevealPaused;
+}
+
+function startTreasureMapReveal() {
+  if (!treasureMapReveal || treasureMapRevealPaused) return;
+  treasureMapRevealPaused = true;
+  treasureMapReveal.hidden = false;
+  treasureMapReveal.setAttribute("aria-hidden", "false");
+  treasureMapReveal.classList.remove("treasure-map-reveal--active");
+  void treasureMapReveal.offsetWidth;
+  treasureMapReveal.classList.add("treasure-map-reveal--active");
+  playTreasureMapUnlockSound();
+  btnTreasureMapRevealDone?.focus();
+}
+
+function endTreasureMapReveal() {
+  if (!treasureMapRevealPaused) return;
+  treasureMapRevealPaused = false;
+  treasureMapReveal?.classList.remove("treasure-map-reveal--active");
+  if (treasureMapReveal) {
+    treasureMapReveal.hidden = true;
+    treasureMapReveal.setAttribute("aria-hidden", "true");
+  }
+  showToast("Treasure map unlocked! Adventure Mode is ready.", 3200);
+  updateAdventureLaunchUI();
 }
 
 function playKrakenBadSound() {
@@ -1976,6 +2030,14 @@ function startRound() {
 }
 
 function endRound() {
+  if (treasureMapRevealPaused) {
+    treasureMapRevealPaused = false;
+    treasureMapReveal?.classList.remove("treasure-map-reveal--active");
+    if (treasureMapReveal) {
+      treasureMapReveal.hidden = true;
+      treasureMapReveal.setAttribute("aria-hidden", "true");
+    }
+  }
   playing = false;
   stopReefMusic();
   kraken = null;
@@ -2199,7 +2261,7 @@ function fishHitRadius(f, hookR) {
 }
 
 function performSnag() {
-  if (!playing || hook.castState !== "idle") return;
+  if (!playing || isGameplayFrozen() || hook.castState !== "idle") return;
   if (isKrakenBiting()) return;
   hook.snagPulse = 260;
   const megHit = tryCatchKraken({ surfaceSnag: true });
@@ -2208,7 +2270,7 @@ function performSnag() {
 }
 
 function startCast() {
-  if (!playing || hook.castState !== "idle") return;
+  if (!playing || isGameplayFrozen() || hook.castState !== "idle") return;
   if (isKrakenBiting()) return;
   hook.castState = "down";
   hook.castTimer = 0;
@@ -2371,7 +2433,9 @@ function tryCatchJackpotCrab(now) {
   refreshCoinDisplays();
   updateAdventureLaunchUI();
   if (wasAdventureLocked && isAdventureUnlocked()) {
-    showToast("Treasure map unlocked! Adventure Mode is ready.", 3200);
+    startTreasureMapReveal();
+    showToast(`MEGA JACKPOT! +${JACKPOT_CRAB_POINTS} & +${JACKPOT_CRAB_COIN_BONUS} coins`, 2600);
+    return;
   }
   showToast(`MEGA JACKPOT! +${JACKPOT_CRAB_POINTS} & +${JACKPOT_CRAB_COIN_BONUS} coins`, 2600);
 }
@@ -4882,26 +4946,32 @@ function gameLoop(now) {
 
   ctx.clearRect(0, 0, w, h);
   drawCachedBackground();
-  if (!PERF_CHROMEBOOK || gameLoopTick % 2 === 0) drawBubbles(dt);
-  updateJackpotCrab(now, dt);
+  if (!PERF_CHROMEBOOK || gameLoopTick % 2 === 0) drawBubbles(treasureMapRevealPaused ? 0 : dt);
+  if (!treasureMapRevealPaused) updateJackpotCrab(now, dt);
+
+  if (playing && treasureMapRevealPaused) {
+    roundEndAt += dt;
+  }
 
   if (playing) {
-    tickKraken(now, dt);
+    tickKraken(now, treasureMapRevealPaused ? 0 : dt);
     const left = roundEndAt - now;
     timeDisplay.textContent = formatTime(left);
     if (left <= 0) {
       endRound();
     } else {
-      spawnAcc += dt;
-      const reef = getReef();
-      const maxFish = PERF_CHROMEBOOK ? Math.max(6, Math.floor(reef.maxFish * 0.7)) : reef.maxFish;
-      if (spawnAcc >= nextSpawnIn && countUncaughtFish() < maxFish) {
-        spawnFish();
-        spawnAcc = 0;
-        nextSpawnIn = reef.spawnMin + Math.random() * Math.max(80, reef.spawnMax - reef.spawnMin);
+      if (!treasureMapRevealPaused) {
+        spawnAcc += dt;
+        const reef = getReef();
+        const maxFish = PERF_CHROMEBOOK ? Math.max(6, Math.floor(reef.maxFish * 0.7)) : reef.maxFish;
+        if (spawnAcc >= nextSpawnIn && countUncaughtFish() < maxFish) {
+          spawnFish();
+          spawnAcc = 0;
+          nextSpawnIn = reef.spawnMin + Math.random() * Math.max(80, reef.spawnMax - reef.spawnMin);
+        }
+        updateFish(dt);
+        updateHook(dt);
       }
-      updateFish(dt);
-      updateHook(dt);
       drawKraken();
       drawJackpotCrab();
       for (const f of fishList) drawFish(f);
@@ -4980,7 +5050,7 @@ function finishTouchAim(pointerId, clientX, clientY) {
 }
 
 canvas.addEventListener("pointerdown", (e) => {
-  if (!playing) return;
+  if (!playing || isGameplayFrozen()) return;
   try {
     canvas.setPointerCapture(e.pointerId);
   } catch (_) {
@@ -4995,7 +5065,7 @@ canvas.addEventListener("pointerdown", (e) => {
 });
 
 canvas.addEventListener("pointermove", (e) => {
-  if (!playing) return;
+  if (!playing || isGameplayFrozen()) return;
   if (e.pointerType === "mouse" && e.buttons !== 1) return;
   if (isTouchAimEvent(e)) e.preventDefault();
   setHookTargetX(e.clientX);
@@ -5014,7 +5084,7 @@ function releaseCanvasPointer(e) {
 
 canvas.addEventListener("pointerup", (e) => {
   releaseCanvasPointer(e);
-  if (!playing) return;
+  if (!playing || isGameplayFrozen()) return;
   setHookTargetX(e.clientX);
   if (isTouchAimEvent(e)) {
     e.preventDefault();
@@ -5032,7 +5102,7 @@ canvas.addEventListener("pointercancel", (e) => {
 canvas.addEventListener(
   "touchstart",
   (e) => {
-    if (!playing || e.changedTouches.length < 1) return;
+    if (!playing || isGameplayFrozen() || e.changedTouches.length < 1) return;
     const touch = e.changedTouches[0];
     e.preventDefault();
     setHookTargetX(touch.clientX);
@@ -5045,7 +5115,7 @@ canvas.addEventListener(
 canvas.addEventListener(
   "touchmove",
   (e) => {
-    if (!playing || e.changedTouches.length < 1) return;
+    if (!playing || isGameplayFrozen() || e.changedTouches.length < 1) return;
     const touch = e.changedTouches[0];
     e.preventDefault();
     setHookTargetX(touch.clientX);
@@ -5057,7 +5127,7 @@ canvas.addEventListener(
 canvas.addEventListener(
   "touchend",
   (e) => {
-    if (!playing || e.changedTouches.length < 1) return;
+    if (!playing || isGameplayFrozen() || e.changedTouches.length < 1) return;
     const touch = e.changedTouches[0];
     e.preventDefault();
     setHookTargetX(touch.clientX);
@@ -5070,9 +5140,27 @@ canvas.addEventListener("touchcancel", () => {
   if (touchAim?.pointerId === "touch") touchAim = null;
 });
 
+window.addEventListener("keydown", (e) => {
+  if (treasureMapRevealPaused && (e.key === "Enter" || e.key === " " || e.key === "Escape")) {
+    const tag = e.target?.tagName;
+    if (tag !== "INPUT" && tag !== "TEXTAREA") {
+      e.preventDefault();
+      endTreasureMapReveal();
+      return;
+    }
+  }
+  if (e.shiftKey && e.code === "Digit8") {
+    const tag = e.target?.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || e.target?.isContentEditable) return;
+    e.preventDefault();
+    secretSimulateAdventureUnlock();
+    return;
+  }
+});
+
 // keyboard: aim with arrows, Enter = cast down + hook, Space = quick snag
 window.addEventListener("keydown", (e) => {
-  if (!playing) return;
+  if (!playing || isGameplayFrozen()) return;
   const margin = dpr * 16;
   if (e.key === "ArrowLeft") {
     e.preventDefault();
@@ -5142,6 +5230,8 @@ btnAgain.addEventListener("click", () => {
   if (homeAudioUnlocked) startHomeWaves();
   startHomeMusic();
 });
+
+btnTreasureMapRevealDone?.addEventListener("click", endTreasureMapReveal);
 
 btnAdventureMode?.addEventListener("click", () => {
   if (!isAdventureUnlocked()) {

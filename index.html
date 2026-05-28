@@ -40,6 +40,70 @@
       <div class="canvas-wrap">
         <canvas id="gameCanvas" aria-label="Fishing game playfield"></canvas>
         <div id="toast" class="toast" hidden></div>
+        <div id="treasureMapReveal" class="treasure-map-reveal" hidden aria-hidden="true">
+          <div class="treasure-map-reveal__backdrop"></div>
+          <div class="treasure-map-reveal__stage" role="dialog" aria-labelledby="treasureMapRevealTitle" aria-modal="true">
+            <div class="treasure-map-reveal__chest" aria-hidden="true">
+              <div class="treasure-map-reveal__chest-body"></div>
+              <div class="treasure-map-reveal__chest-lid"></div>
+              <div class="treasure-map-reveal__chest-lock"></div>
+            </div>
+            <div class="treasure-map-reveal__map-wrap">
+              <svg class="treasure-map-reveal__map" viewBox="0 0 800 449" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                  <radialGradient id="mapParchment" cx="42%" cy="38%" r="78%">
+                    <stop offset="0%" stop-color="#f4e4bc" />
+                    <stop offset="55%" stop-color="#e2c992" />
+                    <stop offset="100%" stop-color="#c9a66b" />
+                  </radialGradient>
+                  <linearGradient id="mapSea" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#5b8fb8" stop-opacity="0.45" />
+                    <stop offset="100%" stop-color="#2f5f7f" stop-opacity="0.55" />
+                  </linearGradient>
+                  <filter id="mapInk">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" result="n" />
+                    <feDisplacementMap in="SourceGraphic" in2="n" scale="2" xChannelSelector="R" yChannelSelector="G" />
+                  </filter>
+                </defs>
+                <rect width="800" height="449" fill="url(#mapParchment)" rx="6" />
+                <rect x="8" y="8" width="784" height="433" fill="none" stroke="#6b4423" stroke-width="3" stroke-dasharray="12 8" opacity="0.35" rx="4" />
+                <path fill="url(#mapSea)" d="M0 120 Q180 80 320 140 T520 100 T800 160 L800 449 L0 449 Z" opacity="0.5" />
+                <path fill="url(#mapSea)" d="M0 280 Q200 240 400 300 T800 320 L800 449 L0 449 Z" opacity="0.4" />
+                <g fill="#8b6914" stroke="#4a3310" stroke-width="1.5" filter="url(#mapInk)">
+                  <path d="M120 180 L165 150 L220 165 L245 210 L210 250 L150 240 L105 210 Z" />
+                  <path d="M310 95 L380 75 L450 100 L430 150 L360 165 L300 140 Z" />
+                  <path d="M520 200 L590 175 L660 195 L680 250 L620 280 L540 265 L500 230 Z" />
+                  <path d="M640 320 L700 305 L740 340 L720 390 L650 400 L610 360 Z" />
+                  <path d="M180 320 L230 300 L270 330 L250 380 L190 385 L160 350 Z" />
+                </g>
+                <path fill="none" stroke="#6b4423" stroke-width="2" stroke-dasharray="6 10" d="M150 220 Q280 180 380 130 T620 240 T700 350" opacity="0.7" />
+                <circle cx="700" cy="350" r="14" fill="none" stroke="#8b1a1a" stroke-width="3" />
+                <path d="M694 344 L706 356 M706 344 L694 356" stroke="#8b1a1a" stroke-width="3" stroke-linecap="round" />
+                <g transform="translate(620 85)" fill="none" stroke="#4a3310" stroke-width="1.2">
+                  <circle r="42" />
+                  <path d="M0 -42 L0 42 M-42 0 L42 0 M-30 -30 L30 30 M30 -30 L-30 30" />
+                  <polygon points="0,-52 6,-38 -6,-38" fill="#4a3310" />
+                  <text x="0" y="58" text-anchor="middle" font-size="11" font-family="Georgia, serif" fill="#4a3310">N</text>
+                </g>
+                <g fill="#4a3310" opacity="0.85">
+                  <path d="M420 300 L440 285 L455 305 L445 320 L425 315 Z" />
+                  <path d="M455 305 L470 290 L475 310 L460 325 Z" />
+                  <line x1="437" y1="302" x2="437" y2="268" stroke="#4a3310" stroke-width="1.5" />
+                  <path d="M432 268 L437 258 L442 268 Z" fill="#6b4423" />
+                </g>
+                <path fill="none" stroke="#4a3310" stroke-width="2.5" d="M90 360 Q120 340 150 355 Q180 375 210 360 Q240 345 280 370" opacity="0.6" />
+                <ellipse cx="280" cy="370" rx="18" ry="8" fill="none" stroke="#4a3310" stroke-width="1.5" opacity="0.5" />
+                <text x="400" y="42" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="28" font-weight="bold" fill="#3d2914" letter-spacing="0.12em">REEF RUSH</text>
+                <text x="400" y="68" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#5c3d1e" letter-spacing="0.2em">ADVENTURE CHART · XV VOYAGES</text>
+                <text x="95" y="395" font-family="Georgia, serif" font-size="13" fill="#5c3d1e" transform="rotate(-8 95 395)">Here be monsters</text>
+                <text x="620" y="400" font-family="Georgia, serif" font-size="12" fill="#8b1a1a" font-style="italic">X marks the reef</text>
+              </svg>
+            </div>
+            <h2 id="treasureMapRevealTitle" class="treasure-map-reveal__title">Treasure map unlocked!</h2>
+            <p class="treasure-map-reveal__lede">Adventure Mode awaits — fifteen voyages across the chart.</p>
+            <button type="button" id="btnTreasureMapRevealDone" class="btn btn--primary treasure-map-reveal__btn">Continue fishing</button>
+          </div>
+        </div>
       </div>
 
       <p class="hint" id="controlHint">Laptop: aim left/right, Enter casts · Phone: drag left/right, tap to cast</p>
@@ -58,7 +122,7 @@
           </p>
           <p class="start-toolbar__chests">
             <span class="start-toolbar__label">Treasure chests</span>
-            <strong id="treasureChestDisplayStart" class="start-toolbar__value start-toolbar__value--chests">0 / 35</strong>
+            <strong id="treasureChestDisplayStart" class="start-toolbar__value start-toolbar__value--chests">0 / 20</strong>
           </p>
           <button type="button" id="btnOpenIntro" class="btn btn--secondary btn--help">How to play</button>
           <button type="button" id="btnToggleMusic" class="btn btn--secondary btn--music" aria-pressed="false">Music</button>
@@ -133,7 +197,7 @@
         </button>
       </section>
 
-      <p id="adventureUnlockHint" class="adventure-launch__hint" hidden>Treasure chests: 0 / 35</p>
+      <p id="adventureUnlockHint" class="adventure-launch__hint" hidden>Treasure chests: 0 / 20</p>
       <button type="button" id="btnAdventureMode" class="adventure-launch" hidden aria-label="Adventure Mode">
         <span id="adventureLock" class="adventure-launch__lock" aria-hidden="true"></span>
         <span class="adventure-launch__label">Adventure Mode</span>
