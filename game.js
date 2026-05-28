@@ -969,6 +969,8 @@ let waterH = 0;
 let playing = false;
 /** Pauses round timer and input while the treasure-map unlock cinematic plays. */
 let treasureMapRevealPaused = false;
+/** Canvas chest flies from the caught jackpot crab, then opens before the HTML map. */
+let treasureChestCinematic = null;
 let roundEndAt = 0;
 let score = 0;
 let fishList = [];
@@ -1359,22 +1361,79 @@ function isGameplayFrozen() {
   return treasureMapRevealPaused;
 }
 
-function startTreasureMapReveal() {
-  if (!treasureMapReveal || treasureMapRevealPaused) return;
-  treasureMapRevealPaused = true;
+function jackpotCrabChestScale() {
+  return dpr * 1.05;
+}
+
+function showTreasureMapOverlay() {
+  if (!treasureMapReveal) return;
+  treasureChestCinematic = null;
   treasureMapReveal.hidden = false;
   treasureMapReveal.setAttribute("aria-hidden", "false");
-  treasureMapReveal.classList.remove("treasure-map-reveal--active");
+  treasureMapReveal.classList.remove("treasure-map-reveal--active", "treasure-map-reveal--map-only");
   void treasureMapReveal.offsetWidth;
-  treasureMapReveal.classList.add("treasure-map-reveal--active");
+  treasureMapReveal.classList.add("treasure-map-reveal--active", "treasure-map-reveal--map-only");
+  window.setTimeout(() => btnTreasureMapRevealDone?.focus(), 1600);
+}
+
+function startTreasureMapReveal(crabX, crabY, facing) {
+  if (treasureMapRevealPaused) return;
+  treasureMapRevealPaused = true;
+  const sc = jackpotCrabChestScale();
+  treasureChestCinematic = {
+    phase: "fly",
+    startX: crabX,
+    startY: crabY,
+    x: crabX,
+    y: crabY,
+    targetX: w * 0.5,
+    targetY: h * 0.5,
+    sc,
+    scale: 1,
+    facing: facing >= 0 ? 1 : -1,
+    lidOpen: 0,
+    startedAt: performance.now(),
+    openStartedAt: 0,
+  };
+  if (treasureMapReveal) {
+    treasureMapReveal.hidden = true;
+    treasureMapReveal.setAttribute("aria-hidden", "true");
+    treasureMapReveal.classList.remove("treasure-map-reveal--active", "treasure-map-reveal--map-only");
+  }
   playTreasureMapUnlockSound();
-  btnTreasureMapRevealDone?.focus();
+}
+
+function updateTreasureChestCinematic(now) {
+  const c = treasureChestCinematic;
+  if (!c || c.phase === "map") return;
+  const elapsed = now - c.startedAt;
+  if (c.phase === "fly") {
+    const t = Math.min(1, elapsed / 920);
+    const ease = 1 - (1 - t) ** 3;
+    c.x = c.startX + (c.targetX - c.startX) * ease;
+    c.y = c.startY + (c.targetY - c.startY) * ease;
+    c.scale = 1 + ease * 0.55;
+    if (t >= 1) {
+      c.phase = "open";
+      c.openStartedAt = now;
+      c.x = c.targetX;
+      c.y = c.targetY;
+    }
+  } else if (c.phase === "open") {
+    const openT = Math.min(1, (now - c.openStartedAt) / 580);
+    c.lidOpen = openT;
+    if (openT >= 1) {
+      c.phase = "map";
+      showTreasureMapOverlay();
+    }
+  }
 }
 
 function endTreasureMapReveal() {
   if (!treasureMapRevealPaused) return;
   treasureMapRevealPaused = false;
-  treasureMapReveal?.classList.remove("treasure-map-reveal--active");
+  treasureChestCinematic = null;
+  treasureMapReveal?.classList.remove("treasure-map-reveal--active", "treasure-map-reveal--map-only");
   if (treasureMapReveal) {
     treasureMapReveal.hidden = true;
     treasureMapReveal.setAttribute("aria-hidden", "true");
@@ -2032,7 +2091,8 @@ function startRound() {
 function endRound() {
   if (treasureMapRevealPaused) {
     treasureMapRevealPaused = false;
-    treasureMapReveal?.classList.remove("treasure-map-reveal--active");
+    treasureChestCinematic = null;
+    treasureMapReveal?.classList.remove("treasure-map-reveal--active", "treasure-map-reveal--map-only");
     if (treasureMapReveal) {
       treasureMapReveal.hidden = true;
       treasureMapReveal.setAttribute("aria-hidden", "true");
@@ -2421,6 +2481,9 @@ function tryCatchJackpotCrab(now) {
 
   lastJackpotCrabCatchAt = now;
   playCrabJackpotSound();
+  const crabFacing = jackpotCrab.active.vx >= 0 ? 1 : -1;
+  const crabX = px;
+  const crabY = py;
   jackpotCrab.active = null;
   spawnCatchFX(px, py, 38);
   score += JACKPOT_CRAB_POINTS;
@@ -2433,7 +2496,7 @@ function tryCatchJackpotCrab(now) {
   refreshCoinDisplays();
   updateAdventureLaunchUI();
   if (wasAdventureLocked && isAdventureUnlocked()) {
-    startTreasureMapReveal();
+    startTreasureMapReveal(crabX, crabY, crabFacing);
     showToast(`MEGA JACKPOT! +${JACKPOT_CRAB_POINTS} & +${JACKPOT_CRAB_COIN_BONUS} coins`, 2600);
     return;
   }
@@ -4464,8 +4527,175 @@ function drawClam() {
   ctx.restore();
 }
 
+/** Treasure chest on the jackpot crab (local space: origin = crab center). */
+function drawTreasureChestInCrabSpace(sc, lidOpen = 0) {
+  const chestCx = 0;
+  const chestTop = -56 * sc;
+  const cw = 40 * sc;
+  const ch = 26 * sc;
+  const x0 = chestCx - cw * 0.5;
+  const y0 = chestTop;
+  const rr = Math.min(3 * sc, cw * 0.18, ch * 0.22);
+  const goldTop = ctx.createLinearGradient(x0, y0, x0 + cw, y0 + ch);
+  goldTop.addColorStop(0, "#fde68a");
+  goldTop.addColorStop(0.25, "#fbbf24");
+  goldTop.addColorStop(0.5, "#f59e0b");
+  goldTop.addColorStop(0.78, "#d97706");
+  goldTop.addColorStop(1, "#b45309");
+  ctx.fillStyle = goldTop;
+  ctx.strokeStyle = "#78350f";
+  ctx.lineWidth = 1.5 * sc;
+  ctx.beginPath();
+  ctx.moveTo(x0 + rr, y0);
+  ctx.lineTo(x0 + cw - rr, y0);
+  ctx.quadraticCurveTo(x0 + cw, y0, x0 + cw, y0 + rr);
+  ctx.lineTo(x0 + cw, y0 + ch - rr);
+  ctx.quadraticCurveTo(x0 + cw, y0 + ch, x0 + cw - rr, y0 + ch);
+  ctx.lineTo(x0 + rr, y0 + ch);
+  ctx.quadraticCurveTo(x0, y0 + ch, x0, y0 + ch - rr);
+  ctx.lineTo(x0, y0 + rr);
+  ctx.quadraticCurveTo(x0, y0, x0 + rr, y0);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  const lidH = 9 * sc;
+  const hingeY = y0 + lidH;
+
+  if (lidOpen < 1) {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, 1 - lidOpen * 1.35);
+    ctx.fillStyle = "#451a03";
+    ctx.beginPath();
+    ctx.arc(chestCx, y0 + ch * 0.42, 3.2 * sc, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255, 250, 220, 0.9)";
+    ctx.beginPath();
+    ctx.arc(chestCx - 0.9 * sc, y0 + ch * 0.4, 1 * sc, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  ctx.save();
+  ctx.translate(chestCx, hingeY);
+  ctx.rotate(-lidOpen * 2.05);
+  ctx.translate(-chestCx, -hingeY);
+  ctx.fillStyle = "#fcd34d";
+  ctx.beginPath();
+  ctx.moveTo(x0 - 1.5 * sc, y0 + lidH);
+  ctx.lineTo(chestCx - cw * 0.42, y0 - 2 * sc);
+  ctx.quadraticCurveTo(chestCx, y0 - 5 * sc, chestCx + cw * 0.42, y0 - 2 * sc);
+  ctx.lineTo(x0 + cw + 1.5 * sc, y0 + lidH);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = "#92400e";
+  ctx.lineWidth = 1.2 * sc;
+  ctx.stroke();
+  ctx.restore();
+
+  if (lidOpen < 0.92) {
+    ctx.strokeStyle = "rgba(120, 53, 15, 0.55)";
+    ctx.lineWidth = 1.1 * sc;
+    ctx.beginPath();
+    ctx.moveTo(x0 + 4 * sc, y0 + lidH + 2 * sc);
+    ctx.lineTo(x0 + cw - 4 * sc, y0 + lidH + 2 * sc);
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
+  ctx.beginPath();
+  ctx.ellipse(chestCx - 8 * sc, y0 + ch * 0.35, 8 * sc, 4 * sc, -0.25, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = "rgba(185, 120, 20, 0.65)";
+  ctx.lineWidth = 1 * sc;
+  ctx.beginPath();
+  ctx.moveTo(x0 + 3 * sc, y0 + ch * 0.55);
+  ctx.lineTo(x0 + cw - 3 * sc, y0 + ch * 0.55);
+  ctx.stroke();
+
+  if (lidOpen > 0.35) {
+    const glow = (lidOpen - 0.35) / 0.65;
+    ctx.save();
+    ctx.globalAlpha = glow * 0.55;
+    ctx.fillStyle = "rgba(255, 230, 140, 0.85)";
+    ctx.beginPath();
+    ctx.ellipse(chestCx, y0 + ch * 0.2, cw * 0.38, ch * 0.45, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+function drawJackpotCrabChestArms(sc) {
+  const chestTop = -56 * sc;
+  const cw = 40 * sc;
+  const ch = 26 * sc;
+  const gripY = chestTop + ch * 0.72;
+  const gripLX = -cw * 0.5;
+  const gripRX = cw * 0.5;
+
+  function drawRaisedArm(side) {
+    const sx = side;
+    const shx = sx * 18 * sc;
+    const shy = -6 * sc;
+    const midX = sx * 36 * sc;
+    const midY = -40 * sc;
+    const gx = sx > 0 ? gripRX : gripLX;
+    const gy = gripY;
+    ctx.strokeStyle = "#b91c1c";
+    ctx.lineWidth = 5.2 * sc;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(shx, shy);
+    ctx.quadraticCurveTo(midX, midY, gx, gy);
+    ctx.stroke();
+    ctx.strokeStyle = "#7f1d1d";
+    ctx.lineWidth = 2.8 * sc;
+    ctx.beginPath();
+    ctx.moveTo(shx, shy);
+    ctx.quadraticCurveTo(midX, midY, gx, gy);
+    ctx.stroke();
+
+    const ang = Math.atan2(gy - midY, gx - midX);
+    const cx = gx + Math.cos(ang + sx * 0.5) * 5 * sc;
+    const cy = gy + Math.sin(ang + sx * 0.5) * 5 * sc;
+    ctx.fillStyle = "#dc2626";
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, 9 * sc, 6.5 * sc, ang, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#ef4444";
+    ctx.beginPath();
+    ctx.ellipse(cx + Math.cos(ang + sx * 0.9) * 4 * sc, cy + Math.sin(ang + sx * 0.9) * 4 * sc, 5 * sc, 3.8 * sc, ang + sx * 0.25, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#7f1d1d";
+    ctx.lineWidth = 0.95 * sc;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, 9 * sc, 6.5 * sc, ang, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  drawRaisedArm(-1);
+  drawRaisedArm(1);
+}
+
+function drawTreasureChestCinematic() {
+  const c = treasureChestCinematic;
+  if (!c || c.phase === "map" || w <= 0) return;
+  const elapsed = performance.now() - c.startedAt;
+  const dim = Math.min(0.78, (elapsed / 380) * 0.78);
+  ctx.fillStyle = `rgba(2, 8, 18, ${dim})`;
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.save();
+  ctx.translate(c.x, c.y);
+  ctx.scale(c.scale * c.facing, c.scale);
+  drawTreasureChestInCrabSpace(c.sc, c.lidOpen);
+  ctx.restore();
+}
+
 function drawJackpotCrab() {
-  if (!jackpotCrab?.active || w <= 0) return;
+  if (!jackpotCrab?.active || treasureChestCinematic || w <= 0) return;
   const x = jackpotCrab.active.x;
   const y = jackpotCrab.active.y;
   const facing = jackpotCrab.active.vx >= 0 ? 1 : -1;
@@ -4547,124 +4777,8 @@ function drawJackpotCrab() {
   eyeStalk(-7 * sc);
   eyeStalk(7 * sc);
 
-  const chestCx = 0;
-  const chestTop = -56 * sc;
-  const cw = 40 * sc;
-  const ch = 26 * sc;
-  const gripY = chestTop + ch * 0.72;
-  const gripLX = -cw * 0.5;
-  const gripRX = cw * 0.5;
-
-  function drawRaisedArm(side) {
-    const sx = side;
-    const shx = sx * 18 * sc;
-    const shy = -6 * sc;
-    const midX = sx * 36 * sc;
-    const midY = -40 * sc;
-    const gx = sx > 0 ? gripRX : gripLX;
-    const gy = gripY;
-    ctx.strokeStyle = "#b91c1c";
-    ctx.lineWidth = 5.2 * sc;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.beginPath();
-    ctx.moveTo(shx, shy);
-    ctx.quadraticCurveTo(midX, midY, gx, gy);
-    ctx.stroke();
-    ctx.strokeStyle = "#7f1d1d";
-    ctx.lineWidth = 2.8 * sc;
-    ctx.beginPath();
-    ctx.moveTo(shx, shy);
-    ctx.quadraticCurveTo(midX, midY, gx, gy);
-    ctx.stroke();
-
-    const ang = Math.atan2(gy - midY, gx - midX);
-    const cx = gx + Math.cos(ang + sx * 0.5) * 5 * sc;
-    const cy = gy + Math.sin(ang + sx * 0.5) * 5 * sc;
-    ctx.fillStyle = "#dc2626";
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, 9 * sc, 6.5 * sc, ang, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#ef4444";
-    ctx.beginPath();
-    ctx.ellipse(cx + Math.cos(ang + sx * 0.9) * 4 * sc, cy + Math.sin(ang + sx * 0.9) * 4 * sc, 5 * sc, 3.8 * sc, ang + sx * 0.25, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "#7f1d1d";
-    ctx.lineWidth = 0.95 * sc;
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, 9 * sc, 6.5 * sc, ang, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-
-  const x0 = chestCx - cw * 0.5;
-  const y0 = chestTop;
-  const rr = Math.min(3 * sc, cw * 0.18, ch * 0.22);
-  const goldTop = ctx.createLinearGradient(x0, y0, x0 + cw, y0 + ch);
-  goldTop.addColorStop(0, "#fde68a");
-  goldTop.addColorStop(0.25, "#fbbf24");
-  goldTop.addColorStop(0.5, "#f59e0b");
-  goldTop.addColorStop(0.78, "#d97706");
-  goldTop.addColorStop(1, "#b45309");
-  ctx.fillStyle = goldTop;
-  ctx.strokeStyle = "#78350f";
-  ctx.lineWidth = 1.5 * sc;
-  ctx.beginPath();
-  ctx.moveTo(x0 + rr, y0);
-  ctx.lineTo(x0 + cw - rr, y0);
-  ctx.quadraticCurveTo(x0 + cw, y0, x0 + cw, y0 + rr);
-  ctx.lineTo(x0 + cw, y0 + ch - rr);
-  ctx.quadraticCurveTo(x0 + cw, y0 + ch, x0 + cw - rr, y0 + ch);
-  ctx.lineTo(x0 + rr, y0 + ch);
-  ctx.quadraticCurveTo(x0, y0 + ch, x0, y0 + ch - rr);
-  ctx.lineTo(x0, y0 + rr);
-  ctx.quadraticCurveTo(x0, y0, x0 + rr, y0);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
-  const lidH = 9 * sc;
-  ctx.fillStyle = "#fcd34d";
-  ctx.beginPath();
-  ctx.moveTo(x0 - 1.5 * sc, y0 + lidH);
-  ctx.lineTo(chestCx - cw * 0.42, y0 - 2 * sc);
-  ctx.quadraticCurveTo(chestCx, y0 - 5 * sc, chestCx + cw * 0.42, y0 - 2 * sc);
-  ctx.lineTo(x0 + cw + 1.5 * sc, y0 + lidH);
-  ctx.closePath();
-  ctx.fill();
-  ctx.strokeStyle = "#92400e";
-  ctx.lineWidth = 1.2 * sc;
-  ctx.stroke();
-
-  ctx.strokeStyle = "rgba(120, 53, 15, 0.55)";
-  ctx.lineWidth = 1.1 * sc;
-  ctx.beginPath();
-  ctx.moveTo(x0 + 4 * sc, y0 + lidH + 2 * sc);
-  ctx.lineTo(x0 + cw - 4 * sc, y0 + lidH + 2 * sc);
-  ctx.stroke();
-
-  ctx.fillStyle = "#451a03";
-  ctx.beginPath();
-  ctx.arc(chestCx, y0 + ch * 0.42, 3.2 * sc, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "rgba(255, 250, 220, 0.9)";
-  ctx.beginPath();
-  ctx.arc(chestCx - 0.9 * sc, y0 + ch * 0.4, 1 * sc, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
-  ctx.beginPath();
-  ctx.ellipse(chestCx - 8 * sc, y0 + ch * 0.35, 8 * sc, 4 * sc, -0.25, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.strokeStyle = "rgba(185, 120, 20, 0.65)";
-  ctx.lineWidth = 1 * sc;
-  ctx.beginPath();
-  ctx.moveTo(x0 + 3 * sc, y0 + ch * 0.55);
-  ctx.lineTo(x0 + cw - 3 * sc, y0 + ch * 0.55);
-  ctx.stroke();
-
-  drawRaisedArm(-1);
-  drawRaisedArm(1);
+  drawTreasureChestInCrabSpace(sc, 0);
+  drawJackpotCrabChestArms(sc);
 
   ctx.restore();
 }
@@ -4951,6 +5065,7 @@ function gameLoop(now) {
 
   if (playing && treasureMapRevealPaused) {
     roundEndAt += dt;
+    updateTreasureChestCinematic(now);
   }
 
   if (playing) {
@@ -4981,6 +5096,7 @@ function gameLoop(now) {
       drawTrenchRodLight();
       drawCatchFlash();
       drawCelebration();
+      drawTreasureChestCinematic();
     }
   } else {
     if (w > 0) {
