@@ -281,6 +281,43 @@ const TREASURE_CHESTS_TO_UNLOCK_ADVENTURE = 20;
 const SECRET_TREASURE_CHEST_GRANT = 19;
 const ADVENTURE_LEVEL_COUNT = 15;
 
+/** Candy Crush–style zigzag positions on the treasure chart (% of map board). */
+const ADVENTURE_MAP_NODE_LAYOUT = [
+  { x: 50, y: 94 },
+  { x: 26, y: 88 },
+  { x: 74, y: 82 },
+  { x: 28, y: 76 },
+  { x: 72, y: 70 },
+  { x: 30, y: 64 },
+  { x: 70, y: 58 },
+  { x: 32, y: 52 },
+  { x: 68, y: 46 },
+  { x: 34, y: 40 },
+  { x: 66, y: 34 },
+  { x: 36, y: 28 },
+  { x: 64, y: 22 },
+  { x: 40, y: 16 },
+  { x: 50, y: 9 },
+];
+
+const ADVENTURE_MAP_PLACES = [
+  "Skull Shoals",
+  "Mariner's Rest",
+  "Golden Atoll",
+  "Serpent Strait",
+  "Doubloon Bay",
+  "Compass Cay",
+  "Kraken's Teeth",
+  "Palmwood Harbor",
+  "Emerald Lagoon",
+  "Phantom Keys",
+  "Stormbreak Isle",
+  "Treasurehorn Peak",
+  "Leviathan Deep",
+  "Captain's Landing",
+  "Treasure Cove",
+];
+
 function defaultMeta() {
   return {
     coins: 0,
@@ -607,8 +644,9 @@ function buildAdventureLevels() {
     levels.push({
       level: i + 1,
       id: `adv_${i + 1}`,
-      name: `Voyage ${i + 1}`,
+      name: ADVENTURE_MAP_PLACES[i] || `Voyage ${i + 1}`,
       subtitle: reef.name,
+      mapPlace: ADVENTURE_MAP_PLACES[i] || `Isle ${i + 1}`,
       reefId: reef.id,
       passScore: 3000 + Math.round((i * (7000 - 3000)) / (ADVENTURE_LEVEL_COUNT - 1)),
       roundMs: Math.max(46_000, reef.roundMs - tier * 3500 - i * 600),
@@ -946,6 +984,8 @@ const adventureLock = document.getElementById("adventureLock");
 const adventureUnlockHint = document.getElementById("adventureUnlockHint");
 const panelAdventure = document.getElementById("panelAdventure");
 const adventureLevelList = document.getElementById("adventureLevelList");
+const adventureMapScroll = document.getElementById("adventureMapScroll");
+const adventureMapTrail = document.getElementById("adventureMapTrail");
 const adventureMapBanner = document.getElementById("adventureMapBanner");
 const btnAdventureBack = document.getElementById("btnAdventureBack");
 const panelAdventureFail = document.getElementById("panelAdventureFail");
@@ -1031,6 +1071,8 @@ let musicTimer = null;
 let musicStep = 0;
 let gameMusicTimer = null;
 let gameMusicStep = 0;
+let adventureMusicTimer = null;
+let adventureMusicStep = 0;
 let homeAudioUnlocked = false;
 
 function formatTime(ms) {
@@ -1240,22 +1282,73 @@ function updateAdventureLaunchUI() {
   syncAdventureLaunchVisibility();
 }
 
+function adventureMapCoords(index) {
+  const layout = ADVENTURE_MAP_NODE_LAYOUT[index] || { x: 50, y: 50 };
+  return { x: (layout.x / 100) * 400, y: (layout.y / 100) * 1200 };
+}
+
+function buildAdventureTrailPath() {
+  const pts = ADVENTURE_MAP_NODE_LAYOUT.slice(0, ADVENTURE_LEVEL_COUNT).map((_, i) => adventureMapCoords(i));
+  if (!pts.length) return "";
+  let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  for (let i = 1; i < pts.length; i++) {
+    d += ` L ${pts[i].x.toFixed(1)} ${pts[i].y.toFixed(1)}`;
+  }
+  return d;
+}
+
+function scrollAdventureMapToProgress() {
+  if (!adventureMapScroll || !adventureLevelList) return;
+  const clearedNodes = adventureLevelList.querySelectorAll(".adventure-map-node--cleared");
+  const target =
+    adventureLevelList.querySelector(".adventure-map-node--current") ||
+    (clearedNodes.length ? clearedNodes[clearedNodes.length - 1] : null) ||
+    adventureLevelList.querySelector(".adventure-map-node");
+  if (!target) return;
+  window.requestAnimationFrame(() => {
+    target.scrollIntoView({ block: "center", behavior: "smooth" });
+  });
+}
+
 function buildAdventureLevelUI() {
   if (!adventureLevelList) return;
   adventureLevelList.innerHTML = "";
   const highest = gameMeta.adventureHighestLevel || 0;
+  const nextPlayable = Math.min(ADVENTURE_LEVEL_COUNT, highest + 1);
+
+  if (adventureMapTrail) {
+    adventureMapTrail.setAttribute("d", buildAdventureTrailPath());
+  }
+
   for (let i = 0; i < ADVENTURE_LEVELS.length; i++) {
     const lvl = ADVENTURE_LEVELS[i];
+    const layout = ADVENTURE_MAP_NODE_LAYOUT[i] || { x: 50, y: 50 };
     const playable = isAdventureLevelPlayable(lvl.level);
     const cleared = lvl.level <= highest;
+    const isCurrent = playable && !cleared && lvl.level === nextPlayable;
+    const isFinale = i === ADVENTURE_LEVEL_COUNT - 1;
     const b = document.createElement("button");
     b.type = "button";
-    b.className =
-      "adventure-level" +
-      (cleared ? " adventure-level--cleared" : "") +
-      (!playable ? " adventure-level--locked" : "");
+    b.className = "adventure-map-node";
+    if (cleared) b.classList.add("adventure-map-node--cleared");
+    if (!playable) b.classList.add("adventure-map-node--locked");
+    if (isCurrent) b.classList.add("adventure-map-node--current");
+    if (isFinale) b.classList.add("adventure-map-node--finale");
     b.disabled = !playable;
-    b.innerHTML = `<span class="adventure-level__num">${lvl.level}</span><span class="adventure-level__body"><span class="adventure-level__name">${lvl.name}</span><span class="adventure-level__meta">${lvl.subtitle} · pass ${lvl.passScore}</span></span>${cleared ? '<span class="adventure-level__badge">✓</span>' : ""}`;
+    b.style.left = `${layout.x}%`;
+    b.style.top = `${layout.y}%`;
+    b.title = `${lvl.name} — ${lvl.subtitle} · pass ${lvl.passScore}`;
+    b.innerHTML = `
+      <span class="adventure-map-node__pin" aria-hidden="true">
+        <span class="adventure-map-node__num">${lvl.level}</span>
+        ${isFinale ? '<span class="adventure-map-node__x" aria-hidden="true"></span>' : ""}
+        ${isCurrent ? '<span class="adventure-map-node__boat" aria-hidden="true"></span>' : ""}
+        ${cleared ? '<span class="adventure-map-node__star" aria-hidden="true"></span>' : ""}
+        ${!playable ? '<span class="adventure-map-node__lock" aria-hidden="true"></span>' : ""}
+      </span>
+      <span class="adventure-map-node__label">${lvl.name}</span>
+      <span class="adventure-map-node__meta">${lvl.passScore} pts</span>
+    `;
     if (playable) {
       b.addEventListener("click", () => startAdventureLevel(i));
     }
@@ -1275,6 +1368,8 @@ function openAdventureHub() {
   buildAdventureLevelUI();
   if (panelAdventure) panelAdventure.hidden = false;
   syncAdventureLaunchVisibility();
+  scrollAdventureMapToProgress();
+  if (musicEnabled) startAdventureMusic();
 }
 
 function startAdventureLevel(levelIndex) {
@@ -1323,6 +1418,15 @@ function endAdventureRound() {
     if (panelAdventureFail) panelAdventureFail.hidden = false;
   }
   syncAdventureLaunchVisibility();
+  if (musicEnabled) startAdventureMusic();
+}
+
+function isAdventureMusicActive() {
+  if (playing && adventureSession) return true;
+  if (panelAdventure && !panelAdventure.hidden) return true;
+  if (panelAdventureWin && !panelAdventureWin.hidden) return true;
+  if (panelAdventureFail && !panelAdventureFail.hidden) return true;
+  return false;
 }
 
 function updateMusicButton() {
@@ -1643,8 +1747,75 @@ function reefMusicSpec(reefId) {
   return specs[reefId] || specs.caribbean;
 }
 
+const ADVENTURE_PIRATE_TEMPO_MS = 700;
+
+function scheduleAdventurePirateMusicBar() {
+  if (!musicCtx || !musicEnabled || !isAdventureMusicActive()) return;
+  const now = musicCtx.currentTime + 0.04;
+  const v = 1.25;
+  const bars = [
+    { bass: 73.42, melody: [146.83, 174.61, 220.0, 261.63, 293.66] },
+    { bass: 65.41, melody: [130.81, 155.56, 196.0, 233.08, 261.63] },
+    { bass: 58.27, melody: [116.54, 138.59, 174.61, 207.65, 233.08] },
+    { bass: 55.0, melody: [110.0, 130.81, 164.81, 196.0, 220.0] },
+  ];
+  const bar = bars[adventureMusicStep % bars.length];
+  const pulse = adventureMusicStep % 8;
+
+  playMusicNote(bar.bass, now, 0.42, 0.068 * v, "sawtooth");
+  playMusicNote(bar.bass * 0.5, now, 0.5, 0.038 * v, "sine");
+
+  if (pulse % 4 === 0) {
+    playMusicNote(bar.melody[0], now + 0.02, 0.35, 0.028 * v, "square");
+    playMusicNote(bar.melody[0] * 1.005, now + 0.02, 0.35, 0.018 * v, "sawtooth");
+    playMusicNote(bar.melody[2], now + 0.02, 0.32, 0.022 * v, "triangle");
+  }
+
+  const melIdx = pulse % bar.melody.length;
+  playMusicNote(bar.melody[melIdx], now + 0.12 + (pulse % 4) * 0.08, 0.22, 0.024 * v, pulse % 2 ? "triangle" : "square");
+
+  if (adventureMusicStep % 2 === 1) {
+    playMusicNote(bar.melody[3], now + 0.44, 0.14, 0.02 * v, "sawtooth");
+    playMusicNote(bar.melody[4] || bar.melody[3] * 1.12, now + 0.54, 0.12, 0.017 * v, "triangle");
+  }
+
+  playNoiseHit(now + 0.18, 0.05, 0.014 * v);
+  if (pulse % 2 === 1) playNoiseHit(now + 0.52, 0.07, 0.018 * v);
+
+  if (adventureMusicStep % 8 === 4) {
+    playMusicNote(98.0, now + 0.28, 0.3, 0.03 * v, "triangle");
+    playMusicNote(123.47, now + 0.38, 0.25, 0.026 * v, "sine");
+  }
+
+  adventureMusicStep++;
+}
+
+function startAdventureMusic() {
+  if (!musicEnabled || !isAdventureMusicActive()) return;
+  startHomeWaves();
+  if (!musicCtx) return;
+  const ac = ensureMusicContext();
+  if (!ac) return;
+  if (ac.state === "suspended") ac.resume();
+  stopHomeMusic();
+  stopReefMusic();
+  syncMusicMasterGain();
+  if (!adventureMusicTimer) {
+    adventureMusicStep = 0;
+    scheduleAdventurePirateMusicBar();
+    adventureMusicTimer = setInterval(scheduleAdventurePirateMusicBar, ADVENTURE_PIRATE_TEMPO_MS);
+  }
+}
+
+function stopAdventureMusic() {
+  if (adventureMusicTimer) {
+    clearInterval(adventureMusicTimer);
+    adventureMusicTimer = null;
+  }
+}
+
 function scheduleReefMusicBar() {
-  if (!musicCtx || !musicEnabled || !playing) return;
+  if (!musicCtx || !musicEnabled || !playing || adventureSession) return;
   const reef = getReef();
   const spec = reefMusicSpec(reef.id);
   const now = musicCtx.currentTime + 0.035;
@@ -1666,6 +1837,11 @@ function scheduleReefMusicBar() {
 
 function startReefMusic() {
   if (!musicEnabled || !playing) return;
+  if (adventureSession) {
+    startAdventureMusic();
+    return;
+  }
+  stopAdventureMusic();
   const ac = ensureMusicContext();
   if (!ac) return;
   if (ac.state === "suspended") ac.resume();
@@ -1691,7 +1867,7 @@ function startHomeWaves() {
 }
 
 function startHomeMusic() {
-  if (!musicEnabled || playing) return;
+  if (!musicEnabled || playing || isAdventureMusicActive()) return;
   startHomeWaves();
   if (!musicCtx) return;
   syncMusicMasterGain();
@@ -1712,6 +1888,7 @@ function stopHomeMusic() {
 function stopHomeAudio() {
   stopHomeMusic();
   stopReefMusic();
+  stopAdventureMusic();
 }
 
 function toggleHomeMusic() {
@@ -1720,11 +1897,16 @@ function toggleHomeMusic() {
   syncMusicMasterGain();
   if (playing) {
     if (musicEnabled) startReefMusic();
-    else stopReefMusic();
+    else {
+      stopReefMusic();
+      stopAdventureMusic();
+    }
   } else if (musicEnabled) {
-    startHomeMusic();
+    if (isAdventureMusicActive()) startAdventureMusic();
+    else startHomeMusic();
   } else {
     stopHomeMusic();
+    stopAdventureMusic();
     if (homeAudioUnlocked) startHomeWaves();
   }
 }
@@ -5424,6 +5606,7 @@ btnAdventureMode?.addEventListener("click", () => {
 });
 
 btnAdventureBack?.addEventListener("click", () => {
+  stopAdventureMusic();
   showHomePanel();
   if (homeAudioUnlocked) startHomeWaves();
   startHomeMusic();
@@ -5435,8 +5618,6 @@ btnAdventureRetry?.addEventListener("click", () => {
 
 btnAdventureFailBack?.addEventListener("click", () => {
   openAdventureHub();
-  if (homeAudioUnlocked) startHomeWaves();
-  startHomeMusic();
 });
 
 btnAdventureNext?.addEventListener("click", () => {
@@ -5450,8 +5631,6 @@ btnAdventureNext?.addEventListener("click", () => {
 
 btnAdventureWinBack?.addEventListener("click", () => {
   openAdventureHub();
-  if (homeAudioUnlocked) startHomeWaves();
-  startHomeMusic();
 });
 
 window.addEventListener("resize", () => {
