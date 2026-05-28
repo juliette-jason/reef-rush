@@ -290,6 +290,7 @@ function defaultMeta() {
     selectedRodId: FREE_ROD_ID,
     totalTreasureChests: 0,
     adventureHighestLevel: 0,
+    pendingAdventureHomeCelebration: false,
   };
 }
 
@@ -321,6 +322,7 @@ function loadMeta() {
       selectedRodId,
       totalTreasureChests: Math.max(0, Math.floor(Number(o.totalTreasureChests) || 0)),
       adventureHighestLevel: Math.max(0, Math.min(ADVENTURE_LEVEL_COUNT, Math.floor(Number(o.adventureHighestLevel) || 0))),
+      pendingAdventureHomeCelebration: Boolean(o.pendingAdventureHomeCelebration),
     };
   } catch {
     return defaultMeta();
@@ -1105,6 +1107,7 @@ function closeIntro() {
   if (panelIntro) panelIntro.hidden = true;
   markIntroSeen();
   syncAdventureLaunchVisibility();
+  window.requestAnimationFrame(() => startAdventureHomeUnlockAnimation());
 }
 
 function resetProgress() {
@@ -1136,12 +1139,62 @@ function hideAllPanels() {
   if (panelAdventureWin) panelAdventureWin.hidden = true;
 }
 
+function isAdventureHomeCelebrationActive() {
+  return Boolean(gameMeta.pendingAdventureHomeCelebration && isAdventureUnlocked() && isHomeScreenActive());
+}
+
+function clearAdventureHomeCelebration() {
+  if (!gameMeta.pendingAdventureHomeCelebration) return;
+  gameMeta.pendingAdventureHomeCelebration = false;
+  saveMeta();
+  if (adventureLock) {
+    adventureLock.classList.remove("adventure-launch__lock--unlocking", "adventure-launch__lock--unlocked");
+    adventureLock.hidden = true;
+  }
+  btnAdventureMode?.classList.remove("adventure-launch--flash", "adventure-launch--celebrate");
+  updateAdventureLaunchUI();
+}
+
+function playAdventureHomeUnlockSound() {
+  const ac = ensureMusicContext();
+  if (!ac || !musicMaster) return;
+  if (ac.state === "suspended") ac.resume();
+  const now = ac.currentTime + 0.02;
+  playMusicNote(523.25, now, 0.22, 0.04, "sine");
+  playMusicNote(659.25, now + 0.08, 0.26, 0.042, "triangle");
+  playMusicNote(783.99, now + 0.16, 0.32, 0.044, "sine");
+  playNoiseHit(now + 0.04, 0.12, 0.028);
+}
+
+function startAdventureHomeUnlockAnimation() {
+  if (!isAdventureHomeCelebrationActive() || !adventureLock || !btnAdventureMode) return;
+  if (btnAdventureMode.classList.contains("adventure-launch--celebrate")) return;
+
+  btnAdventureMode.classList.add("adventure-launch--celebrate", "adventure-launch--flash");
+  adventureLock.hidden = false;
+  adventureLock.classList.remove("adventure-launch__lock--unlocking", "adventure-launch__lock--unlocked");
+  void adventureLock.offsetWidth;
+  adventureLock.classList.add("adventure-launch__lock--unlocking");
+  playAdventureHomeUnlockSound();
+
+  const onLockDone = (e) => {
+    if (e.target !== adventureLock || e.animationName !== "adventureLockFadeOut") return;
+    adventureLock.classList.remove("adventure-launch__lock--unlocking", "adventure-launch__lock--unlocked");
+    adventureLock.hidden = true;
+    adventureLock.removeEventListener("animationend", onLockDone);
+    updateAdventureLaunchUI();
+  };
+  adventureLock.addEventListener("animationend", onLockDone);
+  updateAdventureLaunchUI();
+}
+
 function showHomePanel() {
   hideAllPanels();
   if (panelStart) panelStart.hidden = false;
   adventureSession = null;
   updateAdventureLaunchUI();
   syncAdventureLaunchVisibility();
+  window.requestAnimationFrame(() => startAdventureHomeUnlockAnimation());
 }
 
 function isHomeScreenActive() {
@@ -1163,16 +1216,25 @@ function syncAdventureLaunchVisibility() {
 
 function updateAdventureLaunchUI() {
   const unlocked = isAdventureUnlocked();
+  const celebrating = isAdventureHomeCelebrationActive();
   const total = gameMeta.totalTreasureChests || 0;
-  if (adventureLock) adventureLock.hidden = unlocked;
+  const lockUnlocking = adventureLock?.classList.contains("adventure-launch__lock--unlocking");
+  if (adventureLock) {
+    if (!unlocked) adventureLock.hidden = false;
+    else if (celebrating && lockUnlocking) adventureLock.hidden = false;
+    else adventureLock.hidden = true;
+  }
   if (btnAdventureMode) {
     btnAdventureMode.classList.toggle("adventure-launch--locked", !unlocked);
+    btnAdventureMode.classList.toggle("adventure-launch--flash", celebrating);
     btnAdventureMode.setAttribute("aria-disabled", unlocked ? "false" : "true");
   }
   if (adventureUnlockHint) {
-    adventureUnlockHint.textContent = unlocked
-      ? "Treasure map unlocked — 15 voyages await!"
-      : `Treasure chests: ${total} / ${TREASURE_CHESTS_TO_UNLOCK_ADVENTURE}`;
+    adventureUnlockHint.textContent = celebrating
+      ? "Adventure Mode unlocked — tap the flashing button!"
+      : unlocked
+        ? "Treasure map unlocked — 15 voyages await!"
+        : `Treasure chests: ${total} / ${TREASURE_CHESTS_TO_UNLOCK_ADVENTURE}`;
   }
   refreshTreasureChestDisplay();
   syncAdventureLaunchVisibility();
@@ -2496,6 +2558,8 @@ function tryCatchJackpotCrab(now) {
   refreshCoinDisplays();
   updateAdventureLaunchUI();
   if (wasAdventureLocked && isAdventureUnlocked()) {
+    gameMeta.pendingAdventureHomeCelebration = true;
+    saveMeta();
     startTreasureMapReveal(crabX, crabY, crabFacing);
     showToast(`MEGA JACKPOT! +${JACKPOT_CRAB_POINTS} & +${JACKPOT_CRAB_COIN_BONUS} coins`, 2600);
     return;
@@ -5355,6 +5419,7 @@ btnAdventureMode?.addEventListener("click", () => {
     showToast(adventureUnlockBlockedMessage(), 2800);
     return;
   }
+  clearAdventureHomeCelebration();
   openAdventureHub();
 });
 
@@ -5408,4 +5473,5 @@ updateMusicButton();
 resize();
 initBubbles();
 showIntroIfNeeded();
+window.requestAnimationFrame(() => startAdventureHomeUnlockAnimation());
 requestAnimationFrame(gameLoop);

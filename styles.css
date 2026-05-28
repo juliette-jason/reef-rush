@@ -1699,6 +1699,34 @@ body {
   background: linear-gradient(180deg, rgba(40, 48, 58, 0.92), rgba(22, 26, 34, 0.96));
 }
 
+.adventure-launch--celebrate {
+  border-color: rgba(255, 213, 74, 0.75);
+  background: linear-gradient(180deg, rgba(24, 88, 120, 0.98), rgba(8, 40, 64, 0.99));
+}
+
+.adventure-launch--flash {
+  animation: adventureLaunchFlash 1.15s ease-in-out infinite;
+}
+
+@keyframes adventureLaunchFlash {
+  0%,
+  100% {
+    box-shadow:
+      0 8px 28px rgba(0, 0, 0, 0.45),
+      0 0 16px rgba(77, 255, 243, 0.2);
+    border-color: rgba(255, 213, 74, 0.5);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow:
+      0 10px 36px rgba(0, 0, 0, 0.5),
+      0 0 28px rgba(255, 213, 74, 0.75),
+      0 0 44px rgba(77, 255, 243, 0.45);
+    border-color: rgba(255, 248, 200, 0.95);
+    filter: brightness(1.12);
+  }
+}
+
 .adventure-launch__arrow {
   font-size: 1.5rem;
   line-height: 1;
@@ -1744,6 +1772,75 @@ body {
 
 .adventure-launch__lock[hidden] {
   display: none;
+}
+
+.adventure-launch__lock--unlocking::before {
+  animation: adventureLockShackleOpen 0.62s cubic-bezier(0.34, 1.25, 0.64, 1) forwards;
+  transform-origin: 50% 100%;
+}
+
+.adventure-launch__lock--unlocking::after {
+  animation: adventureLockBodyPop 0.72s cubic-bezier(0.22, 1, 0.36, 1) 0.18s forwards;
+  transform-origin: 50% 50%;
+}
+
+.adventure-launch__lock--unlocking {
+  animation: adventureLockFadeOut 0.45s ease 0.68s forwards;
+}
+
+@keyframes adventureLockShackleOpen {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-10px) rotate(-32deg);
+    opacity: 0;
+  }
+}
+
+@keyframes adventureLockBodyPop {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+    filter: brightness(1);
+  }
+  35% {
+    transform: scale(1.2);
+    filter: brightness(1.45);
+  }
+  100% {
+    transform: scale(0.7);
+    opacity: 0;
+    filter: brightness(1.1);
+  }
+}
+
+@keyframes adventureLockFadeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.55);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adventure-launch--flash {
+    animation: none;
+    box-shadow:
+      0 8px 28px rgba(0, 0, 0, 0.45),
+      0 0 24px rgba(255, 213, 74, 0.55);
+  }
+
+  .adventure-launch__lock--unlocking::before,
+  .adventure-launch__lock--unlocking::after,
+  .adventure-launch__lock--unlocking {
+    animation-duration: 0.01ms;
+    animation-delay: 0s;
+  }
 }
 
 .panel--adventure {
