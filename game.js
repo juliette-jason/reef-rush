@@ -281,6 +281,11 @@ const TREASURE_CHESTS_TO_UNLOCK_ADVENTURE = 20;
 const SECRET_TREASURE_CHEST_GRANT = 19;
 const ADVENTURE_LEVEL_COUNT = 15;
 
+const TREASURE_CINEMATIC_ANTICIPATE_MS = 800;
+const TREASURE_CINEMATIC_FLY_MS = 2400;
+const TREASURE_CINEMATIC_OPEN_MS = 1600;
+const TREASURE_CINEMATIC_HOLD_MS = 1400;
+
 /** Candy Crush–style zigzag positions on the treasure chart (% of map board). */
 const ADVENTURE_MAP_NODE_LAYOUT = [
   { x: 50, y: 94 },
@@ -960,6 +965,7 @@ const btnSaveScore = document.getElementById("btnSaveScore");
 const toastEl = document.getElementById("toast");
 const treasureMapReveal = document.getElementById("treasureMapReveal");
 const btnTreasureMapRevealDone = document.getElementById("btnTreasureMapRevealDone");
+const adventureUnlockBanner = document.getElementById("adventureUnlockBanner");
 const controlHint = document.getElementById("controlHint");
 const baitChoices = document.getElementById("baitChoices");
 const coinDisplay = document.getElementById("coinDisplay");
@@ -1193,7 +1199,13 @@ function clearAdventureHomeCelebration() {
     adventureLock.classList.remove("adventure-launch__lock--unlocking", "adventure-launch__lock--unlocked");
     adventureLock.hidden = true;
   }
-  btnAdventureMode?.classList.remove("adventure-launch--flash", "adventure-launch--celebrate");
+  btnAdventureMode?.classList.remove("adventure-launch--flash", "adventure-launch--celebrate", "adventure-launch--unlock-ready");
+  if (adventureUnlockBanner) {
+    adventureUnlockBanner.hidden = true;
+    adventureUnlockBanner.setAttribute("aria-hidden", "true");
+    adventureUnlockBanner.classList.remove("adventure-unlock-banner--active");
+  }
+  if (adventureUnlockHint) adventureUnlockHint.classList.remove("adventure-launch__hint--celebrate");
   updateAdventureLaunchUI();
 }
 
@@ -1202,22 +1214,43 @@ function playAdventureHomeUnlockSound() {
   if (!ac || !musicMaster) return;
   if (ac.state === "suspended") ac.resume();
   const now = ac.currentTime + 0.02;
-  playMusicNote(523.25, now, 0.22, 0.04, "sine");
-  playMusicNote(659.25, now + 0.08, 0.26, 0.042, "triangle");
-  playMusicNote(783.99, now + 0.16, 0.32, 0.044, "sine");
-  playNoiseHit(now + 0.04, 0.12, 0.028);
+  const fanfare = [392.0, 493.88, 587.33, 659.25, 783.99, 987.77, 1174.66];
+  for (let i = 0; i < fanfare.length; i++) {
+    playMusicNote(fanfare[i], now + i * 0.14, 0.38, 0.046, i % 2 === 0 ? "triangle" : "sine");
+  }
+  playMusicNote(196.0, now, 1.4, 0.042, "sine");
+  playMusicNote(261.63, now + 0.55, 1.1, 0.038, "sine");
+  playNoiseHit(now + 0.06, 0.16, 0.035);
+  playNoiseHit(now + 0.42, 0.2, 0.032);
+  playNoiseHit(now + 0.88, 0.24, 0.028);
+}
+
+function showAdventureHomeUnlockBanner() {
+  if (!adventureUnlockBanner) return;
+  adventureUnlockBanner.hidden = false;
+  adventureUnlockBanner.setAttribute("aria-hidden", "false");
+  adventureUnlockBanner.classList.remove("adventure-unlock-banner--active");
+  void adventureUnlockBanner.offsetWidth;
+  adventureUnlockBanner.classList.add("adventure-unlock-banner--active");
 }
 
 function startAdventureHomeUnlockAnimation() {
   if (!isAdventureHomeCelebrationActive() || !adventureLock || !btnAdventureMode) return;
   if (btnAdventureMode.classList.contains("adventure-launch--celebrate")) return;
 
-  btnAdventureMode.classList.add("adventure-launch--celebrate", "adventure-launch--flash");
+  showAdventureHomeUnlockBanner();
+  btnAdventureMode.classList.add("adventure-launch--celebrate", "adventure-launch--flash", "adventure-launch--unlock-ready");
+  adventureUnlockHint?.classList.add("adventure-launch__hint--celebrate");
   adventureLock.hidden = false;
   adventureLock.classList.remove("adventure-launch__lock--unlocking", "adventure-launch__lock--unlocked");
-  void adventureLock.offsetWidth;
-  adventureLock.classList.add("adventure-launch__lock--unlocking");
   playAdventureHomeUnlockSound();
+
+  window.setTimeout(() => {
+    if (!isAdventureHomeCelebrationActive()) return;
+    void adventureLock.offsetWidth;
+    adventureLock.classList.add("adventure-launch__lock--unlocking");
+    playAdventureHomeUnlockSound();
+  }, 900);
 
   const onLockDone = (e) => {
     if (e.target !== adventureLock || e.animationName !== "adventureLockFadeOut") return;
@@ -1273,7 +1306,7 @@ function updateAdventureLaunchUI() {
   }
   if (adventureUnlockHint) {
     adventureUnlockHint.textContent = celebrating
-      ? "Adventure Mode unlocked — tap the flashing button!"
+      ? "★ Adventure Mode unlocked — tap the glowing button! ★"
       : unlocked
         ? "Treasure map unlocked — 15 voyages await!"
         : `Treasure chests: ${total} / ${TREASURE_CHESTS_TO_UNLOCK_ADVENTURE}`;
@@ -1514,13 +1547,36 @@ function playTreasureMapUnlockSound() {
   if (!ac || !musicMaster) return;
   if (ac.state === "suspended") ac.resume();
   const now = ac.currentTime + 0.02;
-  const notes = [392.0, 493.88, 587.33, 659.25, 783.99, 987.77];
+  const notes = [329.63, 392.0, 493.88, 587.33, 659.25, 783.99, 987.77, 1174.66];
   for (let i = 0; i < notes.length; i++) {
-    playMusicNote(notes[i], now + i * 0.11, 0.42, 0.048, i % 2 === 0 ? "triangle" : "sine");
+    playMusicNote(notes[i], now + i * 0.13, 0.48, 0.052, i % 2 === 0 ? "triangle" : "sine");
   }
-  playMusicNote(196.0, now, 1.1, 0.038, "sine");
-  playNoiseHit(now + 0.5, 0.22, 0.03);
-  playNoiseHit(now + 1.0, 0.28, 0.028);
+  playMusicNote(164.81, now, 1.6, 0.044, "sine");
+  playMusicNote(220.0, now + 0.35, 1.3, 0.04, "sine");
+  playMusicNote(261.63, now + 0.75, 1.1, 0.038, "sine");
+  playNoiseHit(now + 0.08, 0.2, 0.042);
+  playNoiseHit(now + 0.55, 0.24, 0.036);
+  playNoiseHit(now + 1.05, 0.3, 0.032);
+}
+
+function spawnTreasureCinematicBurst(x, y, count, hue) {
+  const n = Math.min(64, count);
+  for (let i = 0; i < n; i++) {
+    const ang = (Math.PI * 2 * i) / n + (Math.random() - 0.5) * 0.6;
+    const sp = (2.5 + Math.random() * 6) * dpr;
+    celebration.particles.push({
+      x,
+      y,
+      vx: Math.cos(ang) * sp,
+      vy: Math.sin(ang) * sp - 2.4 * dpr,
+      life: 1.1 + Math.random() * 0.7,
+      size: (3 + Math.random() * 6) * dpr,
+      spin: (Math.random() - 0.5) * 0.25,
+      color: `hsla(${hue + (Math.random() - 0.5) * 35}, 95%, 62%, 1)`,
+    });
+  }
+  celebration.rings.push({ x, y, t: 0, life: 1.35 });
+  catchFlash = Math.min(0.72, catchFlash + 0.45);
 }
 
 function isGameplayFrozen() {
@@ -1539,15 +1595,16 @@ function showTreasureMapOverlay() {
   treasureMapReveal.classList.remove("treasure-map-reveal--active", "treasure-map-reveal--map-only");
   void treasureMapReveal.offsetWidth;
   treasureMapReveal.classList.add("treasure-map-reveal--active", "treasure-map-reveal--map-only");
-  window.setTimeout(() => btnTreasureMapRevealDone?.focus(), 1600);
+  window.setTimeout(() => btnTreasureMapRevealDone?.focus(), 4200);
 }
 
 function startTreasureMapReveal(crabX, crabY, facing) {
   if (treasureMapRevealPaused) return;
   treasureMapRevealPaused = true;
   const sc = jackpotCrabChestScale();
+  const now = performance.now();
   treasureChestCinematic = {
-    phase: "fly",
+    phase: "anticipate",
     startX: crabX,
     startY: crabY,
     x: crabX,
@@ -1558,37 +1615,85 @@ function startTreasureMapReveal(crabX, crabY, facing) {
     scale: 1,
     facing: facing >= 0 ? 1 : -1,
     lidOpen: 0,
-    startedAt: performance.now(),
+    startedAt: now,
+    anticipateStartedAt: now,
+    flyStartedAt: 0,
     openStartedAt: 0,
+    holdStartedAt: 0,
+    lastSparkleAt: 0,
+    glowPulse: 0,
   };
   if (treasureMapReveal) {
     treasureMapReveal.hidden = true;
     treasureMapReveal.setAttribute("aria-hidden", "true");
     treasureMapReveal.classList.remove("treasure-map-reveal--active", "treasure-map-reveal--map-only");
   }
+  spawnTreasureCinematicBurst(crabX, crabY, 28, 42);
   playTreasureMapUnlockSound();
 }
 
 function updateTreasureChestCinematic(now) {
   const c = treasureChestCinematic;
   if (!c || c.phase === "map") return;
-  const elapsed = now - c.startedAt;
-  if (c.phase === "fly") {
-    const t = Math.min(1, elapsed / 920);
-    const ease = 1 - (1 - t) ** 3;
+
+  if (c.phase === "anticipate") {
+    const t = Math.min(1, (now - c.anticipateStartedAt) / TREASURE_CINEMATIC_ANTICIPATE_MS);
+    c.scale = 1 + Math.sin(t * Math.PI * 4) * 0.18;
+    c.glowPulse = t;
+    if (now - c.lastSparkleAt > 180) {
+      spawnTreasureCinematicBurst(c.x, c.y - 12 * dpr, 6, 48);
+      c.lastSparkleAt = now;
+    }
+    if (t >= 1) {
+      c.phase = "fly";
+      c.flyStartedAt = now;
+      spawnTreasureCinematicBurst(c.x, c.y, 36, 38);
+    }
+  } else if (c.phase === "fly") {
+    const elapsed = now - c.flyStartedAt;
+    const t = Math.min(1, elapsed / TREASURE_CINEMATIC_FLY_MS);
+    const ease = 1 - (1 - t) ** 4;
+    const arc = Math.sin(t * Math.PI) * -h * 0.14;
     c.x = c.startX + (c.targetX - c.startX) * ease;
-    c.y = c.startY + (c.targetY - c.startY) * ease;
-    c.scale = 1 + ease * 0.55;
+    c.y = c.startY + (c.targetY - c.startY) * ease + arc;
+    c.scale = 1 + ease * 1.05;
+    c.glowPulse = ease;
+    if (now - c.lastSparkleAt > 220) {
+      spawnTreasureCinematicBurst(c.x, c.y, 4, 44);
+      c.lastSparkleAt = now;
+    }
     if (t >= 1) {
       c.phase = "open";
       c.openStartedAt = now;
       c.x = c.targetX;
       c.y = c.targetY;
+      spawnTreasureCinematicBurst(c.targetX, c.targetY, 52, 50);
+      playTreasureMapUnlockSound();
     }
   } else if (c.phase === "open") {
-    const openT = Math.min(1, (now - c.openStartedAt) / 580);
-    c.lidOpen = openT;
+    const openT = Math.min(1, (now - c.openStartedAt) / TREASURE_CINEMATIC_OPEN_MS);
+    c.lidOpen = openT ** 0.85;
+    c.glowPulse = 0.65 + Math.sin(openT * Math.PI * 3) * 0.35;
+    if (openT > 0.35 && now - c.lastSparkleAt > 160) {
+      spawnTreasureCinematicBurst(c.x, c.y - 20 * dpr * c.scale, 8, 52);
+      c.lastSparkleAt = now;
+    }
     if (openT >= 1) {
+      c.phase = "hold";
+      c.holdStartedAt = now;
+      c.lidOpen = 1;
+      spawnTreasureCinematicBurst(c.x, c.y, 64, 46);
+    }
+  } else if (c.phase === "hold") {
+    const holdT = Math.min(1, (now - c.holdStartedAt) / TREASURE_CINEMATIC_HOLD_MS);
+    c.lidOpen = 1;
+    c.glowPulse = 0.55 + Math.sin(holdT * Math.PI * 5) * 0.45;
+    c.scale = 2.05 + Math.sin(holdT * Math.PI * 3) * 0.08;
+    if (now - c.lastSparkleAt > 280) {
+      spawnTreasureCinematicBurst(c.x, c.y - 28 * dpr, 10, 42);
+      c.lastSparkleAt = now;
+    }
+    if (holdT >= 1) {
       c.phase = "map";
       showTreasureMapOverlay();
     }
@@ -4928,10 +5033,59 @@ function drawJackpotCrabChestArms(sc) {
 function drawTreasureChestCinematic() {
   const c = treasureChestCinematic;
   if (!c || c.phase === "map" || w <= 0) return;
-  const elapsed = performance.now() - c.startedAt;
-  const dim = Math.min(0.78, (elapsed / 380) * 0.78);
+  const now = performance.now();
+  const elapsed = now - c.startedAt;
+  const dim = Math.min(0.88, (elapsed / 520) * 0.88);
   ctx.fillStyle = `rgba(2, 8, 18, ${dim})`;
   ctx.fillRect(0, 0, w, h);
+
+  const glow = c.glowPulse || 0;
+  const spotR = Math.max(w, h) * (0.28 + glow * 0.12);
+  const spot = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, spotR);
+  spot.addColorStop(0, `rgba(255, 213, 74, ${0.22 + glow * 0.28})`);
+  spot.addColorStop(0.45, `rgba(255, 180, 50, ${0.08 + glow * 0.12})`);
+  spot.addColorStop(1, "rgba(2, 8, 18, 0)");
+  ctx.fillStyle = spot;
+  ctx.fillRect(0, 0, w, h);
+
+  for (let i = 0; i < 3; i++) {
+    const ringT = ((elapsed / 900) + i * 0.33) % 1;
+    const ringR = (40 + ringT * 120) * dpr * c.scale;
+    ctx.strokeStyle = `rgba(255, 213, 74, ${(1 - ringT) * 0.55 * glow})`;
+    ctx.lineWidth = (3 - ringT * 1.5) * dpr;
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, ringR, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  const showBanner = c.phase !== "anticipate" || elapsed > TREASURE_CINEMATIC_ANTICIPATE_MS * 0.45;
+  if (showBanner) {
+    let bannerAlpha = 0;
+    if (c.phase === "anticipate") {
+      bannerAlpha = Math.min(1, (elapsed - TREASURE_CINEMATIC_ANTICIPATE_MS * 0.45) / 400);
+    } else if (c.phase === "fly") {
+      bannerAlpha = Math.min(1, (now - c.flyStartedAt) / 600);
+    } else {
+      bannerAlpha = 0.92 + Math.sin(now * 0.006) * 0.08;
+    }
+    const titleSize = Math.round((26 + glow * 8) * dpr);
+    const subSize = Math.round(13 * dpr);
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.shadowColor = "rgba(255, 213, 74, 0.85)";
+    ctx.shadowBlur = 22 * dpr;
+    ctx.font = `400 ${Math.round(11 * dpr)}px "Bebas Neue", sans-serif`;
+    ctx.fillStyle = `rgba(255, 248, 200, ${bannerAlpha * 0.9})`;
+    ctx.fillText("★  TREASURE MAP FOUND  ★", w * 0.5, h * 0.13);
+    ctx.font = `400 ${titleSize}px "Bebas Neue", sans-serif`;
+    ctx.fillStyle = `rgba(255, 213, 74, ${bannerAlpha})`;
+    ctx.fillText("ADVENTURE MODE UNLOCKED!", w * 0.5, h * 0.13 + titleSize * 1.15);
+    ctx.shadowBlur = 10 * dpr;
+    ctx.font = `400 ${subSize}px system-ui, sans-serif`;
+    ctx.fillStyle = `rgba(200, 230, 255, ${bannerAlpha * 0.85})`;
+    ctx.fillText("Fifteen voyages await on the chart", w * 0.5, h * 0.13 + titleSize * 1.15 + subSize * 1.6);
+    ctx.restore();
+  }
 
   ctx.save();
   ctx.translate(c.x, c.y);
@@ -5341,8 +5495,8 @@ function gameLoop(now) {
       drawReleasedFishJumpFx();
       drawTrenchRodLight();
       drawCatchFlash();
-      drawCelebration();
       drawTreasureChestCinematic();
+      drawCelebration();
     }
   } else {
     if (w > 0) {

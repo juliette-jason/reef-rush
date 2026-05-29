@@ -94,6 +94,7 @@
                 <text x="620" y="400" font-family="Georgia, serif" font-size="12" fill="#8b1a1a" font-style="italic">X marks the reef</text>
               </svg>
             </div>
+            <p class="treasure-map-reveal__badge">★ Adventure Mode Unlocked ★</p>
             <h2 id="treasureMapRevealTitle" class="treasure-map-reveal__title">Treasure map unlocked!</h2>
             <p class="treasure-map-reveal__lede">Adventure Mode awaits — fifteen voyages across the chart.</p>
             <button type="button" id="btnTreasureMapRevealDone" class="btn btn--primary treasure-map-reveal__btn">Continue fishing</button>
@@ -193,6 +194,11 @@
       </section>
 
       <p id="adventureUnlockHint" class="adventure-launch__hint" hidden>Treasure chests: 0 / 20</p>
+      <div id="adventureUnlockBanner" class="adventure-unlock-banner" hidden aria-hidden="true">
+        <p class="adventure-unlock-banner__spark">✦ ✦ ✦</p>
+        <p class="adventure-unlock-banner__title">Adventure Mode Unlocked!</p>
+        <p class="adventure-unlock-banner__sub">Tap the glowing button below to chart your course</p>
+      </div>
       <button type="button" id="btnAdventureMode" class="adventure-launch" hidden aria-label="Adventure Mode">
         <span id="adventureLock" class="adventure-launch__lock" aria-hidden="true"></span>
         <span class="adventure-launch__label">Adventure Mode</span>
