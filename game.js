@@ -342,7 +342,8 @@ const ADVENTURE_LEVEL_THEMES = [
   "treasure-cove",
 ];
 
-function adventureMapSceneSvg(themeId) {
+function adventureMapSceneSvg(themeId, idSuffix = "") {
+  const sid = String(idSuffix).replace(/[^a-z0-9-]/gi, "") || "map";
   const scenes = {
     "skull-shoals": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="72" height="52" fill="#8a9aa8"/>
@@ -479,18 +480,18 @@ function adventureMapSceneSvg(themeId) {
     </svg>`,
     "treasure-cove": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <defs>
-        <linearGradient id="tcWater" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id="tcWater-${sid}" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stop-color="#2a8898"/>
           <stop offset="100%" stop-color="#0a3848"/>
         </linearGradient>
-        <linearGradient id="tcCave" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id="tcCave-${sid}" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stop-color="#3a3028"/>
           <stop offset="100%" stop-color="#1a1410"/>
         </linearGradient>
       </defs>
-      <rect width="72" height="52" fill="url(#tcWater)"/>
+      <rect width="72" height="52" fill="url(#tcWater-${sid})"/>
       <path d="M0 30 Q36 18 72 30 L72 52 L0 52 Z" fill="#1a5868" opacity="0.85"/>
-      <path d="M6 52 L6 22 Q36 4 66 22 L66 52 Z" fill="url(#tcCave)"/>
+      <path d="M6 52 L6 22 Q36 4 66 22 L66 52 Z" fill="url(#tcCave-${sid})"/>
       <ellipse cx="36" cy="22" rx="24" ry="14" fill="#0a0806"/>
       <ellipse cx="36" cy="38" rx="28" ry="8" fill="#208898" opacity="0.5"/>
       <circle cx="18" cy="40" r="3" fill="#f0c830" stroke="#a88010" stroke-width="0.6"/>
@@ -512,6 +513,146 @@ function adventureMapSceneSvg(themeId) {
 
 function getAdventureLevelTheme(levelIndex) {
   return ADVENTURE_LEVEL_THEMES[levelIndex] || ADVENTURE_LEVEL_THEMES[0];
+}
+
+/** Underwater tint + ambient effect while fishing an adventure voyage. */
+const ADVENTURE_PLAY_ATMOSPHERE = {
+  "skull-shoals": { stops: [[0, "rgba(70, 75, 85, 0.12)"], [1, "rgba(35, 38, 48, 0.32)"]], effect: "mist" },
+  "mariners-rest": { stops: [[0, "rgba(200, 210, 230, 0.14)"], [1, "rgba(40, 60, 90, 0.18)"]], effect: "moon" },
+  "golden-atoll": { stops: [[0, "rgba(255, 220, 120, 0.16)"], [1, "rgba(180, 140, 60, 0.12)"]], effect: "warm" },
+  "serpent-strait": { stops: [[0, "rgba(50, 90, 80, 0.14)"], [1, "rgba(25, 55, 50, 0.28)"]], effect: "murk" },
+  "doubloon-bay": { stops: [[0, "rgba(90, 120, 140, 0.1)"], [1, "rgba(200, 160, 50, 0.2)"]], effect: "gold" },
+  "compass-cay": { stops: [[0, "rgba(120, 150, 130, 0.1)"], [1, "rgba(50, 70, 60, 0.15)"]], effect: null },
+  "krakens-teeth": { stops: [[0, "rgba(40, 30, 50, 0.2)"], [1, "rgba(80, 25, 45, 0.28)"]], effect: "murk" },
+  "palmwood-harbor": { stops: [[0, "rgba(180, 200, 160, 0.1)"], [1, "rgba(210, 180, 100, 0.18)"]], effect: "warm" },
+  "emerald-lagoon": { stops: [[0, "rgba(80, 200, 140, 0.14)"], [1, "rgba(30, 120, 80, 0.22)"]], effect: "glow" },
+  "phantom-keys": { stops: [[0, "rgba(140, 160, 200, 0.16)"], [1, "rgba(50, 60, 90, 0.22)"]], effect: "mist" },
+  "stormbreak-isle": { stops: [[0, "rgba(25, 35, 55, 0.35)"], [1, "rgba(40, 50, 70, 0.2)"]], effect: "storm" },
+  "treasurehorn-peak": { stops: [[0, "rgba(160, 170, 185, 0.12)"], [1, "rgba(90, 80, 70, 0.22)"]], effect: null },
+  "leviathan-deep": { stops: [[0, "rgba(5, 15, 35, 0.35)"], [1, "rgba(10, 25, 50, 0.45)"]], effect: "deep" },
+  "captains-landing": { stops: [[0, "rgba(140, 120, 90, 0.12)"], [1, "rgba(60, 50, 40, 0.18)"]], effect: "warm" },
+  "treasure-cove": {
+    stops: [
+      [0, "rgba(8, 35, 45, 0.38)"],
+      [0.45, "rgba(18, 70, 80, 0.22)"],
+      [1, "rgba(255, 190, 50, 0.2)"],
+    ],
+    effect: "gold",
+  },
+};
+
+function drawAdventureGoldGlints(now) {
+  const t = now * 0.001;
+  for (let i = 0; i < 14; i++) {
+    const px = ((i * 97 + Math.floor(t * 40 + i * 17)) % 1000) / 1000;
+    const py = 0.55 + ((i * 53 + Math.floor(t * 25)) % 400) / 1000;
+    const x = px * w;
+    const y = waterTop + py * (h - waterTop);
+    const r = dpr * (1.2 + (i % 3) * 0.6);
+    ctx.fillStyle = `rgba(255, 220, 80, ${0.15 + (i % 4) * 0.06})`;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawAdventureStormFlash(now) {
+  if (Math.sin(now * 0.004) > 0.92) {
+    ctx.fillStyle = "rgba(255, 255, 240, 0.12)";
+    ctx.fillRect(0, waterTop, w, h - waterTop);
+  }
+}
+
+function drawAdventureMoonBeam() {
+  const beam = ctx.createLinearGradient(w * 0.55, waterTop, w * 0.75, h);
+  beam.addColorStop(0, "rgba(255, 255, 230, 0.18)");
+  beam.addColorStop(1, "rgba(255, 255, 230, 0)");
+  ctx.fillStyle = beam;
+  ctx.beginPath();
+  ctx.moveTo(w * 0.5, waterTop);
+  ctx.lineTo(w * 0.68, waterTop);
+  ctx.lineTo(w * 0.82, h);
+  ctx.lineTo(w * 0.58, h);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawAdventureThemeOverlay(now) {
+  if (!adventureSession || w <= 0) return;
+  const themeId = getAdventureLevelTheme(adventureSession.levelIndex);
+  const atm = ADVENTURE_PLAY_ATMOSPHERE[themeId];
+  if (!atm) return;
+
+  const g = ctx.createLinearGradient(0, waterTop, 0, h);
+  for (const [stop, color] of atm.stops) g.addColorStop(stop, color);
+  ctx.fillStyle = g;
+  ctx.fillRect(0, waterTop, w, h - waterTop);
+
+  if (atm.effect === "gold") drawAdventureGoldGlints(now);
+  else if (atm.effect === "storm") drawAdventureStormFlash(now);
+  else if (atm.effect === "moon") drawAdventureMoonBeam();
+  else if (atm.effect === "deep") {
+    ctx.fillStyle = "rgba(0, 8, 20, 0.15)";
+    ctx.fillRect(0, waterTop + (h - waterTop) * 0.35, w, (h - waterTop) * 0.65);
+  } else if (atm.effect === "glow") {
+    const glow = ctx.createRadialGradient(w * 0.5, waterTop + (h - waterTop) * 0.45, 0, w * 0.5, waterTop + (h - waterTop) * 0.45, w * 0.45);
+    glow.addColorStop(0, "rgba(80, 255, 160, 0.1)");
+    glow.addColorStop(1, "rgba(80, 255, 160, 0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, waterTop, w, h - waterTop);
+  }
+}
+
+function applyAdventurePlayThemeClasses(themeId) {
+  if (!appRoot) return;
+  appRoot.classList.add("app--adventure-play");
+  for (const tid of ADVENTURE_LEVEL_THEMES) {
+    appRoot.classList.toggle(`app--adventure-theme-${tid}`, tid === themeId);
+  }
+}
+
+function clearAdventurePlayThemeClasses() {
+  if (!appRoot) return;
+  appRoot.classList.remove("app--adventure-play");
+  for (const tid of ADVENTURE_LEVEL_THEMES) {
+    appRoot.classList.remove(`app--adventure-theme-${tid}`);
+  }
+}
+
+function updateAdventurePlayTheme(levelIndex) {
+  const lvl = getAdventureLevel(levelIndex);
+  const themeId = getAdventureLevelTheme(levelIndex);
+  if (adventurePlayTheme) {
+    adventurePlayTheme.hidden = false;
+    adventurePlayTheme.className = `adventure-play-theme adventure-play-theme--${themeId}`;
+  }
+  if (adventurePlayScene) adventurePlayScene.innerHTML = adventureMapSceneSvg(themeId, "play");
+  if (adventurePlayName) adventurePlayName.textContent = lvl.name;
+  if (adventureGoalLine) {
+    adventureGoalLine.hidden = false;
+    adventureGoalLine.textContent = `Goal: ${lvl.passScore} pts`;
+  }
+  applyAdventurePlayThemeClasses(themeId);
+  bgCacheKey = "";
+}
+
+function clearAdventurePlayTheme() {
+  if (adventurePlayTheme) adventurePlayTheme.hidden = true;
+  if (adventurePlayScene) adventurePlayScene.innerHTML = "";
+  if (adventurePlayName) adventurePlayName.textContent = "";
+  if (adventureGoalLine) adventureGoalLine.hidden = true;
+  clearAdventurePlayThemeClasses();
+  bgCacheKey = "";
+}
+
+function fillAdventureResultTheme(container, levelIndex) {
+  if (!container) return;
+  const lvl = getAdventureLevel(levelIndex);
+  const themeId = getAdventureLevelTheme(levelIndex);
+  container.hidden = false;
+  container.setAttribute("aria-hidden", "false");
+  container.className = `adventure-result-theme adventure-result-theme--${themeId}`;
+  container.innerHTML = `${adventureMapSceneSvg(themeId, "res")}<span class="adventure-result-theme__name">${lvl.name}</span>`;
 }
 
 function defaultMeta() {
@@ -1196,6 +1337,11 @@ const adventureWinScore = document.getElementById("adventureWinScore");
 const btnAdventureNext = document.getElementById("btnAdventureNext");
 const btnAdventureWinBack = document.getElementById("btnAdventureWinBack");
 const adventureGoalLine = document.getElementById("adventureGoalLine");
+const adventurePlayTheme = document.getElementById("adventurePlayTheme");
+const adventurePlayScene = document.getElementById("adventurePlayScene");
+const adventurePlayName = document.getElementById("adventurePlayName");
+const adventureWinTheme = document.getElementById("adventureWinTheme");
+const adventureFailTheme = document.getElementById("adventureFailTheme");
 
 let selectedRod = RODS[0];
 let selectedReefId = "australia";
@@ -1616,7 +1762,7 @@ function buildAdventureLevelUI() {
     b.title = `${lvl.name} — ${lvl.subtitle} · pass ${lvl.passScore}`;
     b.innerHTML = `
       <span class="adventure-map-node__scene-wrap" aria-hidden="true">
-        ${adventureMapSceneSvg(themeId)}
+        ${adventureMapSceneSvg(themeId, `n${i}`)}
         <span class="adventure-map-node__num">${lvl.level}</span>
         ${isFinale ? '<span class="adventure-map-node__x" aria-hidden="true"></span>' : ""}
         ${isCurrent ? '<span class="adventure-map-node__boat" aria-hidden="true"></span>' : ""}
@@ -1656,15 +1802,13 @@ function startAdventureLevel(levelIndex) {
   adventureSession = { levelIndex };
   selectedReefId = lvl.reefId;
   hideAllPanels();
-  if (adventureGoalLine) {
-    adventureGoalLine.hidden = false;
-    adventureGoalLine.textContent = `Goal: ${lvl.passScore} pts`;
-  }
+  updateAdventurePlayTheme(levelIndex);
   startRound();
 }
 
 function endAdventureRound() {
-  const lvl = getAdventureLevel(adventureSession.levelIndex);
+  const levelIndex = adventureSession.levelIndex;
+  const lvl = getAdventureLevel(levelIndex);
   const passed = score >= lvl.passScore;
   if (passed) {
     gameMeta.adventureHighestLevel = Math.max(gameMeta.adventureHighestLevel || 0, lvl.level);
@@ -1678,9 +1822,11 @@ function endAdventureRound() {
   }
   roundBait = { catchRadiusMult: 1, rareAssistAdd: 0, lightRadiusMult: 1 };
   adventureSession = null;
-  if (adventureGoalLine) adventureGoalLine.hidden = true;
+  clearAdventurePlayTheme();
   hideAllPanels();
   if (passed) {
+    fillAdventureResultTheme(adventureWinTheme, levelIndex);
+    if (adventureFailTheme) adventureFailTheme.hidden = true;
     if (adventureWinLevel) adventureWinLevel.textContent = `Level ${lvl.level} cleared!`;
     if (adventureWinScore) adventureWinScore.textContent = `You scored ${score} (needed ${lvl.passScore}).`;
     const hasNext = lvl.level < ADVENTURE_LEVEL_COUNT;
@@ -1690,6 +1836,8 @@ function endAdventureRound() {
     }
     if (panelAdventureWin) panelAdventureWin.hidden = false;
   } else {
+    fillAdventureResultTheme(adventureFailTheme, levelIndex);
+    if (adventureWinTheme) adventureWinTheme.hidden = true;
     if (adventureFailScore) adventureFailScore.textContent = `Your score: ${score}`;
     if (adventureFailGoal) adventureFailGoal.textContent = `Needed: ${lvl.passScore}`;
     if (panelAdventureFail) panelAdventureFail.hidden = false;
@@ -5704,6 +5852,7 @@ function gameLoop(now) {
 
   ctx.clearRect(0, 0, w, h);
   drawCachedBackground();
+  if (playing && adventureSession) drawAdventureThemeOverlay(now);
   if (!PERF_CHROMEBOOK || gameLoopTick % 2 === 0) drawBubbles(treasureMapRevealPaused ? 0 : dt);
   if (!treasureMapRevealPaused) updateJackpotCrab(now, dt);
 

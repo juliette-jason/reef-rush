@@ -34,7 +34,13 @@
             <span id="timeDisplay" class="stat__value">1:00</span>
           </div>
         </div>
-        <p id="adventureGoalLine" class="hud__adventure-goal" hidden></p>
+        <div id="adventurePlayTheme" class="adventure-play-theme" hidden>
+          <div id="adventurePlayScene" class="adventure-play-theme__scene" aria-hidden="true"></div>
+          <div class="adventure-play-theme__text">
+            <span id="adventurePlayName" class="adventure-play-theme__name"></span>
+            <p id="adventureGoalLine" class="adventure-play-theme__goal" hidden></p>
+          </div>
+        </div>
       </header>
 
       <div class="canvas-wrap">
@@ -411,6 +417,7 @@
       </section>
 
       <section id="panelAdventureFail" class="panel panel--adventure-result" hidden>
+        <div id="adventureFailTheme" class="adventure-result-theme" hidden aria-hidden="true"></div>
         <h2 class="panel__headline panel__headline--fail">Not enough fish caught.</h2>
         <p class="panel__lede"><span id="adventureFailScore">Your score: 0</span> · <span id="adventureFailGoal">Needed: 3000</span></p>
         <button type="button" id="btnAdventureRetry" class="btn btn--primary">Try again</button>
@@ -418,6 +425,7 @@
       </section>
 
       <section id="panelAdventureWin" class="panel panel--adventure-result" hidden>
+        <div id="adventureWinTheme" class="adventure-result-theme" hidden aria-hidden="true"></div>
         <h2 class="panel__headline">Voyage complete!</h2>
         <p id="adventureWinLevel" class="panel__lede">Level cleared!</p>
         <p id="adventureWinScore" class="panel__scoreline">You scored enough fish.</p>
