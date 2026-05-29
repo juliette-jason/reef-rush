@@ -47,6 +47,25 @@ const FISH_SPECIES = [
   { id: "gulper_eel", name: "Gulper Eel", rarity: "rare", size: "large", morph: "deepsea", speed: 0.82, hue: 258, colors: ["#211632", "#05030a", "#c084fc"] },
   { id: "fangtooth", name: "Fangtooth", rarity: "epic", size: "medium", morph: "deepsea", speed: 1.08, hue: 24, colors: ["#2a201b", "#080503", "#fed7aa"] },
   { id: "giant_isopod", name: "Giant Isopod", rarity: "legendary", size: "large", morph: "deepsea", speed: 0.58, hue: 190, colors: ["#475569", "#111827", "#cffafe"] },
+  { id: "bonefish", name: "Bonefish", rarity: "common", size: "medium", morph: "skullfish", speed: 1.02, hue: 280, colors: ["#1c1618", "#0a0608", "#ff4040"] },
+  { id: "grave_eel", name: "Grave Eel", rarity: "common", size: "large", morph: "skullfish", speed: 0.86, hue: 265, colors: ["#141018", "#050308", "#f87171"] },
+  { id: "specter_ray", name: "Specter Ray", rarity: "uncommon", size: "large", morph: "skullfish", speed: 0.7, hue: 255, colors: ["#121018", "#040208", "#ef4444"] },
+  { id: "dread_fangtooth", name: "Dread Fangtooth", rarity: "uncommon", size: "medium", morph: "skullfish", speed: 1.12, hue: 8, colors: ["#1a100e", "#060302", "#ff6b6b"] },
+  { id: "skeletal_marlin", name: "Skeletal Marlin", rarity: "rare", size: "large", morph: "skullfish", speed: 1.32, hue: 295, colors: ["#16121a", "#050308", "#e879f9"] },
+  { id: "ghost_shark", name: "Ghost Shark", rarity: "rare", size: "large", morph: "skullfish", speed: 1.2, hue: 248, colors: ["#0e1216", "#020306", "#fca5a5"] },
+  { id: "abyss_lantern", name: "Abyss Lantern", rarity: "epic", size: "medium", morph: "skullfish", speed: 0.92, hue: 12, colors: ["#180c0c", "#040202", "#ff3333"] },
+  { id: "leviathan_skull", name: "Leviathan Skull", rarity: "legendary", size: "large", morph: "skullfish", speed: 0.62, hue: 200, colors: ["#0c1418", "#020406", "#67e8f9"] },
+];
+
+const SKULL_SHOALS_FISH_IDS = [
+  "bonefish",
+  "grave_eel",
+  "specter_ray",
+  "dread_fangtooth",
+  "skeletal_marlin",
+  "ghost_shark",
+  "abyss_lantern",
+  "leviathan_skull",
 ];
 
 const RODS = [
@@ -346,13 +365,25 @@ function adventureMapSceneSvg(themeId, idSuffix = "") {
   const sid = String(idSuffix).replace(/[^a-z0-9-]/gi, "") || "map";
   const scenes = {
     "skull-shoals": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <rect width="72" height="52" fill="#8a9aa8"/>
-      <ellipse cx="36" cy="44" rx="34" ry="10" fill="#6b7a88"/>
-      <path d="M8 38 L18 28 L28 36 L38 26 L52 34 L64 30 L72 38 L72 52 L0 52 Z" fill="#5c6874"/>
-      <circle cx="36" cy="24" r="11" fill="#e8e0d4" stroke="#3d3020" stroke-width="1.2"/>
-      <circle cx="31" cy="22" r="2.5" fill="#2e2418"/><circle cx="41" cy="22" r="2.5" fill="#2e2418"/>
-      <path d="M30 30 Q36 34 42 30" fill="none" stroke="#2e2418" stroke-width="1.2"/>
-      <path d="M28 14 L32 8 L36 14 L40 8 L44 14" fill="none" stroke="#3d3020" stroke-width="1"/>
+      <rect width="72" height="52" fill="#0e1218"/>
+      <rect y="0" width="72" height="28" fill="#141018" opacity="0.85"/>
+      <path d="M0 34 Q36 30 72 34 L72 52 L0 52 Z" fill="#1a1410"/>
+      <path d="M0 38 Q18 36 36 38 T72 38" fill="none" stroke="#2a2018" stroke-width="1" opacity="0.6"/>
+      <ellipse cx="14" cy="44" rx="8" ry="3" fill="#c9bfb0" opacity="0.5"/>
+      <ellipse cx="36" cy="46" rx="10" ry="3.5" fill="#d4c8bc" opacity="0.55"/>
+      <ellipse cx="58" cy="44" rx="9" ry="3" fill="#b8a898" opacity="0.48"/>
+      <circle cx="12" cy="42" r="5" fill="#e8dcc8" stroke="#4a3828" stroke-width="0.8"/>
+      <circle cx="10" cy="41" r="1.8" fill="#1a1010"/><circle cx="14" cy="41" r="1.8" fill="#ff3030"/>
+      <path d="M8 44 L10 46 L14 46 L16 44" fill="none" stroke="#4a3828" stroke-width="0.6"/>
+      <ellipse cx="36" cy="43" rx="6" ry="4" fill="#e0d4c4" stroke="#4a3828" stroke-width="0.7"/>
+      <circle cx="34" cy="42" r="1.2" fill="#ff4040"/><circle cx="38" cy="42" r="1.2" fill="#ff4040"/>
+      <path d="M54 44 L56 40 L60 40 L62 44 L60 48 L56 48 Z" fill="#d8ccc0" stroke="#4a3828" stroke-width="0.6"/>
+      <path d="M22 46 Q24 40 26 46 M28 46 Q30 40 32 46" fill="none" stroke="#a89888" stroke-width="0.8" opacity="0.7"/>
+      <path d="M44 46 Q46 40 48 46 M50 46 Q52 40 54 46" fill="none" stroke="#a89888" stroke-width="0.8" opacity="0.7"/>
+      <circle cx="36" cy="18" r="9" fill="#1a1418" stroke="#6a5040" stroke-width="1"/>
+      <circle cx="33" cy="17" r="2" fill="#ff3333" opacity="0.9"/><circle cx="39" cy="17" r="2" fill="#ff3333" opacity="0.9"/>
+      <path d="M32 22 Q36 25 40 22" fill="none" stroke="#3d2820" stroke-width="1"/>
+      <path d="M30 10 L33 4 L36 10 L39 4 L42 10" fill="none" stroke="#2a1810" stroke-width="0.8" opacity="0.7"/>
     </svg>`,
     "mariners-rest": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="72" height="52" fill="#4a6a8a"/>
@@ -515,9 +546,38 @@ function getAdventureLevelTheme(levelIndex) {
   return ADVENTURE_LEVEL_THEMES[levelIndex] || ADVENTURE_LEVEL_THEMES[0];
 }
 
+function isSkullShoalsPlay() {
+  return Boolean(playing && adventureSession && getAdventureLevelTheme(adventureSession.levelIndex) === "skull-shoals");
+}
+
+function pickSkullShoalsSpecies() {
+  const scary = FISH_SPECIES.filter((f) => SKULL_SHOALS_FISH_IDS.includes(f.id));
+  const weights = { common: 42, uncommon: 30, rare: 16, epic: 8, legendary: 4 };
+  const order = ["common", "uncommon", "rare", "epic", "legendary"];
+  const rw = order.reduce((a, k) => a + weights[k], 0);
+  let roll = Math.random() * rw;
+  let chosenRarity = "common";
+  for (const id of order) {
+    roll -= weights[id];
+    if (roll <= 0) {
+      chosenRarity = id;
+      break;
+    }
+  }
+  const pool = scary.filter((f) => f.rarity === chosenRarity);
+  return pool[Math.floor(Math.random() * pool.length)] || scary[0];
+}
+
 /** Underwater tint + ambient effect while fishing an adventure voyage. */
 const ADVENTURE_PLAY_ATMOSPHERE = {
-  "skull-shoals": { stops: [[0, "rgba(70, 75, 85, 0.12)"], [1, "rgba(35, 38, 48, 0.32)"]], effect: "mist" },
+  "skull-shoals": {
+    stops: [
+      [0, "rgba(12, 6, 18, 0.5)"],
+      [0.45, "rgba(22, 10, 16, 0.38)"],
+      [1, "rgba(4, 2, 6, 0.62)"],
+    ],
+    effect: "skull",
+  },
   "mariners-rest": { stops: [[0, "rgba(200, 210, 230, 0.14)"], [1, "rgba(40, 60, 90, 0.18)"]], effect: "moon" },
   "golden-atoll": { stops: [[0, "rgba(255, 220, 120, 0.16)"], [1, "rgba(180, 140, 60, 0.12)"]], effect: "warm" },
   "serpent-strait": { stops: [[0, "rgba(50, 90, 80, 0.14)"], [1, "rgba(25, 55, 50, 0.28)"]], effect: "murk" },
@@ -563,6 +623,95 @@ function drawAdventureStormFlash(now) {
   }
 }
 
+function drawBuriedSkeleton(cx, sandY, sc) {
+  const bone = `rgba(218, 200, 175, ${0.42 + (sc % 1) * 0.12})`;
+  const boneDim = `rgba(100, 85, 75, ${0.35 + (sc % 1) * 0.1})`;
+  const s = dpr * sc;
+
+  ctx.save();
+  ctx.translate(cx, sandY);
+
+  ctx.strokeStyle = boneDim;
+  ctx.lineWidth = s * 1.1;
+  ctx.lineCap = "round";
+  for (let i = 0; i < 4; i++) {
+    const ox = (i - 1.5) * s * 5;
+    ctx.beginPath();
+    ctx.arc(ox, s * 2, s * 4.5, Math.PI * 0.15, Math.PI * 0.85);
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = bone;
+  ctx.beginPath();
+  ctx.ellipse(0, -s * 5, s * 7, s * 5.5, 0, Math.PI, 0);
+  ctx.fill();
+  ctx.fillStyle = boneDim;
+  ctx.beginPath();
+  ctx.arc(-s * 2.8, -s * 6.5, s * 2.2, 0, Math.PI * 2);
+  ctx.arc(s * 2.8, -s * 6.5, s * 2.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#1a0808";
+  ctx.beginPath();
+  ctx.arc(-s * 2.5, -s * 6.8, s * 0.9, 0, Math.PI * 2);
+  ctx.arc(s * 2.5, -s * 6.8, s * 0.9, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255, 50, 50, 0.75)";
+  ctx.beginPath();
+  ctx.arc(-s * 2.5, -s * 6.8, s * 0.45, 0, Math.PI * 2);
+  ctx.arc(s * 2.5, -s * 6.8, s * 0.45, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = bone;
+  ctx.lineWidth = s * 0.9;
+  ctx.beginPath();
+  ctx.moveTo(-s * 8, s * 1);
+  ctx.lineTo(s * 8, s * 1);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-s * 6, s * 4);
+  ctx.lineTo(s * 6, s * 4);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawSkullShoalsSandSkeletons() {
+  if (w <= 0) return;
+  const sandTop = h - dpr * 92;
+  const placements = [
+    { x: 0.08, y: 22, s: 0.85 },
+    { x: 0.22, y: 14, s: 1.05 },
+    { x: 0.38, y: 20, s: 0.95 },
+    { x: 0.52, y: 12, s: 1.15 },
+    { x: 0.68, y: 18, s: 0.9 },
+    { x: 0.84, y: 24, s: 0.8 },
+    { x: 0.94, y: 16, s: 0.75 },
+  ];
+  for (const p of placements) {
+    drawBuriedSkeleton(p.x * w, sandTop + dpr * p.y, p.s);
+  }
+}
+
+function drawAdventureSkullShoalsEffect(now) {
+  drawSkullShoalsSandSkeletons();
+  const t = now * 0.001;
+  ctx.fillStyle = "rgba(40, 10, 20, 0.08)";
+  for (let i = 0; i < 6; i++) {
+    const x = ((i * 137 + Math.floor(t * 12)) % 1000) / 1000 * w;
+    const y = waterTop + ((i * 89) % 1000) / 1000 * (h - waterTop) * 0.7;
+    const r = dpr * (30 + i * 12);
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, "rgba(80, 20, 30, 0.12)");
+    g.addColorStop(1, "rgba(80, 20, 30, 0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  if (Math.sin(now * 0.0025) > 0.88) {
+    ctx.fillStyle = "rgba(120, 20, 30, 0.06)";
+    ctx.fillRect(0, waterTop, w, h - waterTop);
+  }
+}
+
 function drawAdventureMoonBeam() {
   const beam = ctx.createLinearGradient(w * 0.55, waterTop, w * 0.75, h);
   beam.addColorStop(0, "rgba(255, 255, 230, 0.18)");
@@ -591,6 +740,7 @@ function drawAdventureThemeOverlay(now) {
   if (atm.effect === "gold") drawAdventureGoldGlints(now);
   else if (atm.effect === "storm") drawAdventureStormFlash(now);
   else if (atm.effect === "moon") drawAdventureMoonBeam();
+  else if (atm.effect === "skull") drawAdventureSkullShoalsEffect(now);
   else if (atm.effect === "deep") {
     ctx.fillStyle = "rgba(0, 8, 20, 0.15)";
     ctx.fillRect(0, waterTop + (h - waterTop) * 0.35, w, (h - waterTop) * 0.65);
@@ -1030,7 +1180,8 @@ function getReef() {
   if (!adventureSession) return base;
   const lvl = getAdventureLevel(adventureSession.levelIndex);
   const reefBase = REEFS.find((r) => r.id === lvl.reefId) || base;
-  return {
+  const skullShoals = getAdventureLevelTheme(adventureSession.levelIndex) === "skull-shoals";
+  const merged = {
     ...reefBase,
     name: lvl.name,
     desc: `${lvl.subtitle} · score ${lvl.passScore}+ to continue`,
@@ -1043,6 +1194,24 @@ function getReef() {
     adventurePassScore: lvl.passScore,
     adventureLevel: lvl.level,
   };
+  if (skullShoals) {
+    merged.visuals = {
+      ...reefBase.visuals,
+      gradient: ["#0c1018", "#0e1420", "#121820", "#060408"],
+      shaft: ["rgba(90, 40, 60, 0.1)", "rgba(90, 40, 60, 0)"],
+      silhouette: "rgba(8, 4, 12, 0.78)",
+      bubble: "rgba(140, 90, 120, 0.18)",
+      corals: [
+        { x: 0.1, c: "#2a1820", h: 0.22 },
+        { x: 0.28, c: "#1a1018", h: 0.18 },
+        { x: 0.5, c: "#221418", h: 0.2 },
+        { x: 0.72, c: "#18101a", h: 0.16 },
+        { x: 0.9, c: "#2a1822", h: 0.14 },
+      ],
+    };
+    merged.weights = { common: 48, uncommon: 28, rare: 14, epic: 7, legendary: 3 };
+  }
+  return merged;
 }
 
 const LEADERBOARD_KEY = "reefRushLeaderboard_v2";
@@ -1236,6 +1405,7 @@ function pointsFor(species) {
 }
 
 function pickSpecies() {
+  if (isSkullShoalsPlay()) return pickSkullShoalsSpecies();
   const reef = getReef();
   const w = reef.weights;
   const order = ["common", "uncommon", "rare", "epic", "legendary"];
@@ -4330,11 +4500,20 @@ function drawBackground() {
   ctx.fill();
 
   const sandTop = h - dpr * 92;
+  const skullSand =
+    adventureSession && getAdventureLevelTheme(adventureSession.levelIndex) === "skull-shoals";
   const sand = ctx.createLinearGradient(0, sandTop, 0, h);
-  sand.addColorStop(0, "rgba(236, 205, 150, 0)");
-  sand.addColorStop(0.28, "rgba(226, 190, 132, 0.18)");
-  sand.addColorStop(0.72, "rgba(210, 169, 104, 0.36)");
-  sand.addColorStop(1, "rgba(174, 128, 70, 0.5)");
+  if (skullSand) {
+    sand.addColorStop(0, "rgba(30, 22, 28, 0)");
+    sand.addColorStop(0.28, "rgba(42, 32, 38, 0.28)");
+    sand.addColorStop(0.72, "rgba(52, 38, 44, 0.48)");
+    sand.addColorStop(1, "rgba(28, 18, 22, 0.72)");
+  } else {
+    sand.addColorStop(0, "rgba(236, 205, 150, 0)");
+    sand.addColorStop(0.28, "rgba(226, 190, 132, 0.18)");
+    sand.addColorStop(0.72, "rgba(210, 169, 104, 0.36)");
+    sand.addColorStop(1, "rgba(174, 128, 70, 0.5)");
+  }
   ctx.fillStyle = sand;
   ctx.beginPath();
   ctx.moveTo(0, sandTop + dpr * 12);
@@ -4348,7 +4527,7 @@ function drawBackground() {
   ctx.closePath();
   ctx.fill();
 
-  ctx.fillStyle = "rgba(255, 238, 190, 0.18)";
+  ctx.fillStyle = skullSand ? "rgba(60, 48, 52, 0.22)" : "rgba(255, 238, 190, 0.18)";
   for (let i = 0; i < perfN(38); i++) {
     const x = ((i * 73) % 1000) / 1000 * w;
     const y = sandTop + dpr * 20 + (((i * 41) % 100) / 100) * dpr * 58;
@@ -4357,7 +4536,7 @@ function drawBackground() {
     ctx.fill();
   }
 
-  if (rid === "australia") drawGreatBarrierReefBed();
+  if (rid === "australia" && !skullSand) drawGreatBarrierReefBed();
   if (rid === "caribbean") drawMesoamericanReefBed();
   if (rid === "mediterranean") drawWesternMediterraneanRocks();
   if (rid === "japan_kuroshio") drawKuroshioRocks();
@@ -4369,7 +4548,8 @@ function drawCachedBackground() {
     drawBackground();
     return;
   }
-  const key = `${w}|${h}|${getReef().id}`;
+  const themeKey = adventureSession ? getAdventureLevelTheme(adventureSession.levelIndex) : "";
+  const key = `${w}|${h}|${getReef().id}|${themeKey}`;
   if (!bgCacheCanvas || bgCacheKey !== key) {
     if (!bgCacheCanvas) bgCacheCanvas = document.createElement("canvas");
     bgCacheCanvas.width = w;
@@ -4967,6 +5147,91 @@ function drawFishMorph(morph, L, body, shade, accent, speciesId) {
     return;
   }
 
+  if (morph === "skullfish") {
+    const isLantern = sid === "abyss_lantern" || sid === "leviathan_skull";
+    const isEel = sid === "grave_eel";
+    const isRay = sid === "specter_ray";
+    const isMarlin = sid === "skeletal_marlin";
+    ctx.fillStyle = body;
+    if (isEel) {
+      ctx.beginPath();
+      ctx.moveTo(L * 0.52, -L * 0.06);
+      ctx.quadraticCurveTo(L * 0.1, -L * 0.38, -L * 0.78, -L * 0.02);
+      ctx.quadraticCurveTo(-L * 0.05, L * 0.22, L * 0.5, L * 0.1);
+      ctx.closePath();
+      ctx.fill();
+    } else if (isRay) {
+      ctx.beginPath();
+      ctx.ellipse(0, L * 0.04, L * 0.52, L * 0.14, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = shade;
+      ctx.lineWidth = L * 0.025;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(-L * 0.55, L * 0.35);
+      ctx.stroke();
+      forkTail(0.22);
+    } else {
+      ctx.beginPath();
+      ctx.moveTo(L * 0.52, 0);
+      ctx.quadraticCurveTo(L * 0.15, -L * (isLantern ? 0.38 : 0.26), -L * 0.4, -L * 0.12);
+      ctx.quadraticCurveTo(-L * 0.62, 0, -L * 0.38, L * 0.12);
+      ctx.quadraticCurveTo(L * 0.12, L * (isLantern ? 0.32 : 0.22), L * 0.52, 0);
+      ctx.closePath();
+      ctx.fill();
+      forkTail(isMarlin ? 0.2 : 0.26);
+    }
+    ctx.strokeStyle = shade;
+    ctx.lineWidth = L * 0.022;
+    ctx.globalAlpha = 0.55;
+    for (let i = 0; i < 5; i++) {
+      const rx = L * (0.2 - i * 0.11);
+      ctx.beginPath();
+      ctx.moveTo(rx, -L * 0.02);
+      ctx.lineTo(rx - L * 0.04, L * 0.14);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    if (isLantern) {
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = L * 0.02;
+      ctx.beginPath();
+      ctx.moveTo(L * 0.12, -L * 0.2);
+      ctx.quadraticCurveTo(L * 0.3, -L * 0.55, L * 0.5, -L * 0.38);
+      ctx.stroke();
+      ctx.fillStyle = accent;
+      ctx.shadowColor = accent;
+      ctx.shadowBlur = L * 0.22;
+      ctx.beginPath();
+      ctx.arc(L * 0.52, -L * 0.36, L * 0.06, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+    ctx.fillStyle = accent;
+    for (let i = 0; i < 7; i++) {
+      const tx = L * (0.38 - i * 0.09);
+      const ty = L * (0.06 + (i % 2) * 0.04);
+      ctx.beginPath();
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(tx - L * 0.02, ty + L * 0.08);
+      ctx.lineTo(tx + L * 0.02, ty + L * 0.08);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.fillStyle = "rgba(255, 60, 60, 0.9)";
+    ctx.shadowColor = "rgba(255, 40, 40, 0.8)";
+    ctx.shadowBlur = L * 0.12;
+    ctx.beginPath();
+    ctx.arc(L * 0.34, -L * 0.05, L * 0.075, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#0a0202";
+    ctx.shadowBlur = 0;
+    ctx.beginPath();
+    ctx.arc(L * 0.36, -L * 0.05, L * 0.028, 0, Math.PI * 2);
+    ctx.fill();
+    return;
+  }
+
   if (morph === "deepsea") {
     const isAngler = sid === "black_seadevil";
     const isEel = sid === "gulper_eel";
@@ -5065,16 +5330,28 @@ function drawFish(f) {
   const body = spec.colors[0];
   const shade = spec.colors[1];
   const accent = spec.colors[2] || "#ffffff";
+  const scary = isSkullShoalsPlay() && spec.morph === "skullfish";
 
   ctx.save();
   ctx.translate(f.x, f.y);
-  ctx.rotate(Math.sin(f.phase) * 0.08);
+  ctx.rotate(Math.sin(f.phase) * (scary ? 0.12 : 0.08));
   ctx.scale(facing, 1);
+
+  if (scary) {
+    ctx.shadowColor = "rgba(255, 35, 35, 0.45)";
+    ctx.shadowBlur = L * 0.2;
+    ctx.filter = "brightness(0.78) contrast(1.2) saturate(0.85)";
+  }
 
   drawFishMorph(spec.morph || "silverside", L, body, shade, accent, spec.id);
 
+  if (scary) {
+    ctx.filter = "none";
+    ctx.shadowBlur = 0;
+  }
+
   ctx.restore();
-  f.phase += 0.06;
+  f.phase += scary ? 0.09 : 0.06;
 }
 
 function drawClam() {
