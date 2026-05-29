@@ -323,6 +323,197 @@ const ADVENTURE_MAP_PLACES = [
   "Treasure Cove",
 ];
 
+/** Visual theme slug per voyage — matches ADVENTURE_MAP_PLACES order. */
+const ADVENTURE_LEVEL_THEMES = [
+  "skull-shoals",
+  "mariners-rest",
+  "golden-atoll",
+  "serpent-strait",
+  "doubloon-bay",
+  "compass-cay",
+  "krakens-teeth",
+  "palmwood-harbor",
+  "emerald-lagoon",
+  "phantom-keys",
+  "stormbreak-isle",
+  "treasurehorn-peak",
+  "leviathan-deep",
+  "captains-landing",
+  "treasure-cove",
+];
+
+function adventureMapSceneSvg(themeId) {
+  const scenes = {
+    "skull-shoals": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#8a9aa8"/>
+      <ellipse cx="36" cy="44" rx="34" ry="10" fill="#6b7a88"/>
+      <path d="M8 38 L18 28 L28 36 L38 26 L52 34 L64 30 L72 38 L72 52 L0 52 Z" fill="#5c6874"/>
+      <circle cx="36" cy="24" r="11" fill="#e8e0d4" stroke="#3d3020" stroke-width="1.2"/>
+      <circle cx="31" cy="22" r="2.5" fill="#2e2418"/><circle cx="41" cy="22" r="2.5" fill="#2e2418"/>
+      <path d="M30 30 Q36 34 42 30" fill="none" stroke="#2e2418" stroke-width="1.2"/>
+      <path d="M28 14 L32 8 L36 14 L40 8 L44 14" fill="none" stroke="#3d3020" stroke-width="1"/>
+    </svg>`,
+    "mariners-rest": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#4a6a8a"/>
+      <path d="M0 36 Q18 32 36 36 T72 36 L72 52 L0 52 Z" fill="#3a5870"/>
+      <path d="M0 40 Q20 37 36 40 T72 40" fill="none" stroke="#6a90b0" stroke-width="1" opacity="0.6"/>
+      <path d="M12 8 Q36 2 60 8 Q54 14 36 12 Q18 14 12 8" fill="#d4c8a8" opacity="0.85"/>
+      <circle cx="56" cy="10" r="5" fill="#f0e8c8" stroke="#c4b888" stroke-width="0.8"/>
+      <path d="M36 18 L36 38 M28 38 L44 38 M32 38 L36 28 L40 38" fill="none" stroke="#c8b880" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="36" cy="18" r="2" fill="#c8b880"/>
+    </svg>`,
+    "golden-atoll": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#5a9ec0"/>
+      <ellipse cx="36" cy="30" rx="28" ry="14" fill="#e8c860" stroke="#c8a030" stroke-width="1.2"/>
+      <ellipse cx="36" cy="28" rx="18" ry="8" fill="#f0d878"/>
+      <path d="M32 22 L34 14 L36 22 L38 14 L40 22" fill="#2e6a40" stroke="#1e5028" stroke-width="0.6"/>
+      <path d="M28 26 L30 18 L32 26" fill="#3a8050" stroke="#1e5028" stroke-width="0.5"/>
+      <circle cx="48" cy="32" r="2" fill="#f8e890" opacity="0.8"/>
+      <circle cx="24" cy="34" r="1.5" fill="#f8e890" opacity="0.7"/>
+    </svg>`,
+    "serpent-strait": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#3a6878"/>
+      <path d="M0 30 Q18 22 36 30 T72 30 L72 52 L0 52 Z" fill="#2a5060"/>
+      <path d="M8 34 Q24 18 40 32 Q56 46 68 28" fill="none" stroke="#4a8898" stroke-width="3" stroke-linecap="round"/>
+      <path d="M62 26 L68 22 L66 30 Z" fill="#2e7a50" stroke="#1e5038" stroke-width="0.8"/>
+      <circle cx="64" cy="24" r="2" fill="#f0e040"/>
+      <circle cx="60" cy="22" r="1.2" fill="#2e2418"/>
+    </svg>`,
+    "doubloon-bay": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#4a7898"/>
+      <path d="M0 38 L72 38 L72 52 L0 52 Z" fill="#c8a860"/>
+      <ellipse cx="22" cy="32" rx="10" ry="4" fill="#e8c840" stroke="#a88020" stroke-width="1"/>
+      <ellipse cx="36" cy="28" rx="11" ry="4.5" fill="#f0d850" stroke="#a88020" stroke-width="1"/>
+      <ellipse cx="50" cy="32" rx="10" ry="4" fill="#e8c840" stroke="#a88020" stroke-width="1"/>
+      <text x="22" y="33" text-anchor="middle" font-size="6" fill="#8a6010" font-weight="bold">$</text>
+      <text x="36" y="29" text-anchor="middle" font-size="6" fill="#8a6010" font-weight="bold">$</text>
+      <text x="50" y="33" text-anchor="middle" font-size="6" fill="#8a6010" font-weight="bold">$</text>
+      <path d="M0 38 Q36 34 72 38" fill="none" stroke="#6a98b8" stroke-width="1"/>
+    </svg>`,
+    "compass-cay": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#6a9888"/>
+      <ellipse cx="36" cy="38" rx="24" ry="8" fill="#d8c898"/>
+      <circle cx="36" cy="24" r="16" fill="#f4ecd8" stroke="#3d3020" stroke-width="1.2"/>
+      <path d="M36 10 L38 24 L36 38 L34 24 Z" fill="#b91c1c"/>
+      <path d="M22 24 L36 22 L50 24 L36 26 Z" fill="#2e2418"/>
+      <circle cx="36" cy="24" r="3" fill="#e8dcc8" stroke="#3d3020" stroke-width="0.8"/>
+      <polygon points="36,12 38,22 36,20 34,22" fill="#3d3020"/>
+    </svg>`,
+    "krakens-teeth": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#2a4860"/>
+      <path d="M0 40 L72 40 L72 52 L0 52 Z" fill="#1a3048"/>
+      <path d="M10 40 L16 18 L22 40 Z" fill="#5a6878" stroke="#2e2418" stroke-width="0.8"/>
+      <path d="M28 40 L34 14 L40 40 Z" fill="#6a7888" stroke="#2e2418" stroke-width="0.8"/>
+      <path d="M46 40 L52 20 L58 40 Z" fill="#5a6878" stroke="#2e2418" stroke-width="0.8"/>
+      <path d="M4 44 Q20 36 36 44 Q52 52 68 44" fill="none" stroke="#7a2848" stroke-width="2.5" opacity="0.85"/>
+      <circle cx="8" cy="42" r="2" fill="#9a3858"/>
+      <circle cx="14" cy="40" r="1.5" fill="#9a3858"/>
+    </svg>`,
+    "palmwood-harbor": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#5a98c0"/>
+      <path d="M0 36 L72 36 L72 52 L0 52 Z" fill="#c8a878"/>
+      <rect x="8" y="28" width="24" height="3" fill="#6a5030"/>
+      <line x1="8" y1="31" x2="32" y2="31" stroke="#4a3820" stroke-width="2"/>
+      <path d="M14 28 L14 12 Q16 6 18 12 L18 28" fill="none" stroke="#5a4028" stroke-width="1.5"/>
+      <path d="M14 14 Q8 10 6 16 Q10 18 14 14" fill="#2e8040" stroke="#1e5028" stroke-width="0.6"/>
+      <path d="M14 14 Q20 10 22 16 Q18 18 14 14" fill="#3a9050" stroke="#1e5028" stroke-width="0.6"/>
+      <path d="M48 28 L48 10 Q50 4 52 10 L52 28" fill="none" stroke="#5a4028" stroke-width="1.5"/>
+      <path d="M48 12 Q42 8 40 14 Q44 16 48 12" fill="#2e8040" stroke="#1e5028" stroke-width="0.6"/>
+      <path d="M48 12 Q54 8 56 14 Q52 16 48 12" fill="#3a9050" stroke="#1e5028" stroke-width="0.6"/>
+      <path d="M52 36 L68 32 L68 36 Z" fill="#8a6840" stroke="#4a3820" stroke-width="0.6"/>
+    </svg>`,
+    "emerald-lagoon": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#68a898"/>
+      <ellipse cx="36" cy="30" rx="26" ry="16" fill="#38a878" stroke="#208858" stroke-width="1.2"/>
+      <ellipse cx="36" cy="28" rx="16" ry="10" fill="#50c890" opacity="0.7"/>
+      <path d="M36 18 L40 26 L48 26 L42 32 L44 40 L36 35 L28 40 L30 32 L24 26 L32 26 Z" fill="#90f0b0" stroke="#208858" stroke-width="0.8"/>
+      <circle cx="36" cy="28" r="4" fill="#c8ffe0" opacity="0.6"/>
+    </svg>`,
+    "phantom-keys": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#485878"/>
+      <path d="M0 38 Q36 34 72 38 L72 52 L0 52 Z" fill="#384868"/>
+      <ellipse cx="18" cy="32" rx="10" ry="6" fill="#8898b8" opacity="0.55" stroke="#a8b8d8" stroke-width="0.8"/>
+      <ellipse cx="36" cy="28" rx="11" ry="7" fill="#98a8c8" opacity="0.5" stroke="#c8d8f0" stroke-width="0.8"/>
+      <ellipse cx="54" cy="32" rx="10" ry="6" fill="#8898b8" opacity="0.55" stroke="#a8b8d8" stroke-width="0.8"/>
+      <path d="M14 32 L14 24 Q18 20 22 24 L22 32" fill="none" stroke="#d8e8ff" stroke-width="1.2" opacity="0.7"/>
+      <circle cx="18" cy="24" r="3" fill="none" stroke="#d8e8ff" stroke-width="1" opacity="0.7"/>
+      <path d="M50 32 L50 24 Q54 20 58 24 L58 32" fill="none" stroke="#d8e8ff" stroke-width="1.2" opacity="0.7"/>
+    </svg>`,
+    "stormbreak-isle": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#3a4868"/>
+      <path d="M4 14 Q20 6 36 12 Q52 4 68 14 Q64 22 48 18 Q36 24 24 18 Q8 22 4 14" fill="#586888" opacity="0.9"/>
+      <path d="M8 20 Q24 14 40 20 Q56 14 64 20" fill="#687898" opacity="0.7"/>
+      <path d="M36 22 L32 34 L38 28 L34 40 L44 30 L40 38 L48 26 Z" fill="#f0e040" stroke="#c8a020" stroke-width="0.8"/>
+      <path d="M20 38 L48 38 L52 48 L16 48 Z" fill="#5a6878" stroke="#2e2418" stroke-width="0.8"/>
+      <path d="M0 42 Q36 38 72 42 L72 52 L0 52 Z" fill="#2a3858"/>
+    </svg>`,
+    "treasurehorn-peak": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#88b0c8"/>
+      <path d="M0 44 L20 44 L36 8 L52 44 L72 44 L72 52 L0 52 Z" fill="#8a7860" stroke="#3d3020" stroke-width="1"/>
+      <path d="M28 44 L36 14 L44 44 Z" fill="#e8e0d0" stroke="#3d3020" stroke-width="0.8"/>
+      <path d="M34 14 L36 4 L38 14" fill="#f0d860" stroke="#a88020" stroke-width="0.8"/>
+      <path d="M32 8 Q36 2 40 8" fill="none" stroke="#f0e880" stroke-width="1"/>
+      <path d="M0 44 Q36 40 72 44" fill="none" stroke="#6a8898" stroke-width="1"/>
+    </svg>`,
+    "leviathan-deep": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#0a1830"/>
+      <rect y="20" width="72" height="32" fill="#0c2040"/>
+      <ellipse cx="36" cy="38" rx="30" ry="8" fill="#102848" opacity="0.8"/>
+      <ellipse cx="36" cy="32" rx="22" ry="10" fill="#1a3860" opacity="0.6"/>
+      <circle cx="28" cy="30" r="4" fill="#f0f8ff" opacity="0.9"/>
+      <circle cx="29" cy="29" r="1.5" fill="#0a1830"/>
+      <path d="M8 36 Q20 28 36 34 Q52 40 64 32" fill="none" stroke="#284868" stroke-width="3" opacity="0.7"/>
+      <path d="M60 34 L68 32 L64 38 Z" fill="#284868" opacity="0.6"/>
+    </svg>`,
+    "captains-landing": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#6898b8"/>
+      <path d="M0 38 L72 38 L72 52 L0 52 Z" fill="#c8a870"/>
+      <circle cx="36" cy="24" r="14" fill="none" stroke="#6a5030" stroke-width="2.5"/>
+      <circle cx="36" cy="24" r="4" fill="#6a5030"/>
+      <line x1="36" y1="10" x2="36" y2="38" stroke="#6a5030" stroke-width="1.5"/>
+      <line x1="22" y1="24" x2="50" y2="24" stroke="#6a5030" stroke-width="1.5"/>
+      <line x1="26" y1="14" x2="46" y2="34" stroke="#6a5030" stroke-width="1"/>
+      <line x1="46" y1="14" x2="26" y2="34" stroke="#6a5030" stroke-width="1"/>
+      <path d="M58 12 L58 22 L62 22 L62 12 Z" fill="#b91c1c"/>
+      <path d="M58 12 L60 8 L62 12" fill="#b91c1c"/>
+    </svg>`,
+    "treasure-cove": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="tcWater" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#2a8898"/>
+          <stop offset="100%" stop-color="#0a3848"/>
+        </linearGradient>
+        <linearGradient id="tcCave" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#3a3028"/>
+          <stop offset="100%" stop-color="#1a1410"/>
+        </linearGradient>
+      </defs>
+      <rect width="72" height="52" fill="url(#tcWater)"/>
+      <path d="M0 30 Q36 18 72 30 L72 52 L0 52 Z" fill="#1a5868" opacity="0.85"/>
+      <path d="M6 52 L6 22 Q36 4 66 22 L66 52 Z" fill="url(#tcCave)"/>
+      <ellipse cx="36" cy="22" rx="24" ry="14" fill="#0a0806"/>
+      <ellipse cx="36" cy="38" rx="28" ry="8" fill="#208898" opacity="0.5"/>
+      <circle cx="18" cy="40" r="3" fill="#f0c830" stroke="#a88010" stroke-width="0.6"/>
+      <circle cx="28" cy="42" r="2.5" fill="#e8b820" stroke="#a88010" stroke-width="0.5"/>
+      <circle cx="44" cy="41" r="3" fill="#f0d040" stroke="#a88010" stroke-width="0.6"/>
+      <circle cx="54" cy="43" r="2" fill="#e8b820" stroke="#a88010" stroke-width="0.5"/>
+      <circle cx="36" cy="44" r="2.8" fill="#f8e050" stroke="#a88010" stroke-width="0.5"/>
+      <rect x="28" y="32" width="16" height="10" rx="1" fill="#8a5020" stroke="#5a3010" stroke-width="0.8"/>
+      <path d="M28 32 Q36 26 44 32" fill="#a86828" stroke="#5a3010" stroke-width="0.8"/>
+      <rect x="30" y="34" width="12" height="2" fill="#f0d060"/>
+      <circle cx="14" cy="28" r="1.2" fill="#a8e8f0" opacity="0.7"/>
+      <circle cx="22" cy="24" r="0.9" fill="#a8e8f0" opacity="0.6"/>
+      <circle cx="50" cy="26" r="1" fill="#a8e8f0" opacity="0.65"/>
+      <circle cx="58" cy="30" r="1.1" fill="#a8e8f0" opacity="0.55"/>
+    </svg>`,
+  };
+  return scenes[themeId] || scenes["skull-shoals"];
+}
+
+function getAdventureLevelTheme(levelIndex) {
+  return ADVENTURE_LEVEL_THEMES[levelIndex] || ADVENTURE_LEVEL_THEMES[0];
+}
+
 function defaultMeta() {
   return {
     coins: 0,
@@ -1410,9 +1601,11 @@ function buildAdventureLevelUI() {
     const cleared = lvl.level <= highest;
     const isCurrent = playable && !cleared && lvl.level === nextPlayable;
     const isFinale = i === ADVENTURE_LEVEL_COUNT - 1;
+    const themeId = getAdventureLevelTheme(i);
     const b = document.createElement("button");
     b.type = "button";
     b.className = "adventure-map-node";
+    b.classList.add(`adventure-map-node--theme-${themeId}`);
     if (cleared) b.classList.add("adventure-map-node--cleared");
     if (!playable) b.classList.add("adventure-map-node--locked");
     if (isCurrent) b.classList.add("adventure-map-node--current");
@@ -1422,7 +1615,8 @@ function buildAdventureLevelUI() {
     b.style.top = `${layout.y}%`;
     b.title = `${lvl.name} — ${lvl.subtitle} · pass ${lvl.passScore}`;
     b.innerHTML = `
-      <span class="adventure-map-node__pin" aria-hidden="true">
+      <span class="adventure-map-node__scene-wrap" aria-hidden="true">
+        ${adventureMapSceneSvg(themeId)}
         <span class="adventure-map-node__num">${lvl.level}</span>
         ${isFinale ? '<span class="adventure-map-node__x" aria-hidden="true"></span>' : ""}
         ${isCurrent ? '<span class="adventure-map-node__boat" aria-hidden="true"></span>' : ""}
