@@ -1191,21 +1191,36 @@ function isAdventureHomeCelebrationActive() {
   return Boolean(gameMeta.pendingAdventureHomeCelebration && isAdventureUnlocked() && isHomeScreenActive());
 }
 
+let adventureLockUnlockListener = null;
+
 function clearAdventureHomeCelebration() {
   if (!gameMeta.pendingAdventureHomeCelebration) return;
   gameMeta.pendingAdventureHomeCelebration = false;
   saveMeta();
+  if (adventureLockUnlockListener && adventureLock) {
+    adventureLock.removeEventListener("animationend", adventureLockUnlockListener);
+    adventureLockUnlockListener = null;
+  }
   if (adventureLock) {
     adventureLock.classList.remove("adventure-launch__lock--unlocking", "adventure-launch__lock--unlocked");
     adventureLock.hidden = true;
   }
-  btnAdventureMode?.classList.remove("adventure-launch--flash", "adventure-launch--celebrate", "adventure-launch--unlock-ready");
+  appRoot?.classList.remove("app--adventure-unlock-celebrate");
+  btnAdventureMode?.classList.remove(
+    "adventure-launch--flash",
+    "adventure-launch--celebrate",
+    "adventure-launch--unlock-ready",
+    "adventure-launch--rise",
+    "adventure-launch--centered",
+  );
   if (adventureUnlockBanner) {
     adventureUnlockBanner.hidden = true;
     adventureUnlockBanner.setAttribute("aria-hidden", "true");
     adventureUnlockBanner.classList.remove("adventure-unlock-banner--active");
   }
-  if (adventureUnlockHint) adventureUnlockHint.classList.remove("adventure-launch__hint--celebrate");
+  if (adventureUnlockHint) {
+    adventureUnlockHint.classList.remove("adventure-launch__hint--celebrate", "adventure-launch__hint--centered");
+  }
   updateAdventureLaunchUI();
 }
 
@@ -1234,33 +1249,68 @@ function showAdventureHomeUnlockBanner() {
   adventureUnlockBanner.classList.add("adventure-unlock-banner--active");
 }
 
+function beginAdventureLockUnlockSequence() {
+  if (!isAdventureHomeCelebrationActive() || !adventureLock) return;
+  adventureLock.hidden = false;
+  adventureLock.classList.remove("adventure-launch__lock--unlocking", "adventure-launch__lock--unlocked");
+  void adventureLock.offsetWidth;
+  adventureLock.classList.add("adventure-launch__lock--unlocking");
+  playAdventureHomeUnlockSound();
+
+  if (adventureLockUnlockListener) {
+    adventureLock.removeEventListener("animationend", adventureLockUnlockListener);
+  }
+  adventureLockUnlockListener = (e) => {
+    if (e.target !== adventureLock || e.animationName !== "adventureLockFadeOut") return;
+    adventureLock.classList.remove("adventure-launch__lock--unlocking", "adventure-launch__lock--unlocked");
+    adventureLock.hidden = true;
+    adventureLock.removeEventListener("animationend", adventureLockUnlockListener);
+    adventureLockUnlockListener = null;
+    updateAdventureLaunchUI();
+  };
+  adventureLock.addEventListener("animationend", adventureLockUnlockListener);
+  updateAdventureLaunchUI();
+}
+
 function startAdventureHomeUnlockAnimation() {
   if (!isAdventureHomeCelebrationActive() || !adventureLock || !btnAdventureMode) return;
   if (btnAdventureMode.classList.contains("adventure-launch--celebrate")) return;
 
   showAdventureHomeUnlockBanner();
-  btnAdventureMode.classList.add("adventure-launch--celebrate", "adventure-launch--flash", "adventure-launch--unlock-ready");
+  appRoot?.classList.add("app--adventure-unlock-celebrate");
+  btnAdventureMode.classList.add("adventure-launch--celebrate");
   adventureUnlockHint?.classList.add("adventure-launch__hint--celebrate");
   adventureLock.hidden = false;
   adventureLock.classList.remove("adventure-launch__lock--unlocking", "adventure-launch__lock--unlocked");
   playAdventureHomeUnlockSound();
+  updateAdventureLaunchUI();
 
-  window.setTimeout(() => {
+  const finishRise = () => {
     if (!isAdventureHomeCelebrationActive()) return;
-    void adventureLock.offsetWidth;
-    adventureLock.classList.add("adventure-launch__lock--unlocking");
-    playAdventureHomeUnlockSound();
-  }, 900);
-
-  const onLockDone = (e) => {
-    if (e.target !== adventureLock || e.animationName !== "adventureLockFadeOut") return;
-    adventureLock.classList.remove("adventure-launch__lock--unlocking", "adventure-launch__lock--unlocked");
-    adventureLock.hidden = true;
-    adventureLock.removeEventListener("animationend", onLockDone);
+    btnAdventureMode.classList.remove("adventure-launch--rise");
+    btnAdventureMode.classList.add("adventure-launch--centered", "adventure-launch--flash", "adventure-launch--unlock-ready");
+    adventureUnlockHint?.classList.add("adventure-launch__hint--centered");
+    window.setTimeout(beginAdventureLockUnlockSequence, 500);
     updateAdventureLaunchUI();
   };
-  adventureLock.addEventListener("animationend", onLockDone);
-  updateAdventureLaunchUI();
+
+  const prefersReducedMotion =
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (prefersReducedMotion) {
+    btnAdventureMode.classList.add("adventure-launch--centered", "adventure-launch--flash", "adventure-launch--unlock-ready");
+    adventureUnlockHint?.classList.add("adventure-launch__hint--centered");
+    window.setTimeout(beginAdventureLockUnlockSequence, 300);
+    return;
+  }
+
+  btnAdventureMode.classList.add("adventure-launch--rise");
+  const onRiseDone = (e) => {
+    if (e.target !== btnAdventureMode || e.animationName !== "adventureLaunchRiseToCenter") return;
+    btnAdventureMode.removeEventListener("animationend", onRiseDone);
+    finishRise();
+  };
+  btnAdventureMode.addEventListener("animationend", onRiseDone);
 }
 
 function showHomePanel() {
@@ -1294,14 +1344,14 @@ function updateAdventureLaunchUI() {
   const celebrating = isAdventureHomeCelebrationActive();
   const total = gameMeta.totalTreasureChests || 0;
   const lockUnlocking = adventureLock?.classList.contains("adventure-launch__lock--unlocking");
+  const rising = btnAdventureMode?.classList.contains("adventure-launch--rise");
   if (adventureLock) {
     if (!unlocked) adventureLock.hidden = false;
-    else if (celebrating && lockUnlocking) adventureLock.hidden = false;
-    else adventureLock.hidden = true;
+    else if (celebrating && (rising || lockUnlocking)) adventureLock.hidden = false;
+    else if (!celebrating) adventureLock.hidden = true;
   }
   if (btnAdventureMode) {
     btnAdventureMode.classList.toggle("adventure-launch--locked", !unlocked);
-    btnAdventureMode.classList.toggle("adventure-launch--flash", celebrating);
     btnAdventureMode.setAttribute("aria-disabled", unlocked ? "false" : "true");
   }
   if (adventureUnlockHint) {

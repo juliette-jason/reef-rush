@@ -1670,7 +1670,19 @@ body {
   text-shadow:
     0 0 12px rgba(255, 213, 74, 0.65),
     0 0 28px rgba(77, 255, 243, 0.35);
+}
+
+.adventure-launch__hint--celebrate.adventure-launch__hint--centered {
+  font-size: 1.02rem;
   animation: adventureHintCelebrate 1.6s ease-in-out infinite;
+}
+
+.adventure-launch__hint--centered {
+  bottom: auto;
+  top: calc(50% + clamp(62px, 16vw, 96px));
+  z-index: 50;
+  max-width: min(360px, 88vw);
+  transition: top 1.65s cubic-bezier(0.22, 1, 0.36, 1), font-size 0.5s ease;
 }
 
 @keyframes adventureHintCelebrate {
@@ -1775,6 +1787,25 @@ body {
   display: none !important;
 }
 
+#app.app--adventure-unlock-celebrate::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 44;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 48%, rgba(255, 213, 74, 0.14), transparent 52%),
+    rgba(2, 8, 18, 0.82);
+  animation: adventureUnlockBackdropIn 0.75s ease forwards;
+  opacity: 0;
+}
+
+@keyframes adventureUnlockBackdropIn {
+  to {
+    opacity: 1;
+  }
+}
+
 .adventure-launch {
   position: fixed;
   left: 50%;
@@ -1808,13 +1839,90 @@ body {
   background: linear-gradient(180deg, rgba(24, 88, 120, 0.98), rgba(8, 40, 64, 0.99));
 }
 
+.adventure-launch--rise {
+  z-index: 50;
+  animation: adventureLaunchRiseToCenter 1.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.adventure-launch--centered {
+  top: 50%;
+  bottom: auto;
+  left: 50%;
+  z-index: 50;
+  transform: translate(-50%, -50%) scale(1.72);
+  font-size: clamp(1.85rem, 6.5vw, 2.4rem);
+  padding: 20px 38px;
+  gap: 14px;
+  letter-spacing: 0.1em;
+}
+
+.adventure-launch--centered .adventure-launch__arrow {
+  font-size: 1.9rem;
+}
+
+.adventure-launch--centered .adventure-launch__lock {
+  width: 28px;
+  height: 32px;
+}
+
+.adventure-launch--centered .adventure-launch__lock::before {
+  width: 18px;
+  height: 14px;
+  margin-left: -9px;
+  border-width: 3.5px;
+}
+
+.adventure-launch--centered .adventure-launch__lock::after {
+  width: 22px;
+  height: 17px;
+  margin-left: -11px;
+}
+
+@keyframes adventureLaunchRiseToCenter {
+  0% {
+    top: auto;
+    bottom: max(14px, env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%) scale(1);
+    font-size: 1.35rem;
+    padding: 12px 22px;
+    gap: 10px;
+    filter: brightness(1);
+  }
+  55% {
+    filter: brightness(1.12);
+  }
+  100% {
+    top: 50%;
+    bottom: auto;
+    transform: translate(-50%, -50%) scale(1.72);
+    font-size: clamp(1.85rem, 6.5vw, 2.4rem);
+    padding: 20px 38px;
+    gap: 14px;
+    filter: brightness(1.08);
+  }
+}
+
 .adventure-launch--flash {
   animation: adventureLaunchFlash 1.85s ease-in-out infinite;
 }
 
-.adventure-launch--unlock-ready {
+.adventure-launch--centered.adventure-launch--unlock-ready {
+  animation: adventureLaunchFlash 1.85s ease-in-out infinite, adventureLaunchCenteredBounce 2.4s ease-in-out infinite;
+}
+
+.adventure-launch--unlock-ready:not(.adventure-launch--centered) {
   transform: translateX(-50%) scale(1.06);
   animation: adventureLaunchFlash 1.85s ease-in-out infinite, adventureLaunchUnlockBounce 2.4s ease-in-out infinite;
+}
+
+@keyframes adventureLaunchCenteredBounce {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1.72);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.86);
+  }
 }
 
 @keyframes adventureLaunchUnlockBounce {
@@ -1957,17 +2065,34 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .adventure-launch--flash,
-  .adventure-launch--unlock-ready {
+  .adventure-launch--unlock-ready,
+  .adventure-launch--centered.adventure-launch--unlock-ready {
     animation: none;
     box-shadow:
       0 8px 28px rgba(0, 0, 0, 0.45),
       0 0 32px rgba(255, 213, 74, 0.65);
   }
 
+  .adventure-launch--rise {
+    animation: none;
+    top: 50%;
+    bottom: auto;
+    transform: translate(-50%, -50%) scale(1.72);
+  }
+
   .adventure-launch__hint--celebrate,
-  .adventure-unlock-banner--active {
+  .adventure-launch__hint--celebrate.adventure-launch__hint--centered,
+  .adventure-unlock-banner--active,
+  #app.app--adventure-unlock-celebrate::before {
     animation: none;
     opacity: 1;
+  }
+
+  .adventure-launch__hint--centered {
+    top: calc(50% + 72px);
+  }
+
+  .adventure-launch__hint--celebrate.adventure-launch__hint--centered {
     transform: translateX(-50%);
   }
 
