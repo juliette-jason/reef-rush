@@ -543,6 +543,18 @@ function adventureMapSceneSvg(themeId, idSuffix = "") {
   return scenes[themeId] || scenes["skull-shoals"];
 }
 
+const adventureSceneSvgCache = new Map();
+
+function cachedAdventureMapSceneSvg(themeId, idSuffix = "") {
+  const key = `${themeId}|${idSuffix}`;
+  let svg = adventureSceneSvgCache.get(key);
+  if (!svg) {
+    svg = adventureMapSceneSvg(themeId, idSuffix);
+    adventureSceneSvgCache.set(key, svg);
+  }
+  return svg;
+}
+
 function getAdventureLevelTheme(levelIndex) {
   return ADVENTURE_LEVEL_THEMES[levelIndex] || ADVENTURE_LEVEL_THEMES[0];
 }
@@ -847,142 +859,175 @@ function drawAdventureStormFlash(now) {
   }
 }
 
-function drawBoneSegment(x1, y1, x2, y2, lw, color) {
-  ctx.strokeStyle = color;
-  ctx.lineWidth = lw;
-  ctx.lineCap = "round";
+function drawBoneJoint(x, y, r, bone, outline) {
+  ctx.fillStyle = outline;
   ctx.beginPath();
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(x2, y2);
-  ctx.stroke();
-}
-
-function drawBoneJoint(x, y, r, color) {
-  ctx.fillStyle = color;
+  ctx.arc(x, y, r * 1.22, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = bone;
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
   ctx.fill();
 }
 
 function drawLongBone(x1, y1, x2, y2, lw, bone, shade) {
-  const g = ctx.createLinearGradient(x1, y1, x2, y2);
-  g.addColorStop(0, shade);
-  g.addColorStop(0.5, bone);
-  g.addColorStop(1, shade);
-  ctx.strokeStyle = g;
-  ctx.lineWidth = lw;
   ctx.lineCap = "round";
+  ctx.strokeStyle = shade;
+  ctx.lineWidth = lw * 1.38;
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+  ctx.strokeStyle = bone;
+  ctx.lineWidth = lw;
   ctx.beginPath();
   ctx.moveTo(x1, y1);
   ctx.lineTo(x2, y2);
   ctx.stroke();
 }
 
-function drawRealisticSkullSupine(s, hx, hy, bone, shade, boneDark) {
+/** Flat cartoon skull — face-up, lying on the seabed (clipart style). */
+function drawCartoonSkullSupine(s, hx, hy, bone, shade, boneDark) {
+  const faceY = hy - s * 4;
   ctx.fillStyle = bone;
   ctx.strokeStyle = shade;
-  ctx.lineWidth = s * 0.26;
+  ctx.lineWidth = s * 0.4;
+  ctx.lineJoin = "round";
+
   ctx.beginPath();
-  ctx.ellipse(hx, hy - s * 5.5, s * 9.5, s * 8, 0, 0, Math.PI * 2);
+  ctx.ellipse(hx + s * 0.5, faceY, s * 10.5, s * 9.8, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(hx - s * 6.5, hy + s * 1.5);
+  ctx.quadraticCurveTo(hx - s * 2, hy + s * 5.5, hx + s * 7.5, hy + s * 1.5);
+  ctx.quadraticCurveTo(hx + s * 4, hy + s * 6.5, hx - s * 6, hy + s * 5);
+  ctx.closePath();
   ctx.fill();
   ctx.stroke();
 
   ctx.fillStyle = boneDark;
   ctx.beginPath();
-  ctx.ellipse(hx - s * 3.2, hy - s * 6.5, s * 2.5, s * 3, 0, 0, Math.PI * 2);
-  ctx.ellipse(hx + s * 3.2, hy - s * 6.5, s * 2.5, s * 3, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "rgba(35, 130, 90, 0.42)";
-  ctx.beginPath();
-  ctx.arc(hx - s * 3.2, hy - s * 6.5, s * 0.9, 0, Math.PI * 2);
-  ctx.arc(hx + s * 3.2, hy - s * 6.5, s * 0.9, 0, Math.PI * 2);
+  ctx.ellipse(hx - s * 3.8, faceY - s * 2.2, s * 4.2, s * 4.8, -0.12, 0, Math.PI * 2);
+  ctx.ellipse(hx + s * 4.8, faceY - s * 2.2, s * 4.2, s * 4.8, 0.12, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = boneDark;
   ctx.beginPath();
-  ctx.moveTo(hx - s * 1.2, hy - s * 4.5);
-  ctx.lineTo(hx, hy - s * 2.8);
-  ctx.lineTo(hx + s * 1.2, hy - s * 4.5);
-  ctx.lineTo(hx, hy - s * 3.5);
+  ctx.moveTo(hx + s * 0.3, faceY + s * 1.2);
+  ctx.lineTo(hx - s * 1.1, faceY + s * 3.8);
+  ctx.lineTo(hx + s * 1.7, faceY + s * 3.8);
   ctx.closePath();
   ctx.fill();
 
-  ctx.fillStyle = bone;
-  ctx.beginPath();
-  ctx.moveTo(hx - s * 6.5, hy - s * 2);
-  ctx.quadraticCurveTo(hx - s * 2, hy + s * 0.5, hx + s * 7, hy - s * 0.5);
-  ctx.lineTo(hx + s * 6.5, hy + s * 2.5);
-  ctx.quadraticCurveTo(hx + s * 1, hy + s * 4.5, hx - s * 6, hy + s * 2);
-  ctx.closePath();
-  ctx.fill();
-  ctx.strokeStyle = shade;
-  ctx.lineWidth = s * 0.17;
-  for (let t = -4; t <= 4; t++) {
-    const tx = hx + t * s * 1.1;
-    ctx.beginPath();
-    ctx.moveTo(tx, hy + s * 2.2);
-    ctx.lineTo(tx + s * 0.4, hy + s * 4);
-    ctx.stroke();
-  }
-
-  ctx.strokeStyle = bone;
-  ctx.lineWidth = s * 0.32;
-  ctx.beginPath();
-  ctx.moveTo(hx - s * 5.5, hy - s * 1);
-  ctx.quadraticCurveTo(hx - s * 8, hy - s * 3, hx - s * 7.5, hy - s * 5);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(hx + s * 5.5, hy - s * 1);
-  ctx.quadraticCurveTo(hx + s * 8, hy - s * 3, hx + s * 7.5, hy - s * 5);
-  ctx.stroke();
-}
-
-function drawRibCageHorizontal(s, x0, x1, spineY, bone, shade) {
-  const ribs = 8;
-  for (let i = 0; i < ribs; i++) {
-    const t = i / (ribs - 1);
-    const rx = x0 + (x1 - x0) * t;
-    const spread = s * (8.5 - i * 0.35);
-    ctx.strokeStyle = bone;
-    ctx.lineWidth = s * (0.68 - i * 0.035);
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(rx, spineY);
-    ctx.quadraticCurveTo(rx - s * 1.8, spineY - spread * 0.75, rx - spread * 0.92, spineY - s * 1.4);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(rx, spineY);
-    ctx.quadraticCurveTo(rx + s * 1.4, spineY + spread * 0.45, rx + spread * 0.75, spineY + s * 2.2);
-    ctx.stroke();
-  }
-  ctx.fillStyle = bone;
-  ctx.strokeStyle = shade;
-  ctx.lineWidth = s * 0.2;
-  ctx.beginPath();
-  ctx.moveTo(x0 + s * 4, spineY - s * 5);
-  ctx.lineTo(x0 + s * 4, spineY + s * 4);
-  ctx.lineTo(x1 - s * 3, spineY + s * 3.5);
-  ctx.lineTo(x1 - s * 3, spineY - s * 4.5);
-  ctx.closePath();
-  ctx.globalAlpha = 0.85;
-  ctx.fill();
-  ctx.stroke();
-  ctx.globalAlpha = 1;
-}
-
-function drawPelvisHorizontal(s, px, py, bone, shade) {
   ctx.fillStyle = bone;
   ctx.strokeStyle = shade;
   ctx.lineWidth = s * 0.22;
+  const teeth = 7;
+  for (let i = 0; i < teeth; i++) {
+    const tx = hx - s * 5.2 + i * s * 1.55;
+    ctx.fillRect(tx, hy + s * 2.8, s * 1.15, s * 2.4);
+    ctx.strokeRect(tx, hy + s * 2.8, s * 1.15, s * 2.4);
+  }
+
+  ctx.strokeStyle = bone;
+  ctx.lineWidth = s * 0.34;
   ctx.beginPath();
-  ctx.moveTo(px - s * 9, py + s * 1);
-  ctx.quadraticCurveTo(px - s * 4, py + s * 6, px, py + s * 4.5);
-  ctx.quadraticCurveTo(px + s * 4, py + s * 6, px + s * 9, py + s * 1);
-  ctx.lineTo(px + s * 7, py - s * 2);
-  ctx.lineTo(px - s * 7, py - s * 2);
+  ctx.moveTo(hx - s * 6, faceY + s * 0.5);
+  ctx.quadraticCurveTo(hx - s * 9.5, faceY - s * 2, hx - s * 8.5, faceY - s * 6);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(hx + s * 7, faceY + s * 0.5);
+  ctx.quadraticCurveTo(hx + s * 10.5, faceY - s * 2, hx + s * 9.5, faceY - s * 6);
+  ctx.stroke();
+}
+
+function drawCartoonRibCageHorizontal(s, x0, x1, spineY, bone, shade) {
+  const ribs = 7;
+  ctx.lineCap = "round";
+  for (let i = 0; i < ribs; i++) {
+    const t = i / (ribs - 1);
+    const rx = x0 + (x1 - x0) * t;
+    const spread = s * (10 - i * 0.45);
+    ctx.strokeStyle = shade;
+    ctx.lineWidth = s * (1.18 - i * 0.04);
+    ctx.beginPath();
+    ctx.moveTo(rx, spineY);
+    ctx.quadraticCurveTo(rx - s * 2.2, spineY - spread * 0.82, rx - spread, spineY - s * 1.2);
+    ctx.stroke();
+    ctx.strokeStyle = bone;
+    ctx.lineWidth = s * (0.98 - i * 0.035);
+    ctx.beginPath();
+    ctx.moveTo(rx, spineY);
+    ctx.quadraticCurveTo(rx - s * 2.2, spineY - spread * 0.82, rx - spread, spineY - s * 1.2);
+    ctx.stroke();
+    ctx.strokeStyle = shade;
+    ctx.lineWidth = s * (1.12 - i * 0.04);
+    ctx.beginPath();
+    ctx.moveTo(rx, spineY);
+    ctx.quadraticCurveTo(rx + s * 1.6, spineY + spread * 0.5, rx + spread * 0.78, spineY + s * 2.6);
+    ctx.stroke();
+    ctx.strokeStyle = bone;
+    ctx.lineWidth = s * (0.92 - i * 0.035);
+    ctx.beginPath();
+    ctx.moveTo(rx, spineY);
+    ctx.quadraticCurveTo(rx + s * 1.6, spineY + spread * 0.5, rx + spread * 0.78, spineY + s * 2.6);
+    ctx.stroke();
+  }
+  ctx.fillStyle = bone;
+  ctx.strokeStyle = shade;
+  ctx.lineWidth = s * 0.34;
+  ctx.beginPath();
+  ctx.roundRect(x0 + s * 3, spineY - s * 4.5, s * 3.2, s * 9.5, s * 1.2);
+  ctx.fill();
+  ctx.stroke();
+}
+
+function drawCartoonPelvisHorizontal(s, px, py, bone, shade) {
+  ctx.fillStyle = bone;
+  ctx.strokeStyle = shade;
+  ctx.lineWidth = s * 0.38;
+  ctx.beginPath();
+  ctx.moveTo(px - s * 10, py + s * 0.5);
+  ctx.quadraticCurveTo(px - s * 5, py + s * 7, px, py + s * 5);
+  ctx.quadraticCurveTo(px + s * 5, py + s * 7, px + s * 10, py + s * 0.5);
+  ctx.lineTo(px + s * 8, py - s * 3);
+  ctx.lineTo(px - s * 8, py - s * 3);
   ctx.closePath();
   ctx.fill();
   ctx.stroke();
+  ctx.lineWidth = s * 0.55;
+  ctx.beginPath();
+  ctx.moveTo(px - s * 4, py - s * 1);
+  ctx.lineTo(px + s * 4, py - s * 1);
+  ctx.stroke();
+}
+
+function drawCartoonHand(x, y, angle, s, bone, shade) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  drawBoneJoint(0, 0, s * 0.62, bone, shade);
+  for (let f = 0; f < 5; f++) {
+    const fa = -0.42 + f * 0.21;
+    drawLongBone(0, 0, Math.cos(fa) * s * 6, Math.sin(fa) * s * 6, s * 0.4, bone, shade);
+  }
+  ctx.restore();
+}
+
+function drawCartoonFoot(x, y, angle, s, bone, shade) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  drawBoneJoint(0, 0, s * 0.55, bone, shade);
+  ctx.fillStyle = bone;
+  ctx.strokeStyle = shade;
+  ctx.lineWidth = s * 0.34;
+  ctx.beginPath();
+  ctx.roundRect(s * 0.4, -s * 1.4, s * 5, s * 2.6, s * 0.9);
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
 }
 
 function drawSandBurialPatch(s, cx, cy, wide) {
@@ -1000,90 +1045,95 @@ function drawLooseBone(bx, by, rot, kind, s, bone, shade) {
   ctx.save();
   ctx.translate(bx, by);
   ctx.rotate(rot);
-  if (kind === "femur") drawLongBone(0, 0, s * 22, s * 1.5, s * 1.05, bone, shade);
-  else if (kind === "humerus") drawLongBone(0, 0, s * 16, -s * 2, s * 0.9, bone, shade);
-  else if (kind === "tibia") drawLongBone(0, 0, s * 18, s * 0.5, s * 0.78, bone, shade);
+  if (kind === "femur") drawLongBone(0, 0, s * 22, s * 1.5, s * 1.15, bone, shade);
+  else if (kind === "humerus") drawLongBone(0, 0, s * 16, -s * 2, s * 1, bone, shade);
+  else if (kind === "tibia") drawLongBone(0, 0, s * 18, s * 0.5, s * 0.88, bone, shade);
   else if (kind === "rib") {
-    ctx.strokeStyle = bone;
-    ctx.lineWidth = s * 0.55;
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.quadraticCurveTo(s * 5, -s * 6, s * 9, -s * 2);
-    ctx.stroke();
+    drawLongBone(0, 0, s * 9, -s * 2, s * 0.95, bone, shade);
   } else if (kind === "vertebra") {
-    drawBoneJoint(0, 0, s * 1.1, shade);
-    drawLongBone(-s * 0.8, 0, s * 0.8, 0, s * 0.65, bone, shade);
+    drawBoneJoint(0, 0, s * 1.15, bone, shade);
+    drawLongBone(-s * 0.8, 0, s * 0.8, 0, s * 0.72, bone, shade);
   } else if (kind === "hand") {
-    for (let f = 0; f < 4; f++) drawLongBone(f * s * 1.8, 0, f * s * 1.8 + s * 2.2, s * 1.2, s * 0.32, bone, shade);
+    drawCartoonHand(0, 0, 0.2, s, bone, shade);
   }
   ctx.restore();
 }
 
-/** Full skeleton lying flat — local +X toward feet, head at negative X. */
+/** Full skeleton lying flat — clipart pose; local +X toward feet, head at negative X. */
 function drawSupineSkeletonBody(s, bone, shade, boneDark, opts) {
-  const headX = -s * 48;
-  const spineY = s * 3;
-  const spineStart = -s * 28;
-  const spineEnd = s * 32;
-  const pelvisX = s * 34;
-  const lw = s * 1.08;
+  const headX = -s * 44;
+  const spineY = s * 2;
+  const spineStart = -s * 24;
+  const spineEnd = s * 26;
+  const pelvisX = s * 28;
+  const lw = s * 1.28;
+  const shoulderX = -s * 16;
 
-  if (opts.head !== false) drawRealisticSkullSupine(s, headX, spineY, bone, shade, boneDark);
+  if (opts.head !== false) drawCartoonSkullSupine(s, headX, spineY, bone, shade, boneDark);
 
   if (opts.neck !== false) {
-    for (let i = 0; i < 3; i++) {
-      const vx = headX + s * 10 + i * s * 2.8;
-      drawBoneJoint(vx, spineY + s * 0.5, s * 0.9, shade);
-      drawLongBone(vx, spineY + s * 0.5, vx + s * 2.5, spineY + s * 0.8, s * 0.82, bone, shade);
-    }
+    drawLongBone(headX + s * 14, spineY, shoulderX + s * 4, spineY, lw * 0.88, bone, shade);
+    drawBoneJoint(shoulderX + s * 2, spineY, s * 1.1, bone, shade);
   }
 
   if (opts.spine !== false) {
-    for (let i = 0; i < 11; i++) {
-      const vx = spineStart + i * s * 5.6;
-      ctx.fillStyle = i % 2 === 0 ? shade : bone;
-      ctx.beginPath();
-      ctx.ellipse(vx, spineY, s * 1.2, s * 1, 0, 0, Math.PI * 2);
-      ctx.fill();
-      if (i < 10) drawLongBone(vx + s * 0.8, spineY, vx + s * 4.8, spineY + s * 0.15, s * 0.92, bone, shade);
+    const verts = 9;
+    for (let i = 0; i < verts; i++) {
+      const vx = spineStart + (i * (spineEnd - spineStart)) / (verts - 1);
+      drawBoneJoint(vx, spineY, s * 1.12, bone, shade);
+      if (i < verts - 1) {
+        const nx = spineStart + ((i + 1) * (spineEnd - spineStart)) / (verts - 1);
+        drawLongBone(vx + s * 0.55, spineY, nx - s * 0.55, spineY, lw * 0.78, bone, shade);
+      }
     }
   }
 
-  if (opts.ribs !== false) drawRibCageHorizontal(s, spineStart + s * 2, spineEnd - s * 4, spineY, bone, shade);
+  if (opts.ribs !== false) drawCartoonRibCageHorizontal(s, spineStart + s * 1, spineEnd - s * 2, spineY, bone, shade);
 
-  if (opts.pelvis !== false) drawPelvisHorizontal(s, pelvisX, spineY + s * 2, bone, shade);
+  if (opts.pelvis !== false) drawCartoonPelvisHorizontal(s, pelvisX, spineY + s * 1.5, bone, shade);
 
-  const shoulderX = -s * 18;
   if (opts.leftArm !== false) {
-    drawLongBone(shoulderX, spineY - s * 1, shoulderX - s * 14, spineY - s * 16, lw, bone, shade);
-    drawBoneJoint(shoulderX - s * 14, spineY - s * 16, s * 0.95, shade);
-    drawLongBone(shoulderX - s * 14, spineY - s * 16, shoulderX - s * 24, spineY - s * 8, lw * 0.82, bone, shade);
-    drawLongBone(shoulderX - s * 24, spineY - s * 8, shoulderX - s * 30, spineY - s * 2, lw * 0.62, bone, shade);
+    const ex = shoulderX - s * 12;
+    const ey = spineY - s * 15;
+    drawLongBone(shoulderX, spineY - s * 2, ex, ey, lw, bone, shade);
+    drawBoneJoint(ex, ey, s * 1.05, bone, shade);
+    const hx = ex - s * 8;
+    const hy = ey - s * 10;
+    drawLongBone(ex, ey, hx, hy, lw * 0.9, bone, shade);
+    drawCartoonHand(hx, hy, -0.95, s, bone, shade);
   }
 
   if (opts.rightArm !== false) {
-    drawLongBone(shoulderX, spineY + s * 2, shoulderX - s * 10, spineY + s * 18, lw, bone, shade);
-    drawBoneJoint(shoulderX - s * 10, spineY + s * 18, s * 0.95, shade);
-    drawLongBone(shoulderX - s * 10, spineY + s * 18, shoulderX - s * 20, spineY + s * 24, lw * 0.82, bone, shade);
+    const ex = shoulderX - s * 6;
+    const ey = spineY + s * 17;
+    drawLongBone(shoulderX, spineY + s * 1, ex, ey, lw, bone, shade);
+    drawBoneJoint(ex, ey, s * 1.05, bone, shade);
+    const hx = ex - s * 10;
+    const hy = ey + s * 8;
+    drawLongBone(ex, ey, hx, hy, lw * 0.88, bone, shade);
+    drawCartoonHand(hx, hy, 0.55, s, bone, shade);
   }
 
   if (opts.leftLeg !== false) {
-    drawLongBone(pelvisX - s * 3, spineY + s * 4, pelvisX + s * 14, spineY + s * 6, lw, bone, shade);
-    drawBoneJoint(pelvisX + s * 14, spineY + s * 6, s * 1.05, shade);
-    drawLongBone(pelvisX + s * 14, spineY + s * 6, pelvisX + s * 32, spineY + s * 4, lw * 0.9, bone, shade);
-    drawBoneJoint(pelvisX + s * 32, spineY + s * 4, s * 0.85, shade);
-    drawLongBone(pelvisX + s * 32, spineY + s * 4, pelvisX + s * 46, spineY + s * 8, lw * 0.65, bone, shade);
-    drawLongBone(pelvisX + s * 46, spineY + s * 8, pelvisX + s * 50, spineY + s * 12, lw * 0.42, bone, shade);
+    const kx = pelvisX + s * 16;
+    const ky = spineY + s * 3;
+    drawLongBone(pelvisX - s * 2, spineY + s * 3, kx, ky, lw, bone, shade);
+    drawBoneJoint(kx, ky, s * 1.1, bone, shade);
+    const ax = pelvisX + s * 38;
+    const ay = spineY + s * 2;
+    drawLongBone(kx, ky, ax, ay, lw * 0.95, bone, shade);
+    drawCartoonFoot(ax, ay, 0.12, s, bone, shade);
   }
 
   if (opts.rightLeg !== false) {
-    drawLongBone(pelvisX + s * 3, spineY + s * 5, pelvisX + s * 18, spineY + s * 14, lw, bone, shade);
-    drawBoneJoint(pelvisX + s * 18, spineY + s * 14, s * 1.05, shade);
-    drawLongBone(pelvisX + s * 18, spineY + s * 14, pelvisX + s * 36, spineY + s * 16, lw * 0.9, bone, shade);
-    drawBoneJoint(pelvisX + s * 36, spineY + s * 16, s * 0.85, shade);
-    drawLongBone(pelvisX + s * 36, spineY + s * 16, pelvisX + s * 50, spineY + s * 20, lw * 0.65, bone, shade);
-    drawLongBone(pelvisX + s * 50, spineY + s * 20, pelvisX + s * 54, spineY + s * 24, lw * 0.42, bone, shade);
+    const kx = pelvisX + s * 12;
+    const ky = spineY + s * 13;
+    drawLongBone(pelvisX + s * 2, spineY + s * 4, kx, ky, lw, bone, shade);
+    drawBoneJoint(kx, ky, s * 1.1, bone, shade);
+    const ax = pelvisX + s * 34;
+    const ay = spineY + s * 19;
+    drawLongBone(kx, ky, ax, ay, lw * 0.92, bone, shade);
+    drawCartoonFoot(ax, ay, 0.5, s, bone, shade);
   }
 }
 
@@ -1105,16 +1155,16 @@ function drawScatteredBones(s, seed, bone, shade, boneDark) {
     ctx.save();
     ctx.translate(s * 55, -s * 6);
     ctx.rotate(0.25);
-    drawRealisticSkullSupine(s, 0, 0, bone, shade, boneDark);
+    drawCartoonSkullSupine(s, 0, 0, bone, shade, boneDark);
     ctx.restore();
   }
 }
 
 /** Laying-down skeleton remains — full, partial, or scattered on the seabed. */
 function drawUnderwaterSkeletonRemain(cx, cy, sc, variant) {
-  const bone = "#e4ddd2";
-  const shade = "#b0a498";
-  const boneDark = "#7a6e62";
+  const bone = "#f5f0e6";
+  const shade = "#4e453c";
+  const boneDark = "#2a2520";
   const s = dpr * sc;
   const v = variant % 6;
 
@@ -1133,7 +1183,7 @@ function drawUnderwaterSkeletonRemain(cx, cy, sc, variant) {
     ctx.save();
     ctx.translate(s * 62, -s * 14);
     ctx.rotate(-0.35);
-    drawRealisticSkullSupine(s, 0, 0, bone, shade, boneDark);
+    drawCartoonSkullSupine(s, 0, 0, bone, shade, boneDark);
     ctx.restore();
     drawSandBurialPatch(s, s * 4, s * 11, 48);
   } else if (v === 3) {
@@ -1149,7 +1199,7 @@ function drawUnderwaterSkeletonRemain(cx, cy, sc, variant) {
     ctx.save();
     ctx.translate(-s * 52, -s * 8);
     ctx.rotate(0.5);
-    drawRealisticSkullSupine(s, 0, 0, bone, shade, boneDark);
+    drawCartoonSkullSupine(s, 0, 0, bone, shade, boneDark);
     ctx.restore();
     drawSandBurialPatch(s, 0, s * 12, 42);
   } else if (v === 4) {
@@ -1317,6 +1367,9 @@ function drawSkullShoalsGraveyardBed() {
     ctx.ellipse(bx, by, dpr * (2 + (i % 3)), dpr * 1.2, i * 0.5, 0, Math.PI * 2);
     ctx.fill();
   }
+
+  drawSkullShoalsGraveyardMidwater();
+  drawSkullShoalsSandSkeletons();
 }
 
 function drawSkullShoalsGraveyardMidwater() {
@@ -1347,22 +1400,21 @@ function drawSkullShoalsSandSkeletons() {
   if (w <= 0) return;
   const sandTop = h - dpr * 92;
   const placements = [
-    { x: 0.14, y: 22, s: 1.35, v: 0 },
-    { x: 0.38, y: 18, s: 1.5, v: 1 },
-    { x: 0.62, y: 24, s: 1.28, v: 2 },
-    { x: 0.84, y: 20, s: 1.4, v: 3 },
-    { x: 0.26, y: 32, s: 1.15, v: 4 },
-    { x: 0.52, y: 30, s: 1.22, v: 5 },
-    { x: 0.72, y: 34, s: 1.08, v: 2 },
+    { x: 0.12, y: 20, s: 1.35, v: 0 },
+    { x: 0.36, y: 16, s: 1.48, v: 1 },
+    { x: 0.58, y: 22, s: 1.3, v: 2 },
+    { x: 0.8, y: 18, s: 1.38, v: 3 },
+    { x: 0.28, y: 30, s: 1.12, v: 4 },
+    { x: 0.68, y: 28, s: 1.05, v: 5 },
   ];
-  for (const p of placements) {
+  const count = PERF_CHROMEBOOK ? 4 : placements.length;
+  for (let i = 0; i < count; i++) {
+    const p = placements[i];
     drawUnderwaterSkeletonRemain(p.x * w, sandTop + dpr * p.y, p.s, p.v);
   }
 }
 
 function drawAdventureSkullShoalsEffect(now) {
-  drawSkullShoalsGraveyardMidwater();
-  drawSkullShoalsSandSkeletons();
   const t = now * 0.001;
   ctx.fillStyle = "rgba(40, 10, 20, 0.08)";
   for (let i = 0; i < 6; i++) {
@@ -1738,7 +1790,8 @@ function drawAdventureThemeBed(themeId) {
 
 function drawAdventureGoldGlintsHeavy(now, count) {
   const t = now * 0.001;
-  for (let i = 0; i < perfN(count); i++) {
+  const n = PERF_CHROMEBOOK ? Math.min(count, Math.max(8, Math.floor(count * 0.45))) : count;
+  for (let i = 0; i < perfN(n); i++) {
     const px = ((i * 97 + Math.floor(t * 40 + i * 17)) % 1000) / 1000;
     const py = 0.35 + ((i * 53 + Math.floor(t * 25)) % 550) / 1000;
     const x = px * w;
@@ -1962,14 +2015,14 @@ function updateAdventurePlayTheme(levelIndex) {
     adventurePlayTheme.hidden = false;
     adventurePlayTheme.className = `adventure-play-theme adventure-play-theme--${themeId}`;
   }
-  if (adventurePlayScene) adventurePlayScene.innerHTML = adventureMapSceneSvg(themeId, "play");
+  if (adventurePlayScene) adventurePlayScene.innerHTML = cachedAdventureMapSceneSvg(themeId, "play");
   if (adventurePlayName) adventurePlayName.textContent = lvl.name;
   if (adventureGoalLine) {
     adventureGoalLine.hidden = false;
     adventureGoalLine.textContent = `Goal: ${lvl.passScore} pts`;
   }
   applyAdventurePlayThemeClasses(themeId);
-  bgCacheKey = "";
+  invalidateBackgroundCache();
 }
 
 function clearAdventurePlayTheme() {
@@ -1978,7 +2031,7 @@ function clearAdventurePlayTheme() {
   if (adventurePlayName) adventurePlayName.textContent = "";
   if (adventureGoalLine) adventureGoalLine.hidden = true;
   clearAdventurePlayThemeClasses();
-  bgCacheKey = "";
+  invalidateBackgroundCache();
 }
 
 function fillAdventureResultTheme(container, levelIndex) {
@@ -1988,7 +2041,7 @@ function fillAdventureResultTheme(container, levelIndex) {
   container.hidden = false;
   container.setAttribute("aria-hidden", "false");
   container.className = `adventure-result-theme adventure-result-theme--${themeId}`;
-  container.innerHTML = `${adventureMapSceneSvg(themeId, "res")}<span class="adventure-result-theme__name">${lvl.name}</span>`;
+  container.innerHTML = `${cachedAdventureMapSceneSvg(themeId, "res")}<span class="adventure-result-theme__name">${lvl.name}</span>`;
 }
 
 function defaultMeta() {
@@ -2856,7 +2909,8 @@ function resetProgress() {
   buildRodUI();
   buildShopUI();
   updateAdventureLaunchUI();
-  buildAdventureLevelUI();
+  adventureMapUiProgress = -1;
+  buildAdventureLevelUI(true);
   showToast("Progress reset", 1500);
 }
 
@@ -3076,16 +3130,46 @@ function scrollAdventureMapToProgress() {
   });
 }
 
-function buildAdventureLevelUI() {
+let adventureMapUiProgress = -1;
+
+function syncAdventureMapNodeStates() {
   if (!adventureLevelList) return;
-  adventureLevelList.innerHTML = "";
   const highest = gameMeta.adventureHighestLevel || 0;
+  const nextPlayable = Math.min(ADVENTURE_LEVEL_COUNT, highest + 1);
+  const nodes = adventureLevelList.querySelectorAll(".adventure-map-node");
+  nodes.forEach((b, i) => {
+    const lvl = ADVENTURE_LEVELS[i];
+    if (!lvl) return;
+    const playable = isAdventureLevelPlayable(lvl.level);
+    const cleared = lvl.level <= highest;
+    const isCurrent = playable && !cleared && lvl.level === nextPlayable;
+    b.classList.toggle("adventure-map-node--cleared", cleared);
+    b.classList.toggle("adventure-map-node--locked", !playable);
+    b.classList.toggle("adventure-map-node--current", isCurrent);
+    b.disabled = !playable;
+  });
+}
+
+function buildAdventureLevelUI(force = false) {
+  if (!adventureLevelList) return;
+  const highest = gameMeta.adventureHighestLevel || 0;
+  if (
+    !force &&
+    adventureMapUiProgress === highest &&
+    adventureLevelList.children.length === ADVENTURE_LEVEL_COUNT
+  ) {
+    syncAdventureMapNodeStates();
+    return;
+  }
+  adventureMapUiProgress = highest;
+  adventureLevelList.innerHTML = "";
   const nextPlayable = Math.min(ADVENTURE_LEVEL_COUNT, highest + 1);
 
   if (adventureMapTrail) {
     adventureMapTrail.setAttribute("d", buildAdventureTrailPath());
   }
 
+  const frag = document.createDocumentFragment();
   for (let i = 0; i < ADVENTURE_LEVELS.length; i++) {
     const lvl = ADVENTURE_LEVELS[i];
     const layout = ADVENTURE_MAP_NODE_LAYOUT[i] || { x: 50, y: 50 };
@@ -3108,7 +3192,7 @@ function buildAdventureLevelUI() {
     b.title = `${lvl.name} — ${lvl.subtitle} · pass ${lvl.passScore}`;
     b.innerHTML = `
       <span class="adventure-map-node__scene-wrap" aria-hidden="true">
-        ${adventureMapSceneSvg(themeId, `n${i}`)}
+        ${cachedAdventureMapSceneSvg(themeId, `n${i}`)}
         <span class="adventure-map-node__num">${lvl.level}</span>
         ${isFinale ? '<span class="adventure-map-node__x" aria-hidden="true"></span>' : ""}
         ${isCurrent ? '<span class="adventure-map-node__boat" aria-hidden="true"></span>' : ""}
@@ -3121,8 +3205,9 @@ function buildAdventureLevelUI() {
     if (playable) {
       b.addEventListener("click", () => startAdventureLevel(i));
     }
-    adventureLevelList.appendChild(b);
+    frag.appendChild(b);
   }
+  adventureLevelList.appendChild(frag);
   if (adventureMapBanner) {
     adventureMapBanner.hidden = !isAdventureUnlocked();
   }
@@ -3134,11 +3219,13 @@ function openAdventureHub() {
     return;
   }
   hideAllPanels();
-  buildAdventureLevelUI();
   if (panelAdventure) panelAdventure.hidden = false;
   syncAdventureLaunchVisibility();
-  scrollAdventureMapToProgress();
   if (musicEnabled) startAdventureMusic();
+  window.requestAnimationFrame(() => {
+    buildAdventureLevelUI();
+    scrollAdventureMapToProgress();
+  });
 }
 
 function startAdventureLevel(levelIndex) {
@@ -3159,6 +3246,7 @@ function endAdventureRound() {
   if (passed) {
     gameMeta.adventureHighestLevel = Math.max(gameMeta.adventureHighestLevel || 0, lvl.level);
     saveMeta();
+    adventureMapUiProgress = -1;
   }
   const earned = coinsAwardedForScore(score);
   if (earned > 0) {
@@ -5718,10 +5806,6 @@ function drawBackground() {
 }
 
 function drawCachedBackground() {
-  if (!PERF_CHROMEBOOK) {
-    drawBackground();
-    return;
-  }
   const themeKey = adventureSession ? getAdventureLevelTheme(adventureSession.levelIndex) : "";
   const key = `${w}|${h}|${getReef().id}|${themeKey}`;
   if (!bgCacheCanvas || bgCacheKey !== key) {
@@ -6957,7 +7041,7 @@ function drawJackpotSkeletonCrabChestArms(sc) {
     const gy = gripY;
     drawLongBone(shx, shy, midX, midY, 4.2 * sc, bone, shade);
     drawLongBone(midX, midY, gx, gy, 3.4 * sc, bone, shade);
-    drawBoneJoint(midX, midY, 2.8 * sc, shade);
+    drawBoneJoint(midX, midY, 2.8 * sc, bone, shade);
 
     const ang = Math.atan2(gy - midY, gx - midX);
     const cx = gx + Math.cos(ang + sx * 0.5) * 5 * sc;
@@ -7006,7 +7090,7 @@ function drawJackpotSkeletonCrab(sc, leg) {
     const j2y = j1y + Math.sin(a2) * l2;
     drawLongBone(bx, by, j1x, j1y, (2.1 - idx * 0.12) * sc, bone, shade);
     drawLongBone(j1x, j1y, j2x, j2y, (1.7 - idx * 0.1) * sc, bone, shade);
-    drawBoneJoint(j1x, j1y, 1.4 * sc, shade);
+    drawBoneJoint(j1x, j1y, 1.4 * sc, bone, shade);
   }
   for (const side of [-1, 1]) {
     for (let i = 0; i < 4; i++) drawBoneLeg(side, i);
@@ -7787,6 +7871,20 @@ refreshLeaderboardViews();
 updateAdventureLaunchUI();
 buildAdventureLevelUI();
 updateMusicButton();
+
+function warmupAdventureSceneCache() {
+  for (let i = 0; i < ADVENTURE_LEVEL_COUNT; i++) {
+    cachedAdventureMapSceneSvg(getAdventureLevelTheme(i), `n${i}`);
+  }
+  cachedAdventureMapSceneSvg("skull-shoals", "play");
+  cachedAdventureMapSceneSvg("treasure-cove", "res");
+}
+
+if (typeof requestIdleCallback === "function") {
+  requestIdleCallback(warmupAdventureSceneCache, { timeout: 2500 });
+} else {
+  setTimeout(warmupAdventureSceneCache, 400);
+}
 resize();
 initBubbles();
 showIntroIfNeeded();
