@@ -135,6 +135,41 @@ body {
   box-shadow: 0 0 10px rgba(80, 20, 30, 0.4);
 }
 
+.adventure-play-theme--serpent-strait {
+  border-color: rgba(45, 110, 90, 0.5);
+  background: rgba(8, 28, 26, 0.82);
+}
+
+.adventure-play-theme--serpent-strait .adventure-play-theme__name {
+  color: #6ee7b7;
+}
+
+.adventure-play-theme--doubloon-bay {
+  border-color: rgba(255, 210, 90, 0.5);
+  background: rgba(20, 48, 62, 0.75);
+  box-shadow: 0 0 18px rgba(200, 230, 255, 0.15);
+}
+
+.adventure-play-theme--doubloon-bay .adventure-play-theme__name {
+  color: #fde68a;
+}
+
+.adventure-play-theme--doubloon-bay .adventure-play-theme__goal {
+  color: #a5f3fc;
+}
+
+.adventure-play-theme--emerald-lagoon .adventure-play-theme__name {
+  color: #6ee7b7;
+}
+
+.adventure-play-theme--krakens-teeth .adventure-play-theme__name {
+  color: #f9a8d4;
+}
+
+.adventure-play-theme--leviathan-deep .adventure-play-theme__name {
+  color: #93c5fd;
+}
+
 .adventure-play-theme--treasure-cove {
   border-color: rgba(255, 200, 50, 0.55);
   box-shadow: 0 0 14px rgba(255, 200, 50, 0.2);
@@ -172,11 +207,30 @@ body {
   box-shadow: inset 0 0 0 2px rgba(50, 180, 100, 0.35);
 }
 
-#app.app--adventure-theme-golden-atoll .canvas-wrap,
-#app.app--adventure-theme-doubloon-bay .canvas-wrap {
+#app.app--adventure-theme-golden-atoll .canvas-wrap {
   box-shadow:
     inset 0 0 0 2px rgba(255, 200, 50, 0.4),
     inset 0 0 36px rgba(255, 190, 60, 0.1);
+}
+
+#app.app--adventure-theme-doubloon-bay .canvas-wrap {
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 220, 120, 0.35),
+    inset 0 0 48px rgba(180, 220, 245, 0.18);
+}
+
+#app.app--adventure-theme-compass-cay .canvas-wrap {
+  box-shadow: inset 0 0 0 2px rgba(180, 150, 100, 0.35);
+}
+
+#app.app--adventure-theme-palmwood-harbor .canvas-wrap {
+  box-shadow:
+    inset 0 0 0 2px rgba(80, 160, 120, 0.35),
+    inset 0 0 32px rgba(120, 200, 220, 0.1);
+}
+
+#app.app--adventure-theme-treasurehorn-peak .canvas-wrap {
+  box-shadow: inset 0 0 0 2px rgba(160, 150, 140, 0.35);
 }
 
 #app.app--adventure-theme-mariners-rest .canvas-wrap {

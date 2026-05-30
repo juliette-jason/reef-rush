@@ -407,14 +407,17 @@ function adventureMapSceneSvg(themeId, idSuffix = "") {
     "serpent-strait": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="72" height="52" fill="#3a6878"/>
       <path d="M0 30 Q18 22 36 30 T72 30 L72 52 L0 52 Z" fill="#2a5060"/>
+      <path d="M-4 28 Q20 8 38 26 Q54 40 76 22" fill="none" stroke="#1e4842" stroke-width="5" stroke-linecap="round" opacity="0.35"/>
+      <ellipse cx="68" cy="20" rx="7" ry="5" fill="#1a4038" opacity="0.4"/>
+      <circle cx="69" cy="19" r="1.2" fill="#d4c840" opacity="0.55"/>
       <path d="M8 34 Q24 18 40 32 Q56 46 68 28" fill="none" stroke="#4a8898" stroke-width="3" stroke-linecap="round"/>
       <path d="M62 26 L68 22 L66 30 Z" fill="#2e7a50" stroke="#1e5038" stroke-width="0.8"/>
       <circle cx="64" cy="24" r="2" fill="#f0e040"/>
       <circle cx="60" cy="22" r="1.2" fill="#2e2418"/>
     </svg>`,
     "doubloon-bay": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <rect width="72" height="52" fill="#4a7898"/>
-      <path d="M0 38 L72 38 L72 52 L0 52 Z" fill="#c8a860"/>
+      <rect width="72" height="52" fill="#68a8c8"/>
+      <path d="M0 38 L72 38 L72 52 L0 52 Z" fill="#e8c878"/>
       <ellipse cx="22" cy="32" rx="10" ry="4" fill="#e8c840" stroke="#a88020" stroke-width="1"/>
       <ellipse cx="36" cy="28" rx="11" ry="4.5" fill="#f0d850" stroke="#a88020" stroke-width="1"/>
       <ellipse cx="50" cy="32" rx="10" ry="4" fill="#e8c840" stroke="#a88020" stroke-width="1"/>
@@ -597,14 +600,14 @@ const ADVENTURE_PLAY_ATMOSPHERE = {
   },
   "mariners-rest": { stops: [[0, "rgba(200, 210, 230, 0.14)"], [1, "rgba(40, 60, 90, 0.18)"]], effect: "moon" },
   "golden-atoll": { stops: [[0, "rgba(255, 220, 120, 0.16)"], [1, "rgba(180, 140, 60, 0.12)"]], effect: "golden-atoll" },
-  "serpent-strait": { stops: [[0, "rgba(50, 90, 80, 0.14)"], [1, "rgba(25, 55, 50, 0.28)"]], effect: "serpent-strait" },
-  "doubloon-bay": { stops: [[0, "rgba(90, 120, 140, 0.1)"], [1, "rgba(200, 160, 50, 0.2)"]], effect: "doubloon-bay" },
+  "serpent-strait": { stops: [[0, "rgba(45, 85, 75, 0.1)"], [0.55, "rgba(30, 60, 55, 0.14)"], [1, "rgba(18, 40, 38, 0.22)"]], effect: "serpent-strait" },
+  "doubloon-bay": { stops: [[0, "rgba(140, 190, 220, 0.05)"], [0.5, "rgba(100, 150, 180, 0.06)"], [1, "rgba(255, 220, 130, 0.09)"]], effect: "doubloon-bay" },
   "compass-cay": { stops: [[0, "rgba(120, 150, 130, 0.1)"], [1, "rgba(50, 70, 60, 0.15)"]], effect: "compass-cay" },
   "krakens-teeth": { stops: [[0, "rgba(40, 30, 50, 0.2)"], [1, "rgba(80, 25, 45, 0.28)"]], effect: "krakens-teeth" },
   "palmwood-harbor": { stops: [[0, "rgba(180, 200, 160, 0.1)"], [1, "rgba(210, 180, 100, 0.18)"]], effect: "palmwood-harbor" },
   "emerald-lagoon": { stops: [[0, "rgba(80, 200, 140, 0.14)"], [1, "rgba(30, 120, 80, 0.22)"]], effect: "emerald-lagoon" },
   "phantom-keys": { stops: [[0, "rgba(140, 160, 200, 0.16)"], [1, "rgba(50, 60, 90, 0.22)"]], effect: "phantom-keys" },
-  "stormbreak-isle": { stops: [[0, "rgba(25, 35, 55, 0.35)"], [1, "rgba(40, 50, 70, 0.2)"]], effect: "storm" },
+  "stormbreak-isle": { stops: [[0, "rgba(25, 35, 55, 0.35)"], [1, "rgba(40, 50, 70, 0.2)"]], effect: "stormbreak-isle" },
   "treasurehorn-peak": { stops: [[0, "rgba(160, 170, 185, 0.12)"], [1, "rgba(90, 80, 70, 0.22)"]], effect: "treasurehorn-peak" },
   "leviathan-deep": { stops: [[0, "rgba(5, 15, 35, 0.35)"], [1, "rgba(10, 25, 50, 0.45)"]], effect: "leviathan-deep" },
   "captains-landing": { stops: [[0, "rgba(140, 120, 90, 0.12)"], [1, "rgba(60, 50, 40, 0.18)"]], effect: "captains-landing" },
@@ -655,11 +658,11 @@ const ADVENTURE_THEME_SAND = {
   },
   "doubloon-bay": {
     stops: [
-      [0, "rgba(255, 220, 140, 0)"],
-      [0.35, "rgba(230, 190, 100, 0.3)"],
-      [1, "rgba(200, 160, 70, 0.58)"],
+      [0, "rgba(255, 235, 180, 0)"],
+      [0.35, "rgba(240, 210, 130, 0.22)"],
+      [1, "rgba(215, 175, 85, 0.42)"],
     ],
-    speck: "rgba(255, 210, 90, 0.32)",
+    speck: "rgba(255, 225, 120, 0.28)",
   },
   "compass-cay": {
     stops: [
@@ -764,16 +767,16 @@ const ADVENTURE_THEME_REEF_OVERRIDES = {
     bubble: "rgba(255, 240, 180, 0.2)",
   },
   "serpent-strait": {
-    gradient: ["#1a3840", "#224850", "#2a5860", "#183038"],
-    shaft: ["rgba(60, 120, 100, 0.12)", "rgba(60, 120, 100, 0)"],
-    silhouette: "rgba(15, 35, 40, 0.75)",
-    bubble: "rgba(80, 160, 140, 0.14)",
+    gradient: ["#1e4248", "#265058", "#2e6068", "#1a3838"],
+    shaft: ["rgba(70, 140, 115, 0.14)", "rgba(70, 140, 115, 0)"],
+    silhouette: "rgba(18, 42, 48, 0.68)",
+    bubble: "rgba(90, 180, 150, 0.16)",
   },
   "doubloon-bay": {
-    gradient: ["#286888", "#348898", "#4098a8", "#886820"],
-    shaft: ["rgba(255, 210, 80, 0.16)", "rgba(255, 210, 80, 0)"],
-    silhouette: "rgba(30, 50, 60, 0.65)",
-    bubble: "rgba(255, 220, 100, 0.2)",
+    gradient: ["#48a0c0", "#58b8d0", "#68c8d8", "#c8a050"],
+    shaft: ["rgba(255, 235, 160, 0.2)", "rgba(255, 235, 160, 0)"],
+    silhouette: "rgba(50, 85, 100, 0.42)",
+    bubble: "rgba(255, 240, 160, 0.24)",
   },
   "compass-cay": {
     gradient: ["#488878", "#589888", "#68a898", "#405848"],
@@ -1538,6 +1541,14 @@ function drawTreasureCoveBed() {
 function drawDoubloonBayBed() {
   const sandTop = h - dpr * 92;
   const base = sandTop + dpr * 12;
+  ctx.fillStyle = "rgba(70, 55, 35, 0.55)";
+  ctx.beginPath();
+  ctx.moveTo(w * 0.08, base + dpr * 6);
+  ctx.lineTo(w * 0.14, base - dpr * 22);
+  ctx.lineTo(w * 0.2, base + dpr * 4);
+  ctx.closePath();
+  ctx.fill();
+  drawTreasureChest(w * 0.72, base - dpr * 6, 0.75);
   for (let i = 0; i < 5; i++) {
     const cx = w * (0.12 + i * 0.19);
     for (let j = 0; j < 4 + (i % 3); j++) {
@@ -1545,11 +1556,23 @@ function drawDoubloonBayBed() {
     }
   }
   scatterGoldCoins(sandTop, 24, 3, 30);
+  ctx.strokeStyle = "rgba(90, 70, 45, 0.5)";
+  ctx.lineWidth = dpr * 1.8;
+  ctx.beginPath();
+  ctx.arc(w * 0.32, base - dpr * 4, dpr * 10, Math.PI, 0);
+  ctx.stroke();
 }
 
 function drawMarinersRestBed() {
   const sandTop = h - dpr * 92;
   const base = sandTop + dpr * 14;
+  ctx.fillStyle = "rgba(55, 60, 75, 0.5)";
+  ctx.beginPath();
+  ctx.moveTo(w * 0.12, base + dpr * 4);
+  ctx.lineTo(w * 0.18, base - dpr * 18);
+  ctx.lineTo(w * 0.28, base + dpr * 2);
+  ctx.closePath();
+  ctx.fill();
   ctx.strokeStyle = "rgba(100, 110, 130, 0.7)";
   ctx.lineWidth = dpr * 2.5;
   ctx.lineCap = "round";
@@ -1566,6 +1589,12 @@ function drawMarinersRestBed() {
   ctx.lineWidth = dpr * 1.4;
   ctx.beginPath();
   ctx.arc(w * 0.22, base + dpr * 4, dpr * 12, Math.PI, 0);
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(80, 85, 100, 0.45)";
+  ctx.lineWidth = dpr * 1.2;
+  ctx.beginPath();
+  ctx.moveTo(w * 0.55, base);
+  ctx.quadraticCurveTo(w * 0.58, base - dpr * 28, w * 0.62, base - dpr * 8);
   ctx.stroke();
 }
 
@@ -1589,7 +1618,17 @@ function drawGoldenAtollBed() {
 
 function drawSerpentStraitBed() {
   const sandTop = h - dpr * 92;
-  ctx.strokeStyle = "rgba(50, 110, 95, 0.45)";
+  const base = sandTop + dpr * 10;
+  ctx.fillStyle = "rgba(30, 55, 52, 0.55)";
+  for (const px of [0.08, 0.92]) {
+    ctx.beginPath();
+    ctx.moveTo(w * px, sandTop);
+    ctx.lineTo(w * (px + (px < 0.5 ? 0.04 : -0.04)), base - dpr * 55);
+    ctx.lineTo(w * (px + (px < 0.5 ? 0.07 : -0.07)), base);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.strokeStyle = "rgba(50, 110, 95, 0.5)";
   ctx.lineWidth = dpr * 3;
   ctx.lineCap = "round";
   ctx.beginPath();
@@ -1597,13 +1636,19 @@ function drawSerpentStraitBed() {
   ctx.quadraticCurveTo(w * 0.35, sandTop - dpr * 10, w * 0.55, sandTop + dpr * 18);
   ctx.quadraticCurveTo(w * 0.75, sandTop + dpr * 40, w * 0.95, sandTop + dpr * 12);
   ctx.stroke();
-  ctx.fillStyle = "rgba(40, 90, 70, 0.35)";
+  ctx.fillStyle = "rgba(40, 90, 70, 0.4)";
   ctx.beginPath();
   ctx.moveTo(w * 0.92, sandTop + dpr * 10);
   ctx.lineTo(w * 0.97, sandTop + dpr * 8);
   ctx.lineTo(w * 0.94, sandTop + dpr * 14);
   ctx.closePath();
   ctx.fill();
+  ctx.fillStyle = "rgba(35, 75, 62, 0.35)";
+  for (let i = 0; i < 4; i++) {
+    ctx.beginPath();
+    ctx.ellipse(w * (0.22 + i * 0.18), base - dpr * 6, dpr * 5, dpr * 3, i * 0.4, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
 
 function drawCompassCayBed() {
@@ -1611,6 +1656,10 @@ function drawCompassCayBed() {
   const cx = w * 0.5;
   const cy = sandTop + dpr * 38;
   const r = dpr * 28;
+  ctx.fillStyle = "rgba(210, 190, 150, 0.22)";
+  ctx.beginPath();
+  ctx.ellipse(cx, sandTop + dpr * 14, w * 0.28, dpr * 12, 0, 0, Math.PI * 2);
+  ctx.fill();
   ctx.strokeStyle = "rgba(180, 160, 120, 0.55)";
   ctx.lineWidth = dpr * 1.2;
   ctx.beginPath();
@@ -1628,6 +1677,12 @@ function drawCompassCayBed() {
   ctx.fillRect(cx - r * 0.55, cy - r * 0.08, r * 1.1, r * 0.16);
   drawCrossMarker(w * 0.18, sandTop + dpr * 14, 36);
   drawCrossMarker(w * 0.82, sandTop + dpr * 14, 36);
+  ctx.strokeStyle = "rgba(160, 140, 100, 0.4)";
+  ctx.lineWidth = dpr * 0.9;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx, cy - r * 1.35);
+  ctx.stroke();
 }
 
 function drawKrakensTeethBed() {
@@ -1641,6 +1696,18 @@ function drawKrakensTeethBed() {
     ctx.lineTo(w * tx + dpr * 10, base);
     ctx.closePath();
     ctx.fill();
+  }
+  ctx.fillStyle = "rgba(50, 35, 45, 0.45)";
+  ctx.fillRect(w * 0.38, base - dpr * 3, w * 0.24, dpr * 4);
+  ctx.strokeStyle = "rgba(100, 30, 50, 0.35)";
+  ctx.lineWidth = dpr * 2.2;
+  ctx.lineCap = "round";
+  for (let i = 0; i < 3; i++) {
+    const ox = w * (0.2 + i * 0.28);
+    ctx.beginPath();
+    ctx.moveTo(ox, h - dpr * 70);
+    ctx.quadraticCurveTo(ox + dpr * 22, waterTop + (h - waterTop) * 0.55, ox - dpr * 14, waterTop + dpr * 30);
+    ctx.stroke();
   }
 }
 
@@ -1663,10 +1730,29 @@ function drawPalmwoodHarborBed() {
   }
   ctx.fillStyle = "rgba(120, 85, 50, 0.7)";
   ctx.fillRect(w * 0.08, base - dpr * 4, w * 0.84, dpr * 5);
+  ctx.fillStyle = "rgba(70, 50, 32, 0.65)";
+  ctx.beginPath();
+  ctx.moveTo(w * 0.55, base - dpr * 2);
+  ctx.lineTo(w * 0.68, base - dpr * 14);
+  ctx.lineTo(w * 0.78, base - dpr * 2);
+  ctx.lineTo(w * 0.72, base);
+  ctx.lineTo(w * 0.52, base);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = "rgba(60, 45, 30, 0.5)";
+  ctx.lineWidth = dpr * 1;
+  ctx.beginPath();
+  ctx.moveTo(w * 0.62, base - dpr * 14);
+  ctx.lineTo(w * 0.62, base - dpr * 28);
+  ctx.stroke();
 }
 
 function drawEmeraldLagoonBed() {
   const sandTop = h - dpr * 92;
+  ctx.fillStyle = "rgba(40, 140, 90, 0.25)";
+  ctx.beginPath();
+  ctx.ellipse(w * 0.5, sandTop + dpr * 28, w * 0.36, dpr * 18, 0, 0, Math.PI * 2);
+  ctx.fill();
   for (let i = 0; i < perfN(10); i++) {
     const px = w * (0.1 + ((i * 89) % 800) / 1000);
     const py = sandTop + dpr * (12 + (i % 4) * 8);
@@ -1675,18 +1761,37 @@ function drawEmeraldLagoonBed() {
     ctx.ellipse(px, py, dpr * (10 + (i % 3) * 4), dpr * 5, 0, 0, Math.PI * 2);
     ctx.fill();
   }
+  ctx.strokeStyle = "rgba(80, 220, 140, 0.35)";
+  ctx.lineWidth = dpr * 1.2;
+  for (const lx of [0.3, 0.5, 0.7]) {
+    ctx.beginPath();
+    ctx.moveTo(w * lx, sandTop + dpr * 8);
+    ctx.quadraticCurveTo(w * (lx + 0.02), sandTop - dpr * 20, w * (lx - 0.01), sandTop - dpr * 4);
+    ctx.stroke();
+  }
 }
 
 function drawPhantomKeysBed() {
   const sandTop = h - dpr * 92;
+  const base = sandTop + dpr * 10;
   for (const px of [0.2, 0.5, 0.8]) {
-    ctx.fillStyle = "rgba(100, 120, 160, 0.25)";
+    ctx.fillStyle = "rgba(100, 120, 160, 0.28)";
     ctx.fillRect(w * px - dpr * 2, sandTop - dpr * 55, dpr * 4, dpr * 55);
-    ctx.fillStyle = "rgba(180, 190, 220, 0.2)";
+    ctx.fillStyle = "rgba(180, 190, 220, 0.22)";
     ctx.beginPath();
     ctx.ellipse(w * px, sandTop - dpr * 58, dpr * 14, dpr * 8, 0, 0, Math.PI * 2);
     ctx.fill();
+    ctx.strokeStyle = "rgba(200, 210, 245, 0.35)";
+    ctx.lineWidth = dpr * 1.1;
+    ctx.beginPath();
+    ctx.arc(w * px, sandTop - dpr * 52, dpr * 4, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillRect(w * px + dpr * 3, sandTop - dpr * 50, dpr * 8, dpr * 1.4);
   }
+  ctx.fillStyle = "rgba(140, 155, 200, 0.2)";
+  ctx.beginPath();
+  ctx.ellipse(w * 0.5, base, w * 0.32, dpr * 10, 0, 0, Math.PI * 2);
+  ctx.fill();
 }
 
 function drawStormbreakIsleBed() {
@@ -1699,6 +1804,13 @@ function drawStormbreakIsleBed() {
   ctx.lineTo(w * 0.88, base);
   ctx.closePath();
   ctx.fill();
+  ctx.fillStyle = "rgba(50, 48, 55, 0.55)";
+  ctx.beginPath();
+  ctx.moveTo(w * 0.18, base);
+  ctx.lineTo(w * 0.24, base - dpr * 20);
+  ctx.lineTo(w * 0.3, base);
+  ctx.closePath();
+  ctx.fill();
   ctx.strokeStyle = "rgba(80, 70, 60, 0.5)";
   ctx.lineWidth = dpr * 1.2;
   for (let i = 0; i < 6; i++) {
@@ -1707,6 +1819,12 @@ function drawStormbreakIsleBed() {
     ctx.lineTo(w * (0.62 + i * 0.05), base - dpr * 18);
     ctx.stroke();
   }
+  ctx.strokeStyle = "rgba(70, 75, 90, 0.4)";
+  ctx.lineWidth = dpr * 2;
+  ctx.beginPath();
+  ctx.moveTo(w * 0.65, base - dpr * 26);
+  ctx.lineTo(w * 0.65, base - dpr * 48);
+  ctx.stroke();
 }
 
 function drawTreasurehornPeakBed() {
@@ -1726,6 +1844,14 @@ function drawTreasurehornPeakBed() {
   ctx.lineTo(w * 0.28, base);
   ctx.closePath();
   ctx.fill();
+  ctx.fillStyle = "rgba(240, 210, 80, 0.45)";
+  ctx.beginPath();
+  ctx.moveTo(w * 0.48, base - dpr * 82);
+  ctx.lineTo(w * 0.5, base - dpr * 90);
+  ctx.lineTo(w * 0.52, base - dpr * 82);
+  ctx.closePath();
+  ctx.fill();
+  scatterGoldCoins(sandTop + dpr * 4, 8, 7, 18);
 }
 
 function drawLeviathanDeepBed() {
@@ -1738,6 +1864,12 @@ function drawLeviathanDeepBed() {
     ctx.fillStyle = "rgba(80, 180, 255, 0.25)";
     ctx.beginPath();
     ctx.ellipse(w * vx, sandTop + dpr * 2, dpr * 3, dpr * 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = "rgba(8, 18, 35, 0.5)";
+  for (let i = 0; i < 5; i++) {
+    ctx.beginPath();
+    ctx.ellipse(w * (0.1 + i * 0.2), sandTop + dpr * 22, dpr * 6, dpr * 3, i * 0.3, 0, Math.PI * 2);
     ctx.fill();
   }
 }
@@ -1825,8 +1957,106 @@ function drawAdventureTreasureCoveEffect(now) {
   }
 }
 
+function drawVagueSerpentSilhouette(now) {
+  const t = now * 0.00035;
+  const wy = waterTop;
+  const wh = h - waterTop;
+  const baseY = wy + wh * 0.4 + Math.sin(t) * dpr * 10;
+  const sway = Math.sin(t * 0.65) * w * 0.025;
+
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.strokeStyle = "rgba(22, 58, 50, 0.55)";
+  ctx.lineWidth = dpr * 28;
+  ctx.globalAlpha = 0.07;
+  ctx.beginPath();
+  ctx.moveTo(-w * 0.12 + sway, baseY + wh * 0.14);
+  ctx.bezierCurveTo(
+    w * 0.18 + sway, baseY - wh * 0.2,
+    w * 0.42 - sway * 0.5, baseY + wh * 0.16,
+    w * 0.68 + sway, baseY - wh * 0.06
+  );
+  ctx.bezierCurveTo(w * 0.9, baseY + wh * 0.12, w * 1.08, baseY, w * 1.14, baseY - wh * 0.14);
+  ctx.stroke();
+
+  ctx.globalAlpha = 0.09;
+  ctx.fillStyle = "rgba(18, 52, 46, 0.85)";
+  ctx.beginPath();
+  ctx.ellipse(w * 1.06 + sway, baseY - wh * 0.16, dpr * 42, dpr * 30, 0.25, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 0.14;
+  ctx.fillStyle = "rgba(220, 200, 70, 0.55)";
+  ctx.beginPath();
+  ctx.ellipse(w * 1.09 + sway, baseY - wh * 0.18, dpr * 5, dpr * 3.5, 0.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(w * 1.02 + sway, baseY - wh * 0.15, dpr * 3, dpr * 2.5, 0.15, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.globalAlpha = 0.05;
+  ctx.strokeStyle = "rgba(35, 90, 75, 0.5)";
+  ctx.lineWidth = dpr * 2.5;
+  for (let i = 0; i < 9; i++) {
+    const px = w * (0.06 + i * 0.1) + sway * (i % 2 ? 1 : -0.6);
+    const py = baseY + Math.sin(i * 0.75 + t * 2) * wh * 0.05;
+    ctx.beginPath();
+    ctx.moveTo(px, py - dpr * 14);
+    ctx.lineTo(px + dpr * 10, py + dpr * 12);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawVagueLeviathanSilhouette(now) {
+  const t = now * 0.00025;
+  const wy = waterTop;
+  const wh = h - waterTop;
+  const cy = wy + wh * 0.48 + Math.sin(t) * dpr * 6;
+
+  ctx.save();
+  ctx.globalAlpha = 0.06;
+  ctx.fillStyle = "rgba(4, 12, 28, 0.9)";
+  ctx.beginPath();
+  ctx.ellipse(w * 0.5, cy, w * 0.55, wh * 0.22, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 0.12;
+  ctx.fillStyle = "rgba(50, 160, 255, 0.7)";
+  ctx.beginPath();
+  ctx.ellipse(w * 0.38 + Math.sin(t) * w * 0.02, cy - wh * 0.04, dpr * 8, dpr * 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(w * 0.62 - Math.sin(t * 0.8) * w * 0.02, cy - wh * 0.03, dpr * 7, dpr * 4.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
 function drawAdventureDoubloonBayEffect(now) {
-  drawAdventureGoldGlintsHeavy(now, 20);
+  const clear = ctx.createLinearGradient(0, waterTop, 0, h);
+  clear.addColorStop(0, "rgba(170, 220, 245, 0.14)");
+  clear.addColorStop(0.45, "rgba(120, 175, 205, 0.08)");
+  clear.addColorStop(1, "rgba(255, 235, 170, 0.1)");
+  ctx.fillStyle = clear;
+  ctx.fillRect(0, waterTop, w, h - waterTop);
+
+  ctx.save();
+  ctx.globalAlpha = 0.09;
+  for (let i = 0; i < 5; i++) {
+    const sx = w * (0.15 + i * 0.14);
+    const g = ctx.createLinearGradient(sx, waterTop, sx + w * 0.1, h);
+    g.addColorStop(0, "rgba(255, 250, 220, 0.55)");
+    g.addColorStop(1, "rgba(255, 250, 220, 0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(sx, waterTop);
+    ctx.lineTo(sx + w * 0.14, h);
+    ctx.lineTo(sx + w * 0.04, h);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+
+  drawAdventureGoldGlintsHeavy(now, 12);
   const sandTop = h - dpr * 92;
   scatterGoldCoins(sandTop, 6, 11, 14);
 }
@@ -1842,15 +2072,19 @@ function drawAdventureGoldenAtollEffect(now) {
 
 function drawAdventureSerpentStraitEffect(now) {
   const t = now * 0.001;
-  ctx.fillStyle = "rgba(30, 70, 60, 0.1)";
-  ctx.fillRect(0, waterTop + (h - waterTop) * 0.4, w, (h - waterTop) * 0.6);
-  if (Math.sin(t * 0.8) > 0.6) {
-    ctx.strokeStyle = "rgba(40, 100, 85, 0.25)";
-    ctx.lineWidth = dpr * 8;
+  const wh = h - waterTop;
+  const mist = ctx.createLinearGradient(0, waterTop + wh * 0.3, 0, h);
+  mist.addColorStop(0, "rgba(35, 75, 65, 0.06)");
+  mist.addColorStop(1, "rgba(20, 45, 42, 0.14)");
+  ctx.fillStyle = mist;
+  ctx.fillRect(0, waterTop + wh * 0.3, w, wh * 0.7);
+  if (Math.sin(t * 0.8) > 0.55) {
+    ctx.strokeStyle = "rgba(45, 110, 92, 0.12)";
+    ctx.lineWidth = dpr * 6;
     ctx.lineCap = "round";
     ctx.beginPath();
-    ctx.moveTo(-w * 0.1, waterTop + (h - waterTop) * 0.55);
-    ctx.quadraticCurveTo(w * 0.4, waterTop + (h - waterTop) * 0.35, w * 1.1, waterTop + (h - waterTop) * 0.6);
+    ctx.moveTo(-w * 0.1, waterTop + wh * 0.55);
+    ctx.quadraticCurveTo(w * 0.4, waterTop + wh * 0.35, w * 1.1, waterTop + wh * 0.6);
     ctx.stroke();
   }
 }
@@ -1903,7 +2137,13 @@ function drawAdventureCompassCayEffect(now) {
 }
 
 function drawAdventurePalmwoodHarborEffect(now) {
-  drawAdventureGoldenAtollEffect(now);
+  const haze = ctx.createLinearGradient(0, waterTop, 0, h);
+  haze.addColorStop(0, "rgba(180, 230, 255, 0.12)");
+  haze.addColorStop(0.55, "rgba(120, 200, 220, 0.08)");
+  haze.addColorStop(1, "rgba(210, 175, 95, 0.1)");
+  ctx.fillStyle = haze;
+  ctx.fillRect(0, waterTop, w, h - waterTop);
+  drawAdventureGoldGlints(now);
 }
 
 function drawAdventureEmeraldLagoonEffect(now) {
@@ -1946,6 +2186,25 @@ function drawAdventureLeviathanDeepEffect(now) {
   }
 }
 
+function drawAdventureStormbreakIsleEffect(now) {
+  drawAdventureStormFlash(now);
+  const t = now * 0.001;
+  ctx.strokeStyle = "rgba(140, 155, 190, 0.22)";
+  ctx.lineWidth = dpr * 0.9;
+  for (let i = 0; i < perfN(18); i++) {
+    const rx = ((i * 97 + Math.floor(t * 55)) % 1000) / 1000 * w;
+    const ry = waterTop + ((i * 43) % 1000) / 1000 * (h - waterTop) * 0.85;
+    ctx.beginPath();
+    ctx.moveTo(rx, ry);
+    ctx.lineTo(rx + dpr * (2 + (i % 3)), ry + dpr * (10 + (i % 5) * 3));
+    ctx.stroke();
+  }
+  if (Math.sin(t * 1.4) > 0.85) {
+    ctx.fillStyle = "rgba(200, 210, 240, 0.08)";
+    ctx.fillRect(0, waterTop, w, (h - waterTop) * 0.4);
+  }
+}
+
 function drawAdventureCaptainsLandingEffect(now) {
   const lantern = ctx.createRadialGradient(w * 0.72, waterTop + dpr * 40, 0, w * 0.72, waterTop + dpr * 40, dpr * 80);
   lantern.addColorStop(0, "rgba(255, 200, 100, 0.16)");
@@ -1963,6 +2222,7 @@ const ADVENTURE_THEME_EFFECT_DRAW = {
   skull: drawAdventureSkullShoalsEffect,
   moon: drawAdventureMarinersRestEffect,
   storm: drawAdventureStormFlash,
+  "stormbreak-isle": drawAdventureStormbreakIsleEffect,
   "golden-atoll": drawAdventureGoldenAtollEffect,
   "serpent-strait": drawAdventureSerpentStraitEffect,
   "doubloon-bay": drawAdventureDoubloonBayEffect,
@@ -1982,6 +2242,9 @@ function drawAdventureThemeOverlay(now) {
   const themeId = getAdventureLevelTheme(adventureSession.levelIndex);
   const atm = ADVENTURE_PLAY_ATMOSPHERE[themeId];
   if (!atm) return;
+
+  if (themeId === "serpent-strait") drawVagueSerpentSilhouette(now);
+  if (themeId === "leviathan-deep") drawVagueLeviathanSilhouette(now);
 
   const g = ctx.createLinearGradient(0, waterTop, 0, h);
   for (const [stop, color] of atm.stops) g.addColorStop(stop, color);
