@@ -365,25 +365,26 @@ function adventureMapSceneSvg(themeId, idSuffix = "") {
   const sid = String(idSuffix).replace(/[^a-z0-9-]/gi, "") || "map";
   const scenes = {
     "skull-shoals": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <rect width="72" height="52" fill="#0e1218"/>
-      <rect y="0" width="72" height="28" fill="#141018" opacity="0.85"/>
-      <path d="M0 34 Q36 30 72 34 L72 52 L0 52 Z" fill="#1a1410"/>
-      <path d="M0 38 Q18 36 36 38 T72 38" fill="none" stroke="#2a2018" stroke-width="1" opacity="0.6"/>
-      <ellipse cx="14" cy="44" rx="8" ry="3" fill="#c9bfb0" opacity="0.5"/>
-      <ellipse cx="36" cy="46" rx="10" ry="3.5" fill="#d4c8bc" opacity="0.55"/>
-      <ellipse cx="58" cy="44" rx="9" ry="3" fill="#b8a898" opacity="0.48"/>
-      <circle cx="12" cy="42" r="5" fill="#e8dcc8" stroke="#4a3828" stroke-width="0.8"/>
-      <circle cx="10" cy="41" r="1.8" fill="#1a1010"/><circle cx="14" cy="41" r="1.8" fill="#ff3030"/>
-      <path d="M8 44 L10 46 L14 46 L16 44" fill="none" stroke="#4a3828" stroke-width="0.6"/>
-      <ellipse cx="36" cy="43" rx="6" ry="4" fill="#e0d4c4" stroke="#4a3828" stroke-width="0.7"/>
-      <circle cx="34" cy="42" r="1.2" fill="#ff4040"/><circle cx="38" cy="42" r="1.2" fill="#ff4040"/>
-      <path d="M54 44 L56 40 L60 40 L62 44 L60 48 L56 48 Z" fill="#d8ccc0" stroke="#4a3828" stroke-width="0.6"/>
-      <path d="M22 46 Q24 40 26 46 M28 46 Q30 40 32 46" fill="none" stroke="#a89888" stroke-width="0.8" opacity="0.7"/>
-      <path d="M44 46 Q46 40 48 46 M50 46 Q52 40 54 46" fill="none" stroke="#a89888" stroke-width="0.8" opacity="0.7"/>
-      <circle cx="36" cy="18" r="9" fill="#1a1418" stroke="#6a5040" stroke-width="1"/>
-      <circle cx="33" cy="17" r="2" fill="#ff3333" opacity="0.9"/><circle cx="39" cy="17" r="2" fill="#ff3333" opacity="0.9"/>
-      <path d="M32 22 Q36 25 40 22" fill="none" stroke="#3d2820" stroke-width="1"/>
-      <path d="M30 10 L33 4 L36 10 L39 4 L42 10" fill="none" stroke="#2a1810" stroke-width="0.8" opacity="0.7"/>
+      <rect width="72" height="52" fill="#0a1018"/>
+      <rect y="0" width="72" height="20" fill="#121018" opacity="0.9"/>
+      <path d="M36 6 Q54 6 60 16 Q64 24 60 32 Q56 38 52 42 Q48 46 36 48 Q24 46 20 42 Q16 38 12 32 Q8 24 12 16 Q18 6 36 6 Z" fill="#2a2018" stroke="#3d3028" stroke-width="0.8"/>
+      <ellipse cx="26" cy="22" rx="7" ry="8" fill="#0a0e14"/>
+      <ellipse cx="46" cy="22" rx="7" ry="8" fill="#0a0e14"/>
+      <circle cx="26" cy="22" r="2.2" fill="#22c55e" opacity="0.55"/>
+      <circle cx="46" cy="22" r="2.2" fill="#22c55e" opacity="0.55"/>
+      <path d="M36 26 L32 34 L40 34 Z" fill="#0a0e14"/>
+      <path d="M22 40 L24 44 L26 40 L28 44 L30 40 L32 44 L34 40 L36 44 L38 40 L40 44 L42 40 L44 44 L46 40 L48 44 L50 40" fill="none" stroke="#d4c8bc" stroke-width="1.1" stroke-linecap="round"/>
+      <path d="M34 8 L36 2 L38 8" fill="none" stroke="#1a1210" stroke-width="0.9"/>
+      <rect x="4" y="38" width="7" height="12" rx="2" fill="#3a3838" stroke="#2a2828" stroke-width="0.6"/>
+      <path d="M7.5 38 L7.5 32 M4.5 35 L10.5 35" stroke="#4a4848" stroke-width="1" stroke-linecap="round"/>
+      <rect x="61" y="36" width="7" height="14" rx="2" fill="#3a3838" stroke="#2a2828" stroke-width="0.6"/>
+      <path d="M64.5 36 L64.5 30 M61.5 33 L67.5 33" stroke="#4a4848" stroke-width="1" stroke-linecap="round"/>
+      <ellipse cx="18" cy="46" rx="5" ry="2" fill="#1a1410"/>
+      <circle cx="17" cy="44.5" r="2.8" fill="#e0d4c8" stroke="#5a4840" stroke-width="0.5"/>
+      <circle cx="16.2" cy="44" r="0.7" fill="#0a0808"/>
+      <circle cx="17.8" cy="44" r="0.7" fill="#0a0808"/>
+      <path d="M54 46 Q56 42 58 46" fill="none" stroke="#a89888" stroke-width="0.7"/>
+      <path d="M60 46 Q62 42 64 46" fill="none" stroke="#a89888" stroke-width="0.7"/>
     </svg>`,
     "mariners-rest": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="72" height="52" fill="#4a6a8a"/>
@@ -623,76 +624,327 @@ function drawAdventureStormFlash(now) {
   }
 }
 
-function drawBuriedSkeleton(cx, sandY, sc) {
-  const bone = `rgba(218, 200, 175, ${0.42 + (sc % 1) * 0.12})`;
-  const boneDim = `rgba(100, 85, 75, ${0.35 + (sc % 1) * 0.1})`;
+function drawBoneSegment(x1, y1, x2, y2, lw, color) {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lw;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+}
+
+function drawBoneJoint(x, y, r, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+/** Full human skeleton remains — clipart-style, partially buried on the seabed. */
+function drawUnderwaterSkeletonRemain(cx, cy, sc, variant) {
+  const bone = "#e8dfd0";
+  const boneMid = "#c8b8a8";
+  const boneShade = "#9a8878";
   const s = dpr * sc;
+  const v = variant % 4;
 
   ctx.save();
-  ctx.translate(cx, sandY);
+  ctx.translate(cx, cy);
+  if (v === 1) ctx.rotate(-Math.PI * 0.42);
+  else if (v === 2) ctx.rotate(0.18);
+  else if (v === 3) ctx.rotate(-0.12);
 
-  ctx.strokeStyle = boneDim;
-  ctx.lineWidth = s * 1.1;
-  ctx.lineCap = "round";
-  for (let i = 0; i < 4; i++) {
-    const ox = (i - 1.5) * s * 5;
+  const lw = s * 1.15;
+  const jl = s * 0.85;
+
+  ctx.fillStyle = bone;
+  ctx.strokeStyle = boneShade;
+  ctx.lineWidth = s * 0.35;
+
+  ctx.beginPath();
+  ctx.ellipse(0, -s * 24, s * 9.5, s * 10.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = "#0c0a0a";
+  ctx.beginPath();
+  ctx.ellipse(-s * 3.6, -s * 25, s * 2.8, s * 3.4, 0, 0, Math.PI * 2);
+  ctx.ellipse(s * 3.6, -s * 25, s * 2.8, s * 3.4, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(45, 160, 110, 0.4)";
+  ctx.beginPath();
+  ctx.arc(-s * 3.6, -s * 25, s * 1.1, 0, Math.PI * 2);
+  ctx.arc(s * 3.6, -s * 25, s * 1.1, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = bone;
+  ctx.beginPath();
+  ctx.moveTo(-s * 7, -s * 15);
+  ctx.quadraticCurveTo(0, -s * 11, s * 7, -s * 15);
+  ctx.lineTo(s * 6.5, -s * 8);
+  ctx.quadraticCurveTo(0, -s * 4.5, -s * 6.5, -s * 8);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = boneShade;
+  ctx.lineWidth = s * 0.25;
+  for (let t = -4; t <= 4; t++) {
+    const tx = t * s * 1.4;
     ctx.beginPath();
-    ctx.arc(ox, s * 2, s * 4.5, Math.PI * 0.15, Math.PI * 0.85);
+    ctx.moveTo(tx, -s * 8);
+    ctx.lineTo(tx, -s * 5.5);
+    ctx.stroke();
+  }
+
+  for (let i = 0; i < 7; i++) {
+    const vy = -s * 12 + i * s * 3.2;
+    drawBoneJoint(0, vy, jl * 0.55, boneMid);
+    if (i < 6) drawBoneSegment(0, vy, 0, vy + s * 3, lw * 0.85, bone);
+  }
+
+  for (let i = 0; i < 6; i++) {
+    const ry = -s * 8 + i * s * 3.1;
+    const spread = s * (7.5 - i * 0.35);
+    ctx.strokeStyle = bone;
+    ctx.lineWidth = lw * 0.75;
+    ctx.beginPath();
+    ctx.moveTo(-s * 1.2, ry);
+    ctx.quadraticCurveTo(-spread, ry - s * 2.5, -spread - s * 1.5, ry + s * 1.5);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(s * 1.2, ry);
+    ctx.quadraticCurveTo(spread, ry - s * 2.5, spread + s * 1.5, ry + s * 1.5);
     ctx.stroke();
   }
 
   ctx.fillStyle = bone;
   ctx.beginPath();
-  ctx.ellipse(0, -s * 5, s * 7, s * 5.5, 0, Math.PI, 0);
-  ctx.fill();
-  ctx.fillStyle = boneDim;
-  ctx.beginPath();
-  ctx.arc(-s * 2.8, -s * 6.5, s * 2.2, 0, Math.PI * 2);
-  ctx.arc(s * 2.8, -s * 6.5, s * 2.2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#1a0808";
-  ctx.beginPath();
-  ctx.arc(-s * 2.5, -s * 6.8, s * 0.9, 0, Math.PI * 2);
-  ctx.arc(s * 2.5, -s * 6.8, s * 0.9, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "rgba(255, 50, 50, 0.75)";
-  ctx.beginPath();
-  ctx.arc(-s * 2.5, -s * 6.8, s * 0.45, 0, Math.PI * 2);
-  ctx.arc(s * 2.5, -s * 6.8, s * 0.45, 0, Math.PI * 2);
+  ctx.moveTo(-s * 8, s * 2);
+  ctx.quadraticCurveTo(0, s * 6, s * 8, s * 2);
+  ctx.lineTo(s * 6, s * 8);
+  ctx.lineTo(-s * 6, s * 8);
+  ctx.closePath();
   ctx.fill();
 
-  ctx.strokeStyle = bone;
-  ctx.lineWidth = s * 0.9;
+  const armSpread = v === 0 ? 1 : v === 3 ? 1.15 : 0.85;
+  drawBoneSegment(-s * 2, -s * 6, -s * 14 * armSpread, -s * 2, lw, bone);
+  drawBoneSegment(-s * 14 * armSpread, -s * 2, -s * 18 * armSpread, s * 6, lw * 0.9, bone);
+  drawBoneSegment(-s * 18 * armSpread, s * 6, -s * 20 * armSpread, s * 12, lw * 0.65, bone);
+  drawBoneJoint(-s * 14 * armSpread, -s * 2, jl, boneMid);
+  drawBoneJoint(-s * 18 * armSpread, s * 6, jl * 0.75, boneMid);
+
+  drawBoneSegment(s * 2, -s * 6, s * 13 * armSpread, -s * 1, lw, bone);
+  drawBoneSegment(s * 13 * armSpread, -s * 1, s * 17 * armSpread, s * 7, lw * 0.9, bone);
+  drawBoneSegment(s * 17 * armSpread, s * 7, s * 19 * armSpread, s * 13, lw * 0.65, bone);
+  drawBoneJoint(s * 13 * armSpread, -s * 1, jl, boneMid);
+  drawBoneJoint(s * 17 * armSpread, s * 7, jl * 0.75, boneMid);
+
+  drawBoneSegment(-s * 3, s * 8, -s * 5, s * 22, lw, bone);
+  drawBoneSegment(-s * 5, s * 22, -s * 4, s * 36, lw * 0.85, bone);
+  drawBoneSegment(-s * 4, s * 36, -s * 7, s * 44, lw * 0.55, bone);
+  drawBoneSegment(-s * 4, s * 36, -s * 1, s * 44, lw * 0.55, bone);
+  drawBoneJoint(-s * 5, s * 22, jl, boneMid);
+
+  drawBoneSegment(s * 3, s * 8, s * 5, s * 22, lw, bone);
+  drawBoneSegment(s * 5, s * 22, s * 4, s * 36, lw * 0.85, bone);
+  drawBoneSegment(s * 4, s * 36, s * 7, s * 44, lw * 0.55, bone);
+  drawBoneSegment(s * 4, s * 36, s * 1, s * 44, lw * 0.55, bone);
+  drawBoneJoint(s * 5, s * 22, jl, boneMid);
+
+  ctx.fillStyle = "rgba(35, 28, 32, 0.55)";
   ctx.beginPath();
-  ctx.moveTo(-s * 8, s * 1);
-  ctx.lineTo(s * 8, s * 1);
-  ctx.stroke();
+  ctx.ellipse(0, s * 38, s * 22, s * 14, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(48, 36, 40, 0.45)";
   ctx.beginPath();
-  ctx.moveTo(-s * 6, s * 4);
-  ctx.lineTo(s * 6, s * 4);
-  ctx.stroke();
+  ctx.ellipse(0, s * 42, s * 18, s * 10, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.globalAlpha = 0.35;
+  ctx.strokeStyle = "rgba(50, 120, 80, 0.6)";
+  ctx.lineWidth = s * 0.5;
+  for (let k = 0; k < 3; k++) {
+    ctx.beginPath();
+    ctx.moveTo(-s * 8 + k * s * 8, s * 10);
+    ctx.quadraticCurveTo(-s * 10 + k * s * 6, s * 22, -s * 6 + k * s * 10, s * 30);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
 
   ctx.restore();
+}
+
+function drawGravestone(cx, baseY, gw, gh, tilt, cracked) {
+  ctx.save();
+  ctx.translate(cx, baseY);
+  ctx.rotate(tilt);
+  const w = dpr * gw;
+  const ht = dpr * gh;
+
+  ctx.fillStyle = "rgba(42, 40, 44, 0.88)";
+  ctx.strokeStyle = "rgba(28, 26, 30, 0.9)";
+  ctx.lineWidth = dpr * 1.2;
+  ctx.beginPath();
+  ctx.moveTo(-w * 0.5, 0);
+  ctx.lineTo(-w * 0.5, -ht * 0.72);
+  ctx.quadraticCurveTo(-w * 0.5, -ht, 0, -ht);
+  ctx.quadraticCurveTo(w * 0.5, -ht, w * 0.5, -ht * 0.72);
+  ctx.lineTo(w * 0.5, 0);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.strokeStyle = "rgba(60, 58, 62, 0.7)";
+  ctx.lineWidth = dpr * 0.8;
+  ctx.beginPath();
+  ctx.moveTo(0, -ht * 0.82);
+  ctx.lineTo(0, -ht * 0.35);
+  ctx.moveTo(-w * 0.18, -ht * 0.58);
+  ctx.lineTo(w * 0.18, -ht * 0.58);
+  ctx.stroke();
+
+  if (cracked) {
+    ctx.strokeStyle = "rgba(20, 18, 22, 0.65)";
+    ctx.lineWidth = dpr * 0.6;
+    ctx.beginPath();
+    ctx.moveTo(w * 0.1, -ht * 0.9);
+    ctx.lineTo(-w * 0.05, -ht * 0.5);
+    ctx.lineTo(w * 0.15, -ht * 0.2);
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = "rgba(30, 50, 38, 0.35)";
+  ctx.beginPath();
+  ctx.ellipse(w * 0.35, -ht * 0.25, dpr * 4, dpr * 8, 0.4, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawCrossMarker(cx, baseY, ch) {
+  ctx.save();
+  ctx.translate(cx, baseY);
+  const h = dpr * ch;
+  ctx.strokeStyle = "rgba(72, 68, 74, 0.9)";
+  ctx.lineWidth = dpr * 2.2;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, -h);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-h * 0.28, -h * 0.62);
+  ctx.lineTo(h * 0.28, -h * 0.62);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawSkullShoalsGraveyardBed() {
+  const sandTop = h - dpr * 92;
+  const base = sandTop + dpr * 14;
+
+  const mounds = [
+    { x: 0.12, w: 0.09, h: 8 },
+    { x: 0.35, w: 0.11, h: 10 },
+    { x: 0.58, w: 0.1, h: 9 },
+    { x: 0.78, w: 0.08, h: 7 },
+  ];
+  ctx.fillStyle = "rgba(38, 30, 34, 0.55)";
+  for (const m of mounds) {
+    ctx.beginPath();
+    ctx.ellipse(m.x * w, base - dpr * m.h, w * m.w, dpr * (m.h + 6), 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  drawGravestone(w * 0.07, base, 16, 52, -0.06, false);
+  drawGravestone(w * 0.2, base, 20, 64, 0.04, true);
+  drawCrossMarker(w * 0.34, base, 58);
+  drawGravestone(w * 0.48, base, 22, 70, -0.03, true);
+  drawCrossMarker(w * 0.62, base, 48);
+  drawGravestone(w * 0.76, base, 18, 56, 0.07, false);
+  drawGravestone(w * 0.9, base, 15, 44, -0.1, true);
+
+  ctx.strokeStyle = "rgba(90, 82, 78, 0.55)";
+  ctx.lineWidth = dpr * 1.4;
+  ctx.beginPath();
+  ctx.arc(w * 0.5, base + dpr * 6, dpr * 14, Math.PI, 0);
+  ctx.stroke();
+  ctx.lineWidth = dpr * 1;
+  ctx.beginPath();
+  ctx.moveTo(w * 0.5 - dpr * 14, base + dpr * 6);
+  ctx.lineTo(w * 0.5 - dpr * 18, base + dpr * 22);
+  ctx.moveTo(w * 0.5 + dpr * 14, base + dpr * 6);
+  ctx.lineTo(w * 0.5 + dpr * 20, base + dpr * 18);
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(55, 48, 52, 0.7)";
+  ctx.fillRect(w * 0.42, base - dpr * 8, dpr * 16, dpr * 10);
+
+  ctx.strokeStyle = "rgba(70, 62, 58, 0.45)";
+  ctx.lineWidth = dpr * 1.2;
+  for (let i = 0; i < 5; i++) {
+    const cx = w * (0.15 + i * 0.17);
+    ctx.beginPath();
+    ctx.moveTo(cx, sandTop + dpr * 28);
+    ctx.quadraticCurveTo(cx + dpr * 8, sandTop + dpr * 8, cx + dpr * 4, sandTop);
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = "rgba(168, 152, 136, 0.35)";
+  for (let i = 0; i < perfN(12); i++) {
+    const bx = ((i * 97) % 1000) / 1000 * w;
+    const by = base + dpr * (4 + (i % 5) * 3);
+    ctx.beginPath();
+    ctx.ellipse(bx, by, dpr * (2 + (i % 3)), dpr * 1.2, i * 0.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawSkullShoalsGraveyardMidwater() {
+  const sandTop = h - dpr * 92;
+  ctx.strokeStyle = "rgba(80, 75, 82, 0.35)";
+  ctx.lineWidth = dpr * 1.1;
+  for (let i = 0; i < 4; i++) {
+    const cx = w * (0.12 + i * 0.24);
+    ctx.beginPath();
+    ctx.moveTo(cx, waterTop + dpr * 8);
+    for (let s = 0; s <= 6; s++) {
+      const t = s / 6;
+      const y = waterTop + dpr * 8 + t * (sandTop - waterTop - dpr * 40);
+      ctx.lineTo(cx + Math.sin(t * 8 + i) * dpr * 6, y);
+    }
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = "rgba(42, 40, 44, 0.55)";
+  ctx.fillRect(w * 0.28, sandTop - dpr * 95, dpr * 14, dpr * 80);
+  ctx.beginPath();
+  ctx.moveTo(w * 0.28 - dpr * 2, sandTop - dpr * 95);
+  ctx.quadraticCurveTo(w * 0.28 + dpr * 7, sandTop - dpr * 108, w * 0.28 + dpr * 14, sandTop - dpr * 95);
+  ctx.fill();
 }
 
 function drawSkullShoalsSandSkeletons() {
   if (w <= 0) return;
   const sandTop = h - dpr * 92;
   const placements = [
-    { x: 0.08, y: 22, s: 0.85 },
-    { x: 0.22, y: 14, s: 1.05 },
-    { x: 0.38, y: 20, s: 0.95 },
-    { x: 0.52, y: 12, s: 1.15 },
-    { x: 0.68, y: 18, s: 0.9 },
-    { x: 0.84, y: 24, s: 0.8 },
-    { x: 0.94, y: 16, s: 0.75 },
+    { x: 0.1, y: 18, s: 0.72, v: 0 },
+    { x: 0.24, y: 10, s: 0.88, v: 1 },
+    { x: 0.38, y: 16, s: 0.8, v: 2 },
+    { x: 0.52, y: 8, s: 0.95, v: 3 },
+    { x: 0.66, y: 14, s: 0.78, v: 0 },
+    { x: 0.8, y: 20, s: 0.7, v: 1 },
+    { x: 0.92, y: 12, s: 0.65, v: 2 },
+    { x: 0.44, y: 28, s: 0.55, v: 3 },
+    { x: 0.72, y: 26, s: 0.5, v: 0 },
   ];
   for (const p of placements) {
-    drawBuriedSkeleton(p.x * w, sandTop + dpr * p.y, p.s);
+    drawUnderwaterSkeletonRemain(p.x * w, sandTop + dpr * p.y, p.s, p.v);
   }
 }
 
 function drawAdventureSkullShoalsEffect(now) {
+  drawSkullShoalsGraveyardMidwater();
   drawSkullShoalsSandSkeletons();
   const t = now * 0.001;
   ctx.fillStyle = "rgba(40, 10, 20, 0.08)";
@@ -1202,11 +1454,10 @@ function getReef() {
       silhouette: "rgba(8, 4, 12, 0.78)",
       bubble: "rgba(140, 90, 120, 0.18)",
       corals: [
-        { x: 0.1, c: "#2a1820", h: 0.22 },
-        { x: 0.28, c: "#1a1018", h: 0.18 },
-        { x: 0.5, c: "#221418", h: 0.2 },
-        { x: 0.72, c: "#18101a", h: 0.16 },
-        { x: 0.9, c: "#2a1822", h: 0.14 },
+        { x: 0.12, c: "#3a3438", h: 0.2 },
+        { x: 0.35, c: "#2e282c", h: 0.18 },
+        { x: 0.55, c: "#343038", h: 0.16 },
+        { x: 0.78, c: "#302a2e", h: 0.14 },
       ],
     };
     merged.weights = { common: 48, uncommon: 28, rare: 14, epic: 7, legendary: 3 };
@@ -4540,7 +4791,8 @@ function drawBackground() {
   if (rid === "caribbean") drawMesoamericanReefBed();
   if (rid === "mediterranean") drawWesternMediterraneanRocks();
   if (rid === "japan_kuroshio") drawKuroshioRocks();
-  drawReefStructure(rid, v.corals);
+  if (skullSand) drawSkullShoalsGraveyardBed();
+  else drawReefStructure(rid, v.corals);
 }
 
 function drawCachedBackground() {
