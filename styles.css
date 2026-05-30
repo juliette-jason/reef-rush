@@ -172,6 +172,33 @@ body {
   box-shadow: inset 0 0 0 2px rgba(50, 180, 100, 0.35);
 }
 
+#app.app--adventure-theme-golden-atoll .canvas-wrap,
+#app.app--adventure-theme-doubloon-bay .canvas-wrap {
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 200, 50, 0.4),
+    inset 0 0 36px rgba(255, 190, 60, 0.1);
+}
+
+#app.app--adventure-theme-mariners-rest .canvas-wrap {
+  box-shadow: inset 0 0 0 2px rgba(140, 160, 200, 0.35);
+}
+
+#app.app--adventure-theme-serpent-strait .canvas-wrap {
+  box-shadow: inset 0 0 0 2px rgba(40, 100, 85, 0.35);
+}
+
+#app.app--adventure-theme-krakens-teeth .canvas-wrap {
+  box-shadow: inset 0 0 0 2px rgba(120, 40, 60, 0.4);
+}
+
+#app.app--adventure-theme-phantom-keys .canvas-wrap {
+  box-shadow: inset 0 0 0 2px rgba(120, 140, 190, 0.35);
+}
+
+#app.app--adventure-theme-captains-landing .canvas-wrap {
+  box-shadow: inset 0 0 0 2px rgba(180, 140, 80, 0.35);
+}
+
 .adventure-result-theme {
   display: flex;
   flex-direction: column;

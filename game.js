@@ -547,6 +547,10 @@ function getAdventureLevelTheme(levelIndex) {
   return ADVENTURE_LEVEL_THEMES[levelIndex] || ADVENTURE_LEVEL_THEMES[0];
 }
 
+function getActiveAdventureTheme() {
+  return adventureSession ? getAdventureLevelTheme(adventureSession.levelIndex) : null;
+}
+
 function isSkullShoalsPlay() {
   return Boolean(playing && adventureSession && getAdventureLevelTheme(adventureSession.levelIndex) === "skull-shoals");
 }
@@ -580,25 +584,244 @@ const ADVENTURE_PLAY_ATMOSPHERE = {
     effect: "skull",
   },
   "mariners-rest": { stops: [[0, "rgba(200, 210, 230, 0.14)"], [1, "rgba(40, 60, 90, 0.18)"]], effect: "moon" },
-  "golden-atoll": { stops: [[0, "rgba(255, 220, 120, 0.16)"], [1, "rgba(180, 140, 60, 0.12)"]], effect: "warm" },
-  "serpent-strait": { stops: [[0, "rgba(50, 90, 80, 0.14)"], [1, "rgba(25, 55, 50, 0.28)"]], effect: "murk" },
-  "doubloon-bay": { stops: [[0, "rgba(90, 120, 140, 0.1)"], [1, "rgba(200, 160, 50, 0.2)"]], effect: "gold" },
-  "compass-cay": { stops: [[0, "rgba(120, 150, 130, 0.1)"], [1, "rgba(50, 70, 60, 0.15)"]], effect: null },
-  "krakens-teeth": { stops: [[0, "rgba(40, 30, 50, 0.2)"], [1, "rgba(80, 25, 45, 0.28)"]], effect: "murk" },
-  "palmwood-harbor": { stops: [[0, "rgba(180, 200, 160, 0.1)"], [1, "rgba(210, 180, 100, 0.18)"]], effect: "warm" },
-  "emerald-lagoon": { stops: [[0, "rgba(80, 200, 140, 0.14)"], [1, "rgba(30, 120, 80, 0.22)"]], effect: "glow" },
-  "phantom-keys": { stops: [[0, "rgba(140, 160, 200, 0.16)"], [1, "rgba(50, 60, 90, 0.22)"]], effect: "mist" },
+  "golden-atoll": { stops: [[0, "rgba(255, 220, 120, 0.16)"], [1, "rgba(180, 140, 60, 0.12)"]], effect: "golden-atoll" },
+  "serpent-strait": { stops: [[0, "rgba(50, 90, 80, 0.14)"], [1, "rgba(25, 55, 50, 0.28)"]], effect: "serpent-strait" },
+  "doubloon-bay": { stops: [[0, "rgba(90, 120, 140, 0.1)"], [1, "rgba(200, 160, 50, 0.2)"]], effect: "doubloon-bay" },
+  "compass-cay": { stops: [[0, "rgba(120, 150, 130, 0.1)"], [1, "rgba(50, 70, 60, 0.15)"]], effect: "compass-cay" },
+  "krakens-teeth": { stops: [[0, "rgba(40, 30, 50, 0.2)"], [1, "rgba(80, 25, 45, 0.28)"]], effect: "krakens-teeth" },
+  "palmwood-harbor": { stops: [[0, "rgba(180, 200, 160, 0.1)"], [1, "rgba(210, 180, 100, 0.18)"]], effect: "palmwood-harbor" },
+  "emerald-lagoon": { stops: [[0, "rgba(80, 200, 140, 0.14)"], [1, "rgba(30, 120, 80, 0.22)"]], effect: "emerald-lagoon" },
+  "phantom-keys": { stops: [[0, "rgba(140, 160, 200, 0.16)"], [1, "rgba(50, 60, 90, 0.22)"]], effect: "phantom-keys" },
   "stormbreak-isle": { stops: [[0, "rgba(25, 35, 55, 0.35)"], [1, "rgba(40, 50, 70, 0.2)"]], effect: "storm" },
-  "treasurehorn-peak": { stops: [[0, "rgba(160, 170, 185, 0.12)"], [1, "rgba(90, 80, 70, 0.22)"]], effect: null },
-  "leviathan-deep": { stops: [[0, "rgba(5, 15, 35, 0.35)"], [1, "rgba(10, 25, 50, 0.45)"]], effect: "deep" },
-  "captains-landing": { stops: [[0, "rgba(140, 120, 90, 0.12)"], [1, "rgba(60, 50, 40, 0.18)"]], effect: "warm" },
+  "treasurehorn-peak": { stops: [[0, "rgba(160, 170, 185, 0.12)"], [1, "rgba(90, 80, 70, 0.22)"]], effect: "treasurehorn-peak" },
+  "leviathan-deep": { stops: [[0, "rgba(5, 15, 35, 0.35)"], [1, "rgba(10, 25, 50, 0.45)"]], effect: "leviathan-deep" },
+  "captains-landing": { stops: [[0, "rgba(140, 120, 90, 0.12)"], [1, "rgba(60, 50, 40, 0.18)"]], effect: "captains-landing" },
   "treasure-cove": {
     stops: [
       [0, "rgba(8, 35, 45, 0.38)"],
       [0.45, "rgba(18, 70, 80, 0.22)"],
       [1, "rgba(255, 190, 50, 0.2)"],
     ],
-    effect: "gold",
+    effect: "treasure-cove",
+  },
+};
+
+/** Sand gradient + speckle tint per voyage seabed. */
+const ADVENTURE_THEME_SAND = {
+  "skull-shoals": {
+    stops: [
+      [0, "rgba(30, 22, 28, 0)"],
+      [0.28, "rgba(42, 32, 38, 0.28)"],
+      [0.72, "rgba(52, 38, 44, 0.48)"],
+      [1, "rgba(28, 18, 22, 0.72)"],
+    ],
+    speck: "rgba(60, 48, 52, 0.22)",
+  },
+  "mariners-rest": {
+    stops: [
+      [0, "rgba(180, 190, 210, 0)"],
+      [0.35, "rgba(120, 130, 150, 0.2)"],
+      [1, "rgba(70, 80, 100, 0.45)"],
+    ],
+    speck: "rgba(140, 150, 170, 0.18)",
+  },
+  "golden-atoll": {
+    stops: [
+      [0, "rgba(255, 230, 160, 0)"],
+      [0.35, "rgba(240, 210, 120, 0.28)"],
+      [1, "rgba(220, 180, 80, 0.55)"],
+    ],
+    speck: "rgba(255, 220, 120, 0.28)",
+  },
+  "serpent-strait": {
+    stops: [
+      [0, "rgba(40, 80, 70, 0)"],
+      [0.4, "rgba(35, 65, 58, 0.25)"],
+      [1, "rgba(25, 45, 42, 0.5)"],
+    ],
+    speck: "rgba(50, 90, 80, 0.2)",
+  },
+  "doubloon-bay": {
+    stops: [
+      [0, "rgba(255, 220, 140, 0)"],
+      [0.35, "rgba(230, 190, 100, 0.3)"],
+      [1, "rgba(200, 160, 70, 0.58)"],
+    ],
+    speck: "rgba(255, 210, 90, 0.32)",
+  },
+  "compass-cay": {
+    stops: [
+      [0, "rgba(220, 200, 160, 0)"],
+      [0.4, "rgba(200, 180, 140, 0.22)"],
+      [1, "rgba(170, 150, 110, 0.48)"],
+    ],
+    speck: "rgba(210, 190, 150, 0.2)",
+  },
+  "krakens-teeth": {
+    stops: [
+      [0, "rgba(30, 25, 35, 0)"],
+      [0.4, "rgba(35, 30, 42, 0.28)"],
+      [1, "rgba(22, 18, 28, 0.55)"],
+    ],
+    speck: "rgba(50, 40, 55, 0.22)",
+  },
+  "palmwood-harbor": {
+    stops: [
+      [0, "rgba(210, 180, 130, 0)"],
+      [0.35, "rgba(190, 160, 110, 0.24)"],
+      [1, "rgba(160, 130, 85, 0.5)"],
+    ],
+    speck: "rgba(200, 170, 120, 0.22)",
+  },
+  "emerald-lagoon": {
+    stops: [
+      [0, "rgba(80, 200, 140, 0)"],
+      [0.35, "rgba(60, 170, 120, 0.22)"],
+      [1, "rgba(40, 130, 90, 0.48)"],
+    ],
+    speck: "rgba(70, 180, 130, 0.22)",
+  },
+  "phantom-keys": {
+    stops: [
+      [0, "rgba(120, 140, 180, 0)"],
+      [0.4, "rgba(80, 95, 130, 0.22)"],
+      [1, "rgba(50, 60, 90, 0.48)"],
+    ],
+    speck: "rgba(100, 120, 160, 0.18)",
+  },
+  "stormbreak-isle": {
+    stops: [
+      [0, "rgba(60, 70, 90, 0)"],
+      [0.4, "rgba(45, 52, 68, 0.28)"],
+      [1, "rgba(30, 35, 48, 0.55)"],
+    ],
+    speck: "rgba(70, 78, 95, 0.2)",
+  },
+  "treasurehorn-peak": {
+    stops: [
+      [0, "rgba(140, 130, 120, 0)"],
+      [0.4, "rgba(110, 100, 90, 0.24)"],
+      [1, "rgba(80, 72, 62, 0.5)"],
+    ],
+    speck: "rgba(130, 120, 110, 0.2)",
+  },
+  "leviathan-deep": {
+    stops: [
+      [0, "rgba(8, 18, 35, 0)"],
+      [0.4, "rgba(6, 14, 28, 0.35)"],
+      [1, "rgba(4, 8, 18, 0.65)"],
+    ],
+    speck: "rgba(20, 40, 70, 0.18)",
+  },
+  "captains-landing": {
+    stops: [
+      [0, "rgba(200, 175, 130, 0)"],
+      [0.35, "rgba(180, 155, 110, 0.24)"],
+      [1, "rgba(150, 125, 85, 0.52)"],
+    ],
+    speck: "rgba(190, 165, 120, 0.22)",
+  },
+  "treasure-cove": {
+    stops: [
+      [0, "rgba(40, 120, 130, 0)"],
+      [0.35, "rgba(30, 100, 110, 0.28)"],
+      [1, "rgba(20, 70, 80, 0.55)"],
+    ],
+    speck: "rgba(255, 210, 80, 0.28)",
+  },
+};
+
+/** Water column palette overrides while on a voyage. */
+const ADVENTURE_THEME_REEF_OVERRIDES = {
+  "skull-shoals": {
+    gradient: ["#0c1018", "#0e1420", "#121820", "#060408"],
+    shaft: ["rgba(90, 40, 60, 0.1)", "rgba(90, 40, 60, 0)"],
+    silhouette: "rgba(8, 4, 12, 0.78)",
+    bubble: "rgba(140, 90, 120, 0.18)",
+  },
+  "mariners-rest": {
+    gradient: ["#1a2838", "#243448", "#2a4058", "#182028"],
+    shaft: ["rgba(210, 220, 240, 0.14)", "rgba(210, 220, 240, 0)"],
+    silhouette: "rgba(18, 28, 45, 0.72)",
+    bubble: "rgba(180, 200, 230, 0.16)",
+  },
+  "golden-atoll": {
+    gradient: ["#3a7898", "#4890b0", "#58a8c0", "#c8a040"],
+    shaft: ["rgba(255, 230, 140, 0.18)", "rgba(255, 230, 140, 0)"],
+    silhouette: "rgba(40, 80, 60, 0.55)",
+    bubble: "rgba(255, 240, 180, 0.2)",
+  },
+  "serpent-strait": {
+    gradient: ["#1a3840", "#224850", "#2a5860", "#183038"],
+    shaft: ["rgba(60, 120, 100, 0.12)", "rgba(60, 120, 100, 0)"],
+    silhouette: "rgba(15, 35, 40, 0.75)",
+    bubble: "rgba(80, 160, 140, 0.14)",
+  },
+  "doubloon-bay": {
+    gradient: ["#286888", "#348898", "#4098a8", "#886820"],
+    shaft: ["rgba(255, 210, 80, 0.16)", "rgba(255, 210, 80, 0)"],
+    silhouette: "rgba(30, 50, 60, 0.65)",
+    bubble: "rgba(255, 220, 100, 0.2)",
+  },
+  "compass-cay": {
+    gradient: ["#488878", "#589888", "#68a898", "#405848"],
+    shaft: ["rgba(200, 220, 200, 0.12)", "rgba(200, 220, 200, 0)"],
+    silhouette: "rgba(30, 50, 45, 0.68)",
+    bubble: "rgba(160, 200, 180, 0.15)",
+  },
+  "krakens-teeth": {
+    gradient: ["#141828", "#1a2038", "#222848", "#100818"],
+    shaft: ["rgba(120, 40, 60, 0.14)", "rgba(120, 40, 60, 0)"],
+    silhouette: "rgba(12, 8, 18, 0.82)",
+    bubble: "rgba(160, 80, 100, 0.14)",
+  },
+  "palmwood-harbor": {
+    gradient: ["#4898c0", "#58a8d0", "#68b8d8", "#a88850"],
+    shaft: ["rgba(255, 240, 200, 0.14)", "rgba(255, 240, 200, 0)"],
+    silhouette: "rgba(40, 70, 50, 0.6)",
+    bubble: "rgba(200, 230, 255, 0.18)",
+  },
+  "emerald-lagoon": {
+    gradient: ["#288868", "#38a878", "#48c088", "#186848"],
+    shaft: ["rgba(120, 255, 180, 0.16)", "rgba(120, 255, 180, 0)"],
+    silhouette: "rgba(15, 60, 45, 0.65)",
+    bubble: "rgba(100, 255, 180, 0.2)",
+  },
+  "phantom-keys": {
+    gradient: ["#283848", "#344858", "#405868", "#202838"],
+    shaft: ["rgba(180, 200, 240, 0.14)", "rgba(180, 200, 240, 0)"],
+    silhouette: "rgba(25, 35, 50, 0.7)",
+    bubble: "rgba(160, 180, 220, 0.16)",
+  },
+  "stormbreak-isle": {
+    gradient: ["#182030", "#202838", "#283040", "#141820"],
+    shaft: ["rgba(120, 130, 160, 0.1)", "rgba(120, 130, 160, 0)"],
+    silhouette: "rgba(15, 18, 28, 0.8)",
+    bubble: "rgba(140, 150, 180, 0.12)",
+  },
+  "treasurehorn-peak": {
+    gradient: ["#586878", "#687888", "#788898", "#484038"],
+    shaft: ["rgba(200, 190, 170, 0.12)", "rgba(200, 190, 170, 0)"],
+    silhouette: "rgba(35, 40, 50, 0.75)",
+    bubble: "rgba(180, 170, 150, 0.14)",
+  },
+  "leviathan-deep": {
+    gradient: ["#020818", "#040c20", "#061028", "#010408"],
+    shaft: ["rgba(40, 80, 160, 0.08)", "rgba(40, 80, 160, 0)"],
+    silhouette: "rgba(2, 6, 14, 0.88)",
+    bubble: "rgba(60, 100, 180, 0.1)",
+  },
+  "captains-landing": {
+    gradient: ["#4888a8", "#5898b8", "#68a8c8", "#806840"],
+    shaft: ["rgba(255, 220, 160, 0.14)", "rgba(255, 220, 160, 0)"],
+    silhouette: "rgba(35, 55, 45, 0.65)",
+    bubble: "rgba(220, 200, 160, 0.16)",
+  },
+  "treasure-cove": {
+    gradient: ["#0a2838", "#103848", "#184858", "#081820"],
+    shaft: ["rgba(255, 200, 60, 0.2)", "rgba(255, 200, 60, 0.04)"],
+    silhouette: "rgba(8, 12, 16, 0.85)",
+    bubble: "rgba(255, 220, 120, 0.22)",
   },
 };
 
@@ -978,6 +1201,535 @@ function drawAdventureMoonBeam() {
   ctx.fill();
 }
 
+function drawGoldCoin(cx, cy, r, tilt) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(tilt);
+  ctx.fillStyle = "#f0c830";
+  ctx.strokeStyle = "#a88010";
+  ctx.lineWidth = Math.max(dpr * 0.6, r * 0.18);
+  ctx.beginPath();
+  ctx.ellipse(0, 0, r, r * 0.36, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#8a6010";
+  ctx.font = `bold ${Math.max(8, r * 0.95)}px sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("$", 0, 0);
+  ctx.restore();
+}
+
+function scatterGoldCoins(sandTop, count, seed, ySpread) {
+  for (let i = 0; i < perfN(count); i++) {
+    const px = ((i * 137 + seed * 41) % 1000) / 1000;
+    const py = sandTop + dpr * (8 + ((i * 29 + seed) % ySpread));
+    drawGoldCoin(px * w, py, dpr * (2 + (i % 5) * 0.45), (i * 0.65 + seed) * 0.4);
+  }
+}
+
+function drawTreasureChest(cx, cy, sc) {
+  const s = dpr * sc;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.fillStyle = "#8a5020";
+  ctx.strokeStyle = "#5a3010";
+  ctx.lineWidth = s * 0.14;
+  ctx.fillRect(-s * 8, -s * 4, s * 16, s * 9);
+  ctx.strokeRect(-s * 8, -s * 4, s * 16, s * 9);
+  ctx.fillStyle = "#a86828";
+  ctx.beginPath();
+  ctx.moveTo(-s * 8, -s * 4);
+  ctx.quadraticCurveTo(0, -s * 9, s * 8, -s * 4);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#f0d060";
+  ctx.fillRect(-s * 6, -s * 0.5, s * 12, s * 1.8);
+  ctx.strokeRect(-s * 6, -s * 0.5, s * 12, s * 1.8);
+  ctx.restore();
+}
+
+function drawTreasureCoveCaveWalls() {
+  const sandTop = h - dpr * 92;
+  ctx.fillStyle = "rgba(14, 11, 9, 0.94)";
+  ctx.beginPath();
+  ctx.moveTo(0, waterTop);
+  ctx.lineTo(w * 0.24, waterTop);
+  ctx.quadraticCurveTo(w * 0.16, sandTop - dpr * 20, w * 0.1, h);
+  ctx.lineTo(0, h);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(w, waterTop);
+  ctx.lineTo(w * 0.76, waterTop);
+  ctx.quadraticCurveTo(w * 0.84, sandTop - dpr * 20, w * 0.9, h);
+  ctx.lineTo(w, h);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "rgba(8, 6, 5, 0.8)";
+  ctx.beginPath();
+  ctx.moveTo(w * 0.24, waterTop);
+  ctx.quadraticCurveTo(w * 0.5, waterTop + dpr * 36, w * 0.76, waterTop);
+  ctx.lineTo(w * 0.76, waterTop + dpr * 10);
+  ctx.quadraticCurveTo(w * 0.5, waterTop + dpr * 46, w * 0.24, waterTop + dpr * 10);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawTreasureCoveBed() {
+  drawTreasureCoveCaveWalls();
+  const sandTop = h - dpr * 92;
+  const base = sandTop + dpr * 16;
+  scatterGoldCoins(sandTop, 42, 7, 34);
+  drawTreasureChest(w * 0.5, base - dpr * 12, 1.1);
+  scatterGoldCoins(sandTop + dpr * 6, 18, 13, 22);
+  ctx.fillStyle = "rgba(255, 210, 60, 0.12)";
+  ctx.beginPath();
+  ctx.ellipse(w * 0.5, base - dpr * 4, w * 0.22, dpr * 14, 0, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawDoubloonBayBed() {
+  const sandTop = h - dpr * 92;
+  const base = sandTop + dpr * 12;
+  for (let i = 0; i < 5; i++) {
+    const cx = w * (0.12 + i * 0.19);
+    for (let j = 0; j < 4 + (i % 3); j++) {
+      drawGoldCoin(cx + (j - 1.5) * dpr * 5, base - j * dpr * 3.5, dpr * 2.4, j * 0.2);
+    }
+  }
+  scatterGoldCoins(sandTop, 24, 3, 30);
+}
+
+function drawMarinersRestBed() {
+  const sandTop = h - dpr * 92;
+  const base = sandTop + dpr * 14;
+  ctx.strokeStyle = "rgba(100, 110, 130, 0.7)";
+  ctx.lineWidth = dpr * 2.5;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(w * 0.35, base);
+  ctx.lineTo(w * 0.35, base - dpr * 70);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(w * 0.35, base - dpr * 68);
+  ctx.lineTo(w * 0.52, base - dpr * 52);
+  ctx.stroke();
+  drawCrossMarker(w * 0.68, base, 44);
+  ctx.strokeStyle = "rgba(90, 95, 110, 0.55)";
+  ctx.lineWidth = dpr * 1.4;
+  ctx.beginPath();
+  ctx.arc(w * 0.22, base + dpr * 4, dpr * 12, Math.PI, 0);
+  ctx.stroke();
+}
+
+function drawGoldenAtollBed() {
+  const sandTop = h - dpr * 92;
+  const base = sandTop + dpr * 10;
+  ctx.fillStyle = "rgba(240, 210, 100, 0.35)";
+  ctx.beginPath();
+  ctx.ellipse(w * 0.5, base, w * 0.38, dpr * 22, 0, 0, Math.PI * 2);
+  ctx.fill();
+  scatterGoldCoins(sandTop, 16, 5, 26);
+  for (const px of [0.22, 0.42, 0.62, 0.78]) {
+    ctx.strokeStyle = "rgba(50, 90, 55, 0.55)";
+    ctx.lineWidth = dpr * 2;
+    ctx.beginPath();
+    ctx.moveTo(w * px, base);
+    ctx.lineTo(w * px, base - dpr * 55);
+    ctx.stroke();
+  }
+}
+
+function drawSerpentStraitBed() {
+  const sandTop = h - dpr * 92;
+  ctx.strokeStyle = "rgba(50, 110, 95, 0.45)";
+  ctx.lineWidth = dpr * 3;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(w * 0.05, sandTop + dpr * 20);
+  ctx.quadraticCurveTo(w * 0.35, sandTop - dpr * 10, w * 0.55, sandTop + dpr * 18);
+  ctx.quadraticCurveTo(w * 0.75, sandTop + dpr * 40, w * 0.95, sandTop + dpr * 12);
+  ctx.stroke();
+  ctx.fillStyle = "rgba(40, 90, 70, 0.35)";
+  ctx.beginPath();
+  ctx.moveTo(w * 0.92, sandTop + dpr * 10);
+  ctx.lineTo(w * 0.97, sandTop + dpr * 8);
+  ctx.lineTo(w * 0.94, sandTop + dpr * 14);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawCompassCayBed() {
+  const sandTop = h - dpr * 92;
+  const cx = w * 0.5;
+  const cy = sandTop + dpr * 38;
+  const r = dpr * 28;
+  ctx.strokeStyle = "rgba(180, 160, 120, 0.55)";
+  ctx.lineWidth = dpr * 1.2;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.fillStyle = "#b91c1c";
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - r * 0.7);
+  ctx.lineTo(cx + r * 0.12, cy);
+  ctx.lineTo(cx, cy + r * 0.7);
+  ctx.lineTo(cx - r * 0.12, cy);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "#2e2418";
+  ctx.fillRect(cx - r * 0.55, cy - r * 0.08, r * 1.1, r * 0.16);
+  drawCrossMarker(w * 0.18, sandTop + dpr * 14, 36);
+  drawCrossMarker(w * 0.82, sandTop + dpr * 14, 36);
+}
+
+function drawKrakensTeethBed() {
+  const sandTop = h - dpr * 92;
+  const base = sandTop + dpr * 8;
+  for (const tx of [0.14, 0.32, 0.5, 0.68, 0.86]) {
+    ctx.fillStyle = "rgba(90, 95, 110, 0.75)";
+    ctx.beginPath();
+    ctx.moveTo(w * tx - dpr * 10, base);
+    ctx.lineTo(w * tx, base - dpr * (48 + (tx * 100) % 30));
+    ctx.lineTo(w * tx + dpr * 10, base);
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+
+function drawPalmwoodHarborBed() {
+  const sandTop = h - dpr * 92;
+  const base = sandTop + dpr * 10;
+  for (const px of [0.16, 0.38, 0.62, 0.84]) {
+    ctx.fillStyle = "rgba(90, 65, 40, 0.85)";
+    ctx.fillRect(w * px - dpr * 3, base - dpr * 62, dpr * 6, dpr * 62);
+    ctx.strokeStyle = "rgba(50, 120, 60, 0.5)";
+    ctx.lineWidth = dpr * 1.5;
+    ctx.beginPath();
+    ctx.moveTo(w * px, base - dpr * 58);
+    ctx.quadraticCurveTo(w * px - dpr * 18, base - dpr * 72, w * px - dpr * 24, base - dpr * 64);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(w * px, base - dpr * 58);
+    ctx.quadraticCurveTo(w * px + dpr * 18, base - dpr * 72, w * px + dpr * 24, base - dpr * 64);
+    ctx.stroke();
+  }
+  ctx.fillStyle = "rgba(120, 85, 50, 0.7)";
+  ctx.fillRect(w * 0.08, base - dpr * 4, w * 0.84, dpr * 5);
+}
+
+function drawEmeraldLagoonBed() {
+  const sandTop = h - dpr * 92;
+  for (let i = 0; i < perfN(10); i++) {
+    const px = w * (0.1 + ((i * 89) % 800) / 1000);
+    const py = sandTop + dpr * (12 + (i % 4) * 8);
+    ctx.fillStyle = `rgba(50, ${160 + (i % 3) * 20}, 100, 0.45)`;
+    ctx.beginPath();
+    ctx.ellipse(px, py, dpr * (10 + (i % 3) * 4), dpr * 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawPhantomKeysBed() {
+  const sandTop = h - dpr * 92;
+  for (const px of [0.2, 0.5, 0.8]) {
+    ctx.fillStyle = "rgba(100, 120, 160, 0.25)";
+    ctx.fillRect(w * px - dpr * 2, sandTop - dpr * 55, dpr * 4, dpr * 55);
+    ctx.fillStyle = "rgba(180, 190, 220, 0.2)";
+    ctx.beginPath();
+    ctx.ellipse(w * px, sandTop - dpr * 58, dpr * 14, dpr * 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawStormbreakIsleBed() {
+  const sandTop = h - dpr * 92;
+  const base = sandTop + dpr * 12;
+  ctx.fillStyle = "rgba(60, 50, 45, 0.65)";
+  ctx.beginPath();
+  ctx.moveTo(w * 0.55, base);
+  ctx.lineTo(w * 0.72, base - dpr * 28);
+  ctx.lineTo(w * 0.88, base);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = "rgba(80, 70, 60, 0.5)";
+  ctx.lineWidth = dpr * 1.2;
+  for (let i = 0; i < 6; i++) {
+    ctx.beginPath();
+    ctx.moveTo(w * (0.58 + i * 0.04), base - dpr * 4);
+    ctx.lineTo(w * (0.62 + i * 0.05), base - dpr * 18);
+    ctx.stroke();
+  }
+}
+
+function drawTreasurehornPeakBed() {
+  const sandTop = h - dpr * 92;
+  const base = sandTop + dpr * 8;
+  ctx.fillStyle = "rgba(70, 65, 60, 0.75)";
+  ctx.beginPath();
+  ctx.moveTo(w * 0.38, base);
+  ctx.lineTo(w * 0.5, base - dpr * 85);
+  ctx.lineTo(w * 0.62, base);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "rgba(50, 48, 45, 0.6)";
+  ctx.beginPath();
+  ctx.moveTo(w * 0.12, base);
+  ctx.lineTo(w * 0.2, base - dpr * 45);
+  ctx.lineTo(w * 0.28, base);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawLeviathanDeepBed() {
+  const sandTop = h - dpr * 92;
+  for (const vx of [0.25, 0.55, 0.78]) {
+    ctx.fillStyle = "rgba(20, 40, 70, 0.55)";
+    ctx.beginPath();
+    ctx.ellipse(w * vx, sandTop + dpr * 8, dpr * 8, dpr * 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(80, 180, 255, 0.25)";
+    ctx.beginPath();
+    ctx.ellipse(w * vx, sandTop + dpr * 2, dpr * 3, dpr * 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawCaptainsLandingBed() {
+  const sandTop = h - dpr * 92;
+  const base = sandTop + dpr * 14;
+  ctx.strokeStyle = "rgba(100, 75, 45, 0.75)";
+  ctx.lineWidth = dpr * 2.2;
+  ctx.beginPath();
+  ctx.arc(w * 0.5, base - dpr * 8, dpr * 22, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.lineWidth = dpr * 1.4;
+  ctx.beginPath();
+  ctx.moveTo(w * 0.5, base - dpr * 30);
+  ctx.lineTo(w * 0.5, base);
+  ctx.moveTo(w * 0.5 - dpr * 22, base - dpr * 8);
+  ctx.lineTo(w * 0.5 + dpr * 22, base - dpr * 8);
+  ctx.stroke();
+  ctx.fillStyle = "#b91c1c";
+  ctx.fillRect(w * 0.72, base - dpr * 48, dpr * 5, dpr * 14);
+  for (const px of [0.14, 0.28, 0.72, 0.86]) {
+    ctx.fillStyle = "rgba(90, 65, 40, 0.8)";
+    ctx.fillRect(w * px - dpr * 2.5, base - dpr * 38, dpr * 5, dpr * 38);
+  }
+}
+
+const ADVENTURE_THEME_BED_DRAW = {
+  "skull-shoals": drawSkullShoalsGraveyardBed,
+  "mariners-rest": drawMarinersRestBed,
+  "golden-atoll": drawGoldenAtollBed,
+  "serpent-strait": drawSerpentStraitBed,
+  "doubloon-bay": drawDoubloonBayBed,
+  "compass-cay": drawCompassCayBed,
+  "krakens-teeth": drawKrakensTeethBed,
+  "palmwood-harbor": drawPalmwoodHarborBed,
+  "emerald-lagoon": drawEmeraldLagoonBed,
+  "phantom-keys": drawPhantomKeysBed,
+  "stormbreak-isle": drawStormbreakIsleBed,
+  "treasurehorn-peak": drawTreasurehornPeakBed,
+  "leviathan-deep": drawLeviathanDeepBed,
+  "captains-landing": drawCaptainsLandingBed,
+  "treasure-cove": drawTreasureCoveBed,
+};
+
+function drawAdventureThemeBed(themeId) {
+  const draw = ADVENTURE_THEME_BED_DRAW[themeId];
+  if (draw) draw();
+}
+
+function drawAdventureGoldGlintsHeavy(now, count) {
+  const t = now * 0.001;
+  for (let i = 0; i < perfN(count); i++) {
+    const px = ((i * 97 + Math.floor(t * 40 + i * 17)) % 1000) / 1000;
+    const py = 0.35 + ((i * 53 + Math.floor(t * 25)) % 550) / 1000;
+    const x = px * w;
+    const y = waterTop + py * (h - waterTop);
+    const r = dpr * (1.4 + (i % 4) * 0.7);
+    ctx.fillStyle = `rgba(255, 220, 80, ${0.18 + (i % 5) * 0.07})`;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawAdventureTreasureCoveEffect(now) {
+  drawAdventureGoldGlintsHeavy(now, 28);
+  const beam = ctx.createRadialGradient(w * 0.5, waterTop, 0, w * 0.5, waterTop + (h - waterTop) * 0.55, w * 0.42);
+  beam.addColorStop(0, "rgba(255, 220, 100, 0.22)");
+  beam.addColorStop(0.55, "rgba(255, 190, 60, 0.08)");
+  beam.addColorStop(1, "rgba(255, 190, 60, 0)");
+  ctx.fillStyle = beam;
+  ctx.fillRect(0, waterTop, w, h - waterTop);
+  const sandTop = h - dpr * 92;
+  scatterGoldCoins(sandTop - dpr * 4, 8, 19, 12);
+  const t = now * 0.001;
+  ctx.fillStyle = "rgba(168, 232, 240, 0.35)";
+  for (let i = 0; i < perfN(10); i++) {
+    const bx = w * (0.2 + ((i * 73 + Math.floor(t * 18)) % 600) / 1000);
+    const by = waterTop + dpr * (20 + (i * 41) % 120);
+    ctx.beginPath();
+    ctx.arc(bx, by, dpr * (1 + (i % 2)), 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawAdventureDoubloonBayEffect(now) {
+  drawAdventureGoldGlintsHeavy(now, 20);
+  const sandTop = h - dpr * 92;
+  scatterGoldCoins(sandTop, 6, 11, 14);
+}
+
+function drawAdventureGoldenAtollEffect(now) {
+  drawAdventureGoldGlintsHeavy(now, 14);
+  const warm = ctx.createLinearGradient(w * 0.3, waterTop, w * 0.7, h);
+  warm.addColorStop(0, "rgba(255, 230, 140, 0.14)");
+  warm.addColorStop(1, "rgba(255, 200, 80, 0)");
+  ctx.fillStyle = warm;
+  ctx.fillRect(0, waterTop, w, h - waterTop);
+}
+
+function drawAdventureSerpentStraitEffect(now) {
+  const t = now * 0.001;
+  ctx.fillStyle = "rgba(30, 70, 60, 0.1)";
+  ctx.fillRect(0, waterTop + (h - waterTop) * 0.4, w, (h - waterTop) * 0.6);
+  if (Math.sin(t * 0.8) > 0.6) {
+    ctx.strokeStyle = "rgba(40, 100, 85, 0.25)";
+    ctx.lineWidth = dpr * 8;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(-w * 0.1, waterTop + (h - waterTop) * 0.55);
+    ctx.quadraticCurveTo(w * 0.4, waterTop + (h - waterTop) * 0.35, w * 1.1, waterTop + (h - waterTop) * 0.6);
+    ctx.stroke();
+  }
+}
+
+function drawAdventureKrakensTeethEffect(now) {
+  const t = now * 0.001;
+  ctx.fillStyle = "rgba(60, 15, 35, 0.12)";
+  ctx.fillRect(0, waterTop, w, h - waterTop);
+  if (Math.sin(t * 0.6) > 0.5) {
+    ctx.strokeStyle = "rgba(90, 30, 50, 0.2)";
+    ctx.lineWidth = dpr * 6;
+    ctx.lineCap = "round";
+    for (let i = 0; i < 4; i++) {
+      const ox = w * (0.15 + i * 0.22);
+      ctx.beginPath();
+      ctx.moveTo(ox, h - dpr * 80);
+      ctx.quadraticCurveTo(ox + dpr * 30, waterTop + (h - waterTop) * 0.5, ox - dpr * 20, waterTop + dpr * 20);
+      ctx.stroke();
+    }
+  }
+}
+
+function drawAdventurePhantomKeysEffect(now) {
+  const t = now * 0.001;
+  for (let i = 0; i < 5; i++) {
+    const x = ((i * 173 + Math.floor(t * 10)) % 1000) / 1000 * w;
+    const y = waterTop + ((i * 67) % 1000) / 1000 * (h - waterTop) * 0.75;
+    const r = dpr * (40 + i * 15);
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, "rgba(180, 200, 240, 0.14)");
+    g.addColorStop(1, "rgba(180, 200, 240, 0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+}
+
+function drawAdventureCompassCayEffect(now) {
+  if (Math.sin(now * 0.002) > 0.7) {
+    ctx.strokeStyle = "rgba(255, 220, 160, 0.15)";
+    ctx.lineWidth = dpr * 1.5;
+    const cx = w * 0.5;
+    const cy = h - dpr * 54;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - dpr * 20);
+    ctx.lineTo(cx, cy + dpr * 20);
+    ctx.moveTo(cx - dpr * 20, cy);
+    ctx.lineTo(cx + dpr * 20, cy);
+    ctx.stroke();
+  }
+}
+
+function drawAdventurePalmwoodHarborEffect(now) {
+  drawAdventureGoldenAtollEffect(now);
+}
+
+function drawAdventureEmeraldLagoonEffect(now) {
+  const glow = ctx.createRadialGradient(w * 0.5, waterTop + (h - waterTop) * 0.45, 0, w * 0.5, waterTop + (h - waterTop) * 0.45, w * 0.45);
+  glow.addColorStop(0, "rgba(80, 255, 160, 0.14)");
+  glow.addColorStop(1, "rgba(80, 255, 160, 0)");
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, waterTop, w, h - waterTop);
+  const t = now * 0.001;
+  ctx.fillStyle = "rgba(100, 255, 180, 0.35)";
+  for (let i = 0; i < perfN(12); i++) {
+    const bx = ((i * 113 + Math.floor(t * 20)) % 1000) / 1000 * w;
+    const by = waterTop + ((i * 79) % 1000) / 1000 * (h - waterTop);
+    ctx.beginPath();
+    ctx.arc(bx, by, dpr * (1.2 + (i % 3) * 0.4), 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawAdventureTreasurehornPeakEffect(now) {
+  const fog = ctx.createLinearGradient(0, waterTop, 0, h);
+  fog.addColorStop(0, "rgba(180, 170, 160, 0.08)");
+  fog.addColorStop(0.6, "rgba(120, 110, 100, 0.12)");
+  fog.addColorStop(1, "rgba(80, 70, 60, 0.06)");
+  ctx.fillStyle = fog;
+  ctx.fillRect(0, waterTop, w, h - waterTop);
+}
+
+function drawAdventureLeviathanDeepEffect(now) {
+  ctx.fillStyle = "rgba(0, 8, 20, 0.18)";
+  ctx.fillRect(0, waterTop + (h - waterTop) * 0.35, w, (h - waterTop) * 0.65);
+  const t = now * 0.001;
+  ctx.fillStyle = "rgba(60, 140, 255, 0.4)";
+  for (let i = 0; i < perfN(10); i++) {
+    const bx = ((i * 127 + Math.floor(t * 8)) % 1000) / 1000 * w;
+    const by = waterTop + (h - waterTop) * (0.5 + ((i * 61) % 450) / 1000);
+    ctx.beginPath();
+    ctx.arc(bx, by, dpr * (0.8 + (i % 3) * 0.5), 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawAdventureCaptainsLandingEffect(now) {
+  const lantern = ctx.createRadialGradient(w * 0.72, waterTop + dpr * 40, 0, w * 0.72, waterTop + dpr * 40, dpr * 80);
+  lantern.addColorStop(0, "rgba(255, 200, 100, 0.16)");
+  lantern.addColorStop(1, "rgba(255, 200, 100, 0)");
+  ctx.fillStyle = lantern;
+  ctx.fillRect(0, waterTop, w, h - waterTop);
+}
+
+function drawAdventureMarinersRestEffect(now) {
+  drawAdventureMoonBeam();
+  drawAdventurePhantomKeysEffect(now);
+}
+
+const ADVENTURE_THEME_EFFECT_DRAW = {
+  skull: drawAdventureSkullShoalsEffect,
+  moon: drawAdventureMarinersRestEffect,
+  storm: drawAdventureStormFlash,
+  "golden-atoll": drawAdventureGoldenAtollEffect,
+  "serpent-strait": drawAdventureSerpentStraitEffect,
+  "doubloon-bay": drawAdventureDoubloonBayEffect,
+  "compass-cay": drawAdventureCompassCayEffect,
+  "krakens-teeth": drawAdventureKrakensTeethEffect,
+  "palmwood-harbor": drawAdventurePalmwoodHarborEffect,
+  "emerald-lagoon": drawAdventureEmeraldLagoonEffect,
+  "phantom-keys": drawAdventurePhantomKeysEffect,
+  "treasurehorn-peak": drawAdventureTreasurehornPeakEffect,
+  "leviathan-deep": drawAdventureLeviathanDeepEffect,
+  "captains-landing": drawAdventureCaptainsLandingEffect,
+  "treasure-cove": drawAdventureTreasureCoveEffect,
+};
+
 function drawAdventureThemeOverlay(now) {
   if (!adventureSession || w <= 0) return;
   const themeId = getAdventureLevelTheme(adventureSession.levelIndex);
@@ -989,20 +1741,8 @@ function drawAdventureThemeOverlay(now) {
   ctx.fillStyle = g;
   ctx.fillRect(0, waterTop, w, h - waterTop);
 
-  if (atm.effect === "gold") drawAdventureGoldGlints(now);
-  else if (atm.effect === "storm") drawAdventureStormFlash(now);
-  else if (atm.effect === "moon") drawAdventureMoonBeam();
-  else if (atm.effect === "skull") drawAdventureSkullShoalsEffect(now);
-  else if (atm.effect === "deep") {
-    ctx.fillStyle = "rgba(0, 8, 20, 0.15)";
-    ctx.fillRect(0, waterTop + (h - waterTop) * 0.35, w, (h - waterTop) * 0.65);
-  } else if (atm.effect === "glow") {
-    const glow = ctx.createRadialGradient(w * 0.5, waterTop + (h - waterTop) * 0.45, 0, w * 0.5, waterTop + (h - waterTop) * 0.45, w * 0.45);
-    glow.addColorStop(0, "rgba(80, 255, 160, 0.1)");
-    glow.addColorStop(1, "rgba(80, 255, 160, 0)");
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, waterTop, w, h - waterTop);
-  }
+  const drawEffect = ADVENTURE_THEME_EFFECT_DRAW[atm.effect];
+  if (drawEffect) drawEffect(now);
 }
 
 function applyAdventurePlayThemeClasses(themeId) {
@@ -1432,7 +2172,8 @@ function getReef() {
   if (!adventureSession) return base;
   const lvl = getAdventureLevel(adventureSession.levelIndex);
   const reefBase = REEFS.find((r) => r.id === lvl.reefId) || base;
-  const skullShoals = getAdventureLevelTheme(adventureSession.levelIndex) === "skull-shoals";
+  const themeId = getAdventureLevelTheme(adventureSession.levelIndex);
+  const themeVis = ADVENTURE_THEME_REEF_OVERRIDES[themeId];
   const merged = {
     ...reefBase,
     name: lvl.name,
@@ -1446,20 +2187,10 @@ function getReef() {
     adventurePassScore: lvl.passScore,
     adventureLevel: lvl.level,
   };
-  if (skullShoals) {
-    merged.visuals = {
-      ...reefBase.visuals,
-      gradient: ["#0c1018", "#0e1420", "#121820", "#060408"],
-      shaft: ["rgba(90, 40, 60, 0.1)", "rgba(90, 40, 60, 0)"],
-      silhouette: "rgba(8, 4, 12, 0.78)",
-      bubble: "rgba(140, 90, 120, 0.18)",
-      corals: [
-        { x: 0.12, c: "#3a3438", h: 0.2 },
-        { x: 0.35, c: "#2e282c", h: 0.18 },
-        { x: 0.55, c: "#343038", h: 0.16 },
-        { x: 0.78, c: "#302a2e", h: 0.14 },
-      ],
-    };
+  if (themeVis) {
+    merged.visuals = { ...reefBase.visuals, ...themeVis, corals: [] };
+  }
+  if (themeId === "skull-shoals") {
     merged.weights = { common: 48, uncommon: 28, rare: 14, epic: 7, legendary: 3 };
   }
   return merged;
@@ -4751,14 +5482,11 @@ function drawBackground() {
   ctx.fill();
 
   const sandTop = h - dpr * 92;
-  const skullSand =
-    adventureSession && getAdventureLevelTheme(adventureSession.levelIndex) === "skull-shoals";
+  const advTheme = getActiveAdventureTheme();
+  const themeSand = advTheme && ADVENTURE_THEME_SAND[advTheme];
   const sand = ctx.createLinearGradient(0, sandTop, 0, h);
-  if (skullSand) {
-    sand.addColorStop(0, "rgba(30, 22, 28, 0)");
-    sand.addColorStop(0.28, "rgba(42, 32, 38, 0.28)");
-    sand.addColorStop(0.72, "rgba(52, 38, 44, 0.48)");
-    sand.addColorStop(1, "rgba(28, 18, 22, 0.72)");
+  if (themeSand) {
+    for (const [stop, color] of themeSand.stops) sand.addColorStop(stop, color);
   } else {
     sand.addColorStop(0, "rgba(236, 205, 150, 0)");
     sand.addColorStop(0.28, "rgba(226, 190, 132, 0.18)");
@@ -4778,7 +5506,7 @@ function drawBackground() {
   ctx.closePath();
   ctx.fill();
 
-  ctx.fillStyle = skullSand ? "rgba(60, 48, 52, 0.22)" : "rgba(255, 238, 190, 0.18)";
+  ctx.fillStyle = themeSand ? themeSand.speck : "rgba(255, 238, 190, 0.18)";
   for (let i = 0; i < perfN(38); i++) {
     const x = ((i * 73) % 1000) / 1000 * w;
     const y = sandTop + dpr * 20 + (((i * 41) % 100) / 100) * dpr * 58;
@@ -4787,11 +5515,11 @@ function drawBackground() {
     ctx.fill();
   }
 
-  if (rid === "australia" && !skullSand) drawGreatBarrierReefBed();
-  if (rid === "caribbean") drawMesoamericanReefBed();
-  if (rid === "mediterranean") drawWesternMediterraneanRocks();
-  if (rid === "japan_kuroshio") drawKuroshioRocks();
-  if (skullSand) drawSkullShoalsGraveyardBed();
+  if (!advTheme && rid === "australia") drawGreatBarrierReefBed();
+  if (!advTheme && rid === "caribbean") drawMesoamericanReefBed();
+  if (!advTheme && rid === "mediterranean") drawWesternMediterraneanRocks();
+  if (!advTheme && rid === "japan_kuroshio") drawKuroshioRocks();
+  if (advTheme) drawAdventureThemeBed(advTheme);
   else drawReefStructure(rid, v.corals);
 }
 
@@ -6381,7 +7109,7 @@ function gameLoop(now) {
 
   ctx.clearRect(0, 0, w, h);
   drawCachedBackground();
-  if (playing && adventureSession) drawAdventureThemeOverlay(now);
+  if (adventureSession) drawAdventureThemeOverlay(now);
   if (!PERF_CHROMEBOOK || gameLoopTick % 2 === 0) drawBubbles(treasureMapRevealPaused ? 0 : dt);
   if (!treasureMapRevealPaused) updateJackpotCrab(now, dt);
 
