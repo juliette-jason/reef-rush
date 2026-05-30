@@ -864,132 +864,246 @@ function drawBoneJoint(x, y, r, color) {
   ctx.fill();
 }
 
-/** Full human skeleton remains — clipart-style, partially buried on the seabed. */
+function drawLongBone(x1, y1, x2, y2, lw, bone, shade) {
+  const g = ctx.createLinearGradient(x1, y1, x2, y2);
+  g.addColorStop(0, shade);
+  g.addColorStop(0.5, bone);
+  g.addColorStop(1, shade);
+  ctx.strokeStyle = g;
+  ctx.lineWidth = lw;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+}
+
+function drawRealisticSkull(s, bone, shade, boneDark) {
+  ctx.fillStyle = bone;
+  ctx.strokeStyle = shade;
+  ctx.lineWidth = s * 0.28;
+
+  ctx.beginPath();
+  ctx.ellipse(0, -s * 25.5, s * 9.2, s * 10.8, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.strokeStyle = shade;
+  ctx.lineWidth = s * 0.22;
+  ctx.beginPath();
+  ctx.moveTo(-s * 9, -s * 22);
+  ctx.quadraticCurveTo(-s * 11.5, -s * 18, -s * 10, -s * 14);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(s * 9, -s * 22);
+  ctx.quadraticCurveTo(s * 11.5, -s * 18, s * 10, -s * 14);
+  ctx.stroke();
+
+  ctx.fillStyle = boneDark;
+  ctx.beginPath();
+  ctx.ellipse(-s * 3.4, -s * 26, s * 2.6, s * 3.2, -0.08, 0, Math.PI * 2);
+  ctx.ellipse(s * 3.4, -s * 26, s * 2.6, s * 3.2, 0.08, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(35, 130, 90, 0.45)";
+  ctx.beginPath();
+  ctx.arc(-s * 3.4, -s * 26, s * 0.95, 0, Math.PI * 2);
+  ctx.arc(s * 3.4, -s * 26, s * 0.95, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = boneDark;
+  ctx.beginPath();
+  ctx.moveTo(-s * 1.4, -s * 21);
+  ctx.lineTo(0, -s * 17.5);
+  ctx.lineTo(s * 1.4, -s * 21);
+  ctx.lineTo(0, -s * 19.2);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = bone;
+  ctx.beginPath();
+  ctx.moveTo(-s * 7.2, -s * 15.5);
+  ctx.quadraticCurveTo(-s * 3.5, -s * 12.5, 0, -s * 13.8);
+  ctx.quadraticCurveTo(s * 3.5, -s * 12.5, s * 7.2, -s * 15.5);
+  ctx.lineTo(s * 6.8, -s * 9.5);
+  ctx.quadraticCurveTo(0, -s * 6.2, -s * 6.8, -s * 9.5);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = shade;
+  ctx.lineWidth = s * 0.2;
+  ctx.stroke();
+
+  ctx.strokeStyle = shade;
+  ctx.lineWidth = s * 0.18;
+  for (let t = -5; t <= 5; t++) {
+    const tx = t * s * 1.15;
+    ctx.beginPath();
+    ctx.moveTo(tx, -s * 9.5);
+    ctx.lineTo(tx * 0.92, -s * 7.2);
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle = bone;
+  ctx.lineWidth = s * 0.35;
+  ctx.beginPath();
+  ctx.moveTo(-s * 6.5, -s * 14);
+  ctx.quadraticCurveTo(-s * 9.5, -s * 12, -s * 8.5, -s * 9);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(s * 6.5, -s * 14);
+  ctx.quadraticCurveTo(s * 9.5, -s * 12, s * 8.5, -s * 9);
+  ctx.stroke();
+}
+
+function drawRealisticRib(s, i, bone, shade) {
+  const ry = -s * 7.5 + i * s * 2.85;
+  const spread = s * (8.2 - i * 0.28);
+  const bulge = s * (2.8 - i * 0.12);
+  ctx.strokeStyle = bone;
+  ctx.lineWidth = s * (0.72 - i * 0.04);
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.8, ry);
+  ctx.quadraticCurveTo(-spread * 0.55, ry - bulge, -spread, ry + s * 1.2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(s * 0.8, ry);
+  ctx.quadraticCurveTo(spread * 0.55, ry - bulge, spread, ry + s * 1.2);
+  ctx.stroke();
+}
+
+function drawPhalanges(fx, fy, dir, s, bone, shade) {
+  for (let f = 0; f < 4; f++) {
+    const ox = fx + f * dir * s * 1.1;
+    for (let j = 0; j < 3; j++) {
+      drawLongBone(ox + j * dir * s * 0.55, fy + j * s * 0.35, ox + (j + 1) * dir * s * 0.55, fy + (j + 1) * s * 0.35, s * 0.38, bone, shade);
+    }
+  }
+}
+
+/** Anatomical human skeleton remains, partially buried on the seabed. */
 function drawUnderwaterSkeletonRemain(cx, cy, sc, variant) {
-  const bone = "#e8dfd0";
-  const boneMid = "#c8b8a8";
-  const boneShade = "#9a8878";
+  const bone = "#e4ddd2";
+  const shade = "#b0a498";
+  const boneDark = "#7a6e62";
   const s = dpr * sc;
   const v = variant % 4;
 
   ctx.save();
   ctx.translate(cx, cy);
-  if (v === 1) ctx.rotate(-Math.PI * 0.42);
-  else if (v === 2) ctx.rotate(0.18);
-  else if (v === 3) ctx.rotate(-0.12);
+  if (v === 1) ctx.rotate(-Math.PI * 0.38);
+  else if (v === 2) ctx.rotate(0.14);
+  else if (v === 3) ctx.rotate(-0.1);
 
-  const lw = s * 1.15;
-  const jl = s * 0.85;
+  const lw = s * 1.05;
+
+  drawRealisticSkull(s, bone, shade, boneDark);
+
+  for (let i = 0; i < 8; i++) {
+    const vy = -s * 11.5 + i * s * 2.65;
+    ctx.fillStyle = i % 2 === 0 ? shade : bone;
+    ctx.beginPath();
+    ctx.ellipse(0, vy, s * 1.15, s * 0.95, 0, 0, Math.PI * 2);
+    ctx.fill();
+    if (i < 7) drawLongBone(0, vy + s * 0.7, 0, vy + s * 2.2, s * 0.95, bone, shade);
+  }
 
   ctx.fillStyle = bone;
-  ctx.strokeStyle = boneShade;
-  ctx.lineWidth = s * 0.35;
-
+  ctx.strokeStyle = shade;
+  ctx.lineWidth = s * 0.22;
   ctx.beginPath();
-  ctx.ellipse(0, -s * 24, s * 9.5, s * 10.5, 0, 0, Math.PI * 2);
+  ctx.moveTo(-s * 1.8, -s * 6);
+  ctx.lineTo(-s * 1.5, s * 5);
+  ctx.lineTo(s * 1.5, s * 5);
+  ctx.lineTo(s * 1.8, -s * 6);
+  ctx.closePath();
   ctx.fill();
   ctx.stroke();
 
-  ctx.fillStyle = "#0c0a0a";
-  ctx.beginPath();
-  ctx.ellipse(-s * 3.6, -s * 25, s * 2.8, s * 3.4, 0, 0, Math.PI * 2);
-  ctx.ellipse(s * 3.6, -s * 25, s * 2.8, s * 3.4, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "rgba(45, 160, 110, 0.4)";
-  ctx.beginPath();
-  ctx.arc(-s * 3.6, -s * 25, s * 1.1, 0, Math.PI * 2);
-  ctx.arc(s * 3.6, -s * 25, s * 1.1, 0, Math.PI * 2);
-  ctx.fill();
+  for (let i = 0; i < 7; i++) drawRealisticRib(s, i, bone, shade);
 
   ctx.fillStyle = bone;
   ctx.beginPath();
-  ctx.moveTo(-s * 7, -s * 15);
-  ctx.quadraticCurveTo(0, -s * 11, s * 7, -s * 15);
-  ctx.lineTo(s * 6.5, -s * 8);
-  ctx.quadraticCurveTo(0, -s * 4.5, -s * 6.5, -s * 8);
+  ctx.moveTo(-s * 9.5, s * 1.5);
+  ctx.quadraticCurveTo(-s * 5, s * 5.5, 0, s * 4.8);
+  ctx.quadraticCurveTo(s * 5, s * 5.5, s * 9.5, s * 1.5);
+  ctx.lineTo(s * 7.5, s * 9);
+  ctx.lineTo(-s * 7.5, s * 9);
   ctx.closePath();
   ctx.fill();
-  ctx.strokeStyle = boneShade;
+  ctx.strokeStyle = shade;
   ctx.lineWidth = s * 0.25;
-  for (let t = -4; t <= 4; t++) {
-    const tx = t * s * 1.4;
-    ctx.beginPath();
-    ctx.moveTo(tx, -s * 8);
-    ctx.lineTo(tx, -s * 5.5);
-    ctx.stroke();
-  }
-
-  for (let i = 0; i < 7; i++) {
-    const vy = -s * 12 + i * s * 3.2;
-    drawBoneJoint(0, vy, jl * 0.55, boneMid);
-    if (i < 6) drawBoneSegment(0, vy, 0, vy + s * 3, lw * 0.85, bone);
-  }
-
-  for (let i = 0; i < 6; i++) {
-    const ry = -s * 8 + i * s * 3.1;
-    const spread = s * (7.5 - i * 0.35);
-    ctx.strokeStyle = bone;
-    ctx.lineWidth = lw * 0.75;
-    ctx.beginPath();
-    ctx.moveTo(-s * 1.2, ry);
-    ctx.quadraticCurveTo(-spread, ry - s * 2.5, -spread - s * 1.5, ry + s * 1.5);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(s * 1.2, ry);
-    ctx.quadraticCurveTo(spread, ry - s * 2.5, spread + s * 1.5, ry + s * 1.5);
-    ctx.stroke();
-  }
-
-  ctx.fillStyle = bone;
+  ctx.stroke();
   ctx.beginPath();
-  ctx.moveTo(-s * 8, s * 2);
-  ctx.quadraticCurveTo(0, s * 6, s * 8, s * 2);
-  ctx.lineTo(s * 6, s * 8);
-  ctx.lineTo(-s * 6, s * 8);
-  ctx.closePath();
+  ctx.moveTo(-s * 5.5, s * 2);
+  ctx.lineTo(-s * 4, s * 7.5);
+  ctx.moveTo(s * 5.5, s * 2);
+  ctx.lineTo(s * 4, s * 7.5);
+  ctx.stroke();
+
+  drawLongBone(-s * 2.2, -s * 5.5, -s * 5.5, -s * 3.5, s * 0.55, bone, shade);
+  drawLongBone(s * 2.2, -s * 5.5, s * 5.5, -s * 3.5, s * 0.55, bone, shade);
+
+  const armSpread = v === 0 ? 1 : v === 3 ? 1.12 : 0.88;
+  const lShoulder = -s * 2.5;
+  const rShoulder = s * 2.5;
+  const lElbow = -s * 13 * armSpread;
+  const rElbow = s * 13 * armSpread;
+
+  drawLongBone(lShoulder, -s * 5, lElbow, -s * 1.5, lw, bone, shade);
+  drawLongBone(lElbow, -s * 1.5, lElbow - s * 4, s * 5, lw * 0.82, bone, shade);
+  drawLongBone(lElbow - s * 4, s * 5, lElbow - s * 5.5, s * 11, lw * 0.65, bone, shade);
+  drawBoneJoint(lElbow, -s * 1.5, s * 0.95, shade);
+  drawPhalanges(lElbow - s * 6, s * 12, -1, s * 0.42, bone, shade);
+
+  drawLongBone(rShoulder, -s * 5, rElbow, -s * 0.5, lw, bone, shade);
+  drawLongBone(rElbow, -s * 0.5, rElbow + s * 4, s * 6, lw * 0.82, bone, shade);
+  drawLongBone(rElbow + s * 4, s * 6, rElbow + s * 5.5, s * 12, lw * 0.65, bone, shade);
+  drawBoneJoint(rElbow, -s * 0.5, s * 0.95, shade);
+  drawPhalanges(rElbow + s * 4.5, s * 13, 1, s * 0.42, bone, shade);
+
+  drawLongBone(-s * 3.2, s * 8.5, -s * 4.8, s * 20, lw, bone, shade);
+  drawBoneJoint(-s * 4.8, s * 20, s * 1.05, shade);
+  drawLongBone(-s * 4.8, s * 20, -s * 4.2, s * 34, lw * 0.88, bone, shade);
+  drawBoneJoint(-s * 4.2, s * 34, s * 0.85, shade);
+  drawLongBone(-s * 4.2, s * 34, -s * 6.5, s * 44, lw * 0.62, bone, shade);
+  drawLongBone(-s * 4.2, s * 34, -s * 2, s * 44, lw * 0.55, bone, shade);
+  drawLongBone(-s * 6.5, s * 44, -s * 8, s * 46, lw * 0.4, bone, shade);
+  drawLongBone(-s * 2, s * 44, -s * 0.5, s * 46, lw * 0.4, bone, shade);
+
+  drawLongBone(s * 3.2, s * 8.5, s * 4.8, s * 20, lw, bone, shade);
+  drawBoneJoint(s * 4.8, s * 20, s * 1.05, shade);
+  drawLongBone(s * 4.8, s * 20, s * 4.2, s * 34, lw * 0.88, bone, shade);
+  drawBoneJoint(s * 4.2, s * 34, s * 0.85, shade);
+  drawLongBone(s * 4.2, s * 34, s * 6.5, s * 44, lw * 0.62, bone, shade);
+  drawLongBone(s * 4.2, s * 34, s * 2, s * 44, lw * 0.55, bone, shade);
+  drawLongBone(s * 6.5, s * 44, s * 8, s * 46, lw * 0.4, bone, shade);
+  drawLongBone(s * 2, s * 44, s * 0.5, s * 46, lw * 0.4, bone, shade);
+
+  ctx.strokeStyle = "rgba(90, 80, 70, 0.35)";
+  ctx.lineWidth = s * 0.15;
+  ctx.beginPath();
+  ctx.moveTo(-s * 3, -s * 18);
+  ctx.lineTo(-s * 1.5, -s * 8);
+  ctx.moveTo(s * 2, -s * 20);
+  ctx.lineTo(s * 0.5, -s * 10);
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(32, 26, 30, 0.58)";
+  ctx.beginPath();
+  ctx.ellipse(0, s * 39, s * 23, s * 15, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(44, 34, 38, 0.5)";
+  ctx.beginPath();
+  ctx.ellipse(0, s * 43, s * 19, s * 11, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  const armSpread = v === 0 ? 1 : v === 3 ? 1.15 : 0.85;
-  drawBoneSegment(-s * 2, -s * 6, -s * 14 * armSpread, -s * 2, lw, bone);
-  drawBoneSegment(-s * 14 * armSpread, -s * 2, -s * 18 * armSpread, s * 6, lw * 0.9, bone);
-  drawBoneSegment(-s * 18 * armSpread, s * 6, -s * 20 * armSpread, s * 12, lw * 0.65, bone);
-  drawBoneJoint(-s * 14 * armSpread, -s * 2, jl, boneMid);
-  drawBoneJoint(-s * 18 * armSpread, s * 6, jl * 0.75, boneMid);
-
-  drawBoneSegment(s * 2, -s * 6, s * 13 * armSpread, -s * 1, lw, bone);
-  drawBoneSegment(s * 13 * armSpread, -s * 1, s * 17 * armSpread, s * 7, lw * 0.9, bone);
-  drawBoneSegment(s * 17 * armSpread, s * 7, s * 19 * armSpread, s * 13, lw * 0.65, bone);
-  drawBoneJoint(s * 13 * armSpread, -s * 1, jl, boneMid);
-  drawBoneJoint(s * 17 * armSpread, s * 7, jl * 0.75, boneMid);
-
-  drawBoneSegment(-s * 3, s * 8, -s * 5, s * 22, lw, bone);
-  drawBoneSegment(-s * 5, s * 22, -s * 4, s * 36, lw * 0.85, bone);
-  drawBoneSegment(-s * 4, s * 36, -s * 7, s * 44, lw * 0.55, bone);
-  drawBoneSegment(-s * 4, s * 36, -s * 1, s * 44, lw * 0.55, bone);
-  drawBoneJoint(-s * 5, s * 22, jl, boneMid);
-
-  drawBoneSegment(s * 3, s * 8, s * 5, s * 22, lw, bone);
-  drawBoneSegment(s * 5, s * 22, s * 4, s * 36, lw * 0.85, bone);
-  drawBoneSegment(s * 4, s * 36, s * 7, s * 44, lw * 0.55, bone);
-  drawBoneSegment(s * 4, s * 36, s * 1, s * 44, lw * 0.55, bone);
-  drawBoneJoint(s * 5, s * 22, jl, boneMid);
-
-  ctx.fillStyle = "rgba(35, 28, 32, 0.55)";
-  ctx.beginPath();
-  ctx.ellipse(0, s * 38, s * 22, s * 14, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "rgba(48, 36, 40, 0.45)";
-  ctx.beginPath();
-  ctx.ellipse(0, s * 42, s * 18, s * 10, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.globalAlpha = 0.35;
-  ctx.strokeStyle = "rgba(50, 120, 80, 0.6)";
-  ctx.lineWidth = s * 0.5;
-  for (let k = 0; k < 3; k++) {
+  ctx.globalAlpha = 0.28;
+  ctx.strokeStyle = "rgba(45, 110, 75, 0.65)";
+  ctx.lineWidth = s * 0.45;
+  for (let k = 0; k < 4; k++) {
     ctx.beginPath();
-    ctx.moveTo(-s * 8 + k * s * 8, s * 10);
-    ctx.quadraticCurveTo(-s * 10 + k * s * 6, s * 22, -s * 6 + k * s * 10, s * 30);
+    ctx.moveTo(-s * 10 + k * s * 6, s * 8);
+    ctx.quadraticCurveTo(-s * 12 + k * s * 5, s * 20, -s * 7 + k * s * 8, s * 32);
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
@@ -6743,6 +6857,137 @@ function drawTreasureChestCinematic() {
   ctx.restore();
 }
 
+function drawJackpotSkeletonCrabChestArms(sc) {
+  const chestTop = -56 * sc;
+  const cw = 40 * sc;
+  const ch = 26 * sc;
+  const gripY = chestTop + ch * 0.72;
+  const gripLX = -cw * 0.5;
+  const gripRX = cw * 0.5;
+  const bone = "#ddd5c8";
+  const shade = "#9a9088";
+
+  function drawBoneArm(side) {
+    const sx = side;
+    const shx = sx * 18 * sc;
+    const shy = -6 * sc;
+    const midX = sx * 36 * sc;
+    const midY = -40 * sc;
+    const gx = sx > 0 ? gripRX : gripLX;
+    const gy = gripY;
+    drawLongBone(shx, shy, midX, midY, 4.2 * sc, bone, shade);
+    drawLongBone(midX, midY, gx, gy, 3.4 * sc, bone, shade);
+    drawBoneJoint(midX, midY, 2.8 * sc, shade);
+
+    const ang = Math.atan2(gy - midY, gx - midX);
+    const cx = gx + Math.cos(ang + sx * 0.5) * 5 * sc;
+    const cy = gy + Math.sin(ang + sx * 0.5) * 5 * sc;
+    ctx.fillStyle = bone;
+    ctx.strokeStyle = shade;
+    ctx.lineWidth = 0.95 * sc;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, 8 * sc, 5.5 * sc, ang, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    const px = cx + Math.cos(ang + sx * 0.85) * 7 * sc;
+    const py = cy + Math.sin(ang + sx * 0.85) * 7 * sc;
+    drawLongBone(cx, cy, px, py, 2.2 * sc, bone, shade);
+    drawLongBone(cx, cy, cx + Math.cos(ang - sx * 0.55) * 8 * sc, cy + Math.sin(ang - sx * 0.55) * 8 * sc, 2 * sc, bone, shade);
+  }
+
+  drawBoneArm(-1);
+  drawBoneArm(1);
+}
+
+function drawJackpotSkeletonCrab(sc, leg) {
+  const bone = "#e0d8cc";
+  const shade = "#a89888";
+  const boneDark = "#6a6058";
+  const swing = (i, m) => Math.sin(leg * m + i * 1.1) * 0.2;
+
+  ctx.fillStyle = "rgba(20, 12, 16, 0.28)";
+  ctx.beginPath();
+  ctx.ellipse(0, 7 * sc, 42 * sc, 10 * sc, 0.03, 0, Math.PI * 2);
+  ctx.fill();
+
+  function drawBoneLeg(side, idx) {
+    const sx = side;
+    const bx = sx * (15 + idx * 5.5) * sc;
+    const by = (0 + idx * 2.6) * sc;
+    const s1 = swing(idx + side * 2, 1.12);
+    const s2 = swing(idx + side * 2 + 0.5, 0.92);
+    const a1 = (side > 0 ? 0.38 : Math.PI - 0.38) + s1;
+    const a2 = a1 + (side > 0 ? 0.52 : -0.52) + s2;
+    const l1 = 13 * sc;
+    const l2 = 15 * sc;
+    const j1x = bx + Math.cos(a1) * l1;
+    const j1y = by + Math.sin(a1) * l1;
+    const j2x = j1x + Math.cos(a2) * l2;
+    const j2y = j1y + Math.sin(a2) * l2;
+    drawLongBone(bx, by, j1x, j1y, (2.1 - idx * 0.12) * sc, bone, shade);
+    drawLongBone(j1x, j1y, j2x, j2y, (1.7 - idx * 0.1) * sc, bone, shade);
+    drawBoneJoint(j1x, j1y, 1.4 * sc, shade);
+  }
+  for (const side of [-1, 1]) {
+    for (let i = 0; i < 4; i++) drawBoneLeg(side, i);
+  }
+
+  const shellGrad = ctx.createRadialGradient(-6 * sc, -12 * sc, 2 * sc, 8 * sc, 4 * sc, 36 * sc);
+  shellGrad.addColorStop(0, "#ece4d8");
+  shellGrad.addColorStop(0.4, bone);
+  shellGrad.addColorStop(0.75, shade);
+  shellGrad.addColorStop(1, boneDark);
+  ctx.fillStyle = shellGrad;
+  ctx.beginPath();
+  ctx.moveTo(0, -20 * sc);
+  ctx.quadraticCurveTo(14 * sc, -22 * sc, 24 * sc, -14 * sc);
+  ctx.quadraticCurveTo(30 * sc, 0, 26 * sc, 9 * sc);
+  ctx.quadraticCurveTo(14 * sc, 11 * sc, 0, 10 * sc);
+  ctx.quadraticCurveTo(-14 * sc, 11 * sc, -26 * sc, 9 * sc);
+  ctx.quadraticCurveTo(-30 * sc, 0, -24 * sc, -14 * sc);
+  ctx.quadraticCurveTo(-14 * sc, -22 * sc, 0, -20 * sc);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = boneDark;
+  ctx.lineWidth = 1.2 * sc;
+  ctx.stroke();
+
+  ctx.strokeStyle = "rgba(80, 70, 62, 0.45)";
+  ctx.lineWidth = 0.9 * sc;
+  for (let r = -2; r <= 2; r++) {
+    ctx.beginPath();
+    ctx.moveTo(r * 5 * sc, -16 * sc);
+    ctx.quadraticCurveTo(r * 7 * sc, -4 * sc, r * 4 * sc, 8 * sc);
+    ctx.stroke();
+  }
+
+  function boneEyeStalk(ex) {
+    drawLongBone(ex * 0.45, -14 * sc, ex, -22 * sc, 2 * sc, bone, shade);
+    ctx.fillStyle = boneDark;
+    ctx.beginPath();
+    ctx.arc(ex, -23 * sc, 2.8 * sc, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255, 50, 50, 0.85)";
+    ctx.shadowColor = "rgba(255, 40, 40, 0.6)";
+    ctx.shadowBlur = 4 * sc;
+    ctx.beginPath();
+    ctx.arc(ex, -23 * sc, 1.4 * sc, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+  boneEyeStalk(-7 * sc);
+  boneEyeStalk(7 * sc);
+
+  ctx.fillStyle = boneDark;
+  ctx.beginPath();
+  ctx.moveTo(-4 * sc, -6 * sc);
+  ctx.lineTo(0, -2 * sc);
+  ctx.lineTo(4 * sc, -6 * sc);
+  ctx.lineTo(0, -4 * sc);
+  ctx.closePath();
+  ctx.fill();
+}
+
 function drawJackpotCrab() {
   if (!jackpotCrab?.active || treasureChestCinematic || w <= 0) return;
   const x = jackpotCrab.active.x;
@@ -6750,10 +6995,19 @@ function drawJackpotCrab() {
   const facing = jackpotCrab.active.vx >= 0 ? 1 : -1;
   const leg = jackpotCrab.active.legT;
   const sc = dpr * 1.05;
+  const skeletonCrab = getActiveAdventureTheme() === "skull-shoals";
 
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(facing, 1);
+
+  if (skeletonCrab) {
+    drawJackpotSkeletonCrab(sc, leg);
+    drawTreasureChestInCrabSpace(sc, 0);
+    drawJackpotSkeletonCrabChestArms(sc);
+    ctx.restore();
+    return;
+  }
 
   const swing = (i, m) => Math.sin(leg * m + i * 1.1) * 0.2;
 
