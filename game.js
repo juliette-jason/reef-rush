@@ -878,235 +878,317 @@ function drawLongBone(x1, y1, x2, y2, lw, bone, shade) {
   ctx.stroke();
 }
 
-function drawRealisticSkull(s, bone, shade, boneDark) {
+function drawRealisticSkullSupine(s, hx, hy, bone, shade, boneDark) {
   ctx.fillStyle = bone;
   ctx.strokeStyle = shade;
-  ctx.lineWidth = s * 0.28;
-
+  ctx.lineWidth = s * 0.26;
   ctx.beginPath();
-  ctx.ellipse(0, -s * 25.5, s * 9.2, s * 10.8, 0, 0, Math.PI * 2);
+  ctx.ellipse(hx, hy - s * 5.5, s * 9.5, s * 8, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.stroke();
-
-  ctx.strokeStyle = shade;
-  ctx.lineWidth = s * 0.22;
-  ctx.beginPath();
-  ctx.moveTo(-s * 9, -s * 22);
-  ctx.quadraticCurveTo(-s * 11.5, -s * 18, -s * 10, -s * 14);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(s * 9, -s * 22);
-  ctx.quadraticCurveTo(s * 11.5, -s * 18, s * 10, -s * 14);
   ctx.stroke();
 
   ctx.fillStyle = boneDark;
   ctx.beginPath();
-  ctx.ellipse(-s * 3.4, -s * 26, s * 2.6, s * 3.2, -0.08, 0, Math.PI * 2);
-  ctx.ellipse(s * 3.4, -s * 26, s * 2.6, s * 3.2, 0.08, 0, Math.PI * 2);
+  ctx.ellipse(hx - s * 3.2, hy - s * 6.5, s * 2.5, s * 3, 0, 0, Math.PI * 2);
+  ctx.ellipse(hx + s * 3.2, hy - s * 6.5, s * 2.5, s * 3, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = "rgba(35, 130, 90, 0.45)";
+  ctx.fillStyle = "rgba(35, 130, 90, 0.42)";
   ctx.beginPath();
-  ctx.arc(-s * 3.4, -s * 26, s * 0.95, 0, Math.PI * 2);
-  ctx.arc(s * 3.4, -s * 26, s * 0.95, 0, Math.PI * 2);
+  ctx.arc(hx - s * 3.2, hy - s * 6.5, s * 0.9, 0, Math.PI * 2);
+  ctx.arc(hx + s * 3.2, hy - s * 6.5, s * 0.9, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.fillStyle = boneDark;
   ctx.beginPath();
-  ctx.moveTo(-s * 1.4, -s * 21);
-  ctx.lineTo(0, -s * 17.5);
-  ctx.lineTo(s * 1.4, -s * 21);
-  ctx.lineTo(0, -s * 19.2);
+  ctx.moveTo(hx - s * 1.2, hy - s * 4.5);
+  ctx.lineTo(hx, hy - s * 2.8);
+  ctx.lineTo(hx + s * 1.2, hy - s * 4.5);
+  ctx.lineTo(hx, hy - s * 3.5);
   ctx.closePath();
   ctx.fill();
 
   ctx.fillStyle = bone;
   ctx.beginPath();
-  ctx.moveTo(-s * 7.2, -s * 15.5);
-  ctx.quadraticCurveTo(-s * 3.5, -s * 12.5, 0, -s * 13.8);
-  ctx.quadraticCurveTo(s * 3.5, -s * 12.5, s * 7.2, -s * 15.5);
-  ctx.lineTo(s * 6.8, -s * 9.5);
-  ctx.quadraticCurveTo(0, -s * 6.2, -s * 6.8, -s * 9.5);
+  ctx.moveTo(hx - s * 6.5, hy - s * 2);
+  ctx.quadraticCurveTo(hx - s * 2, hy + s * 0.5, hx + s * 7, hy - s * 0.5);
+  ctx.lineTo(hx + s * 6.5, hy + s * 2.5);
+  ctx.quadraticCurveTo(hx + s * 1, hy + s * 4.5, hx - s * 6, hy + s * 2);
   ctx.closePath();
   ctx.fill();
   ctx.strokeStyle = shade;
-  ctx.lineWidth = s * 0.2;
-  ctx.stroke();
-
-  ctx.strokeStyle = shade;
-  ctx.lineWidth = s * 0.18;
-  for (let t = -5; t <= 5; t++) {
-    const tx = t * s * 1.15;
+  ctx.lineWidth = s * 0.17;
+  for (let t = -4; t <= 4; t++) {
+    const tx = hx + t * s * 1.1;
     ctx.beginPath();
-    ctx.moveTo(tx, -s * 9.5);
-    ctx.lineTo(tx * 0.92, -s * 7.2);
+    ctx.moveTo(tx, hy + s * 2.2);
+    ctx.lineTo(tx + s * 0.4, hy + s * 4);
     ctx.stroke();
   }
 
   ctx.strokeStyle = bone;
-  ctx.lineWidth = s * 0.35;
+  ctx.lineWidth = s * 0.32;
   ctx.beginPath();
-  ctx.moveTo(-s * 6.5, -s * 14);
-  ctx.quadraticCurveTo(-s * 9.5, -s * 12, -s * 8.5, -s * 9);
+  ctx.moveTo(hx - s * 5.5, hy - s * 1);
+  ctx.quadraticCurveTo(hx - s * 8, hy - s * 3, hx - s * 7.5, hy - s * 5);
   ctx.stroke();
   ctx.beginPath();
-  ctx.moveTo(s * 6.5, -s * 14);
-  ctx.quadraticCurveTo(s * 9.5, -s * 12, s * 8.5, -s * 9);
-  ctx.stroke();
-}
-
-function drawRealisticRib(s, i, bone, shade) {
-  const ry = -s * 7.5 + i * s * 2.85;
-  const spread = s * (8.2 - i * 0.28);
-  const bulge = s * (2.8 - i * 0.12);
-  ctx.strokeStyle = bone;
-  ctx.lineWidth = s * (0.72 - i * 0.04);
-  ctx.lineCap = "round";
-  ctx.beginPath();
-  ctx.moveTo(-s * 0.8, ry);
-  ctx.quadraticCurveTo(-spread * 0.55, ry - bulge, -spread, ry + s * 1.2);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(s * 0.8, ry);
-  ctx.quadraticCurveTo(spread * 0.55, ry - bulge, spread, ry + s * 1.2);
+  ctx.moveTo(hx + s * 5.5, hy - s * 1);
+  ctx.quadraticCurveTo(hx + s * 8, hy - s * 3, hx + s * 7.5, hy - s * 5);
   ctx.stroke();
 }
 
-function drawPhalanges(fx, fy, dir, s, bone, shade) {
-  for (let f = 0; f < 4; f++) {
-    const ox = fx + f * dir * s * 1.1;
-    for (let j = 0; j < 3; j++) {
-      drawLongBone(ox + j * dir * s * 0.55, fy + j * s * 0.35, ox + (j + 1) * dir * s * 0.55, fy + (j + 1) * s * 0.35, s * 0.38, bone, shade);
+function drawRibCageHorizontal(s, x0, x1, spineY, bone, shade) {
+  const ribs = 8;
+  for (let i = 0; i < ribs; i++) {
+    const t = i / (ribs - 1);
+    const rx = x0 + (x1 - x0) * t;
+    const spread = s * (8.5 - i * 0.35);
+    ctx.strokeStyle = bone;
+    ctx.lineWidth = s * (0.68 - i * 0.035);
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(rx, spineY);
+    ctx.quadraticCurveTo(rx - s * 1.8, spineY - spread * 0.75, rx - spread * 0.92, spineY - s * 1.4);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(rx, spineY);
+    ctx.quadraticCurveTo(rx + s * 1.4, spineY + spread * 0.45, rx + spread * 0.75, spineY + s * 2.2);
+    ctx.stroke();
+  }
+  ctx.fillStyle = bone;
+  ctx.strokeStyle = shade;
+  ctx.lineWidth = s * 0.2;
+  ctx.beginPath();
+  ctx.moveTo(x0 + s * 4, spineY - s * 5);
+  ctx.lineTo(x0 + s * 4, spineY + s * 4);
+  ctx.lineTo(x1 - s * 3, spineY + s * 3.5);
+  ctx.lineTo(x1 - s * 3, spineY - s * 4.5);
+  ctx.closePath();
+  ctx.globalAlpha = 0.85;
+  ctx.fill();
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+}
+
+function drawPelvisHorizontal(s, px, py, bone, shade) {
+  ctx.fillStyle = bone;
+  ctx.strokeStyle = shade;
+  ctx.lineWidth = s * 0.22;
+  ctx.beginPath();
+  ctx.moveTo(px - s * 9, py + s * 1);
+  ctx.quadraticCurveTo(px - s * 4, py + s * 6, px, py + s * 4.5);
+  ctx.quadraticCurveTo(px + s * 4, py + s * 6, px + s * 9, py + s * 1);
+  ctx.lineTo(px + s * 7, py - s * 2);
+  ctx.lineTo(px - s * 7, py - s * 2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+}
+
+function drawSandBurialPatch(s, cx, cy, wide) {
+  ctx.fillStyle = "rgba(32, 26, 30, 0.58)";
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + s * 6, s * wide, s * 11, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(44, 34, 38, 0.48)";
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + s * 9, s * (wide * 0.82), s * 8, 0, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawLooseBone(bx, by, rot, kind, s, bone, shade) {
+  ctx.save();
+  ctx.translate(bx, by);
+  ctx.rotate(rot);
+  if (kind === "femur") drawLongBone(0, 0, s * 22, s * 1.5, s * 1.05, bone, shade);
+  else if (kind === "humerus") drawLongBone(0, 0, s * 16, -s * 2, s * 0.9, bone, shade);
+  else if (kind === "tibia") drawLongBone(0, 0, s * 18, s * 0.5, s * 0.78, bone, shade);
+  else if (kind === "rib") {
+    ctx.strokeStyle = bone;
+    ctx.lineWidth = s * 0.55;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(s * 5, -s * 6, s * 9, -s * 2);
+    ctx.stroke();
+  } else if (kind === "vertebra") {
+    drawBoneJoint(0, 0, s * 1.1, shade);
+    drawLongBone(-s * 0.8, 0, s * 0.8, 0, s * 0.65, bone, shade);
+  } else if (kind === "hand") {
+    for (let f = 0; f < 4; f++) drawLongBone(f * s * 1.8, 0, f * s * 1.8 + s * 2.2, s * 1.2, s * 0.32, bone, shade);
+  }
+  ctx.restore();
+}
+
+/** Full skeleton lying flat — local +X toward feet, head at negative X. */
+function drawSupineSkeletonBody(s, bone, shade, boneDark, opts) {
+  const headX = -s * 48;
+  const spineY = s * 3;
+  const spineStart = -s * 28;
+  const spineEnd = s * 32;
+  const pelvisX = s * 34;
+  const lw = s * 1.08;
+
+  if (opts.head !== false) drawRealisticSkullSupine(s, headX, spineY, bone, shade, boneDark);
+
+  if (opts.neck !== false) {
+    for (let i = 0; i < 3; i++) {
+      const vx = headX + s * 10 + i * s * 2.8;
+      drawBoneJoint(vx, spineY + s * 0.5, s * 0.9, shade);
+      drawLongBone(vx, spineY + s * 0.5, vx + s * 2.5, spineY + s * 0.8, s * 0.82, bone, shade);
     }
+  }
+
+  if (opts.spine !== false) {
+    for (let i = 0; i < 11; i++) {
+      const vx = spineStart + i * s * 5.6;
+      ctx.fillStyle = i % 2 === 0 ? shade : bone;
+      ctx.beginPath();
+      ctx.ellipse(vx, spineY, s * 1.2, s * 1, 0, 0, Math.PI * 2);
+      ctx.fill();
+      if (i < 10) drawLongBone(vx + s * 0.8, spineY, vx + s * 4.8, spineY + s * 0.15, s * 0.92, bone, shade);
+    }
+  }
+
+  if (opts.ribs !== false) drawRibCageHorizontal(s, spineStart + s * 2, spineEnd - s * 4, spineY, bone, shade);
+
+  if (opts.pelvis !== false) drawPelvisHorizontal(s, pelvisX, spineY + s * 2, bone, shade);
+
+  const shoulderX = -s * 18;
+  if (opts.leftArm !== false) {
+    drawLongBone(shoulderX, spineY - s * 1, shoulderX - s * 14, spineY - s * 16, lw, bone, shade);
+    drawBoneJoint(shoulderX - s * 14, spineY - s * 16, s * 0.95, shade);
+    drawLongBone(shoulderX - s * 14, spineY - s * 16, shoulderX - s * 24, spineY - s * 8, lw * 0.82, bone, shade);
+    drawLongBone(shoulderX - s * 24, spineY - s * 8, shoulderX - s * 30, spineY - s * 2, lw * 0.62, bone, shade);
+  }
+
+  if (opts.rightArm !== false) {
+    drawLongBone(shoulderX, spineY + s * 2, shoulderX - s * 10, spineY + s * 18, lw, bone, shade);
+    drawBoneJoint(shoulderX - s * 10, spineY + s * 18, s * 0.95, shade);
+    drawLongBone(shoulderX - s * 10, spineY + s * 18, shoulderX - s * 20, spineY + s * 24, lw * 0.82, bone, shade);
+  }
+
+  if (opts.leftLeg !== false) {
+    drawLongBone(pelvisX - s * 3, spineY + s * 4, pelvisX + s * 14, spineY + s * 6, lw, bone, shade);
+    drawBoneJoint(pelvisX + s * 14, spineY + s * 6, s * 1.05, shade);
+    drawLongBone(pelvisX + s * 14, spineY + s * 6, pelvisX + s * 32, spineY + s * 4, lw * 0.9, bone, shade);
+    drawBoneJoint(pelvisX + s * 32, spineY + s * 4, s * 0.85, shade);
+    drawLongBone(pelvisX + s * 32, spineY + s * 4, pelvisX + s * 46, spineY + s * 8, lw * 0.65, bone, shade);
+    drawLongBone(pelvisX + s * 46, spineY + s * 8, pelvisX + s * 50, spineY + s * 12, lw * 0.42, bone, shade);
+  }
+
+  if (opts.rightLeg !== false) {
+    drawLongBone(pelvisX + s * 3, spineY + s * 5, pelvisX + s * 18, spineY + s * 14, lw, bone, shade);
+    drawBoneJoint(pelvisX + s * 18, spineY + s * 14, s * 1.05, shade);
+    drawLongBone(pelvisX + s * 18, spineY + s * 14, pelvisX + s * 36, spineY + s * 16, lw * 0.9, bone, shade);
+    drawBoneJoint(pelvisX + s * 36, spineY + s * 16, s * 0.85, shade);
+    drawLongBone(pelvisX + s * 36, spineY + s * 16, pelvisX + s * 50, spineY + s * 20, lw * 0.65, bone, shade);
+    drawLongBone(pelvisX + s * 50, spineY + s * 20, pelvisX + s * 54, spineY + s * 24, lw * 0.42, bone, shade);
   }
 }
 
-/** Anatomical human skeleton remains, partially buried on the seabed. */
+function drawScatteredBones(s, seed, bone, shade, boneDark) {
+  const parts = [
+    { k: "femur", x: s * 38, y: s * 16, r: 0.55 },
+    { k: "humerus", x: -s * 22, y: s * 22, r: -0.35 },
+    { k: "tibia", x: s * 52, y: -s * 8, r: 1.1 },
+    { k: "rib", x: s * 8, y: s * 20, r: 0.8 },
+    { k: "rib", x: -s * 5, y: s * 18, r: 2.2 },
+    { k: "vertebra", x: s * 28, y: s * 12, r: 0 },
+    { k: "hand", x: -s * 30, y: s * 8, r: -0.6 },
+  ];
+  for (let i = 0; i < parts.length; i++) {
+    const p = parts[(i + seed) % parts.length];
+    drawLooseBone(p.x + (seed % 3) * s * 2, p.y + (i % 2) * s * 3, p.r, p.k, s, bone, shade);
+  }
+  if (seed % 2 === 0) {
+    ctx.save();
+    ctx.translate(s * 55, -s * 6);
+    ctx.rotate(0.25);
+    drawRealisticSkullSupine(s, 0, 0, bone, shade, boneDark);
+    ctx.restore();
+  }
+}
+
+/** Laying-down skeleton remains — full, partial, or scattered on the seabed. */
 function drawUnderwaterSkeletonRemain(cx, cy, sc, variant) {
   const bone = "#e4ddd2";
   const shade = "#b0a498";
   const boneDark = "#7a6e62";
   const s = dpr * sc;
-  const v = variant % 4;
+  const v = variant % 6;
 
   ctx.save();
   ctx.translate(cx, cy);
-  if (v === 1) ctx.rotate(-Math.PI * 0.38);
-  else if (v === 2) ctx.rotate(0.14);
-  else if (v === 3) ctx.rotate(-0.1);
+  const facing = v === 1 || v === 4 ? -1 : 1;
+  ctx.scale(facing, 1);
+  const tilt = v === 2 ? 0.06 : v === 5 ? -0.05 : v === 3 ? 0.1 : 0.02;
+  ctx.rotate(tilt);
 
-  const lw = s * 1.05;
-
-  drawRealisticSkull(s, bone, shade, boneDark);
-
-  for (let i = 0; i < 8; i++) {
-    const vy = -s * 11.5 + i * s * 2.65;
-    ctx.fillStyle = i % 2 === 0 ? shade : bone;
-    ctx.beginPath();
-    ctx.ellipse(0, vy, s * 1.15, s * 0.95, 0, 0, Math.PI * 2);
-    ctx.fill();
-    if (i < 7) drawLongBone(0, vy + s * 0.7, 0, vy + s * 2.2, s * 0.95, bone, shade);
+  if (v === 0 || v === 1) {
+    drawSupineSkeletonBody(s, bone, shade, boneDark, {});
+    drawSandBurialPatch(s, s * 2, s * 10, 52);
+  } else if (v === 2) {
+    drawSupineSkeletonBody(s, bone, shade, boneDark, { head: false });
+    ctx.save();
+    ctx.translate(s * 62, -s * 14);
+    ctx.rotate(-0.35);
+    drawRealisticSkullSupine(s, 0, 0, bone, shade, boneDark);
+    ctx.restore();
+    drawSandBurialPatch(s, s * 4, s * 11, 48);
+  } else if (v === 3) {
+    drawSupineSkeletonBody(s, bone, shade, boneDark, {
+      head: false,
+      leftArm: false,
+      rightLeg: false,
+      leftLeg: false,
+    });
+    drawLooseBone(s * 44, s * 18, 0.7, "femur", s, bone, shade);
+    drawLooseBone(-s * 28, s * 20, -0.4, "humerus", s, bone, shade);
+    drawLooseBone(s * 12, -s * 12, 1.2, "tibia", s, bone, shade);
+    ctx.save();
+    ctx.translate(-s * 52, -s * 8);
+    ctx.rotate(0.5);
+    drawRealisticSkullSupine(s, 0, 0, bone, shade, boneDark);
+    ctx.restore();
+    drawSandBurialPatch(s, 0, s * 12, 42);
+  } else if (v === 4) {
+    drawScatteredBones(s, 2, bone, shade, boneDark);
+    drawSupineSkeletonBody(s, bone, shade, boneDark, {
+      head: false,
+      ribs: false,
+      leftArm: false,
+      rightArm: false,
+      leftLeg: false,
+    });
+    drawSandBurialPatch(s, s * 8, s * 14, 38);
+  } else {
+    drawSupineSkeletonBody(s, bone, shade, boneDark, { leftArm: false, rightArm: false });
+    drawLooseBone(-s * 36, -s * 10, -0.25, "humerus", s, bone, shade);
+    drawLooseBone(-s * 42, s * 4, 0.15, "hand", s, bone, shade);
+    drawLooseBone(s * 20, s * 22, 0.55, "femur", s, bone, shade);
+    drawSandBurialPatch(s, s * 2, s * 10, 50);
   }
 
-  ctx.fillStyle = bone;
-  ctx.strokeStyle = shade;
-  ctx.lineWidth = s * 0.22;
-  ctx.beginPath();
-  ctx.moveTo(-s * 1.8, -s * 6);
-  ctx.lineTo(-s * 1.5, s * 5);
-  ctx.lineTo(s * 1.5, s * 5);
-  ctx.lineTo(s * 1.8, -s * 6);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
-  for (let i = 0; i < 7; i++) drawRealisticRib(s, i, bone, shade);
-
-  ctx.fillStyle = bone;
-  ctx.beginPath();
-  ctx.moveTo(-s * 9.5, s * 1.5);
-  ctx.quadraticCurveTo(-s * 5, s * 5.5, 0, s * 4.8);
-  ctx.quadraticCurveTo(s * 5, s * 5.5, s * 9.5, s * 1.5);
-  ctx.lineTo(s * 7.5, s * 9);
-  ctx.lineTo(-s * 7.5, s * 9);
-  ctx.closePath();
-  ctx.fill();
-  ctx.strokeStyle = shade;
-  ctx.lineWidth = s * 0.25;
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(-s * 5.5, s * 2);
-  ctx.lineTo(-s * 4, s * 7.5);
-  ctx.moveTo(s * 5.5, s * 2);
-  ctx.lineTo(s * 4, s * 7.5);
-  ctx.stroke();
-
-  drawLongBone(-s * 2.2, -s * 5.5, -s * 5.5, -s * 3.5, s * 0.55, bone, shade);
-  drawLongBone(s * 2.2, -s * 5.5, s * 5.5, -s * 3.5, s * 0.55, bone, shade);
-
-  const armSpread = v === 0 ? 1 : v === 3 ? 1.12 : 0.88;
-  const lShoulder = -s * 2.5;
-  const rShoulder = s * 2.5;
-  const lElbow = -s * 13 * armSpread;
-  const rElbow = s * 13 * armSpread;
-
-  drawLongBone(lShoulder, -s * 5, lElbow, -s * 1.5, lw, bone, shade);
-  drawLongBone(lElbow, -s * 1.5, lElbow - s * 4, s * 5, lw * 0.82, bone, shade);
-  drawLongBone(lElbow - s * 4, s * 5, lElbow - s * 5.5, s * 11, lw * 0.65, bone, shade);
-  drawBoneJoint(lElbow, -s * 1.5, s * 0.95, shade);
-  drawPhalanges(lElbow - s * 6, s * 12, -1, s * 0.42, bone, shade);
-
-  drawLongBone(rShoulder, -s * 5, rElbow, -s * 0.5, lw, bone, shade);
-  drawLongBone(rElbow, -s * 0.5, rElbow + s * 4, s * 6, lw * 0.82, bone, shade);
-  drawLongBone(rElbow + s * 4, s * 6, rElbow + s * 5.5, s * 12, lw * 0.65, bone, shade);
-  drawBoneJoint(rElbow, -s * 0.5, s * 0.95, shade);
-  drawPhalanges(rElbow + s * 4.5, s * 13, 1, s * 0.42, bone, shade);
-
-  drawLongBone(-s * 3.2, s * 8.5, -s * 4.8, s * 20, lw, bone, shade);
-  drawBoneJoint(-s * 4.8, s * 20, s * 1.05, shade);
-  drawLongBone(-s * 4.8, s * 20, -s * 4.2, s * 34, lw * 0.88, bone, shade);
-  drawBoneJoint(-s * 4.2, s * 34, s * 0.85, shade);
-  drawLongBone(-s * 4.2, s * 34, -s * 6.5, s * 44, lw * 0.62, bone, shade);
-  drawLongBone(-s * 4.2, s * 34, -s * 2, s * 44, lw * 0.55, bone, shade);
-  drawLongBone(-s * 6.5, s * 44, -s * 8, s * 46, lw * 0.4, bone, shade);
-  drawLongBone(-s * 2, s * 44, -s * 0.5, s * 46, lw * 0.4, bone, shade);
-
-  drawLongBone(s * 3.2, s * 8.5, s * 4.8, s * 20, lw, bone, shade);
-  drawBoneJoint(s * 4.8, s * 20, s * 1.05, shade);
-  drawLongBone(s * 4.8, s * 20, s * 4.2, s * 34, lw * 0.88, bone, shade);
-  drawBoneJoint(s * 4.2, s * 34, s * 0.85, shade);
-  drawLongBone(s * 4.2, s * 34, s * 6.5, s * 44, lw * 0.62, bone, shade);
-  drawLongBone(s * 4.2, s * 34, s * 2, s * 44, lw * 0.55, bone, shade);
-  drawLongBone(s * 6.5, s * 44, s * 8, s * 46, lw * 0.4, bone, shade);
-  drawLongBone(s * 2, s * 44, s * 0.5, s * 46, lw * 0.4, bone, shade);
-
-  ctx.strokeStyle = "rgba(90, 80, 70, 0.35)";
-  ctx.lineWidth = s * 0.15;
-  ctx.beginPath();
-  ctx.moveTo(-s * 3, -s * 18);
-  ctx.lineTo(-s * 1.5, -s * 8);
-  ctx.moveTo(s * 2, -s * 20);
-  ctx.lineTo(s * 0.5, -s * 10);
-  ctx.stroke();
-
-  ctx.fillStyle = "rgba(32, 26, 30, 0.58)";
-  ctx.beginPath();
-  ctx.ellipse(0, s * 39, s * 23, s * 15, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "rgba(44, 34, 38, 0.5)";
-  ctx.beginPath();
-  ctx.ellipse(0, s * 43, s * 19, s * 11, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.globalAlpha = 0.28;
+  ctx.globalAlpha = 0.26;
   ctx.strokeStyle = "rgba(45, 110, 75, 0.65)";
-  ctx.lineWidth = s * 0.45;
-  for (let k = 0; k < 4; k++) {
+  ctx.lineWidth = s * 0.42;
+  for (let k = 0; k < 3; k++) {
     ctx.beginPath();
-    ctx.moveTo(-s * 10 + k * s * 6, s * 8);
-    ctx.quadraticCurveTo(-s * 12 + k * s * 5, s * 20, -s * 7 + k * s * 8, s * 32);
+    ctx.moveTo(-s * 42 + k * s * 18, s * 14);
+    ctx.quadraticCurveTo(-s * 48 + k * s * 16, s * 24, -s * 38 + k * s * 20, s * 34);
     ctx.stroke();
   }
   ctx.globalAlpha = 1;
+
+  ctx.strokeStyle = "rgba(90, 80, 70, 0.32)";
+  ctx.lineWidth = s * 0.14;
+  ctx.beginPath();
+  ctx.moveTo(-s * 20, -s * 12);
+  ctx.lineTo(-s * 8, -s * 4);
+  ctx.moveTo(s * 24, -s * 10);
+  ctx.lineTo(s * 14, -s * 3);
+  ctx.stroke();
 
   ctx.restore();
 }
@@ -1265,15 +1347,13 @@ function drawSkullShoalsSandSkeletons() {
   if (w <= 0) return;
   const sandTop = h - dpr * 92;
   const placements = [
-    { x: 0.1, y: 18, s: 0.72, v: 0 },
-    { x: 0.24, y: 10, s: 0.88, v: 1 },
-    { x: 0.38, y: 16, s: 0.8, v: 2 },
-    { x: 0.52, y: 8, s: 0.95, v: 3 },
-    { x: 0.66, y: 14, s: 0.78, v: 0 },
-    { x: 0.8, y: 20, s: 0.7, v: 1 },
-    { x: 0.92, y: 12, s: 0.65, v: 2 },
-    { x: 0.44, y: 28, s: 0.55, v: 3 },
-    { x: 0.72, y: 26, s: 0.5, v: 0 },
+    { x: 0.14, y: 22, s: 1.35, v: 0 },
+    { x: 0.38, y: 18, s: 1.5, v: 1 },
+    { x: 0.62, y: 24, s: 1.28, v: 2 },
+    { x: 0.84, y: 20, s: 1.4, v: 3 },
+    { x: 0.26, y: 32, s: 1.15, v: 4 },
+    { x: 0.52, y: 30, s: 1.22, v: 5 },
+    { x: 0.72, y: 34, s: 1.08, v: 2 },
   ];
   for (const p of placements) {
     drawUnderwaterSkeletonRemain(p.x * w, sandTop + dpr * p.y, p.s, p.v);
