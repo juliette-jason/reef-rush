@@ -407,13 +407,14 @@ function adventureMapSceneSvg(themeId, idSuffix = "") {
     "serpent-strait": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="72" height="52" fill="#3a6878"/>
       <path d="M0 30 Q18 22 36 30 T72 30 L72 52 L0 52 Z" fill="#2a5060"/>
-      <path d="M-4 28 Q20 8 38 26 Q54 40 76 22" fill="none" stroke="#1e4842" stroke-width="5" stroke-linecap="round" opacity="0.35"/>
-      <ellipse cx="68" cy="20" rx="7" ry="5" fill="#1a4038" opacity="0.4"/>
-      <circle cx="69" cy="19" r="1.2" fill="#d4c840" opacity="0.55"/>
-      <path d="M8 34 Q24 18 40 32 Q56 46 68 28" fill="none" stroke="#4a8898" stroke-width="3" stroke-linecap="round"/>
-      <path d="M62 26 L68 22 L66 30 Z" fill="#2e7a50" stroke="#1e5038" stroke-width="0.8"/>
-      <circle cx="64" cy="24" r="2" fill="#f0e040"/>
-      <circle cx="60" cy="22" r="1.2" fill="#2e2418"/>
+      <path d="M-2 30 Q14 24 26 28 Q38 32 50 26 Q62 20 74 24" fill="none" stroke="#1a4038" stroke-width="4" stroke-linecap="round" opacity="0.32"/>
+      <path d="M-2 28 Q14 22 26 26 Q38 30 50 24 Q62 18 74 22" fill="none" stroke="#2a6058" stroke-width="1.2" opacity="0.45"/>
+      <ellipse cx="70" cy="23" rx="5" ry="3" fill="#1a3834" opacity="0.45"/>
+      <circle cx="71" cy="22.5" r="0.9" fill="#d8cc50" opacity="0.6"/>
+      <path d="M4 32 Q22 20 40 30 Q54 38 66 30" fill="none" stroke="#4a8898" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M4 30 Q22 18 40 28 Q54 36 66 28" fill="none" stroke="#3a7068" stroke-width="0.9" opacity="0.55"/>
+      <ellipse cx="66" cy="29" rx="4" ry="2.2" fill="#2a5850" opacity="0.5"/>
+      <circle cx="67" cy="28.5" r="1" fill="#e8dc50"/>
     </svg>`,
     "doubloon-bay": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="72" height="52" fill="#68a8c8"/>
@@ -1628,27 +1629,29 @@ function drawSerpentStraitBed() {
     ctx.closePath();
     ctx.fill();
   }
-  ctx.strokeStyle = "rgba(50, 110, 95, 0.5)";
-  ctx.lineWidth = dpr * 3;
+  ctx.strokeStyle = "rgba(45, 100, 88, 0.45)";
+  ctx.lineWidth = dpr * 2.2;
   ctx.lineCap = "round";
+  ctx.lineJoin = "round";
   ctx.beginPath();
-  ctx.moveTo(w * 0.05, sandTop + dpr * 20);
-  ctx.quadraticCurveTo(w * 0.35, sandTop - dpr * 10, w * 0.55, sandTop + dpr * 18);
-  ctx.quadraticCurveTo(w * 0.75, sandTop + dpr * 40, w * 0.95, sandTop + dpr * 12);
+  ctx.moveTo(w * 0.04, sandTop + dpr * 14);
+  ctx.quadraticCurveTo(w * 0.28, sandTop + dpr * 22, w * 0.48, sandTop + dpr * 8);
+  ctx.quadraticCurveTo(w * 0.68, sandTop - dpr * 4, w * 0.94, sandTop + dpr * 16);
   ctx.stroke();
-  ctx.fillStyle = "rgba(40, 90, 70, 0.4)";
+  ctx.strokeStyle = "rgba(55, 115, 98, 0.3)";
+  ctx.lineWidth = dpr * 1;
   ctx.beginPath();
-  ctx.moveTo(w * 0.92, sandTop + dpr * 10);
-  ctx.lineTo(w * 0.97, sandTop + dpr * 8);
-  ctx.lineTo(w * 0.94, sandTop + dpr * 14);
+  ctx.moveTo(w * 0.06, sandTop + dpr * 10);
+  ctx.quadraticCurveTo(w * 0.3, sandTop + dpr * 16, w * 0.5, sandTop + dpr * 4);
+  ctx.quadraticCurveTo(w * 0.7, sandTop - dpr * 8, w * 0.92, sandTop + dpr * 12);
+  ctx.stroke();
+  ctx.fillStyle = "rgba(38, 82, 72, 0.38)";
+  ctx.beginPath();
+  ctx.moveTo(w * 0.9, sandTop + dpr * 14);
+  ctx.lineTo(w * 0.96, sandTop + dpr * 11);
+  ctx.lineTo(w * 0.93, sandTop + dpr * 17);
   ctx.closePath();
   ctx.fill();
-  ctx.fillStyle = "rgba(35, 75, 62, 0.35)";
-  for (let i = 0; i < 4; i++) {
-    ctx.beginPath();
-    ctx.ellipse(w * (0.22 + i * 0.18), base - dpr * 6, dpr * 5, dpr * 3, i * 0.4, 0, Math.PI * 2);
-    ctx.fill();
-  }
 }
 
 function drawCompassCayBed() {
@@ -1957,54 +1960,132 @@ function drawAdventureTreasureCoveEffect(now) {
   }
 }
 
+/** Vague giant eel lurking in the deep background at Serpent Strait. */
 function drawVagueSerpentSilhouette(now) {
   const t = now * 0.00035;
   const wy = waterTop;
   const wh = h - waterTop;
-  const baseY = wy + wh * 0.4 + Math.sin(t) * dpr * 10;
-  const sway = Math.sin(t * 0.65) * w * 0.025;
+  const sway = Math.sin(t * 0.65) * w * 0.022;
+  const n = 30;
+  const pts = [];
+
+  for (let i = 0; i <= n; i++) {
+    const u = i / n;
+    const x =
+      w * (-0.08 + u * 1.18) +
+      sway * Math.sin(u * Math.PI * 2.1 + t * 1.1) +
+      Math.sin(u * 5.5 + t * 1.4) * w * 0.01;
+    const y =
+      wy +
+      wh * (0.4 + 0.13 * Math.sin(u * Math.PI * 1.5 + t * 0.75) + 0.035 * Math.sin(u * 9 + t * 2));
+    pts.push({ x, y, u });
+  }
+
+  function halfWidth(u) {
+    if (u < 0.1) return dpr * (2 + u * 110);
+    if (u > 0.88) return dpr * Math.max(3, 11 - (u - 0.88) * 70);
+    return dpr * 13;
+  }
+
+  function normalAt(i) {
+    const p0 = pts[Math.max(0, i - 1)];
+    const p1 = pts[Math.min(n, i + 1)];
+    const dx = p1.x - p0.x;
+    const dy = p1.y - p0.y;
+    const len = Math.hypot(dx, dy) || 1;
+    return { nx: -dy / len, ny: dx / len };
+  }
 
   ctx.save();
-  ctx.lineCap = "round";
   ctx.lineJoin = "round";
-  ctx.strokeStyle = "rgba(22, 58, 50, 0.55)";
-  ctx.lineWidth = dpr * 28;
-  ctx.globalAlpha = 0.07;
+
+  ctx.globalAlpha = 0.085;
+  ctx.fillStyle = "rgba(12, 42, 38, 0.92)";
   ctx.beginPath();
-  ctx.moveTo(-w * 0.12 + sway, baseY + wh * 0.14);
-  ctx.bezierCurveTo(
-    w * 0.18 + sway, baseY - wh * 0.2,
-    w * 0.42 - sway * 0.5, baseY + wh * 0.16,
-    w * 0.68 + sway, baseY - wh * 0.06
-  );
-  ctx.bezierCurveTo(w * 0.9, baseY + wh * 0.12, w * 1.08, baseY, w * 1.14, baseY - wh * 0.14);
+  for (let i = 0; i <= n; i++) {
+    const { nx, ny } = normalAt(i);
+    const hw = halfWidth(pts[i].u);
+    const px = pts[i].x + nx * hw;
+    const py = pts[i].y + ny * hw;
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  for (let i = n; i >= 0; i--) {
+    const { nx, ny } = normalAt(i);
+    const hw = halfWidth(pts[i].u);
+    ctx.lineTo(pts[i].x - nx * hw, pts[i].y - ny * hw);
+  }
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.globalAlpha = 0.055;
+  ctx.fillStyle = "rgba(22, 58, 50, 0.5)";
+  for (let i = 2; i < n - 2; i += 2) {
+    const { nx, ny } = normalAt(i);
+    const hw = halfWidth(pts[i].u) * 0.55;
+    ctx.beginPath();
+    ctx.ellipse(pts[i].x - nx * hw * 0.3, pts[i].y - ny * hw * 0.3, hw * 0.9, hw * 0.45, Math.atan2(ny, nx), 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.globalAlpha = 0.07;
+  ctx.strokeStyle = "rgba(28, 72, 62, 0.65)";
+  ctx.lineWidth = dpr * 2.2;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  for (let i = 0; i <= n; i++) {
+    const { nx, ny } = normalAt(i);
+    const fin = Math.sin(pts[i].u * 24 + t * 3.2) * dpr * 4;
+    const px = pts[i].x + nx * (halfWidth(pts[i].u) + dpr * 3 + fin);
+    const py = pts[i].y + ny * (halfWidth(pts[i].u) + dpr * 3 + fin);
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
   ctx.stroke();
 
-  ctx.globalAlpha = 0.09;
-  ctx.fillStyle = "rgba(18, 52, 46, 0.85)";
+  ctx.globalAlpha = 0.045;
+  ctx.strokeStyle = "rgba(35, 85, 72, 0.45)";
+  ctx.lineWidth = dpr * 1.4;
   ctx.beginPath();
-  ctx.ellipse(w * 1.06 + sway, baseY - wh * 0.16, dpr * 42, dpr * 30, 0.25, 0, Math.PI * 2);
+  for (let i = 0; i <= n; i++) {
+    const { nx, ny } = normalAt(i);
+    const fin = Math.sin(pts[i].u * 20 + t * 2.8 + 1) * dpr * 2.5;
+    const px = pts[i].x - nx * (halfWidth(pts[i].u) * 0.65 + fin);
+    const py = pts[i].y - ny * (halfWidth(pts[i].u) * 0.65 + fin);
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+
+  const head = pts[n];
+  const hn = normalAt(n);
+  const ang = Math.atan2(hn.ny, hn.nx);
+  const hx = head.x + hn.nx * dpr * 8;
+  const hy = head.y + hn.ny * dpr * 8;
+  ctx.globalAlpha = 0.1;
+  ctx.fillStyle = "rgba(14, 40, 36, 0.9)";
+  ctx.beginPath();
+  ctx.ellipse(hx, hy, dpr * 20, dpr * 9, ang, 0, Math.PI * 2);
   ctx.fill();
-  ctx.globalAlpha = 0.14;
-  ctx.fillStyle = "rgba(220, 200, 70, 0.55)";
+  ctx.globalAlpha = 0.16;
+  ctx.fillStyle = "rgba(210, 195, 75, 0.55)";
+  const eyeOff = dpr * 7;
   ctx.beginPath();
-  ctx.ellipse(w * 1.09 + sway, baseY - wh * 0.18, dpr * 5, dpr * 3.5, 0.2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(w * 1.02 + sway, baseY - wh * 0.15, dpr * 3, dpr * 2.5, 0.15, 0, Math.PI * 2);
+  ctx.arc(hx + Math.cos(ang) * eyeOff - Math.sin(ang) * dpr * 3, hy + Math.sin(ang) * eyeOff + Math.cos(ang) * dpr * 3, dpr * 2.2, 0, Math.PI * 2);
+  ctx.arc(hx + Math.cos(ang) * eyeOff + Math.sin(ang) * dpr * 3, hy + Math.sin(ang) * eyeOff - Math.cos(ang) * dpr * 3, dpr * 2.2, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.globalAlpha = 0.05;
-  ctx.strokeStyle = "rgba(35, 90, 75, 0.5)";
-  ctx.lineWidth = dpr * 2.5;
-  for (let i = 0; i < 9; i++) {
-    const px = w * (0.06 + i * 0.1) + sway * (i % 2 ? 1 : -0.6);
-    const py = baseY + Math.sin(i * 0.75 + t * 2) * wh * 0.05;
-    ctx.beginPath();
-    ctx.moveTo(px, py - dpr * 14);
-    ctx.lineTo(px + dpr * 10, py + dpr * 12);
-    ctx.stroke();
-  }
+  const tail = pts[0];
+  const tn = normalAt(0);
+  ctx.globalAlpha = 0.08;
+  ctx.fillStyle = "rgba(10, 36, 32, 0.85)";
+  ctx.beginPath();
+  ctx.moveTo(tail.x, tail.y);
+  ctx.lineTo(tail.x - tn.nx * dpr * 22 - tn.ny * dpr * 4, tail.y - tn.ny * dpr * 22 + tn.nx * dpr * 4);
+  ctx.lineTo(tail.x - tn.nx * dpr * 22 + tn.ny * dpr * 4, tail.y - tn.ny * dpr * 22 - tn.nx * dpr * 4);
+  ctx.closePath();
+  ctx.fill();
+
   ctx.restore();
 }
 
@@ -2079,12 +2160,13 @@ function drawAdventureSerpentStraitEffect(now) {
   ctx.fillStyle = mist;
   ctx.fillRect(0, waterTop + wh * 0.3, w, wh * 0.7);
   if (Math.sin(t * 0.8) > 0.55) {
-    ctx.strokeStyle = "rgba(45, 110, 92, 0.12)";
-    ctx.lineWidth = dpr * 6;
+    ctx.strokeStyle = "rgba(45, 110, 92, 0.1)";
+    ctx.lineWidth = dpr * 2.5;
     ctx.lineCap = "round";
     ctx.beginPath();
     ctx.moveTo(-w * 0.1, waterTop + wh * 0.55);
-    ctx.quadraticCurveTo(w * 0.4, waterTop + wh * 0.35, w * 1.1, waterTop + wh * 0.6);
+    ctx.quadraticCurveTo(w * 0.4, waterTop + wh * 0.38, w * 0.72, waterTop + wh * 0.48);
+    ctx.quadraticCurveTo(w * 0.95, waterTop + wh * 0.42, w * 1.08, waterTop + wh * 0.52);
     ctx.stroke();
   }
 }
