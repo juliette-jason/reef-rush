@@ -559,6 +559,18 @@ function cachedAdventureMapSceneSvg(themeId, idSuffix = "") {
   return svg;
 }
 
+let adventureSceneCacheWarm = false;
+
+function warmupAdventureSceneCache() {
+  if (adventureSceneCacheWarm) return;
+  adventureSceneCacheWarm = true;
+  for (let i = 0; i < ADVENTURE_LEVEL_COUNT; i++) {
+    cachedAdventureMapSceneSvg(getAdventureLevelTheme(i), `n${i}`);
+  }
+  cachedAdventureMapSceneSvg("skull-shoals", "play");
+  cachedAdventureMapSceneSvg("treasure-cove", "res");
+}
+
 function getAdventureLevelTheme(levelIndex) {
   return ADVENTURE_LEVEL_THEMES[levelIndex] || ADVENTURE_LEVEL_THEMES[0];
 }
@@ -3462,7 +3474,7 @@ function buildAdventureTrailPath() {
   return d;
 }
 
-function scrollAdventureMapToProgress() {
+function scrollAdventureMapToProgress(instant = true) {
   if (!adventureMapScroll || !adventureLevelList) return;
   const clearedNodes = adventureLevelList.querySelectorAll(".adventure-map-node--cleared");
   const target =
@@ -3470,9 +3482,11 @@ function scrollAdventureMapToProgress() {
     (clearedNodes.length ? clearedNodes[clearedNodes.length - 1] : null) ||
     adventureLevelList.querySelector(".adventure-map-node");
   if (!target) return;
-  window.requestAnimationFrame(() => {
-    target.scrollIntoView({ block: "center", behavior: "smooth" });
-  });
+  const run = () => {
+    target.scrollIntoView({ block: "center", behavior: instant ? "instant" : "smooth" });
+  };
+  if (instant) run();
+  else window.requestAnimationFrame(run);
 }
 
 let adventureMapUiProgress = -1;
@@ -3535,6 +3549,7 @@ function buildAdventureLevelUI(force = false) {
     b.style.left = `${layout.x}%`;
     b.style.top = `${layout.y}%`;
     b.title = `${lvl.name} — ${lvl.subtitle} · pass ${lvl.passScore}`;
+    b.dataset.levelIndex = String(i);
     b.innerHTML = `
       <span class="adventure-map-node__scene-wrap" aria-hidden="true">
         ${cachedAdventureMapSceneSvg(themeId, `n${i}`)}
@@ -3547,9 +3562,6 @@ function buildAdventureLevelUI(force = false) {
       <span class="adventure-map-node__label">${lvl.name}</span>
       <span class="adventure-map-node__meta">${lvl.passScore} pts</span>
     `;
-    if (playable) {
-      b.addEventListener("click", () => startAdventureLevel(i));
-    }
     frag.appendChild(b);
   }
   adventureLevelList.appendChild(frag);
@@ -3558,19 +3570,24 @@ function buildAdventureLevelUI(force = false) {
   }
 }
 
+function prepareAdventureHub() {
+  warmupAdventureSceneCache();
+  buildAdventureLevelUI();
+}
+
 function openAdventureHub() {
   if (!isAdventureUnlocked()) {
     showToast(adventureUnlockBlockedMessage(), 2800);
     return;
   }
+  prepareAdventureHub();
   hideAllPanels();
   if (panelAdventure) panelAdventure.hidden = false;
   syncAdventureLaunchVisibility();
-  if (musicEnabled) startAdventureMusic();
-  window.requestAnimationFrame(() => {
-    buildAdventureLevelUI();
-    scrollAdventureMapToProgress();
-  });
+  scrollAdventureMapToProgress(true);
+  if (musicEnabled) {
+    window.requestAnimationFrame(() => startAdventureMusic());
+  }
 }
 
 function startAdventureLevel(levelIndex) {
@@ -8162,6 +8179,15 @@ btnAgain.addEventListener("click", () => {
 
 btnTreasureMapRevealDone?.addEventListener("click", endTreasureMapReveal);
 
+function prefetchAdventureHub() {
+  if (!isAdventureUnlocked()) return;
+  prepareAdventureHub();
+}
+
+btnAdventureMode?.addEventListener("pointerenter", prefetchAdventureHub, { passive: true });
+btnAdventureMode?.addEventListener("focus", prefetchAdventureHub);
+btnAdventureMode?.addEventListener("touchstart", prefetchAdventureHub, { passive: true });
+
 btnAdventureMode?.addEventListener("click", () => {
   if (!isAdventureUnlocked()) {
     updateAdventureLaunchUI();
@@ -8170,6 +8196,13 @@ btnAdventureMode?.addEventListener("click", () => {
   }
   clearAdventureHomeCelebration();
   openAdventureHub();
+});
+
+adventureLevelList?.addEventListener("click", (e) => {
+  const btn = e.target.closest(".adventure-map-node");
+  if (!btn || btn.disabled) return;
+  const idx = parseInt(btn.dataset.levelIndex, 10);
+  if (!Number.isNaN(idx)) startAdventureLevel(idx);
 });
 
 btnAdventureBack?.addEventListener("click", () => {
@@ -8214,22 +8247,12 @@ refreshCoinDisplays();
 buildBaitUI();
 refreshLeaderboardViews();
 updateAdventureLaunchUI();
-buildAdventureLevelUI();
-updateMusicButton();
-
-function warmupAdventureSceneCache() {
-  for (let i = 0; i < ADVENTURE_LEVEL_COUNT; i++) {
-    cachedAdventureMapSceneSvg(getAdventureLevelTheme(i), `n${i}`);
-  }
-  cachedAdventureMapSceneSvg("skull-shoals", "play");
-  cachedAdventureMapSceneSvg("treasure-cove", "res");
-}
-
 if (typeof requestIdleCallback === "function") {
-  requestIdleCallback(warmupAdventureSceneCache, { timeout: 2500 });
+  requestIdleCallback(prepareAdventureHub, { timeout: 800 });
 } else {
-  setTimeout(warmupAdventureSceneCache, 400);
+  setTimeout(prepareAdventureHub, 0);
 }
+updateMusicButton();
 resize();
 initBubbles();
 showIntroIfNeeded();

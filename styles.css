@@ -2344,6 +2344,7 @@ body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   z-index: 1;
+  contain: layout style;
 }
 
 .adventure-map-board {
@@ -2371,6 +2372,7 @@ body {
   min-height: 300vh;
   height: auto;
   filter: sepia(0.06) contrast(1.02) brightness(1.04);
+  contain: layout paint;
 }
 
 .adventure-map-trail {
