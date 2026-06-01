@@ -2385,9 +2385,18 @@ body {
 
 .adventure-map-art .adv-map-mountains text,
 .adventure-map-art .adv-map-rivers text,
-.adventure-map-art .adv-map-oceans text {
+.adventure-map-art .adv-map-oceans text,
+.adventure-map-art .adv-map-ponds text {
   pointer-events: none;
   user-select: none;
+}
+
+.adventure-map-art .adv-map-rivers path[fill] {
+  filter: drop-shadow(0 0.5px 0 rgba(50, 70, 80, 0.15));
+}
+
+.adventure-map-art .adv-map-ponds path[fill] {
+  filter: drop-shadow(0 1px 1px rgba(40, 60, 70, 0.2));
 }
 
 .adventure-map-trail {
