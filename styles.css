@@ -2391,14 +2391,6 @@ body {
   user-select: none;
 }
 
-.adventure-map-art .adv-map-rivers path[fill] {
-  filter: drop-shadow(0 0.5px 0 rgba(50, 70, 80, 0.15));
-}
-
-.adventure-map-art .adv-map-ponds path[fill] {
-  filter: drop-shadow(0 1px 1px rgba(40, 60, 70, 0.2));
-}
-
 .adventure-map-trail {
   stroke: #c41e1e;
   stroke-width: 3.2;
