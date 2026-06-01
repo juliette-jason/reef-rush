@@ -334,7 +334,7 @@ const ADVENTURE_MAP_PLACES = [
   "Kraken's Teeth",
   "Palmwood Harbor",
   "Emerald Lagoon",
-  "Phantom Keys",
+  "Lava Falls",
   "Stormbreak Isle",
   "Treasurehorn Peak",
   "Leviathan Deep",
@@ -353,7 +353,7 @@ const ADVENTURE_LEVEL_THEMES = [
   "krakens-teeth",
   "palmwood-harbor",
   "emerald-lagoon",
-  "phantom-keys",
+  "lava-falls",
   "stormbreak-isle",
   "treasurehorn-peak",
   "leviathan-deep",
@@ -466,15 +466,18 @@ function adventureMapSceneSvg(themeId, idSuffix = "") {
       <path d="M36 18 L40 26 L48 26 L42 32 L44 40 L36 35 L28 40 L30 32 L24 26 L32 26 Z" fill="#90f0b0" stroke="#208858" stroke-width="0.8"/>
       <circle cx="36" cy="28" r="4" fill="#c8ffe0" opacity="0.6"/>
     </svg>`,
-    "phantom-keys": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <rect width="72" height="52" fill="#485878"/>
-      <path d="M0 38 Q36 34 72 38 L72 52 L0 52 Z" fill="#384868"/>
-      <ellipse cx="18" cy="32" rx="10" ry="6" fill="#8898b8" opacity="0.55" stroke="#a8b8d8" stroke-width="0.8"/>
-      <ellipse cx="36" cy="28" rx="11" ry="7" fill="#98a8c8" opacity="0.5" stroke="#c8d8f0" stroke-width="0.8"/>
-      <ellipse cx="54" cy="32" rx="10" ry="6" fill="#8898b8" opacity="0.55" stroke="#a8b8d8" stroke-width="0.8"/>
-      <path d="M14 32 L14 24 Q18 20 22 24 L22 32" fill="none" stroke="#d8e8ff" stroke-width="1.2" opacity="0.7"/>
-      <circle cx="18" cy="24" r="3" fill="none" stroke="#d8e8ff" stroke-width="1" opacity="0.7"/>
-      <path d="M50 32 L50 24 Q54 20 58 24 L58 32" fill="none" stroke="#d8e8ff" stroke-width="1.2" opacity="0.7"/>
+    "lava-falls": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#4a2820"/>
+      <path d="M0 38 Q36 34 72 38 L72 52 L0 52 Z" fill="#3a2018"/>
+      <path d="M8 38 L18 14 L28 38 Z" fill="#5a4038" stroke="#2e1810" stroke-width="0.8"/>
+      <path d="M8 14 L18 6 L28 14 Z" fill="#8a3020" stroke="#5a1808" stroke-width="0.6"/>
+      <path d="M44 38 L54 10 L64 38 Z" fill="#5a4038" stroke="#2e1810" stroke-width="0.8"/>
+      <path d="M44 10 L54 2 L64 10 Z" fill="#c84818" stroke="#8a2808" stroke-width="0.6"/>
+      <path d="M16 20 Q20 28 24 36" fill="none" stroke="#f07030" stroke-width="2" stroke-linecap="round" opacity="0.85"/>
+      <path d="M50 16 Q54 26 58 34" fill="none" stroke="#ff9040" stroke-width="2.2" stroke-linecap="round" opacity="0.9"/>
+      <ellipse cx="36" cy="40" rx="14" ry="4" fill="#6a5048" opacity="0.7"/>
+      <circle cx="54" cy="8" r="2" fill="#ffcc60" opacity="0.8"/>
+      <circle cx="58" cy="12" r="1.2" fill="#ffaa40" opacity="0.7"/>
     </svg>`,
     "stormbreak-isle": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="72" height="52" fill="#3a4868"/>
@@ -619,7 +622,14 @@ const ADVENTURE_PLAY_ATMOSPHERE = {
   "krakens-teeth": { stops: [[0, "rgba(40, 30, 50, 0.2)"], [1, "rgba(80, 25, 45, 0.28)"]], effect: "krakens-teeth" },
   "palmwood-harbor": { stops: [[0, "rgba(180, 200, 160, 0.1)"], [1, "rgba(210, 180, 100, 0.18)"]], effect: "palmwood-harbor" },
   "emerald-lagoon": { stops: [[0, "rgba(80, 200, 140, 0.14)"], [1, "rgba(30, 120, 80, 0.22)"]], effect: "emerald-lagoon" },
-  "phantom-keys": { stops: [[0, "rgba(140, 160, 200, 0.16)"], [1, "rgba(50, 60, 90, 0.22)"]], effect: "phantom-keys" },
+  "lava-falls": {
+    stops: [
+      [0, "rgba(80, 25, 10, 0.22)"],
+      [0.5, "rgba(50, 15, 8, 0.28)"],
+      [1, "rgba(25, 8, 5, 0.35)"],
+    ],
+    effect: "lava-falls",
+  },
   "stormbreak-isle": { stops: [[0, "rgba(25, 35, 55, 0.35)"], [1, "rgba(40, 50, 70, 0.2)"]], effect: "stormbreak-isle" },
   "treasurehorn-peak": { stops: [[0, "rgba(160, 170, 185, 0.12)"], [1, "rgba(90, 80, 70, 0.22)"]], effect: "treasurehorn-peak" },
   "leviathan-deep": { stops: [[0, "rgba(5, 15, 35, 0.35)"], [1, "rgba(10, 25, 50, 0.45)"]], effect: "leviathan-deep" },
@@ -709,13 +719,13 @@ const ADVENTURE_THEME_SAND = {
     ],
     speck: "rgba(70, 180, 130, 0.22)",
   },
-  "phantom-keys": {
+  "lava-falls": {
     stops: [
-      [0, "rgba(120, 140, 180, 0)"],
-      [0.4, "rgba(80, 95, 130, 0.22)"],
-      [1, "rgba(50, 60, 90, 0.48)"],
+      [0, "rgba(90, 45, 30, 0)"],
+      [0.35, "rgba(70, 32, 22, 0.28)"],
+      [1, "rgba(45, 22, 15, 0.58)"],
     ],
-    speck: "rgba(100, 120, 160, 0.18)",
+    speck: "rgba(180, 70, 35, 0.28)",
   },
   "stormbreak-isle": {
     stops: [
@@ -815,11 +825,11 @@ const ADVENTURE_THEME_REEF_OVERRIDES = {
     silhouette: "rgba(15, 60, 45, 0.65)",
     bubble: "rgba(100, 255, 180, 0.2)",
   },
-  "phantom-keys": {
-    gradient: ["#283848", "#344858", "#405868", "#202838"],
-    shaft: ["rgba(180, 200, 240, 0.14)", "rgba(180, 200, 240, 0)"],
-    silhouette: "rgba(25, 35, 50, 0.7)",
-    bubble: "rgba(160, 180, 220, 0.16)",
+  "lava-falls": {
+    gradient: ["#4a1810", "#5c2014", "#6e2818", "#2a0c08"],
+    shaft: ["rgba(255, 120, 40, 0.18)", "rgba(255, 120, 40, 0)"],
+    silhouette: "rgba(20, 8, 5, 0.82)",
+    bubble: "rgba(255, 90, 30, 0.22)",
   },
   "stormbreak-isle": {
     gradient: ["#182030", "#202838", "#283040", "#141820"],
@@ -1786,26 +1796,94 @@ function drawEmeraldLagoonBed() {
   }
 }
 
-function drawPhantomKeysBed() {
+function drawLavaFallsBed() {
   const sandTop = h - dpr * 92;
-  const base = sandTop + dpr * 10;
-  for (const px of [0.2, 0.5, 0.8]) {
-    ctx.fillStyle = "rgba(100, 120, 160, 0.28)";
-    ctx.fillRect(w * px - dpr * 2, sandTop - dpr * 55, dpr * 4, dpr * 55);
-    ctx.fillStyle = "rgba(180, 190, 220, 0.22)";
-    ctx.beginPath();
-    ctx.ellipse(w * px, sandTop - dpr * 58, dpr * 14, dpr * 8, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "rgba(200, 210, 245, 0.35)";
-    ctx.lineWidth = dpr * 1.1;
-    ctx.beginPath();
-    ctx.arc(w * px, sandTop - dpr * 52, dpr * 4, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.fillRect(w * px + dpr * 3, sandTop - dpr * 50, dpr * 8, dpr * 1.4);
-  }
-  ctx.fillStyle = "rgba(140, 155, 200, 0.2)";
+  const base = sandTop + dpr * 12;
+
+  ctx.fillStyle = "rgba(55, 28, 20, 0.55)";
   ctx.beginPath();
-  ctx.ellipse(w * 0.5, base, w * 0.32, dpr * 10, 0, 0, Math.PI * 2);
+  ctx.ellipse(w * 0.5, base + dpr * 4, w * 0.42, dpr * 14, 0, 0, Math.PI * 2);
+  ctx.fill();
+  for (let i = 0; i < perfN(22); i++) {
+    const bx = w * ((i * 67) % 1000) / 1000;
+    const by = sandTop + dpr * (8 + (i % 6) * 10);
+    ctx.fillStyle = i % 3 === 0 ? "rgba(90, 45, 32, 0.65)" : "rgba(70, 35, 25, 0.55)";
+    ctx.beginPath();
+    ctx.ellipse(bx, by, dpr * (2 + (i % 4)), dpr * 1.2, i * 0.4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawVolcano(cx, peakH, erupting) {
+    const bx = w * cx;
+    const by = base;
+    ctx.fillStyle = "rgba(45, 28, 22, 0.9)";
+    ctx.beginPath();
+    ctx.moveTo(bx - dpr * 22, by);
+    ctx.lineTo(bx, by - dpr * peakH);
+    ctx.lineTo(bx + dpr * 22, by);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "rgba(35, 20, 16, 0.85)";
+    ctx.beginPath();
+    ctx.moveTo(bx - dpr * 14, by);
+    ctx.lineTo(bx - dpr * 4, by - dpr * (peakH * 0.55));
+    ctx.lineTo(bx + dpr * 6, by);
+    ctx.closePath();
+    ctx.fill();
+    if (erupting) {
+      const lavaGrad = ctx.createLinearGradient(bx, by - dpr * peakH, bx, by);
+      lavaGrad.addColorStop(0, "rgba(255, 200, 60, 0.95)");
+      lavaGrad.addColorStop(0.35, "rgba(255, 100, 20, 0.9)");
+      lavaGrad.addColorStop(1, "rgba(180, 40, 10, 0.85)");
+      ctx.fillStyle = lavaGrad;
+      ctx.beginPath();
+      ctx.moveTo(bx - dpr * 6, by - dpr * (peakH * 0.35));
+      ctx.lineTo(bx, by - dpr * (peakH + 8));
+      ctx.lineTo(bx + dpr * 8, by - dpr * (peakH * 0.3));
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255, 220, 100, 0.5)";
+      ctx.lineWidth = dpr * 1.2;
+      ctx.beginPath();
+      ctx.moveTo(bx, by - dpr * (peakH * 0.2));
+      ctx.quadraticCurveTo(bx + dpr * 18, by - dpr * 8, bx + dpr * 28, by + dpr * 4);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(bx - dpr * 2, by - dpr * (peakH * 0.15));
+      ctx.quadraticCurveTo(bx - dpr * 20, by + dpr * 2, bx - dpr * 32, by + dpr * 6);
+      ctx.stroke();
+    }
+    ctx.fillStyle = "rgba(30, 18, 14, 0.8)";
+    ctx.beginPath();
+    ctx.arc(bx, by - dpr * (peakH * 0.72), dpr * 5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  drawVolcano(0.22, 58, false);
+  drawVolcano(0.52, 72, true);
+  drawVolcano(0.78, 48, true);
+
+  for (const rx of [0.12, 0.38, 0.62, 0.88]) {
+    ctx.fillStyle = "rgba(50, 30, 24, 0.75)";
+    ctx.beginPath();
+    ctx.ellipse(w * rx, base - dpr * 2, dpr * 8, dpr * 5, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(70, 38, 28, 0.5)";
+    ctx.beginPath();
+    ctx.ellipse(w * (rx + 0.02), base - dpr * 4, dpr * 5, dpr * 3, -0.1, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.fillStyle = "rgba(255, 90, 25, 0.55)";
+  ctx.beginPath();
+  ctx.moveTo(w * 0.48, base - dpr * 2);
+  ctx.lineTo(w * 0.52, base - dpr * 18);
+  ctx.lineTo(w * 0.56, base - dpr * 2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "rgba(255, 140, 40, 0.45)";
+  ctx.beginPath();
+  ctx.ellipse(w * 0.52, base - dpr * 10, dpr * 6, dpr * 3, 0, 0, Math.PI * 2);
   ctx.fill();
 }
 
@@ -1922,7 +2000,7 @@ const ADVENTURE_THEME_BED_DRAW = {
   "krakens-teeth": drawKrakensTeethBed,
   "palmwood-harbor": drawPalmwoodHarborBed,
   "emerald-lagoon": drawEmeraldLagoonBed,
-  "phantom-keys": drawPhantomKeysBed,
+  "lava-falls": drawLavaFallsBed,
   "stormbreak-isle": drawStormbreakIsleBed,
   "treasurehorn-peak": drawTreasurehornPeakBed,
   "leviathan-deep": drawLeviathanDeepBed,
@@ -2201,17 +2279,35 @@ function drawAdventureKrakensTeethEffect(now) {
   }
 }
 
-function drawAdventurePhantomKeysEffect(now) {
+function drawAdventureLavaFallsEffect(now) {
   const t = now * 0.001;
-  for (let i = 0; i < 5; i++) {
-    const x = ((i * 173 + Math.floor(t * 10)) % 1000) / 1000 * w;
-    const y = waterTop + ((i * 67) % 1000) / 1000 * (h - waterTop) * 0.75;
-    const r = dpr * (40 + i * 15);
-    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-    g.addColorStop(0, "rgba(180, 200, 240, 0.14)");
-    g.addColorStop(1, "rgba(180, 200, 240, 0)");
-    ctx.fillStyle = g;
-    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  const heat = ctx.createRadialGradient(w * 0.5, h - dpr * 80, 0, w * 0.5, h - dpr * 40, w * 0.55);
+  heat.addColorStop(0, "rgba(255, 100, 20, 0.2)");
+  heat.addColorStop(0.5, "rgba(200, 50, 10, 0.1)");
+  heat.addColorStop(1, "rgba(80, 20, 5, 0)");
+  ctx.fillStyle = heat;
+  ctx.fillRect(0, waterTop, w, h - waterTop);
+
+  const glow = ctx.createLinearGradient(0, waterTop, 0, h);
+  glow.addColorStop(0, "rgba(60, 15, 5, 0.12)");
+  glow.addColorStop(0.6, "rgba(120, 35, 8, 0.18)");
+  glow.addColorStop(1, "rgba(255, 80, 15, 0.08)");
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, waterTop, w, h - waterTop);
+
+  ctx.fillStyle = "rgba(255, 160, 40, 0.55)";
+  for (let i = 0; i < perfN(14); i++) {
+    const bx = ((i * 113 + Math.floor(t * 22 + i * 7)) % 1000) / 1000 * w;
+    const by = waterTop + ((i * 79 + Math.floor(t * 18)) % 1000) / 1000 * (h - waterTop);
+    const r = dpr * (0.9 + (i % 3) * 0.5);
+    ctx.beginPath();
+    ctx.arc(bx, by, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  if (Math.sin(t * 1.8) > 0.7) {
+    ctx.fillStyle = "rgba(255, 120, 30, 0.12)";
+    ctx.fillRect(0, waterTop, w, (h - waterTop) * 0.35);
   }
 }
 
@@ -2309,7 +2405,6 @@ function drawAdventureCaptainsLandingEffect(now) {
 
 function drawAdventureMarinersRestEffect(now) {
   drawAdventureMoonBeam();
-  drawAdventurePhantomKeysEffect(now);
 }
 
 const ADVENTURE_THEME_EFFECT_DRAW = {
@@ -2324,7 +2419,7 @@ const ADVENTURE_THEME_EFFECT_DRAW = {
   "krakens-teeth": drawAdventureKrakensTeethEffect,
   "palmwood-harbor": drawAdventurePalmwoodHarborEffect,
   "emerald-lagoon": drawAdventureEmeraldLagoonEffect,
-  "phantom-keys": drawAdventurePhantomKeysEffect,
+  "lava-falls": drawAdventureLavaFallsEffect,
   "treasurehorn-peak": drawAdventureTreasurehornPeakEffect,
   "leviathan-deep": drawAdventureLeviathanDeepEffect,
   "captains-landing": drawAdventureCaptainsLandingEffect,
