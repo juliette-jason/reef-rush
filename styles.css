@@ -2371,8 +2371,23 @@ body {
   width: 100%;
   min-height: 300vh;
   height: auto;
-  filter: sepia(0.06) contrast(1.02) brightness(1.04);
+  filter: sepia(0.05) contrast(1.03) brightness(1.03);
   contain: layout paint;
+}
+
+.adventure-map-art .adv-map-oceans {
+  pointer-events: none;
+}
+
+.adventure-map-art .adv-map-lands {
+  filter: drop-shadow(0 1px 0 rgba(46, 36, 24, 0.12));
+}
+
+.adventure-map-art .adv-map-mountains text,
+.adventure-map-art .adv-map-rivers text,
+.adventure-map-art .adv-map-oceans text {
+  pointer-events: none;
+  user-select: none;
 }
 
 .adventure-map-trail {
