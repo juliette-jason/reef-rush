@@ -2856,6 +2856,32 @@ function secretSimulateAdventureUnlock() {
   updateAdventureLaunchUI();
 }
 
+/** Secret: Ctrl+Shift+3 — unlock the next adventure voyage (one level at a time). */
+function secretSkipAdventureLevel() {
+  if (!isAdventureUnlocked()) {
+    gameMeta.totalTreasureChests = Math.max(
+      gameMeta.totalTreasureChests || 0,
+      TREASURE_CHESTS_TO_UNLOCK_ADVENTURE
+    );
+  }
+  const prev = gameMeta.adventureHighestLevel || 0;
+  if (prev >= ADVENTURE_LEVEL_COUNT) {
+    showToast("All adventure voyages already unlocked", 2000);
+    return;
+  }
+  gameMeta.adventureHighestLevel = prev + 1;
+  adventureMapUiProgress = -1;
+  saveMeta();
+  refreshCoinDisplays();
+  updateAdventureLaunchUI();
+  if (panelAdventure && !panelAdventure.hidden) {
+    buildAdventureLevelUI(true);
+    scrollAdventureMapToProgress(true);
+  }
+  const place = ADVENTURE_MAP_PLACES[gameMeta.adventureHighestLevel - 1] || `Voyage ${gameMeta.adventureHighestLevel}`;
+  showToast(`Secret skip: ${place} unlocked (${gameMeta.adventureHighestLevel}/${ADVENTURE_LEVEL_COUNT})`, 2400);
+}
+
 function isAdventureLevelPlayable(levelNum) {
   if (!isAdventureUnlocked()) return false;
   const highest = gameMeta.adventureHighestLevel || 0;
@@ -8196,6 +8222,12 @@ window.addEventListener("keydown", (e) => {
     e.preventDefault();
     secretSimulateAdventureUnlock();
     return;
+  }
+  if (e.ctrlKey && e.shiftKey && e.code === "Digit3") {
+    const tag = e.target?.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || e.target?.isContentEditable) return;
+    e.preventDefault();
+    secretSkipAdventureLevel();
   }
 });
 
