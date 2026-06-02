@@ -624,9 +624,9 @@ const ADVENTURE_PLAY_ATMOSPHERE = {
   "emerald-lagoon": { stops: [[0, "rgba(80, 200, 140, 0.14)"], [1, "rgba(30, 120, 80, 0.22)"]], effect: "emerald-lagoon" },
   "lava-falls": {
     stops: [
-      [0, "rgba(80, 25, 10, 0.22)"],
-      [0.5, "rgba(50, 15, 8, 0.28)"],
-      [1, "rgba(25, 8, 5, 0.35)"],
+      [0, "rgba(255, 200, 120, 0.06)"],
+      [0.45, "rgba(140, 70, 40, 0.1)"],
+      [1, "rgba(50, 22, 14, 0.16)"],
     ],
     effect: "lava-falls",
   },
@@ -721,11 +721,11 @@ const ADVENTURE_THEME_SAND = {
   },
   "lava-falls": {
     stops: [
-      [0, "rgba(90, 45, 30, 0)"],
-      [0.35, "rgba(70, 32, 22, 0.28)"],
-      [1, "rgba(45, 22, 15, 0.58)"],
+      [0, "rgba(18, 16, 14, 0)"],
+      [0.35, "rgba(12, 10, 9, 0.32)"],
+      [1, "rgba(6, 5, 4, 0.78)"],
     ],
-    speck: "rgba(180, 70, 35, 0.28)",
+    speck: "rgba(38, 32, 28, 0.4)",
   },
   "stormbreak-isle": {
     stops: [
@@ -826,10 +826,10 @@ const ADVENTURE_THEME_REEF_OVERRIDES = {
     bubble: "rgba(100, 255, 180, 0.2)",
   },
   "lava-falls": {
-    gradient: ["#4a1810", "#5c2014", "#6e2818", "#2a0c08"],
-    shaft: ["rgba(255, 120, 40, 0.18)", "rgba(255, 120, 40, 0)"],
-    silhouette: "rgba(20, 8, 5, 0.82)",
-    bubble: "rgba(255, 90, 30, 0.22)",
+    gradient: ["#3898b8", "#48a8c8", "#58b8d8", "#181010"],
+    shaft: ["rgba(255, 200, 100, 0.24)", "rgba(255, 200, 100, 0)"],
+    silhouette: "rgba(14, 10, 8, 0.48)",
+    bubble: "rgba(255, 150, 60, 0.3)",
   },
   "stormbreak-isle": {
     gradient: ["#182030", "#202838", "#283040", "#141820"],
@@ -1800,91 +1800,114 @@ function drawLavaFallsBed() {
   const sandTop = h - dpr * 92;
   const base = sandTop + dpr * 12;
 
-  ctx.fillStyle = "rgba(55, 28, 20, 0.55)";
+  ctx.fillStyle = "rgba(8, 7, 6, 0.72)";
   ctx.beginPath();
   ctx.ellipse(w * 0.5, base + dpr * 4, w * 0.42, dpr * 14, 0, 0, Math.PI * 2);
   ctx.fill();
-  for (let i = 0; i < perfN(22); i++) {
+  for (let i = 0; i < perfN(28); i++) {
     const bx = w * ((i * 67) % 1000) / 1000;
     const by = sandTop + dpr * (8 + (i % 6) * 10);
-    ctx.fillStyle = i % 3 === 0 ? "rgba(90, 45, 32, 0.65)" : "rgba(70, 35, 25, 0.55)";
+    ctx.fillStyle = i % 4 === 0 ? "rgba(22, 18, 16, 0.85)" : "rgba(14, 12, 10, 0.75)";
     ctx.beginPath();
-    ctx.ellipse(bx, by, dpr * (2 + (i % 4)), dpr * 1.2, i * 0.4, 0, Math.PI * 2);
+    ctx.ellipse(bx, by, dpr * (1.8 + (i % 3)), dpr * 1, i * 0.4, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  function drawVolcano(cx, peakH, erupting) {
+  function drawVolcanoBase(cx, peakH) {
     const bx = w * cx;
     const by = base;
-    ctx.fillStyle = "rgba(45, 28, 22, 0.9)";
+    ctx.fillStyle = "rgba(28, 22, 20, 0.92)";
     ctx.beginPath();
     ctx.moveTo(bx - dpr * 22, by);
     ctx.lineTo(bx, by - dpr * peakH);
     ctx.lineTo(bx + dpr * 22, by);
     ctx.closePath();
     ctx.fill();
-    ctx.fillStyle = "rgba(35, 20, 16, 0.85)";
+    ctx.fillStyle = "rgba(18, 14, 12, 0.88)";
     ctx.beginPath();
     ctx.moveTo(bx - dpr * 14, by);
     ctx.lineTo(bx - dpr * 4, by - dpr * (peakH * 0.55));
     ctx.lineTo(bx + dpr * 6, by);
     ctx.closePath();
     ctx.fill();
-    if (erupting) {
-      const lavaGrad = ctx.createLinearGradient(bx, by - dpr * peakH, bx, by);
-      lavaGrad.addColorStop(0, "rgba(255, 200, 60, 0.95)");
-      lavaGrad.addColorStop(0.35, "rgba(255, 100, 20, 0.9)");
-      lavaGrad.addColorStop(1, "rgba(180, 40, 10, 0.85)");
-      ctx.fillStyle = lavaGrad;
-      ctx.beginPath();
-      ctx.moveTo(bx - dpr * 6, by - dpr * (peakH * 0.35));
-      ctx.lineTo(bx, by - dpr * (peakH + 8));
-      ctx.lineTo(bx + dpr * 8, by - dpr * (peakH * 0.3));
-      ctx.closePath();
-      ctx.fill();
-      ctx.strokeStyle = "rgba(255, 220, 100, 0.5)";
-      ctx.lineWidth = dpr * 1.2;
-      ctx.beginPath();
-      ctx.moveTo(bx, by - dpr * (peakH * 0.2));
-      ctx.quadraticCurveTo(bx + dpr * 18, by - dpr * 8, bx + dpr * 28, by + dpr * 4);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(bx - dpr * 2, by - dpr * (peakH * 0.15));
-      ctx.quadraticCurveTo(bx - dpr * 20, by + dpr * 2, bx - dpr * 32, by + dpr * 6);
-      ctx.stroke();
-    }
-    ctx.fillStyle = "rgba(30, 18, 14, 0.8)";
+    ctx.fillStyle = "rgba(12, 10, 9, 0.85)";
     ctx.beginPath();
     ctx.arc(bx, by - dpr * (peakH * 0.72), dpr * 5, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  drawVolcano(0.22, 58, false);
-  drawVolcano(0.52, 72, true);
-  drawVolcano(0.78, 48, true);
+  drawVolcanoBase(0.22, 58);
+  drawVolcanoBase(0.52, 72);
+  drawVolcanoBase(0.78, 48);
 
   for (const rx of [0.12, 0.38, 0.62, 0.88]) {
-    ctx.fillStyle = "rgba(50, 30, 24, 0.75)";
+    ctx.fillStyle = "rgba(16, 14, 12, 0.82)";
     ctx.beginPath();
     ctx.ellipse(w * rx, base - dpr * 2, dpr * 8, dpr * 5, 0.2, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = "rgba(70, 38, 28, 0.5)";
-    ctx.beginPath();
-    ctx.ellipse(w * (rx + 0.02), base - dpr * 4, dpr * 5, dpr * 3, -0.1, 0, Math.PI * 2);
-    ctx.fill();
   }
+}
 
-  ctx.fillStyle = "rgba(255, 90, 25, 0.55)";
+const LAVA_FALLS_VOLCANOES = [
+  { cx: 0.22, peakH: 58, phase: 0 },
+  { cx: 0.52, peakH: 72, phase: 1.4 },
+  { cx: 0.78, peakH: 48, phase: 2.8 },
+];
+
+function drawLavaFallsVolcanoEruption(now, cx, peakH, phase) {
+  const sandTop = h - dpr * 92;
+  const base = sandTop + dpr * 12;
+  const bx = w * cx;
+  const by = base;
+  const t = now * 0.001;
+  const pulse = 0.5 + 0.5 * Math.sin(t * 2.4 + phase);
+  const erupt = 0.35 + 0.65 * Math.sin(t * 1.6 + phase * 0.7);
+
+  const calderaY = by - dpr * (peakH * 0.72);
+  const glowR = dpr * (18 + pulse * 14);
+  const glow = ctx.createRadialGradient(bx, calderaY, 0, bx, calderaY, glowR);
+  glow.addColorStop(0, `rgba(255, 220, 80, ${0.35 + pulse * 0.25})`);
+  glow.addColorStop(0.45, `rgba(255, 100, 20, ${0.2 + pulse * 0.15})`);
+  glow.addColorStop(1, "rgba(255, 60, 10, 0)");
+  ctx.fillStyle = glow;
   ctx.beginPath();
-  ctx.moveTo(w * 0.48, base - dpr * 2);
-  ctx.lineTo(w * 0.52, base - dpr * 18);
-  ctx.lineTo(w * 0.56, base - dpr * 2);
+  ctx.arc(bx, calderaY, glowR, 0, Math.PI * 2);
+  ctx.fill();
+
+  const lavaGrad = ctx.createLinearGradient(bx, calderaY - dpr * 12, bx, by + dpr * 8);
+  lavaGrad.addColorStop(0, "rgba(255, 230, 90, 0.95)");
+  lavaGrad.addColorStop(0.35, "rgba(255, 110, 25, 0.9)");
+  lavaGrad.addColorStop(1, "rgba(200, 45, 8, 0.75)");
+  ctx.fillStyle = lavaGrad;
+  ctx.beginPath();
+  ctx.moveTo(bx - dpr * (5 + pulse * 3), calderaY);
+  ctx.lineTo(bx, calderaY - dpr * (10 + erupt * 12));
+  ctx.lineTo(bx + dpr * (6 + pulse * 4), calderaY);
   ctx.closePath();
   ctx.fill();
-  ctx.fillStyle = "rgba(255, 140, 40, 0.45)";
+
+  ctx.strokeStyle = `rgba(255, 180, 60, ${0.55 + pulse * 0.35})`;
+  ctx.lineWidth = dpr * (2.2 + pulse * 1.5);
+  ctx.lineCap = "round";
   ctx.beginPath();
-  ctx.ellipse(w * 0.52, base - dpr * 10, dpr * 6, dpr * 3, 0, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.moveTo(bx, calderaY);
+  ctx.quadraticCurveTo(bx + dpr * 20, by - dpr * 18, bx + dpr * 32, by + dpr * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(bx - dpr * 2, calderaY);
+  ctx.quadraticCurveTo(bx - dpr * 18, by - dpr * 10, bx - dpr * 30, by + dpr * 4);
+  ctx.stroke();
+
+  ctx.fillStyle = `rgba(255, 140, 40, ${0.45 + pulse * 0.35})`;
+  for (let i = 0; i < 5; i++) {
+    const bubbleT = (t * 1.8 + i * 0.35 + phase) % 1;
+    const px = bx + Math.sin(i * 1.7 + phase) * dpr * 8;
+    const py = calderaY - bubbleT * dpr * (40 + peakH * 0.35);
+    const br = dpr * (1.2 + (i % 3) * 0.6) * (1 - bubbleT * 0.4);
+    ctx.beginPath();
+    ctx.arc(px, py, br, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
 
 function drawStormbreakIsleBed() {
@@ -2281,33 +2304,25 @@ function drawAdventureKrakensTeethEffect(now) {
 
 function drawAdventureLavaFallsEffect(now) {
   const t = now * 0.001;
-  const heat = ctx.createRadialGradient(w * 0.5, h - dpr * 80, 0, w * 0.5, h - dpr * 40, w * 0.55);
-  heat.addColorStop(0, "rgba(255, 100, 20, 0.2)");
-  heat.addColorStop(0.5, "rgba(200, 50, 10, 0.1)");
-  heat.addColorStop(1, "rgba(80, 20, 5, 0)");
-  ctx.fillStyle = heat;
+  const warmLight = ctx.createLinearGradient(0, waterTop, 0, h);
+  warmLight.addColorStop(0, "rgba(255, 220, 160, 0.14)");
+  warmLight.addColorStop(0.55, "rgba(255, 160, 80, 0.1)");
+  warmLight.addColorStop(1, "rgba(255, 100, 30, 0.08)");
+  ctx.fillStyle = warmLight;
   ctx.fillRect(0, waterTop, w, h - waterTop);
 
-  const glow = ctx.createLinearGradient(0, waterTop, 0, h);
-  glow.addColorStop(0, "rgba(60, 15, 5, 0.12)");
-  glow.addColorStop(0.6, "rgba(120, 35, 8, 0.18)");
-  glow.addColorStop(1, "rgba(255, 80, 15, 0.08)");
-  ctx.fillStyle = glow;
-  ctx.fillRect(0, waterTop, w, h - waterTop);
+  for (const v of LAVA_FALLS_VOLCANOES) {
+    drawLavaFallsVolcanoEruption(now, v.cx, v.peakH, v.phase);
+  }
 
-  ctx.fillStyle = "rgba(255, 160, 40, 0.55)";
-  for (let i = 0; i < perfN(14); i++) {
+  ctx.fillStyle = "rgba(255, 180, 60, 0.42)";
+  for (let i = 0; i < perfN(12); i++) {
     const bx = ((i * 113 + Math.floor(t * 22 + i * 7)) % 1000) / 1000 * w;
     const by = waterTop + ((i * 79 + Math.floor(t * 18)) % 1000) / 1000 * (h - waterTop);
-    const r = dpr * (0.9 + (i % 3) * 0.5);
+    const r = dpr * (0.8 + (i % 3) * 0.45);
     ctx.beginPath();
     ctx.arc(bx, by, r, 0, Math.PI * 2);
     ctx.fill();
-  }
-
-  if (Math.sin(t * 1.8) > 0.7) {
-    ctx.fillStyle = "rgba(255, 120, 30, 0.12)";
-    ctx.fillRect(0, waterTop, w, (h - waterTop) * 0.35);
   }
 }
 
@@ -2376,21 +2391,95 @@ function drawAdventureLeviathanDeepEffect(now) {
   }
 }
 
+let stormThunderLastAt = 0;
+
+function drawStormbreakLightningBolt(sx, sy, ex, ey, width) {
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.95)";
+  ctx.lineWidth = width;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.shadowColor = "rgba(200, 220, 255, 0.9)";
+  ctx.shadowBlur = dpr * 8;
+  ctx.beginPath();
+  ctx.moveTo(sx, sy);
+  let x = sx;
+  let y = sy;
+  const steps = 6;
+  for (let i = 1; i <= steps; i++) {
+    const t = i / steps;
+    x = sx + (ex - sx) * t + (Math.sin(i * 2.7) * w * 0.018);
+    y = sy + (ey - sy) * t;
+    ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(180, 210, 255, 0.55)";
+  ctx.lineWidth = width * 2.2;
+  ctx.shadowBlur = dpr * 14;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+}
+
+function playStormThunderSound() {
+  if (!musicEnabled) return;
+  const ac = ensureMusicContext();
+  if (!ac || !musicMaster) return;
+  if (ac.state === "suspended") ac.resume();
+  const now = ac.currentTime + 0.02;
+  const dur = 2.4;
+  const buffer = musicCtx.createBuffer(1, Math.floor(musicCtx.sampleRate * dur), musicCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < data.length; i++) {
+    const decay = 1 - i / data.length;
+    data[i] = (Math.random() * 2 - 1) * decay * decay;
+  }
+  const src = musicCtx.createBufferSource();
+  const lp = musicCtx.createBiquadFilter();
+  const g = musicCtx.createGain();
+  src.buffer = buffer;
+  lp.type = "lowpass";
+  lp.frequency.value = 180;
+  g.gain.setValueAtTime(0.14, now);
+  g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+  src.connect(lp);
+  lp.connect(g);
+  g.connect(musicMaster);
+  src.start(now);
+  playMusicNote(55, now + 0.05, 1.1, 0.05, "sine");
+  playMusicNote(41.2, now + 0.12, 0.85, 0.042, "sine");
+  playNoiseHit(now + 0.06, 0.35, 0.055);
+}
+
 function drawAdventureStormbreakIsleEffect(now) {
-  drawAdventureStormFlash(now);
   const t = now * 0.001;
-  ctx.strokeStyle = "rgba(140, 155, 190, 0.22)";
-  ctx.lineWidth = dpr * 0.9;
-  for (let i = 0; i < perfN(18); i++) {
+  const flashA = Math.sin(now * 0.0055) > 0.86;
+  const flashB = Math.sin(now * 0.0038 + 2.1) > 0.9;
+  const flash = flashA || flashB;
+
+  ctx.strokeStyle = "rgba(160, 180, 220, 0.35)";
+  ctx.lineWidth = dpr * 1.1;
+  for (let i = 0; i < perfN(22); i++) {
     const rx = ((i * 97 + Math.floor(t * 55)) % 1000) / 1000 * w;
     const ry = waterTop + ((i * 43) % 1000) / 1000 * (h - waterTop) * 0.85;
     ctx.beginPath();
     ctx.moveTo(rx, ry);
-    ctx.lineTo(rx + dpr * (2 + (i % 3)), ry + dpr * (10 + (i % 5) * 3));
+    ctx.lineTo(rx + dpr * (2 + (i % 3)), ry + dpr * (12 + (i % 5) * 4));
     ctx.stroke();
   }
-  if (Math.sin(t * 1.4) > 0.85) {
-    ctx.fillStyle = "rgba(200, 210, 240, 0.08)";
+
+  if (flash) {
+    const boltX = w * (0.28 + (Math.sin(now * 0.0013) * 0.5 + 0.5) * 0.44);
+    drawStormbreakLightningBolt(boltX, waterTop + dpr * 8, boltX + dpr * 28, h - dpr * 120, dpr * 2.4);
+    if (Math.random() > 0.45) {
+      drawStormbreakLightningBolt(w * 0.72, waterTop + dpr * 12, w * 0.68, h - dpr * 90, dpr * 1.8);
+    }
+    ctx.fillStyle = flashB ? "rgba(255, 255, 255, 0.42)" : "rgba(240, 245, 255, 0.28)";
+    ctx.fillRect(0, waterTop, w, h - waterTop);
+    if (musicEnabled && now - stormThunderLastAt > 1400) {
+      stormThunderLastAt = now;
+      playStormThunderSound();
+    }
+  } else if (Math.sin(t * 1.4) > 0.88) {
+    ctx.fillStyle = "rgba(200, 210, 240, 0.1)";
     ctx.fillRect(0, waterTop, w, (h - waterTop) * 0.4);
   }
 }
