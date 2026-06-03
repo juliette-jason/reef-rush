@@ -562,17 +562,36 @@ function cachedAdventureMapSceneSvg(themeId, idSuffix = "") {
   return svg;
 }
 
-let adventureSceneCacheWarm = false;
+/** 0 = none, 1 = partial (near progress), 2 = all map node SVGs. */
+let adventureSceneCacheWarmLevel = 0;
 
-function warmupAdventureSceneCache() {
-  if (adventureSceneCacheWarm) return;
-  adventureSceneCacheWarm = true;
-  for (let i = 0; i < ADVENTURE_LEVEL_COUNT; i++) {
-    cachedAdventureMapSceneSvg(getAdventureLevelTheme(i), `n${i}`);
+const ADVENTURE_MAP_SCENE_LITE =
+  '<span class="adventure-map-node__scene adventure-map-node__scene--lite" aria-hidden="true"></span>';
+
+function warmupAdventureSceneCache(forceFull = false) {
+  const wantFull = forceFull || !PERF_CHROMEBOOK;
+  if (!wantFull && adventureSceneCacheWarmLevel >= 1) return;
+  if (wantFull && adventureSceneCacheWarmLevel >= 2) return;
+
+  if (wantFull) {
+    for (let i = 0; i < ADVENTURE_LEVEL_COUNT; i++) {
+      cachedAdventureMapSceneSvg(getAdventureLevelTheme(i), `n${i}`);
+    }
+    adventureSceneCacheWarmLevel = 2;
+  } else {
+    const highest = gameMeta.adventureHighestLevel || 0;
+    const end = Math.min(ADVENTURE_LEVEL_COUNT, highest + 4);
+    for (let i = 0; i < end; i++) {
+      cachedAdventureMapSceneSvg(getAdventureLevelTheme(i), `n${i}`);
+    }
+    adventureSceneCacheWarmLevel = 1;
   }
   cachedAdventureMapSceneSvg("skull-shoals", "play");
   cachedAdventureMapSceneSvg("treasure-cove", "res");
 }
+
+let advFxCanvas = null;
+let advFxKey = "";
 
 function getAdventureLevelTheme(levelIndex) {
   return ADVENTURE_LEVEL_THEMES[levelIndex] || ADVENTURE_LEVEL_THEMES[0];
@@ -1893,7 +1912,7 @@ function drawLavaFallsBed() {
 }
 
 function drawLavaOozeRibbon(bx, calderaY, by, dir, t, pulse, phase) {
-  const segs = 12;
+  const segs = PERF_CHROMEBOOK ? 7 : 12;
   const flow = (t * 0.45 + phase) % 1;
   const outer = [];
   const inner = [];
@@ -1983,7 +2002,7 @@ function drawLavaFallsFloatingAsh(now) {
 
 function drawLavaFallsVolcanoBloom(bx, by, peakH, pulse) {
   const calderaY = by - dpr * (peakH * 0.72);
-  const bloomR = dpr * (95 + pulse * 55);
+  const bloomR = dpr * (PERF_CHROMEBOOK ? 72 + pulse * 38 : 95 + pulse * 55);
   const bloom = ctx.createRadialGradient(bx, calderaY + dpr * 8, 0, bx, calderaY, bloomR);
   bloom.addColorStop(0, `rgba(255, 240, 120, ${0.5 + pulse * 0.28})`);
   bloom.addColorStop(0.35, `rgba(255, 140, 40, ${0.32 + pulse * 0.2})`);
@@ -2044,7 +2063,9 @@ function drawLavaFallsVolcanoEruption(now, cx, peakH, phase) {
   }
   drawLavaOozeRibbon(bx, calderaY, by, 1, t, pulse, phase);
   drawLavaOozeRibbon(bx, calderaY, by, -1, t, pulse, phase + 0.65);
-  drawLavaOozeRibbon(bx, calderaY, by, 1, t, pulse * 0.85, phase + 1.35);
+  if (!PERF_CHROMEBOOK) {
+    drawLavaOozeRibbon(bx, calderaY, by, 1, t, pulse * 0.85, phase + 1.35);
+  }
   const frontOoze = ctx.createLinearGradient(bx, calderaY, bx, by);
   frontOoze.addColorStop(0, "rgba(255, 255, 150, 0.95)");
   frontOoze.addColorStop(1, "rgba(255, 90, 15, 0.88)");
@@ -2056,7 +2077,7 @@ function drawLavaFallsVolcanoEruption(now, cx, peakH, phase) {
   ctx.quadraticCurveTo(bx + dpr * 3, calderaY + (by - calderaY) * 0.45, bx + dpr * 7, calderaY);
   ctx.closePath();
   ctx.fill();
-  drawLavaOozeDrips(bx, by, t, pulse, phase);
+  if (!PERF_CHROMEBOOK) drawLavaOozeDrips(bx, by, t, pulse, phase);
   ctx.shadowBlur = 0;
 
   ctx.fillStyle = `rgba(255, 200, 60, ${0.65 + pulse * 0.3})`;
@@ -2495,11 +2516,19 @@ function drawAdventureLavaFallsEffect(now) {
 
   const sandTop = h - dpr * 92;
   const base = sandTop + dpr * 12;
-  for (const v of LAVA_FALLS_VOLCANOES) {
-    const bx = w * v.cx;
-    const floorGlow = ctx.createRadialGradient(bx, base, 0, bx, base - dpr * 40, dpr * (90 + pulse * 30));
-    floorGlow.addColorStop(0, `rgba(255, 180, 50, ${0.35 + pulse * 0.15})`);
-    floorGlow.addColorStop(0.6, `rgba(255, 100, 20, ${0.12 + pulse * 0.08})`);
+  if (!PERF_CHROMEBOOK) {
+    for (const v of LAVA_FALLS_VOLCANOES) {
+      const bx = w * v.cx;
+      const floorGlow = ctx.createRadialGradient(bx, base, 0, bx, base - dpr * 40, dpr * (90 + pulse * 30));
+      floorGlow.addColorStop(0, `rgba(255, 180, 50, ${0.35 + pulse * 0.15})`);
+      floorGlow.addColorStop(0.6, `rgba(255, 100, 20, ${0.12 + pulse * 0.08})`);
+      floorGlow.addColorStop(1, "rgba(255, 80, 10, 0)");
+      ctx.fillStyle = floorGlow;
+      ctx.fillRect(0, waterTop, w, h - waterTop);
+    }
+  } else {
+    const floorGlow = ctx.createRadialGradient(w * 0.5, base, 0, w * 0.5, base - dpr * 50, w * 0.55);
+    floorGlow.addColorStop(0, `rgba(255, 170, 45, ${0.28 + pulse * 0.12})`);
     floorGlow.addColorStop(1, "rgba(255, 80, 10, 0)");
     ctx.fillStyle = floorGlow;
     ctx.fillRect(0, waterTop, w, h - waterTop);
@@ -2711,8 +2740,7 @@ const ADVENTURE_THEME_EFFECT_DRAW = {
   "treasure-cove": drawAdventureTreasureCoveEffect,
 };
 
-function drawAdventureThemeOverlay(now) {
-  if (!adventureSession || w <= 0) return;
+function drawAdventureThemeOverlayInner(now) {
   const themeId = getAdventureLevelTheme(adventureSession.levelIndex);
   const atm = ADVENTURE_PLAY_ATMOSPHERE[themeId];
   if (!atm) return;
@@ -2727,6 +2755,36 @@ function drawAdventureThemeOverlay(now) {
 
   const drawEffect = ADVENTURE_THEME_EFFECT_DRAW[atm.effect];
   if (drawEffect) drawEffect(now);
+}
+
+function drawAdventureThemeOverlay(now) {
+  if (!adventureSession || w <= 0) return;
+  const themeId = getAdventureLevelTheme(adventureSession.levelIndex);
+  const key = `${w}|${h}|${themeId}`;
+
+  if (PERF_CHROMEBOOK && gameLoopTick % 2 !== 0 && advFxCanvas && advFxKey === key) {
+    ctx.drawImage(advFxCanvas, 0, 0);
+    return;
+  }
+
+  if (PERF_CHROMEBOOK) {
+    if (!advFxCanvas || advFxKey !== key) {
+      advFxCanvas = document.createElement("canvas");
+      advFxCanvas.width = w;
+      advFxCanvas.height = h;
+      advFxKey = key;
+    }
+    const fxc = advFxCanvas.getContext("2d");
+    const prev = ctx;
+    ctx = fxc;
+    fxc.clearRect(0, 0, w, h);
+    drawAdventureThemeOverlayInner(now);
+    ctx = prev;
+    ctx.drawImage(advFxCanvas, 0, 0);
+    return;
+  }
+
+  drawAdventureThemeOverlayInner(now);
 }
 
 function applyAdventurePlayThemeClasses(themeId) {
@@ -3425,14 +3483,25 @@ function pickSpecies() {
 
 // --- DOM ---
 function isChromebook() {
-  return typeof navigator !== "undefined" && (navigator.userAgent || "").includes("CrOS");
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent || "";
+  if (ua.includes("CrOS") || /Chromebook/i.test(ua)) return true;
+  const plat = navigator.platform || "";
+  return plat.includes("CrOS");
 }
 
-/** Chrome OS devices often struggle with full-res canvas + heavy gradients. */
-const PERF_CHROMEBOOK = isChromebook();
+/** Chrome OS and similar low-memory school devices: cap canvas work and defer heavy init. */
+function isLowPowerDevice() {
+  if (isChromebook()) return true;
+  const mem = navigator.deviceMemory;
+  const cores = navigator.hardwareConcurrency || 8;
+  return Boolean(mem && mem <= 4 && cores <= 4);
+}
+
+const PERF_CHROMEBOOK = isLowPowerDevice();
 
 function perfN(n) {
-  return PERF_CHROMEBOOK ? Math.max(1, Math.round(n * 0.45)) : n;
+  return PERF_CHROMEBOOK ? Math.max(1, Math.round(n * 0.32)) : n;
 }
 
 const canvas = document.getElementById("gameCanvas");
@@ -3961,9 +4030,13 @@ function buildAdventureLevelUI(force = false) {
     b.style.top = `${layout.y}%`;
     b.title = `${lvl.name} — ${lvl.subtitle} · pass ${lvl.passScore}`;
     b.dataset.levelIndex = String(i);
+    const sceneMarkup =
+      PERF_CHROMEBOOK && !playable
+        ? ADVENTURE_MAP_SCENE_LITE
+        : cachedAdventureMapSceneSvg(themeId, `n${i}`);
     b.innerHTML = `
       <span class="adventure-map-node__scene-wrap" aria-hidden="true">
-        ${cachedAdventureMapSceneSvg(themeId, `n${i}`)}
+        ${sceneMarkup}
         <span class="adventure-map-node__num">${lvl.level}</span>
         ${isFinale ? '<span class="adventure-map-node__x" aria-hidden="true"></span>' : ""}
         ${isCurrent ? '<span class="adventure-map-node__boat" aria-hidden="true"></span>' : ""}
@@ -3982,7 +4055,7 @@ function buildAdventureLevelUI(force = false) {
 }
 
 function prepareAdventureHub() {
-  warmupAdventureSceneCache();
+  warmupAdventureSceneCache(true);
   buildAdventureLevelUI();
 }
 
@@ -4888,6 +4961,7 @@ function buildRodUI() {
 
 function invalidateBackgroundCache() {
   bgCacheKey = "";
+  advFxKey = "";
 }
 
 function resize() {
@@ -8301,7 +8375,8 @@ function gameLoop(now) {
   ctx.clearRect(0, 0, w, h);
   drawCachedBackground();
   if (adventureSession) drawAdventureThemeOverlay(now);
-  if (!PERF_CHROMEBOOK || gameLoopTick % 2 === 0) drawBubbles(treasureMapRevealPaused ? 0 : dt);
+  const bubbleFrame = PERF_CHROMEBOOK ? 3 : 2;
+  if (!PERF_CHROMEBOOK || gameLoopTick % bubbleFrame === 0) drawBubbles(treasureMapRevealPaused ? 0 : dt);
   if (!treasureMapRevealPaused) updateJackpotCrab(now, dt);
 
   if (playing && treasureMapRevealPaused) {
@@ -8319,7 +8394,7 @@ function gameLoop(now) {
       if (!treasureMapRevealPaused) {
         spawnAcc += dt;
         const reef = getReef();
-        const maxFish = PERF_CHROMEBOOK ? Math.max(6, Math.floor(reef.maxFish * 0.7)) : reef.maxFish;
+        const maxFish = PERF_CHROMEBOOK ? Math.max(5, Math.floor(reef.maxFish * 0.55)) : reef.maxFish;
         if (spawnAcc >= nextSpawnIn && countUncaughtFish() < maxFish) {
           spawnFish();
           spawnAcc = 0;
@@ -8330,7 +8405,8 @@ function gameLoop(now) {
       }
       drawKraken();
       drawJackpotCrab();
-      for (const f of fishList) drawFish(f);
+      const fishStep = PERF_CHROMEBOOK && gameLoopTick % 2 !== 0 ? 2 : 1;
+      for (let fi = 0; fi < fishList.length; fi += fishStep) drawFish(fishList[fi]);
       drawBoatHullAndCatchNet();
       drawHookLine();
       drawReleasedFishJumpFx();
@@ -8662,16 +8738,27 @@ buildRodUI();
 normalizeSelectedBaitId();
 refreshCoinDisplays();
 buildBaitUI();
-refreshLeaderboardViews();
 updateAdventureLaunchUI();
-if (typeof requestIdleCallback === "function") {
-  requestIdleCallback(prepareAdventureHub, { timeout: 800 });
-} else {
-  setTimeout(prepareAdventureHub, 0);
+
+function deferStartupWork() {
+  if (PERF_CHROMEBOOK) {
+    setTimeout(() => warmupAdventureSceneCache(false), 2200);
+    setTimeout(() => refreshLeaderboardViews(), 1600);
+    setTimeout(() => window.requestAnimationFrame(() => startAdventureHomeUnlockAnimation()), 900);
+  } else {
+    if (typeof requestIdleCallback === "function") {
+      requestIdleCallback(() => warmupAdventureSceneCache(false), { timeout: 800 });
+    } else {
+      setTimeout(() => warmupAdventureSceneCache(false), 0);
+    }
+    refreshLeaderboardViews();
+    window.requestAnimationFrame(() => startAdventureHomeUnlockAnimation());
+  }
 }
+
 updateMusicButton();
 resize();
 initBubbles();
 showIntroIfNeeded();
-window.requestAnimationFrame(() => startAdventureHomeUnlockAnimation());
+deferStartupWork();
 requestAnimationFrame(gameLoop);
