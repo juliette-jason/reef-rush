@@ -582,6 +582,11 @@ function getActiveAdventureTheme() {
   return adventureSession ? getAdventureLevelTheme(adventureSession.levelIndex) : null;
 }
 
+/** Base reef gameplay (fish pool, spawns) — overrides index rotation when a voyage must not play like Mariana Trench. */
+const ADVENTURE_THEME_REEF_ID = {
+  "lava-falls": "caribbean",
+};
+
 function isSkullShoalsPlay() {
   return Boolean(playing && adventureSession && getAdventureLevelTheme(adventureSession.levelIndex) === "skull-shoals");
 }
@@ -624,9 +629,9 @@ const ADVENTURE_PLAY_ATMOSPHERE = {
   "emerald-lagoon": { stops: [[0, "rgba(80, 200, 140, 0.14)"], [1, "rgba(30, 120, 80, 0.22)"]], effect: "emerald-lagoon" },
   "lava-falls": {
     stops: [
-      [0, "rgba(255, 240, 200, 0.03)"],
-      [0.5, "rgba(255, 200, 140, 0.04)"],
-      [1, "rgba(255, 160, 90, 0.06)"],
+      [0, "rgba(255, 250, 240, 0.02)"],
+      [0.5, "rgba(255, 230, 200, 0.03)"],
+      [1, "rgba(255, 200, 140, 0.04)"],
     ],
     effect: "lava-falls",
   },
@@ -826,10 +831,10 @@ const ADVENTURE_THEME_REEF_OVERRIDES = {
     bubble: "rgba(100, 255, 180, 0.2)",
   },
   "lava-falls": {
-    gradient: ["#58b8d8", "#68c8e8", "#78d8f0", "#403028"],
-    shaft: ["rgba(255, 240, 200, 0.32)", "rgba(255, 240, 200, 0)"],
-    silhouette: "rgba(22, 18, 16, 0.22)",
-    bubble: "rgba(255, 200, 100, 0.36)",
+    gradient: ["#70d4f0", "#80e4f8", "#90f0ff", "#e8a048"],
+    shaft: ["rgba(255, 250, 220, 0.42)", "rgba(255, 250, 220, 0)"],
+    silhouette: "rgba(45, 65, 75, 0.12)",
+    bubble: "rgba(255, 220, 140, 0.42)",
   },
   "stormbreak-isle": {
     gradient: ["#182030", "#202838", "#283040", "#141820"],
@@ -1854,6 +1859,20 @@ const LAVA_FALLS_VOLCANOES = [
   { cx: 0.78, peakH: 48, phase: 2.8 },
 ];
 
+function drawLavaFallsVolcanoBloom(bx, by, peakH, pulse) {
+  const calderaY = by - dpr * (peakH * 0.72);
+  const bloomR = dpr * (70 + pulse * 45);
+  const bloom = ctx.createRadialGradient(bx, calderaY + dpr * 8, 0, bx, calderaY, bloomR);
+  bloom.addColorStop(0, `rgba(255, 240, 120, ${0.5 + pulse * 0.28})`);
+  bloom.addColorStop(0.35, `rgba(255, 140, 40, ${0.32 + pulse * 0.2})`);
+  bloom.addColorStop(0.7, `rgba(255, 80, 20, ${0.14 + pulse * 0.1})`);
+  bloom.addColorStop(1, "rgba(255, 60, 10, 0)");
+  ctx.fillStyle = bloom;
+  ctx.beginPath();
+  ctx.arc(bx, calderaY, bloomR, 0, Math.PI * 2);
+  ctx.fill();
+}
+
 function drawLavaFallsVolcanoEruption(now, cx, peakH, phase) {
   const sandTop = h - dpr * 92;
   const base = sandTop + dpr * 12;
@@ -1863,32 +1882,47 @@ function drawLavaFallsVolcanoEruption(now, cx, peakH, phase) {
   const pulse = 0.5 + 0.5 * Math.sin(t * 2.4 + phase);
   const erupt = 0.35 + 0.65 * Math.sin(t * 1.6 + phase * 0.7);
 
+  drawLavaFallsVolcanoBloom(bx, by, peakH, pulse);
+
   const calderaY = by - dpr * (peakH * 0.72);
-  const glowR = dpr * (18 + pulse * 14);
+  const glowR = dpr * (28 + pulse * 22);
   const glow = ctx.createRadialGradient(bx, calderaY, 0, bx, calderaY, glowR);
-  glow.addColorStop(0, `rgba(255, 220, 80, ${0.35 + pulse * 0.25})`);
-  glow.addColorStop(0.45, `rgba(255, 100, 20, ${0.2 + pulse * 0.15})`);
-  glow.addColorStop(1, "rgba(255, 60, 10, 0)");
+  glow.addColorStop(0, `rgba(255, 255, 160, ${0.75 + pulse * 0.2})`);
+  glow.addColorStop(0.4, `rgba(255, 160, 40, ${0.55 + pulse * 0.25})`);
+  glow.addColorStop(1, "rgba(255, 80, 10, 0)");
   ctx.fillStyle = glow;
   ctx.beginPath();
   ctx.arc(bx, calderaY, glowR, 0, Math.PI * 2);
   ctx.fill();
 
+  const poolGrad = ctx.createRadialGradient(bx, by, 0, bx, by, dpr * (22 + pulse * 10));
+  poolGrad.addColorStop(0, `rgba(255, 220, 80, ${0.85 + pulse * 0.1})`);
+  poolGrad.addColorStop(0.5, `rgba(255, 100, 20, ${0.65 + pulse * 0.2})`);
+  poolGrad.addColorStop(1, "rgba(180, 40, 5, 0)");
+  ctx.fillStyle = poolGrad;
+  ctx.beginPath();
+  ctx.ellipse(bx, by + dpr * 2, dpr * (18 + pulse * 8), dpr * (6 + pulse * 3), 0, 0, Math.PI * 2);
+  ctx.fill();
+
   const lavaGrad = ctx.createLinearGradient(bx, calderaY - dpr * 12, bx, by + dpr * 8);
-  lavaGrad.addColorStop(0, "rgba(255, 230, 90, 0.95)");
-  lavaGrad.addColorStop(0.35, "rgba(255, 110, 25, 0.9)");
-  lavaGrad.addColorStop(1, "rgba(200, 45, 8, 0.75)");
+  lavaGrad.addColorStop(0, "rgba(255, 255, 140, 1)");
+  lavaGrad.addColorStop(0.35, "rgba(255, 140, 30, 0.98)");
+  lavaGrad.addColorStop(1, "rgba(255, 70, 10, 0.9)");
   ctx.fillStyle = lavaGrad;
   ctx.beginPath();
-  ctx.moveTo(bx - dpr * (5 + pulse * 3), calderaY);
-  ctx.lineTo(bx, calderaY - dpr * (10 + erupt * 12));
-  ctx.lineTo(bx + dpr * (6 + pulse * 4), calderaY);
+  ctx.moveTo(bx - dpr * (6 + pulse * 4), calderaY);
+  ctx.lineTo(bx, calderaY - dpr * (14 + erupt * 16));
+  ctx.lineTo(bx + dpr * (7 + pulse * 5), calderaY);
   ctx.closePath();
   ctx.fill();
 
-  ctx.strokeStyle = `rgba(255, 180, 60, ${0.55 + pulse * 0.35})`;
-  ctx.lineWidth = dpr * (2.2 + pulse * 1.5);
+  ctx.strokeStyle = `rgba(255, 220, 100, ${0.85 + pulse * 0.12})`;
+  ctx.lineWidth = dpr * (2.8 + pulse * 2);
   ctx.lineCap = "round";
+  if (!PERF_CHROMEBOOK) {
+    ctx.shadowColor = "rgba(255, 160, 40, 0.95)";
+    ctx.shadowBlur = dpr * 12;
+  }
   ctx.beginPath();
   ctx.moveTo(bx, calderaY);
   ctx.quadraticCurveTo(bx + dpr * 20, by - dpr * 18, bx + dpr * 32, by + dpr * 2);
@@ -1897,13 +1931,14 @@ function drawLavaFallsVolcanoEruption(now, cx, peakH, phase) {
   ctx.moveTo(bx - dpr * 2, calderaY);
   ctx.quadraticCurveTo(bx - dpr * 18, by - dpr * 10, bx - dpr * 30, by + dpr * 4);
   ctx.stroke();
+  ctx.shadowBlur = 0;
 
-  ctx.fillStyle = `rgba(255, 140, 40, ${0.45 + pulse * 0.35})`;
-  for (let i = 0; i < 5; i++) {
+  ctx.fillStyle = `rgba(255, 200, 60, ${0.65 + pulse * 0.3})`;
+  for (let i = 0; i < 7; i++) {
     const bubbleT = (t * 1.8 + i * 0.35 + phase) % 1;
-    const px = bx + Math.sin(i * 1.7 + phase) * dpr * 8;
-    const py = calderaY - bubbleT * dpr * (40 + peakH * 0.35);
-    const br = dpr * (1.2 + (i % 3) * 0.6) * (1 - bubbleT * 0.4);
+    const px = bx + Math.sin(i * 1.7 + phase) * dpr * 10;
+    const py = calderaY - bubbleT * dpr * (50 + peakH * 0.4);
+    const br = dpr * (1.4 + (i % 3) * 0.7) * (1 - bubbleT * 0.35);
     ctx.beginPath();
     ctx.arc(px, py, br, 0, Math.PI * 2);
     ctx.fill();
@@ -2316,30 +2351,43 @@ function drawAdventureKrakensTeethEffect(now) {
 
 function drawAdventureLavaFallsEffect(now) {
   const t = now * 0.001;
+  const pulse = 0.5 + 0.5 * Math.sin(t * 1.2);
 
-  const sunWash = ctx.createRadialGradient(w * 0.5, waterTop, 0, w * 0.5, waterTop + (h - waterTop) * 0.55, w * 0.65);
-  sunWash.addColorStop(0, "rgba(255, 245, 220, 0.28)");
-  sunWash.addColorStop(0.55, "rgba(255, 210, 150, 0.16)");
-  sunWash.addColorStop(1, "rgba(255, 170, 90, 0)");
+  const skyWater = ctx.createLinearGradient(0, waterTop, 0, h);
+  skyWater.addColorStop(0, "rgba(200, 245, 255, 0.22)");
+  skyWater.addColorStop(0.4, "rgba(255, 240, 210, 0.14)");
+  skyWater.addColorStop(1, "rgba(255, 190, 100, 0.08)");
+  ctx.fillStyle = skyWater;
+  ctx.fillRect(0, waterTop, w, h - waterTop);
+
+  const sunWash = ctx.createRadialGradient(w * 0.5, waterTop, 0, w * 0.5, waterTop + (h - waterTop) * 0.65, w * 0.78);
+  sunWash.addColorStop(0, "rgba(255, 252, 235, 0.4)");
+  sunWash.addColorStop(0.45, "rgba(255, 220, 150, 0.22)");
+  sunWash.addColorStop(1, "rgba(255, 170, 80, 0)");
   ctx.fillStyle = sunWash;
   ctx.fillRect(0, waterTop, w, h - waterTop);
 
-  const warmLight = ctx.createLinearGradient(0, waterTop, 0, h);
-  warmLight.addColorStop(0, "rgba(255, 235, 200, 0.18)");
-  warmLight.addColorStop(0.55, "rgba(255, 190, 120, 0.12)");
-  warmLight.addColorStop(1, "rgba(255, 140, 70, 0.06)");
-  ctx.fillStyle = warmLight;
-  ctx.fillRect(0, waterTop, w, h - waterTop);
+  const sandTop = h - dpr * 92;
+  const base = sandTop + dpr * 12;
+  for (const v of LAVA_FALLS_VOLCANOES) {
+    const bx = w * v.cx;
+    const floorGlow = ctx.createRadialGradient(bx, base, 0, bx, base - dpr * 40, dpr * (90 + pulse * 30));
+    floorGlow.addColorStop(0, `rgba(255, 180, 50, ${0.35 + pulse * 0.15})`);
+    floorGlow.addColorStop(0.6, `rgba(255, 100, 20, ${0.12 + pulse * 0.08})`);
+    floorGlow.addColorStop(1, "rgba(255, 80, 10, 0)");
+    ctx.fillStyle = floorGlow;
+    ctx.fillRect(0, waterTop, w, h - waterTop);
+  }
 
   for (const v of LAVA_FALLS_VOLCANOES) {
     drawLavaFallsVolcanoEruption(now, v.cx, v.peakH, v.phase);
   }
 
-  ctx.fillStyle = "rgba(255, 200, 80, 0.32)";
-  for (let i = 0; i < perfN(12); i++) {
+  ctx.fillStyle = "rgba(255, 220, 100, 0.45)";
+  for (let i = 0; i < perfN(16); i++) {
     const bx = ((i * 113 + Math.floor(t * 22 + i * 7)) % 1000) / 1000 * w;
     const by = waterTop + ((i * 79 + Math.floor(t * 18)) % 1000) / 1000 * (h - waterTop);
-    const r = dpr * (0.8 + (i % 3) * 0.45);
+    const r = dpr * (1 + (i % 3) * 0.55);
     ctx.beginPath();
     ctx.arc(bx, by, r, 0, Math.PI * 2);
     ctx.fill();
@@ -3005,8 +3053,9 @@ function getReef() {
   const base = REEFS.find((r) => r.id === selectedReefId) || REEFS[0];
   if (!adventureSession) return base;
   const lvl = getAdventureLevel(adventureSession.levelIndex);
-  const reefBase = REEFS.find((r) => r.id === lvl.reefId) || base;
   const themeId = getAdventureLevelTheme(adventureSession.levelIndex);
+  const playReefId = ADVENTURE_THEME_REEF_ID[themeId] || lvl.reefId;
+  const reefBase = REEFS.find((r) => r.id === playReefId) || base;
   const themeVis = ADVENTURE_THEME_REEF_OVERRIDES[themeId];
   const merged = {
     ...reefBase,
@@ -3026,6 +3075,10 @@ function getReef() {
   }
   if (themeId === "skull-shoals") {
     merged.weights = { common: 48, uncommon: 28, rare: 14, epic: 7, legendary: 3 };
+  }
+  if (themeId === "lava-falls") {
+    merged.subtitle = "Volcanic shallows";
+    merged.desc = `Bright lava-lit waters · score ${lvl.passScore}+ to continue`;
   }
   return merged;
 }
