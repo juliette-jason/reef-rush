@@ -629,9 +629,9 @@ const ADVENTURE_PLAY_ATMOSPHERE = {
   "emerald-lagoon": { stops: [[0, "rgba(80, 200, 140, 0.14)"], [1, "rgba(30, 120, 80, 0.22)"]], effect: "emerald-lagoon" },
   "lava-falls": {
     stops: [
-      [0, "rgba(255, 250, 240, 0.02)"],
-      [0.5, "rgba(255, 230, 200, 0.03)"],
-      [1, "rgba(255, 200, 140, 0.04)"],
+      [0, "rgba(18, 42, 52, 0.14)"],
+      [0.5, "rgba(22, 48, 58, 0.2)"],
+      [1, "rgba(14, 32, 40, 0.26)"],
     ],
     effect: "lava-falls",
   },
@@ -831,10 +831,10 @@ const ADVENTURE_THEME_REEF_OVERRIDES = {
     bubble: "rgba(100, 255, 180, 0.2)",
   },
   "lava-falls": {
-    gradient: ["#70d4f0", "#80e4f8", "#90f0ff", "#e8a048"],
-    shaft: ["rgba(255, 250, 220, 0.42)", "rgba(255, 250, 220, 0)"],
-    silhouette: "rgba(45, 65, 75, 0.12)",
-    bubble: "rgba(255, 220, 140, 0.42)",
+    gradient: ["#2a6878", "#224858", "#1a3848", "#3a2818"],
+    shaft: ["rgba(255, 230, 180, 0.34)", "rgba(255, 230, 180, 0)"],
+    silhouette: "rgba(18, 32, 40, 0.32)",
+    bubble: "rgba(255, 200, 120, 0.38)",
   },
   "stormbreak-isle": {
     gradient: ["#182030", "#202838", "#283040", "#141820"],
@@ -2479,17 +2479,17 @@ function drawAdventureLavaFallsEffect(now) {
   const t = now * 0.001;
   const pulse = 0.5 + 0.5 * Math.sin(t * 1.2);
 
-  const skyWater = ctx.createLinearGradient(0, waterTop, 0, h);
-  skyWater.addColorStop(0, "rgba(200, 245, 255, 0.22)");
-  skyWater.addColorStop(0.4, "rgba(255, 240, 210, 0.14)");
-  skyWater.addColorStop(1, "rgba(255, 190, 100, 0.08)");
-  ctx.fillStyle = skyWater;
+  const murkyWater = ctx.createLinearGradient(0, waterTop, 0, h);
+  murkyWater.addColorStop(0, "rgba(12, 38, 48, 0.32)");
+  murkyWater.addColorStop(0.45, "rgba(18, 42, 52, 0.38)");
+  murkyWater.addColorStop(1, "rgba(10, 28, 36, 0.42)");
+  ctx.fillStyle = murkyWater;
   ctx.fillRect(0, waterTop, w, h - waterTop);
 
   const sunWash = ctx.createRadialGradient(w * 0.5, waterTop, 0, w * 0.5, waterTop + (h - waterTop) * 0.65, w * 0.78);
-  sunWash.addColorStop(0, "rgba(255, 252, 235, 0.4)");
-  sunWash.addColorStop(0.45, "rgba(255, 220, 150, 0.22)");
-  sunWash.addColorStop(1, "rgba(255, 170, 80, 0)");
+  sunWash.addColorStop(0, "rgba(255, 245, 210, 0.22)");
+  sunWash.addColorStop(0.45, "rgba(255, 200, 120, 0.14)");
+  sunWash.addColorStop(1, "rgba(255, 140, 60, 0)");
   ctx.fillStyle = sunWash;
   ctx.fillRect(0, waterTop, w, h - waterTop);
 
