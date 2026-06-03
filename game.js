@@ -624,9 +624,9 @@ const ADVENTURE_PLAY_ATMOSPHERE = {
   "emerald-lagoon": { stops: [[0, "rgba(80, 200, 140, 0.14)"], [1, "rgba(30, 120, 80, 0.22)"]], effect: "emerald-lagoon" },
   "lava-falls": {
     stops: [
-      [0, "rgba(255, 200, 120, 0.06)"],
-      [0.45, "rgba(140, 70, 40, 0.1)"],
-      [1, "rgba(50, 22, 14, 0.16)"],
+      [0, "rgba(255, 240, 200, 0.03)"],
+      [0.5, "rgba(255, 200, 140, 0.04)"],
+      [1, "rgba(255, 160, 90, 0.06)"],
     ],
     effect: "lava-falls",
   },
@@ -636,9 +636,9 @@ const ADVENTURE_PLAY_ATMOSPHERE = {
   "captains-landing": { stops: [[0, "rgba(140, 120, 90, 0.12)"], [1, "rgba(60, 50, 40, 0.18)"]], effect: "captains-landing" },
   "treasure-cove": {
     stops: [
-      [0, "rgba(8, 35, 45, 0.38)"],
-      [0.45, "rgba(18, 70, 80, 0.22)"],
-      [1, "rgba(255, 190, 50, 0.2)"],
+      [0, "rgba(255, 245, 210, 0.08)"],
+      [0.45, "rgba(180, 240, 255, 0.06)"],
+      [1, "rgba(255, 210, 90, 0.1)"],
     ],
     effect: "treasure-cove",
   },
@@ -721,11 +721,11 @@ const ADVENTURE_THEME_SAND = {
   },
   "lava-falls": {
     stops: [
-      [0, "rgba(18, 16, 14, 0)"],
-      [0.35, "rgba(12, 10, 9, 0.32)"],
-      [1, "rgba(6, 5, 4, 0.78)"],
+      [0, "rgba(28, 24, 22, 0)"],
+      [0.35, "rgba(16, 14, 12, 0.14)"],
+      [1, "rgba(8, 7, 6, 0.38)"],
     ],
-    speck: "rgba(38, 32, 28, 0.4)",
+    speck: "rgba(42, 36, 30, 0.22)",
   },
   "stormbreak-isle": {
     stops: [
@@ -761,11 +761,11 @@ const ADVENTURE_THEME_SAND = {
   },
   "treasure-cove": {
     stops: [
-      [0, "rgba(40, 120, 130, 0)"],
-      [0.35, "rgba(30, 100, 110, 0.28)"],
-      [1, "rgba(20, 70, 80, 0.55)"],
+      [0, "rgba(255, 235, 180, 0)"],
+      [0.35, "rgba(240, 200, 120, 0.2)"],
+      [1, "rgba(210, 165, 75, 0.42)"],
     ],
-    speck: "rgba(255, 210, 80, 0.28)",
+    speck: "rgba(255, 220, 100, 0.35)",
   },
 };
 
@@ -826,10 +826,10 @@ const ADVENTURE_THEME_REEF_OVERRIDES = {
     bubble: "rgba(100, 255, 180, 0.2)",
   },
   "lava-falls": {
-    gradient: ["#3898b8", "#48a8c8", "#58b8d8", "#181010"],
-    shaft: ["rgba(255, 200, 100, 0.24)", "rgba(255, 200, 100, 0)"],
-    silhouette: "rgba(14, 10, 8, 0.48)",
-    bubble: "rgba(255, 150, 60, 0.3)",
+    gradient: ["#58b8d8", "#68c8e8", "#78d8f0", "#403028"],
+    shaft: ["rgba(255, 240, 200, 0.32)", "rgba(255, 240, 200, 0)"],
+    silhouette: "rgba(22, 18, 16, 0.22)",
+    bubble: "rgba(255, 200, 100, 0.36)",
   },
   "stormbreak-isle": {
     gradient: ["#182030", "#202838", "#283040", "#141820"],
@@ -856,10 +856,10 @@ const ADVENTURE_THEME_REEF_OVERRIDES = {
     bubble: "rgba(220, 200, 160, 0.16)",
   },
   "treasure-cove": {
-    gradient: ["#0a2838", "#103848", "#184858", "#081820"],
-    shaft: ["rgba(255, 200, 60, 0.2)", "rgba(255, 200, 60, 0.04)"],
-    silhouette: "rgba(8, 12, 16, 0.85)",
-    bubble: "rgba(255, 220, 120, 0.22)",
+    gradient: ["#5ec8e8", "#6ed8f0", "#7ee8f8", "#c89840"],
+    shaft: ["rgba(255, 245, 200, 0.38)", "rgba(255, 245, 200, 0)"],
+    silhouette: "rgba(40, 55, 65, 0.28)",
+    bubble: "rgba(255, 240, 160, 0.4)",
   },
 };
 
@@ -1523,7 +1523,7 @@ function drawTreasureChest(cx, cy, sc) {
 
 function drawTreasureCoveCaveWalls() {
   const sandTop = h - dpr * 92;
-  ctx.fillStyle = "rgba(14, 11, 9, 0.94)";
+  ctx.fillStyle = "rgba(72, 58, 42, 0.55)";
   ctx.beginPath();
   ctx.moveTo(0, waterTop);
   ctx.lineTo(w * 0.24, waterTop);
@@ -1538,7 +1538,7 @@ function drawTreasureCoveCaveWalls() {
   ctx.lineTo(w, h);
   ctx.closePath();
   ctx.fill();
-  ctx.fillStyle = "rgba(8, 6, 5, 0.8)";
+  ctx.fillStyle = "rgba(48, 38, 30, 0.42)";
   ctx.beginPath();
   ctx.moveTo(w * 0.24, waterTop);
   ctx.quadraticCurveTo(w * 0.5, waterTop + dpr * 36, w * 0.76, waterTop);
@@ -1555,9 +1555,9 @@ function drawTreasureCoveBed() {
   scatterGoldCoins(sandTop, 42, 7, 34);
   drawTreasureChest(w * 0.5, base - dpr * 12, 1.1);
   scatterGoldCoins(sandTop + dpr * 6, 18, 13, 22);
-  ctx.fillStyle = "rgba(255, 210, 60, 0.12)";
+  ctx.fillStyle = "rgba(255, 220, 90, 0.28)";
   ctx.beginPath();
-  ctx.ellipse(w * 0.5, base - dpr * 4, w * 0.22, dpr * 14, 0, 0, Math.PI * 2);
+  ctx.ellipse(w * 0.5, base - dpr * 4, w * 0.28, dpr * 18, 0, 0, Math.PI * 2);
   ctx.fill();
 }
 
@@ -1800,14 +1800,14 @@ function drawLavaFallsBed() {
   const sandTop = h - dpr * 92;
   const base = sandTop + dpr * 12;
 
-  ctx.fillStyle = "rgba(8, 7, 6, 0.72)";
+  ctx.fillStyle = "rgba(10, 9, 8, 0.45)";
   ctx.beginPath();
   ctx.ellipse(w * 0.5, base + dpr * 4, w * 0.42, dpr * 14, 0, 0, Math.PI * 2);
   ctx.fill();
   for (let i = 0; i < perfN(28); i++) {
     const bx = w * ((i * 67) % 1000) / 1000;
     const by = sandTop + dpr * (8 + (i % 6) * 10);
-    ctx.fillStyle = i % 4 === 0 ? "rgba(22, 18, 16, 0.85)" : "rgba(14, 12, 10, 0.75)";
+    ctx.fillStyle = i % 4 === 0 ? "rgba(22, 18, 16, 0.55)" : "rgba(14, 12, 10, 0.45)";
     ctx.beginPath();
     ctx.ellipse(bx, by, dpr * (1.8 + (i % 3)), dpr * 1, i * 0.4, 0, Math.PI * 2);
     ctx.fill();
@@ -2053,22 +2053,34 @@ function drawAdventureGoldGlintsHeavy(now, count) {
 }
 
 function drawAdventureTreasureCoveEffect(now) {
-  drawAdventureGoldGlintsHeavy(now, 28);
-  const beam = ctx.createRadialGradient(w * 0.5, waterTop, 0, w * 0.5, waterTop + (h - waterTop) * 0.55, w * 0.42);
-  beam.addColorStop(0, "rgba(255, 220, 100, 0.22)");
-  beam.addColorStop(0.55, "rgba(255, 190, 60, 0.08)");
-  beam.addColorStop(1, "rgba(255, 190, 60, 0)");
-  ctx.fillStyle = beam;
-  ctx.fillRect(0, waterTop, w, h - waterTop);
-  const sandTop = h - dpr * 92;
-  scatterGoldCoins(sandTop - dpr * 4, 8, 19, 12);
   const t = now * 0.001;
-  ctx.fillStyle = "rgba(168, 232, 240, 0.35)";
-  for (let i = 0; i < perfN(10); i++) {
-    const bx = w * (0.2 + ((i * 73 + Math.floor(t * 18)) % 600) / 1000);
-    const by = waterTop + dpr * (20 + (i * 41) % 120);
+
+  const caveGlow = ctx.createRadialGradient(w * 0.5, waterTop, 0, w * 0.5, waterTop + (h - waterTop) * 0.6, w * 0.72);
+  caveGlow.addColorStop(0, "rgba(255, 250, 220, 0.35)");
+  caveGlow.addColorStop(0.4, "rgba(255, 230, 140, 0.22)");
+  caveGlow.addColorStop(0.75, "rgba(120, 220, 255, 0.12)");
+  caveGlow.addColorStop(1, "rgba(80, 200, 240, 0)");
+  ctx.fillStyle = caveGlow;
+  ctx.fillRect(0, waterTop, w, h - waterTop);
+
+  const sunShaft = ctx.createLinearGradient(w * 0.5, waterTop, w * 0.5, h);
+  sunShaft.addColorStop(0, "rgba(255, 245, 200, 0.28)");
+  sunShaft.addColorStop(0.35, "rgba(255, 215, 100, 0.16)");
+  sunShaft.addColorStop(1, "rgba(255, 190, 70, 0.06)");
+  ctx.fillStyle = sunShaft;
+  ctx.fillRect(w * 0.22, waterTop, w * 0.56, h - waterTop);
+
+  drawAdventureGoldGlintsHeavy(now, 36);
+
+  const sandTop = h - dpr * 92;
+  scatterGoldCoins(sandTop - dpr * 4, 10, 19, 14);
+
+  ctx.fillStyle = "rgba(200, 245, 255, 0.45)";
+  for (let i = 0; i < perfN(14); i++) {
+    const bx = w * (0.18 + ((i * 73 + Math.floor(t * 18)) % 640) / 1000);
+    const by = waterTop + dpr * (16 + (i * 41) % 140);
     ctx.beginPath();
-    ctx.arc(bx, by, dpr * (1 + (i % 2)), 0, Math.PI * 2);
+    ctx.arc(bx, by, dpr * (1.2 + (i % 2) * 0.5), 0, Math.PI * 2);
     ctx.fill();
   }
 }
@@ -2304,10 +2316,18 @@ function drawAdventureKrakensTeethEffect(now) {
 
 function drawAdventureLavaFallsEffect(now) {
   const t = now * 0.001;
+
+  const sunWash = ctx.createRadialGradient(w * 0.5, waterTop, 0, w * 0.5, waterTop + (h - waterTop) * 0.55, w * 0.65);
+  sunWash.addColorStop(0, "rgba(255, 245, 220, 0.28)");
+  sunWash.addColorStop(0.55, "rgba(255, 210, 150, 0.16)");
+  sunWash.addColorStop(1, "rgba(255, 170, 90, 0)");
+  ctx.fillStyle = sunWash;
+  ctx.fillRect(0, waterTop, w, h - waterTop);
+
   const warmLight = ctx.createLinearGradient(0, waterTop, 0, h);
-  warmLight.addColorStop(0, "rgba(255, 220, 160, 0.14)");
-  warmLight.addColorStop(0.55, "rgba(255, 160, 80, 0.1)");
-  warmLight.addColorStop(1, "rgba(255, 100, 30, 0.08)");
+  warmLight.addColorStop(0, "rgba(255, 235, 200, 0.18)");
+  warmLight.addColorStop(0.55, "rgba(255, 190, 120, 0.12)");
+  warmLight.addColorStop(1, "rgba(255, 140, 70, 0.06)");
   ctx.fillStyle = warmLight;
   ctx.fillRect(0, waterTop, w, h - waterTop);
 
@@ -2315,7 +2335,7 @@ function drawAdventureLavaFallsEffect(now) {
     drawLavaFallsVolcanoEruption(now, v.cx, v.peakH, v.phase);
   }
 
-  ctx.fillStyle = "rgba(255, 180, 60, 0.42)";
+  ctx.fillStyle = "rgba(255, 200, 80, 0.32)";
   for (let i = 0; i < perfN(12); i++) {
     const bx = ((i * 113 + Math.floor(t * 22 + i * 7)) % 1000) / 1000 * w;
     const by = waterTop + ((i * 79 + Math.floor(t * 18)) % 1000) / 1000 * (h - waterTop);
