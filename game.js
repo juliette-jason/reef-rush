@@ -590,9 +590,6 @@ function warmupAdventureSceneCache(forceFull = false) {
   cachedAdventureMapSceneSvg("treasure-cove", "res");
 }
 
-let advFxCanvas = null;
-let advFxKey = "";
-
 function getAdventureLevelTheme(levelIndex) {
   return ADVENTURE_LEVEL_THEMES[levelIndex] || ADVENTURE_LEVEL_THEMES[0];
 }
@@ -2759,31 +2756,6 @@ function drawAdventureThemeOverlayInner(now) {
 
 function drawAdventureThemeOverlay(now) {
   if (!adventureSession || w <= 0) return;
-  const themeId = getAdventureLevelTheme(adventureSession.levelIndex);
-  const key = `${w}|${h}|${themeId}`;
-
-  if (PERF_CHROMEBOOK && gameLoopTick % 2 !== 0 && advFxCanvas && advFxKey === key) {
-    ctx.drawImage(advFxCanvas, 0, 0);
-    return;
-  }
-
-  if (PERF_CHROMEBOOK) {
-    if (!advFxCanvas || advFxKey !== key) {
-      advFxCanvas = document.createElement("canvas");
-      advFxCanvas.width = w;
-      advFxCanvas.height = h;
-      advFxKey = key;
-    }
-    const fxc = advFxCanvas.getContext("2d");
-    const prev = ctx;
-    ctx = fxc;
-    fxc.clearRect(0, 0, w, h);
-    drawAdventureThemeOverlayInner(now);
-    ctx = prev;
-    ctx.drawImage(advFxCanvas, 0, 0);
-    return;
-  }
-
   drawAdventureThemeOverlayInner(now);
 }
 
@@ -4961,7 +4933,33 @@ function buildRodUI() {
 
 function invalidateBackgroundCache() {
   bgCacheKey = "";
-  advFxKey = "";
+}
+
+/** Spawn delay (ms) — faster on Chromebook so adventure rounds feel responsive. */
+function rollNextSpawnDelay(reef, quickStart = false) {
+  let wait = reef.spawnMin + Math.random() * Math.max(80, reef.spawnMax - reef.spawnMin);
+  if (quickStart) wait *= 0.45;
+  if (PERF_CHROMEBOOK) {
+    wait *= adventureSession ? 0.58 : 0.82;
+    if (adventureSession) wait = Math.max(90, wait);
+  }
+  return wait;
+}
+
+function effectiveCastDownMs() {
+  if (PERF_CHROMEBOOK && adventureSession) return CAST_DOWN_MS * 0.9;
+  return CAST_DOWN_MS;
+}
+
+function effectiveCastUpMs() {
+  if (PERF_CHROMEBOOK && adventureSession) return CAST_UP_MS * 0.9;
+  return CAST_UP_MS;
+}
+
+function seedStarterFish(reef) {
+  if (!PERF_CHROMEBOOK || !adventureSession) return;
+  const n = Math.min(3, Math.max(2, Math.floor(reef.maxFish * 0.3)));
+  for (let i = 0; i < n; i++) spawnFish();
 }
 
 function resize() {
@@ -5060,7 +5058,8 @@ function startRound() {
   catchLog = [];
   spawnAcc = 0;
   const reef = getReef();
-  nextSpawnIn = reef.spawnMin + Math.random() * Math.max(120, reef.spawnMax - reef.spawnMin) * 0.45;
+  nextSpawnIn = rollNextSpawnDelay(reef, true);
+  seedStarterFish(reef);
   const roundStart = performance.now();
   roundEndAt = roundStart + reef.roundMs;
   const spawnFrac = 0.18 + Math.random() * 0.52;
@@ -8269,7 +8268,7 @@ function updateHook(dt) {
   if (!biting) {
     if (hook.castState === "down") {
       hook.castTimer += dt;
-      const t = Math.min(1, hook.castTimer / CAST_DOWN_MS);
+      const t = Math.min(1, hook.castTimer / effectiveCastDownMs());
       const smooth = t * t * (3 - 2 * t);
       hook.tipY = hook.castFromY + (hook.castToY - hook.castFromY) * smooth;
       const megHit = tryCatchKraken({ casting: true });
@@ -8287,7 +8286,7 @@ function updateHook(dt) {
       }
     } else if (hook.castState === "up") {
       hook.castTimer += dt;
-      const t = Math.min(1, hook.castTimer / CAST_UP_MS);
+      const t = Math.min(1, hook.castTimer / effectiveCastUpMs());
       const ease = 1 - (1 - t) * (1 - t);
       hook.tipY = hook.castFromY + (hook.castRiseTargetY - hook.castFromY) * ease;
       if (t >= 1) {
@@ -8360,10 +8359,16 @@ function updateClam(dt) {
 
 let gameLoopTick = 0;
 
+function gameLoopFrameDt(now) {
+  const raw = Math.max(0, now - (gameLoop.prev || now));
+  gameLoop.prev = now;
+  if (!PERF_CHROMEBOOK) return Math.min(40, raw);
+  return Math.min(playing ? 150 : 50, raw);
+}
+
 function gameLoop(now) {
   gameLoopTick++;
-  const dt = Math.min(PERF_CHROMEBOOK ? 50 : 40, now - (gameLoop.prev || now));
-  gameLoop.prev = now;
+  const dt = gameLoopFrameDt(now);
 
   if (toastTimer > 0) {
     toastTimer -= dt;
@@ -8375,7 +8380,7 @@ function gameLoop(now) {
   ctx.clearRect(0, 0, w, h);
   drawCachedBackground();
   if (adventureSession) drawAdventureThemeOverlay(now);
-  const bubbleFrame = PERF_CHROMEBOOK ? 3 : 2;
+  const bubbleFrame = PERF_CHROMEBOOK ? 2 : 2;
   if (!PERF_CHROMEBOOK || gameLoopTick % bubbleFrame === 0) drawBubbles(treasureMapRevealPaused ? 0 : dt);
   if (!treasureMapRevealPaused) updateJackpotCrab(now, dt);
 
@@ -8394,19 +8399,20 @@ function gameLoop(now) {
       if (!treasureMapRevealPaused) {
         spawnAcc += dt;
         const reef = getReef();
-        const maxFish = PERF_CHROMEBOOK ? Math.max(5, Math.floor(reef.maxFish * 0.55)) : reef.maxFish;
+        const maxFish = PERF_CHROMEBOOK
+          ? Math.max(6, Math.floor(reef.maxFish * (adventureSession ? 0.78 : 0.65)))
+          : reef.maxFish;
         if (spawnAcc >= nextSpawnIn && countUncaughtFish() < maxFish) {
           spawnFish();
           spawnAcc = 0;
-          nextSpawnIn = reef.spawnMin + Math.random() * Math.max(80, reef.spawnMax - reef.spawnMin);
+          nextSpawnIn = rollNextSpawnDelay(reef);
         }
         updateFish(dt);
         updateHook(dt);
       }
       drawKraken();
       drawJackpotCrab();
-      const fishStep = PERF_CHROMEBOOK && gameLoopTick % 2 !== 0 ? 2 : 1;
-      for (let fi = 0; fi < fishList.length; fi += fishStep) drawFish(fishList[fi]);
+      for (const f of fishList) drawFish(f);
       drawBoatHullAndCatchNet();
       drawHookLine();
       drawReleasedFishJumpFx();
