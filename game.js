@@ -3359,7 +3359,7 @@ function normalizeLeaderboardRows(rows) {
       at: e.at || e.created_at || "",
     }))
     .filter((e) => e.initials && e.score > 0)
-    .sort((a, b) => b.score - a.score)
+    .sort((a, b) => b.score - a.score || String(a.at).localeCompare(String(b.at)))
     .slice(0, LEADERBOARD_MAX);
 }
 
@@ -3432,7 +3432,6 @@ async function addLeaderboardEntry(initials, score, reefId) {
     at: Date.now(),
   };
   const rows = [...loadLeaderboard(), entry];
-  rows.sort((a, b) => b.score - a.score);
   leaderboardRows = normalizeLeaderboardRows(rows);
   saveLocalLeaderboard(leaderboardRows);
   try {
