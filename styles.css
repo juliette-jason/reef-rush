@@ -2369,7 +2369,7 @@ body {
 .adventure-map-board {
   position: relative;
   width: 100%;
-  min-height: 300vh;
+  min-height: 340vh;
   padding-bottom: max(100px, calc(env(safe-area-inset-bottom, 0px) + 80px));
   background: #efe6d4;
 }
@@ -2388,7 +2388,7 @@ body {
 .adventure-map-art {
   display: block;
   width: 100%;
-  min-height: 300vh;
+  min-height: 340vh;
   height: auto;
   filter: sepia(0.05) contrast(1.03) brightness(1.03);
   contain: layout paint;
@@ -2444,6 +2444,46 @@ body {
 
 .adventure-map-banner[hidden] {
   display: none;
+}
+
+.adventure-map-bonus-banner {
+  position: fixed;
+  top: max(48px, calc(env(safe-area-inset-top, 0px) + 38px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  width: min(92vw, 420px);
+  margin: 0;
+  padding: 7px 12px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(255, 220, 100, 0.95), rgba(255, 180, 50, 0.92));
+  border: 2px solid #a87810;
+  color: #4a3010;
+  font-weight: 800;
+  font-size: 0.72rem;
+  text-align: center;
+  box-shadow: 0 4px 18px rgba(120, 80, 10, 0.35);
+  pointer-events: none;
+}
+
+.adventure-map-bonus-banner[hidden] {
+  display: none;
+}
+
+.adventure-map-bonus-banner--reveal {
+  animation: adventureBonusBannerPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes adventureBonusBannerPulse {
+  0%,
+  100% {
+    box-shadow: 0 4px 18px rgba(120, 80, 10, 0.35);
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    box-shadow: 0 6px 28px rgba(255, 200, 60, 0.55);
+    transform: translateX(-50%) scale(1.03);
+  }
 }
 
 .adventure-map-back {
@@ -2718,6 +2758,43 @@ body {
   font-weight: 600;
 }
 
+.adventure-map-node--bonus .adventure-map-node__scene-wrap {
+  border-color: #c8a020;
+  box-shadow:
+    0 0 8px rgba(255, 200, 50, 0.35),
+    0 4px 12px rgba(30, 24, 20, 0.4);
+}
+
+.adventure-map-node--bonus.adventure-map-node--locked .adventure-map-node__scene-wrap {
+  filter: grayscale(0.35) brightness(0.88);
+}
+
+.adventure-map-node--bonus:not(.adventure-map-node--locked) .adventure-map-node__scene {
+  animation: adventureMapTreasureCoveGlow 2.8s ease-in-out infinite;
+}
+
+.adventure-map-node--bonus-finale .adventure-map-node__scene-wrap {
+  width: 84px;
+  height: 60px;
+  border-color: #d4af37;
+  box-shadow:
+    0 0 0 2px rgba(212, 175, 55, 0.4),
+    0 0 16px rgba(255, 220, 80, 0.5),
+    0 4px 14px rgba(30, 24, 20, 0.45);
+}
+
+.adventure-map-node--bonus .adventure-map-node__bonus-lock {
+  display: inline-block;
+  margin-top: 2px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(60, 40, 10, 0.85);
+  color: #ffe8a0;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
 .adventure-map-node--theme-skull-shoals .adventure-map-node__scene-wrap {
   border-color: #4a2830;
   box-shadow: 0 0 8px rgba(80, 20, 30, 0.35);
@@ -2917,6 +2994,87 @@ body {
   .adventure-map-node--theme-treasure-cove:not(.adventure-map-node--locked) .adventure-map-node__scene {
     animation: none;
   }
+}
+
+.panel--treasure-cove-celebrate .panel__headline {
+  background: linear-gradient(180deg, #fef08a, #f59e0b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.adventure-win-treasure-celebrate {
+  position: relative;
+  margin: 0 auto 14px;
+  padding: 16px 14px 12px;
+  max-width: min(320px, 92vw);
+  border-radius: 14px;
+  background: linear-gradient(165deg, rgba(255, 240, 160, 0.95), rgba(255, 200, 80, 0.88));
+  border: 2px solid #c8a020;
+  box-shadow:
+    0 0 24px rgba(255, 200, 50, 0.45),
+    0 8px 24px rgba(60, 40, 10, 0.25);
+  text-align: center;
+  overflow: hidden;
+}
+
+.adventure-win-treasure-celebrate[hidden] {
+  display: none;
+}
+
+.adventure-win-treasure-celebrate__burst {
+  position: absolute;
+  inset: -20%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(255, 220, 80, 0.35) 30deg,
+    transparent 60deg,
+    rgba(255, 200, 50, 0.25) 90deg,
+    transparent 120deg
+  );
+  animation: adventureTreasureCelebrateSpin 4s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes adventureTreasureCelebrateSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.adventure-win-treasure-celebrate__crown {
+  position: relative;
+  display: block;
+  font-size: 2.4rem;
+  line-height: 1;
+  animation: adventureTreasureCrownBounce 0.9s ease-in-out infinite;
+}
+
+@keyframes adventureTreasureCrownBounce {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-6px) scale(1.08);
+  }
+}
+
+.adventure-win-treasure-celebrate__title {
+  position: relative;
+  margin: 8px 0 4px;
+  font-weight: 900;
+  font-size: 1.05rem;
+  color: #5c4010;
+}
+
+.adventure-win-treasure-celebrate__sub {
+  position: relative;
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #7a5018;
 }
 
 .panel--adventure-result .panel__headline--fail {

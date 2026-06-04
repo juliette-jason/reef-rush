@@ -298,7 +298,11 @@ const SHOP_GUIDE_SEEN_KEY = "reefRushShopGuideSeen_v1";
 
 const TREASURE_CHESTS_TO_UNLOCK_ADVENTURE = 20;
 const SECRET_TREASURE_CHEST_GRANT = 19;
-const ADVENTURE_LEVEL_COUNT = 15;
+const ADVENTURE_MAIN_LEVEL_COUNT = 15;
+const ADVENTURE_BONUS_LEVEL_COUNT = 5;
+const ADVENTURE_LEVEL_COUNT = ADVENTURE_MAIN_LEVEL_COUNT + ADVENTURE_BONUS_LEVEL_COUNT;
+/** Index of Treasure Cove (level 15) — clearing it unlocks bonus voyages. */
+const TREASURE_COVE_INDEX = ADVENTURE_MAIN_LEVEL_COUNT - 1;
 
 const TREASURE_CINEMATIC_ANTICIPATE_MS = 800;
 const TREASURE_CINEMATIC_FLY_MS = 2400;
@@ -322,6 +326,11 @@ const ADVENTURE_MAP_NODE_LAYOUT = [
   { x: 64, y: 22 },
   { x: 40, y: 16 },
   { x: 50, y: 9 },
+  { x: 64, y: 7 },
+  { x: 36, y: 5.5 },
+  { x: 68, y: 4 },
+  { x: 32, y: 2.5 },
+  { x: 50, y: 1 },
 ];
 
 const ADVENTURE_MAP_PLACES = [
@@ -340,6 +349,11 @@ const ADVENTURE_MAP_PLACES = [
   "Leviathan Deep",
   "Captain's Landing",
   "Treasure Cove",
+  "Bounty Trench",
+  "Molten Maelstrom",
+  "Pearl Abyss",
+  "Crown Reef",
+  "Legend's Gate",
 ];
 
 /** Visual theme slug per voyage — matches ADVENTURE_MAP_PLACES order. */
@@ -359,6 +373,11 @@ const ADVENTURE_LEVEL_THEMES = [
   "leviathan-deep",
   "captains-landing",
   "treasure-cove",
+  "bounty-trench",
+  "molten-maelstrom",
+  "pearl-abyss",
+  "crown-reef",
+  "legends-gate",
 ];
 
 function adventureMapSceneSvg(themeId, idSuffix = "") {
@@ -545,6 +564,42 @@ function adventureMapSceneSvg(themeId, idSuffix = "") {
       <circle cx="22" cy="24" r="0.9" fill="#a8e8f0" opacity="0.6"/>
       <circle cx="50" cy="26" r="1" fill="#a8e8f0" opacity="0.65"/>
       <circle cx="58" cy="30" r="1.1" fill="#a8e8f0" opacity="0.55"/>
+    </svg>`,
+    "bounty-trench": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#061018"/>
+      <ellipse cx="36" cy="30" rx="30" ry="12" fill="#0c1828"/>
+      <path d="M12 38 Q36 22 60 38" fill="none" stroke="#3a88c8" stroke-width="2" opacity="0.5"/>
+      <circle cx="36" cy="18" r="6" fill="#f0d050" opacity="0.85"/>
+      <text x="36" y="20" text-anchor="middle" font-size="7" fill="#5a4010" font-weight="bold">★</text>
+    </svg>`,
+    "molten-maelstrom": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#4a2818"/>
+      <path d="M20 42 L28 12 L36 42 Z" fill="#2a1810" stroke="#1a1008" stroke-width="0.8"/>
+      <path d="M36 42 L44 10 L52 42 Z" fill="#2a1810"/>
+      <ellipse cx="36" cy="14" rx="8" ry="4" fill="#ff9030" opacity="0.9"/>
+      <circle cx="30" cy="40" r="2" fill="#ffb040"/>
+      <circle cx="42" cy="38" r="1.5" fill="#ffb040"/>
+    </svg>`,
+    "pearl-abyss": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#3898a8"/>
+      <ellipse cx="36" cy="34" rx="26" ry="10" fill="#48a8b8"/>
+      <circle cx="28" cy="22" r="5" fill="#f8f4f0" stroke="#d8d0c8" stroke-width="0.8"/>
+      <circle cx="44" cy="26" r="4" fill="#fffef8" stroke="#d8d0c8" stroke-width="0.7"/>
+      <circle cx="36" cy="30" r="3.5" fill="#fff8f0" opacity="0.9"/>
+    </svg>`,
+    "crown-reef": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#58a8c8"/>
+      <ellipse cx="36" cy="36" rx="28" ry="10" fill="#e8c860"/>
+      <path d="M24 28 L28 18 L32 24 L36 14 L40 24 L44 18 L48 28 Z" fill="#f0d050" stroke="#a88020" stroke-width="0.8"/>
+      <circle cx="22" cy="38" r="2" fill="#f8e890"/>
+      <circle cx="50" cy="36" r="2" fill="#f8e890"/>
+    </svg>`,
+    "legends-gate": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#1a2838"/>
+      <path d="M14 52 L14 24 Q36 8 58 24 L58 52 Z" fill="#2a3848" stroke="#c8a030" stroke-width="1.2"/>
+      <path d="M28 52 L28 30 L36 22 L44 30 L44 52 Z" fill="#0a1018" opacity="0.6"/>
+      <circle cx="36" cy="20" r="5" fill="#ffd700"/>
+      <path d="M32 20 L36 14 L40 20 L38 18 L36 20 L34 18 Z" fill="#8a6010"/>
     </svg>`,
   };
   return scenes[themeId] || scenes["skull-shoals"];
@@ -2737,13 +2792,48 @@ const ADVENTURE_THEME_EFFECT_DRAW = {
   "treasure-cove": drawAdventureTreasureCoveEffect,
 };
 
+const ADVENTURE_BONUS_THEME_BASE = {
+  "bounty-trench": "leviathan-deep",
+  "molten-maelstrom": "lava-falls",
+  "pearl-abyss": "emerald-lagoon",
+  "crown-reef": "golden-atoll",
+  "legends-gate": "treasure-cove",
+};
+
+function registerAdventureBonusThemes() {
+  for (const [slug, base] of Object.entries(ADVENTURE_BONUS_THEME_BASE)) {
+    if (ADVENTURE_THEME_SAND[base]) ADVENTURE_THEME_SAND[slug] = { ...ADVENTURE_THEME_SAND[base] };
+    if (ADVENTURE_THEME_REEF_OVERRIDES[base]) {
+      ADVENTURE_THEME_REEF_OVERRIDES[slug] = { ...ADVENTURE_THEME_REEF_OVERRIDES[base] };
+    }
+    if (ADVENTURE_PLAY_ATMOSPHERE[base]) {
+      ADVENTURE_PLAY_ATMOSPHERE[slug] = {
+        stops: ADVENTURE_PLAY_ATMOSPHERE[base].stops.map(([s, c]) => [s, c]),
+        effect: slug,
+      };
+    }
+    if (ADVENTURE_THEME_BED_DRAW[base]) ADVENTURE_THEME_BED_DRAW[slug] = ADVENTURE_THEME_BED_DRAW[base];
+    if (ADVENTURE_THEME_EFFECT_DRAW[base]) ADVENTURE_THEME_EFFECT_DRAW[slug] = ADVENTURE_THEME_EFFECT_DRAW[base];
+    if (ADVENTURE_THEME_REEF_ID[base]) ADVENTURE_THEME_REEF_ID[slug] = ADVENTURE_THEME_REEF_ID[base];
+  }
+}
+registerAdventureBonusThemes();
+
+function adventurePassScoreForIndex(i) {
+  if (i < ADVENTURE_MAIN_LEVEL_COUNT) {
+    return 3000 + Math.round((i * (7000 - 3000)) / Math.max(1, ADVENTURE_MAIN_LEVEL_COUNT - 1));
+  }
+  const bonusI = i - ADVENTURE_MAIN_LEVEL_COUNT;
+  return 7500 + Math.round((bonusI * (9000 - 7500)) / Math.max(1, ADVENTURE_BONUS_LEVEL_COUNT - 1));
+}
+
 function drawAdventureThemeOverlayInner(now) {
   const themeId = getAdventureLevelTheme(adventureSession.levelIndex);
   const atm = ADVENTURE_PLAY_ATMOSPHERE[themeId];
   if (!atm) return;
 
   if (themeId === "serpent-strait") drawVagueSerpentSilhouette(now);
-  if (themeId === "leviathan-deep") drawVagueLeviathanSilhouette(now);
+  if (themeId === "leviathan-deep" || themeId === "bounty-trench") drawVagueLeviathanSilhouette(now);
 
   const g = ctx.createLinearGradient(0, waterTop, 0, h);
   for (const [stop, color] of atm.stops) g.addColorStop(stop, color);
@@ -2821,6 +2911,7 @@ function defaultMeta() {
     totalTreasureChests: 0,
     adventureHighestLevel: 0,
     pendingAdventureHomeCelebration: false,
+    pendingBonusVoyagesCelebration: false,
   };
 }
 
@@ -2853,6 +2944,7 @@ function loadMeta() {
       totalTreasureChests: Math.max(0, Math.floor(Number(o.totalTreasureChests) || 0)),
       adventureHighestLevel: Math.max(0, Math.min(ADVENTURE_LEVEL_COUNT, Math.floor(Number(o.adventureHighestLevel) || 0))),
       pendingAdventureHomeCelebration: Boolean(o.pendingAdventureHomeCelebration),
+      pendingBonusVoyagesCelebration: Boolean(o.pendingBonusVoyagesCelebration),
     };
   } catch {
     return defaultMeta();
@@ -3134,20 +3226,22 @@ function buildAdventureLevels() {
   for (let i = 0; i < ADVENTURE_LEVEL_COUNT; i++) {
     const reef = REEFS[i % REEFS.length];
     const tier = Math.floor(i / REEFS.length);
+    const isBonus = i >= ADVENTURE_MAIN_LEVEL_COUNT;
     levels.push({
       level: i + 1,
       id: `adv_${i + 1}`,
       name: ADVENTURE_MAP_PLACES[i] || `Voyage ${i + 1}`,
-      subtitle: reef.name,
+      subtitle: isBonus ? `Bonus · ${reef.name}` : reef.name,
       mapPlace: ADVENTURE_MAP_PLACES[i] || `Isle ${i + 1}`,
       reefId: reef.id,
-      passScore: 3000 + Math.round((i * (7000 - 3000)) / (ADVENTURE_LEVEL_COUNT - 1)),
-      roundMs: Math.max(46_000, reef.roundMs - tier * 3500 - i * 600),
-      spawnMin: Math.max(160, reef.spawnMin - i * 18),
-      spawnMax: Math.max(380, reef.spawnMax - i * 45),
+      isBonus,
+      passScore: adventurePassScoreForIndex(i),
+      roundMs: Math.max(isBonus ? 40_000 : 46_000, reef.roundMs - tier * 3500 - i * 600),
+      spawnMin: Math.max(isBonus ? 140 : 160, reef.spawnMin - i * 18),
+      spawnMax: Math.max(isBonus ? 340 : 380, reef.spawnMax - i * 45),
       maxFish: Math.min(22, reef.maxFish + Math.floor(i / 2)),
       fishSpeed: reef.fishSpeed * (1 + i * 0.035),
-      rareRollMult: Math.max(0.55, reef.rareRollMult * (0.98 - i * 0.012)),
+      rareRollMult: Math.max(0.5, reef.rareRollMult * (0.98 - i * 0.012)),
     });
   }
   return levels;
@@ -3200,7 +3294,12 @@ function secretSkipAdventureLevel() {
 function isAdventureLevelPlayable(levelNum) {
   if (!isAdventureUnlocked()) return false;
   const highest = gameMeta.adventureHighestLevel || 0;
+  if (levelNum > ADVENTURE_MAIN_LEVEL_COUNT && highest < ADVENTURE_MAIN_LEVEL_COUNT) return false;
   return levelNum <= highest + 1;
+}
+
+function isAdventureBonusUnlocked() {
+  return (gameMeta.adventureHighestLevel || 0) >= ADVENTURE_MAIN_LEVEL_COUNT;
 }
 
 function getAdventureLevel(index) {
@@ -3549,6 +3648,8 @@ const adventurePlayTheme = document.getElementById("adventurePlayTheme");
 const adventurePlayScene = document.getElementById("adventurePlayScene");
 const adventurePlayName = document.getElementById("adventurePlayName");
 const adventureWinTheme = document.getElementById("adventureWinTheme");
+const adventureWinTreasureCelebrate = document.getElementById("adventureWinTreasureCelebrate");
+const adventureMapBonusBanner = document.getElementById("adventureMapBonusBanner");
 const adventureFailTheme = document.getElementById("adventureFailTheme");
 
 let selectedRod = RODS[0];
@@ -3904,7 +4005,7 @@ function updateAdventureLaunchUI() {
     adventureUnlockHint.textContent = celebrating
       ? "★ Adventure Mode unlocked — tap the glowing button! ★"
       : unlocked
-        ? "Treasure map unlocked — 15 voyages await!"
+        ? "Treasure map unlocked — 15 voyages to Treasure Cove, then 5 bonus!"
         : `Treasure chests: ${total} / ${TREASURE_CHESTS_TO_UNLOCK_ADVENTURE}`;
   }
   refreshTreasureChestDisplay();
@@ -3987,7 +4088,9 @@ function buildAdventureLevelUI(force = false) {
     const playable = isAdventureLevelPlayable(lvl.level);
     const cleared = lvl.level <= highest;
     const isCurrent = playable && !cleared && lvl.level === nextPlayable;
-    const isFinale = i === ADVENTURE_LEVEL_COUNT - 1;
+    const isTreasureCoveFinale = i === TREASURE_COVE_INDEX;
+    const isBonus = i >= ADVENTURE_MAIN_LEVEL_COUNT;
+    const isUltimateFinale = i === ADVENTURE_LEVEL_COUNT - 1;
     const themeId = getAdventureLevelTheme(i);
     const b = document.createElement("button");
     b.type = "button";
@@ -3996,7 +4099,9 @@ function buildAdventureLevelUI(force = false) {
     if (cleared) b.classList.add("adventure-map-node--cleared");
     if (!playable) b.classList.add("adventure-map-node--locked");
     if (isCurrent) b.classList.add("adventure-map-node--current");
-    if (isFinale) b.classList.add("adventure-map-node--finale");
+    if (isTreasureCoveFinale) b.classList.add("adventure-map-node--finale");
+    if (isBonus) b.classList.add("adventure-map-node--bonus");
+    if (isUltimateFinale) b.classList.add("adventure-map-node--bonus-finale");
     b.disabled = !playable;
     b.style.left = `${layout.x}%`;
     b.style.top = `${layout.y}%`;
@@ -4010,7 +4115,8 @@ function buildAdventureLevelUI(force = false) {
       <span class="adventure-map-node__scene-wrap" aria-hidden="true">
         ${sceneMarkup}
         <span class="adventure-map-node__num">${lvl.level}</span>
-        ${isFinale ? '<span class="adventure-map-node__x" aria-hidden="true"></span>' : ""}
+        ${isTreasureCoveFinale ? '<span class="adventure-map-node__x" aria-hidden="true"></span>' : ""}
+        ${isBonus && !playable ? '<span class="adventure-map-node__bonus-lock" aria-hidden="true">?</span>' : ""}
         ${isCurrent ? '<span class="adventure-map-node__boat" aria-hidden="true"></span>' : ""}
         ${cleared ? '<span class="adventure-map-node__star" aria-hidden="true"></span>' : ""}
         ${!playable ? '<span class="adventure-map-node__lock" aria-hidden="true"></span>' : ""}
@@ -4023,6 +4129,27 @@ function buildAdventureLevelUI(force = false) {
   adventureLevelList.appendChild(frag);
   if (adventureMapBanner) {
     adventureMapBanner.hidden = !isAdventureUnlocked();
+    const bonusUnlocked = isAdventureBonusUnlocked();
+    adventureMapBanner.textContent = bonusUnlocked
+      ? "Chart the course — bonus voyages unlocked beyond Treasure Cove!"
+      : "Chart the course — 15 voyages to Treasure Cove, then 5 bonus voyages!";
+  }
+  if (adventureMapBonusBanner) {
+    const showBonusBanner = isAdventureBonusUnlocked() || (gameMeta.pendingBonusVoyagesCelebration && isAdventureUnlocked());
+    adventureMapBonusBanner.hidden = !showBonusBanner;
+    adventureMapBonusBanner.classList.toggle(
+      "adventure-map-bonus-banner--reveal",
+      Boolean(gameMeta.pendingBonusVoyagesCelebration)
+    );
+  }
+}
+
+function clearBonusVoyagesMapCelebration() {
+  if (!gameMeta.pendingBonusVoyagesCelebration) return;
+  gameMeta.pendingBonusVoyagesCelebration = false;
+  saveMeta();
+  if (adventureMapBonusBanner) {
+    adventureMapBonusBanner.classList.remove("adventure-map-bonus-banner--reveal");
   }
 }
 
@@ -4041,6 +4168,10 @@ function openAdventureHub() {
   if (panelAdventure) panelAdventure.hidden = false;
   syncAdventureLaunchVisibility();
   scrollAdventureMapToProgress(true);
+  if (gameMeta.pendingBonusVoyagesCelebration) {
+    showToast("Bonus voyages unlocked! Chart the secret path beyond Treasure Cove.", 4200);
+    window.setTimeout(clearBonusVoyagesMapCelebration, 4500);
+  }
   if (musicEnabled) {
     window.requestAnimationFrame(() => startAdventureMusic());
   }
@@ -4057,12 +4188,26 @@ function startAdventureLevel(levelIndex) {
   startRound();
 }
 
+function playTreasureCoveVictorySound() {
+  playTreasureMapUnlockSound();
+  const ac = ensureMusicContext();
+  if (!ac || !musicMaster) return;
+  if (ac.state === "suspended") ac.resume();
+  const now = ac.currentTime + 0.05;
+  playMusicNote(523.25, now, 0.55, 0.05, "triangle");
+  playMusicNote(659.25, now + 0.18, 0.5, 0.048, "sine");
+  playMusicNote(783.99, now + 0.36, 0.65, 0.052, "triangle");
+  playNoiseHit(now + 0.1, 0.28, 0.05);
+}
+
 function endAdventureRound() {
   const levelIndex = adventureSession.levelIndex;
   const lvl = getAdventureLevel(levelIndex);
   const passed = score >= lvl.passScore;
+  const clearedTreasureCove = passed && levelIndex === TREASURE_COVE_INDEX;
   if (passed) {
     gameMeta.adventureHighestLevel = Math.max(gameMeta.adventureHighestLevel || 0, lvl.level);
+    if (clearedTreasureCove) gameMeta.pendingBonusVoyagesCelebration = true;
     saveMeta();
     adventureMapUiProgress = -1;
   }
@@ -4077,14 +4222,37 @@ function endAdventureRound() {
   clearAdventurePlayTheme();
   hideAllPanels();
   if (passed) {
+    if (clearedTreasureCove) playTreasureCoveVictorySound();
     fillAdventureResultTheme(adventureWinTheme, levelIndex);
     if (adventureFailTheme) adventureFailTheme.hidden = true;
-    if (adventureWinLevel) adventureWinLevel.textContent = `Level ${lvl.level} cleared!`;
-    if (adventureWinScore) adventureWinScore.textContent = `You scored ${score} (needed ${lvl.passScore}).`;
+    if (adventureWinLevel) {
+      adventureWinLevel.textContent = clearedTreasureCove
+        ? "Treasure Cove conquered!"
+        : `Level ${lvl.level} cleared!`;
+    }
+    if (adventureWinScore) {
+      adventureWinScore.textContent = clearedTreasureCove
+        ? `You scored ${score} (needed ${lvl.passScore}). Five secret bonus voyages await beyond the cove!`
+        : `You scored ${score} (needed ${lvl.passScore}).`;
+    }
+    if (adventureWinTreasureCelebrate) {
+      adventureWinTreasureCelebrate.hidden = !clearedTreasureCove;
+      if (clearedTreasureCove) {
+        adventureWinTreasureCelebrate.setAttribute("aria-hidden", "false");
+        panelAdventureWin?.classList.add("panel--treasure-cove-celebrate");
+      } else {
+        adventureWinTreasureCelebrate.setAttribute("aria-hidden", "true");
+        panelAdventureWin?.classList.remove("panel--treasure-cove-celebrate");
+      }
+    }
     const hasNext = lvl.level < ADVENTURE_LEVEL_COUNT;
     if (btnAdventureNext) {
       btnAdventureNext.hidden = !hasNext;
-      btnAdventureNext.textContent = hasNext ? `Start level ${lvl.level + 1}` : "Back to map";
+      btnAdventureNext.textContent = clearedTreasureCove
+        ? "Start bonus voyage 1"
+        : hasNext
+          ? `Start level ${lvl.level + 1}`
+          : "Back to map";
     }
     if (panelAdventureWin) panelAdventureWin.hidden = false;
   } else {

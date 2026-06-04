@@ -521,7 +521,8 @@
           </div>
         </div>
         <header class="adventure-map-header">
-          <p id="adventureMapBanner" class="adventure-map-banner" hidden>Chart the course — 15 voyages to Treasure Cove!</p>
+          <p id="adventureMapBanner" class="adventure-map-banner" hidden>Chart the course — 15 voyages to Treasure Cove, then 5 bonus voyages!</p>
+          <p id="adventureMapBonusBanner" class="adventure-map-bonus-banner" hidden>Bonus voyages — conquer Treasure Cove to unlock</p>
         </header>
         <button type="button" id="btnAdventureBack" class="btn btn--secondary adventure-map-back">← Back to home</button>
       </section>
@@ -536,6 +537,12 @@
 
       <section id="panelAdventureWin" class="panel panel--adventure-result" hidden>
         <div id="adventureWinTheme" class="adventure-result-theme" hidden aria-hidden="true"></div>
+        <div id="adventureWinTreasureCelebrate" class="adventure-win-treasure-celebrate" hidden aria-hidden="true">
+          <span class="adventure-win-treasure-celebrate__burst" aria-hidden="true"></span>
+          <span class="adventure-win-treasure-celebrate__crown" aria-hidden="true">👑</span>
+          <p class="adventure-win-treasure-celebrate__title">Treasure Cove is yours!</p>
+          <p class="adventure-win-treasure-celebrate__sub">Five secret bonus voyages now appear on the map.</p>
+        </div>
         <h2 class="panel__headline">Voyage complete!</h2>
         <p id="adventureWinLevel" class="panel__lede">Level cleared!</p>
         <p id="adventureWinScore" class="panel__scoreline">You scored enough fish.</p>
