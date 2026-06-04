@@ -3983,7 +3983,11 @@ function syncAdventureLaunchVisibility() {
   const onHome = isHomeScreenActive();
   appRoot.classList.toggle("app--home-screen", onHome);
   if (btnAdventureMode) btnAdventureMode.hidden = !onHome;
-  if (adventureUnlockHint) adventureUnlockHint.hidden = !onHome;
+  if (adventureUnlockHint) {
+    const showChestHint =
+      onHome && (!isAdventureUnlocked() || isAdventureHomeCelebrationActive());
+    adventureUnlockHint.hidden = !showChestHint;
+  }
 }
 
 function updateAdventureLaunchUI() {
@@ -4001,12 +4005,10 @@ function updateAdventureLaunchUI() {
     btnAdventureMode.classList.toggle("adventure-launch--locked", !unlocked);
     btnAdventureMode.setAttribute("aria-disabled", unlocked ? "false" : "true");
   }
-  if (adventureUnlockHint) {
+  if (adventureUnlockHint && (!unlocked || celebrating)) {
     adventureUnlockHint.textContent = celebrating
       ? "★ Adventure Mode unlocked — tap the glowing button! ★"
-      : unlocked
-        ? "Treasure map unlocked — 15 voyages to Treasure Cove, then 5 bonus!"
-        : `Treasure chests: ${total} / ${TREASURE_CHESTS_TO_UNLOCK_ADVENTURE}`;
+      : `Treasure chests: ${total} / ${TREASURE_CHESTS_TO_UNLOCK_ADVENTURE}`;
   }
   refreshTreasureChestDisplay();
   syncAdventureLaunchVisibility();
@@ -4844,6 +4846,10 @@ function refreshCoinDisplays() {
 }
 
 function refreshTreasureChestDisplay() {
+  const unlocked = isAdventureUnlocked();
+  const chestRow = treasureChestDisplayStart?.closest(".start-toolbar__chests");
+  if (chestRow) chestRow.hidden = unlocked;
+  if (unlocked) return;
   const total = gameMeta.totalTreasureChests || 0;
   const label = `${total} / ${TREASURE_CHESTS_TO_UNLOCK_ADVENTURE}`;
   if (treasureChestDisplayStart) treasureChestDisplayStart.textContent = label;
