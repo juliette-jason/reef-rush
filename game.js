@@ -4019,8 +4019,14 @@ function adventureMapCoords(index) {
   return { x: (layout.x / 100) * 400, y: (layout.y / 100) * 1200 };
 }
 
+function adventureMapVisibleLevelCount() {
+  return isAdventureBonusUnlocked() ? ADVENTURE_LEVEL_COUNT : ADVENTURE_MAIN_LEVEL_COUNT;
+}
+
 function buildAdventureTrailPath() {
-  const pts = ADVENTURE_MAP_NODE_LAYOUT.slice(0, ADVENTURE_LEVEL_COUNT).map((_, i) => adventureMapCoords(i));
+  const pts = ADVENTURE_MAP_NODE_LAYOUT.slice(0, adventureMapVisibleLevelCount()).map((_, i) =>
+    adventureMapCoords(i)
+  );
   if (!pts.length) return "";
   let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
   for (let i = 1; i < pts.length; i++) {
@@ -4045,6 +4051,7 @@ function scrollAdventureMapToProgress(instant = true) {
 }
 
 let adventureMapUiProgress = -1;
+let adventureMapUiBonusRevealed = null;
 
 function syncAdventureMapNodeStates() {
   if (!adventureLevelList) return;
@@ -4067,15 +4074,19 @@ function syncAdventureMapNodeStates() {
 function buildAdventureLevelUI(force = false) {
   if (!adventureLevelList) return;
   const highest = gameMeta.adventureHighestLevel || 0;
+  const bonusRevealed = isAdventureBonusUnlocked();
+  const visibleCount = adventureMapVisibleLevelCount();
   if (
     !force &&
     adventureMapUiProgress === highest &&
-    adventureLevelList.children.length === ADVENTURE_LEVEL_COUNT
+    adventureMapUiBonusRevealed === bonusRevealed &&
+    adventureLevelList.children.length === visibleCount
   ) {
     syncAdventureMapNodeStates();
     return;
   }
   adventureMapUiProgress = highest;
+  adventureMapUiBonusRevealed = bonusRevealed;
   adventureLevelList.innerHTML = "";
   const nextPlayable = Math.min(ADVENTURE_LEVEL_COUNT, highest + 1);
 
@@ -4085,6 +4096,7 @@ function buildAdventureLevelUI(force = false) {
 
   const frag = document.createDocumentFragment();
   for (let i = 0; i < ADVENTURE_LEVELS.length; i++) {
+    if (i >= ADVENTURE_MAIN_LEVEL_COUNT && !bonusRevealed) continue;
     const lvl = ADVENTURE_LEVELS[i];
     const layout = ADVENTURE_MAP_NODE_LAYOUT[i] || { x: 50, y: 50 };
     const playable = isAdventureLevelPlayable(lvl.level);
@@ -4118,7 +4130,6 @@ function buildAdventureLevelUI(force = false) {
         ${sceneMarkup}
         <span class="adventure-map-node__num">${lvl.level}</span>
         ${isTreasureCoveFinale ? '<span class="adventure-map-node__x" aria-hidden="true"></span>' : ""}
-        ${isBonus && !playable ? '<span class="adventure-map-node__bonus-lock" aria-hidden="true">?</span>' : ""}
         ${isCurrent ? '<span class="adventure-map-node__boat" aria-hidden="true"></span>' : ""}
         ${cleared ? '<span class="adventure-map-node__star" aria-hidden="true"></span>' : ""}
         ${!playable ? '<span class="adventure-map-node__lock" aria-hidden="true"></span>' : ""}
@@ -4129,6 +4140,8 @@ function buildAdventureLevelUI(force = false) {
     frag.appendChild(b);
   }
   adventureLevelList.appendChild(frag);
+  const mapBoard = adventureMapScroll?.querySelector(".adventure-map-board");
+  if (mapBoard) mapBoard.classList.toggle("adventure-map-board--bonus-revealed", bonusRevealed);
   if (adventureMapBanner) {
     adventureMapBanner.hidden = !isAdventureUnlocked();
     const bonusUnlocked = isAdventureBonusUnlocked();

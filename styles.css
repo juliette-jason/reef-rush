@@ -2369,9 +2369,14 @@ body {
 .adventure-map-board {
   position: relative;
   width: 100%;
-  min-height: 340vh;
+  min-height: 300vh;
   padding-bottom: max(100px, calc(env(safe-area-inset-bottom, 0px) + 80px));
   background: #efe6d4;
+}
+
+.adventure-map-board--bonus-revealed,
+.adventure-map-board--bonus-revealed .adventure-map-art {
+  min-height: 340vh;
 }
 
 .adventure-map-board::before {
@@ -2388,7 +2393,7 @@ body {
 .adventure-map-art {
   display: block;
   width: 100%;
-  min-height: 340vh;
+  min-height: 300vh;
   height: auto;
   filter: sepia(0.05) contrast(1.03) brightness(1.03);
   contain: layout paint;
