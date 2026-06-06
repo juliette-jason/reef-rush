@@ -5827,7 +5827,21 @@ function hideAllPanels() {
   if (panelAdventureFail) panelAdventureFail.hidden = true;
   if (panelAdventureWin) panelAdventureWin.hidden = true;
   if (panelDuelOver) panelDuelOver.hidden = true;
+  appRoot?.classList.remove("app--events-mode");
   stopDailyEventCountdown();
+}
+
+function initEventsWavesImages() {
+  for (const img of document.querySelectorAll(".events-waves__slice[data-fallback]")) {
+    img.addEventListener(
+      "error",
+      () => {
+        const fb = img.dataset.fallback;
+        if (fb && !img.src.endsWith(fb)) img.src = fb;
+      },
+      { once: true },
+    );
+  }
 }
 
 function isAdventureHomeCelebrationActive() {
@@ -7233,6 +7247,7 @@ function openEvents() {
   panelStart.hidden = true;
   panelEvents.hidden = false;
   if (panelDuelOver) panelDuelOver.hidden = true;
+  appRoot?.classList.add("app--events-mode");
   refreshDuelTicketsForToday();
   syncHomeLaunchButtons();
   void processDailyPrizePayouts().then(() => refreshEventsPanel());
@@ -7243,6 +7258,7 @@ function closeEvents() {
   if (!panelEvents || !panelStart) return;
   panelEvents.hidden = true;
   panelStart.hidden = false;
+  appRoot?.classList.remove("app--events-mode");
   stopDailyEventCountdown();
   syncHomeLaunchButtons();
 }
@@ -11418,6 +11434,7 @@ function deferStartupWork() {
 }
 
 updateMusicButton();
+initEventsWavesImages();
 resize();
 initBubbles();
 showIntroIfNeeded();
