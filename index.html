@@ -580,7 +580,7 @@
             <p id="dailyEventReset" class="event-card__reset">Resets tonight</p>
           </header>
           <p class="event-card__desc">
-            Climb today's leaderboard with your best reef run. Top scorers win coins when the day ends.
+            Fisher of the Day is separate from the all-time top 10. Post any reef run — only your best score today counts toward the daily board.
           </p>
           <ul class="event-card__prizes" aria-label="Daily coin prizes">
             <li><span class="event-card__medal event-card__medal--1">1st</span> 1,500 coins</li>
@@ -637,8 +637,28 @@
         <h2 class="panel__headline">Round complete</h2>
         <p class="panel__scoreline">Final score: <strong id="finalScore">0</strong></p>
         <p id="coinsEarnedLine" class="panel__coinline" hidden></p>
+        <div id="dailyInitialsPanel" class="initials-panel initials-panel--daily" hidden>
+          <p class="initials-panel__msg">Fisher of the Day — post your score to today's board. You don't need an all-time top 10 score; only today's best counts.</p>
+          <div class="initials-panel__row">
+            <label class="sr-only" for="dailyInitialsInput">Initials</label>
+            <input
+              id="dailyInitialsInput"
+              class="initials-input"
+              type="text"
+              maxlength="3"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false"
+              placeholder="ABC"
+              aria-describedby="dailyInitialsHint"
+            />
+            <span id="dailyInitialsHint" class="initials-hint">Letters only</span>
+            <button type="button" id="btnSaveDailyScore" class="btn btn--secondary">Post to today</button>
+          </div>
+          <p id="dailyScoreStatus" class="initials-panel__status" hidden></p>
+        </div>
         <div id="initialsPanel" class="initials-panel" hidden>
-          <p class="initials-panel__msg">That score makes the top 10. Save it with your initials (up to 3 letters).</p>
+          <p class="initials-panel__msg">That score makes the all-time top 10. Save it with your initials (up to 3 letters).</p>
           <div class="initials-panel__row">
             <label class="sr-only" for="initialsInput">Initials</label>
             <input
@@ -653,13 +673,17 @@
               aria-describedby="initialsHint"
             />
             <span id="initialsHint" class="initials-hint">Letters only</span>
-            <button type="button" id="btnSaveScore" class="btn btn--secondary">Save score</button>
+            <button type="button" id="btnSaveScore" class="btn btn--secondary">Save all-time</button>
           </div>
         </div>
         <ul id="catchSummary" class="summary"></ul>
+        <div class="leaderboard-block leaderboard-block--compact leaderboard-block--daily">
+          <h2 class="leaderboard-block__title">Fisher of the Day</h2>
+          <ol id="dailyLeaderboardOver" class="leaderboard leaderboard--daily" aria-label="Today's best scores"></ol>
+        </div>
         <div class="leaderboard-block leaderboard-block--compact">
-          <h2 class="leaderboard-block__title">Global leaderboard</h2>
-          <ol id="leaderboardOver" class="leaderboard" aria-label="Best scores"></ol>
+          <h2 class="leaderboard-block__title">All-time top 10</h2>
+          <ol id="leaderboardOver" class="leaderboard" aria-label="All-time best scores"></ol>
         </div>
         <button type="button" id="btnAgain" class="btn btn--primary">Play again</button>
       </section>

@@ -4563,7 +4563,7 @@ async function fetchDailyLeaderboardForDay(dayKey = getDailyDayKey()) {
 async function fetchTodayDailyLeaderboard() {
   const loadId = ++dailyLeaderboardLoadId;
   dailyLeaderboardLoading = true;
-  renderDailyLeaderboardOl(dailyLeaderboardEvents);
+  renderAllDailyLeaderboards();
   try {
     const rows = await fetchDailyLeaderboardForDay(getDailyDayKey());
     if (loadId !== dailyLeaderboardLoadId) return rows;
@@ -4572,7 +4572,7 @@ async function fetchTodayDailyLeaderboard() {
   } finally {
     if (loadId === dailyLeaderboardLoadId) {
       dailyLeaderboardLoading = false;
-      renderDailyLeaderboardOl(dailyLeaderboardEvents, dailyLeaderboardRows);
+      renderAllDailyLeaderboards(dailyLeaderboardRows);
     }
   }
 }
@@ -4594,7 +4594,8 @@ async function submitDailyScore(initials, score, reefId) {
   const merged = normalizeDailyLeaderboardRows([...localRows, entry]);
   dailyLeaderboardRows = merged;
   saveLocalDailyLeaderboard(dayKey, merged);
-  renderDailyLeaderboardOl(dailyLeaderboardEvents, merged);
+  renderAllDailyLeaderboards(merged);
+  updateDailyEventPlayerHint(merged);
 
   try {
     const res = await fetch(DAILY_LEADERBOARD_TABLE_URL, {
@@ -4617,6 +4618,11 @@ async function submitDailyScore(initials, score, reefId) {
     console.warn(err);
     return false;
   }
+}
+
+function renderAllDailyLeaderboards(rows = dailyLeaderboardRows) {
+  renderDailyLeaderboardOl(dailyLeaderboardEvents, rows);
+  renderDailyLeaderboardOl(dailyLeaderboardOver, rows);
 }
 
 function renderDailyLeaderboardOl(el, rows = dailyLeaderboardRows) {
@@ -4658,7 +4664,7 @@ function updateDailyEventPlayerHint(rows = dailyLeaderboardRows) {
   const ini = gameMeta.playerInitials;
   if (!ini) {
     dailyEventPlayerHint.textContent =
-      "Save a top-10 global score with your initials to join today's Fisher of the Day board.";
+      "Play a reef run and post your score with initials — today's best scores only, separate from the all-time top 10.";
     return;
   }
   const rank = rows.findIndex((r) => r.initials === ini);
@@ -4673,6 +4679,48 @@ function updateDailyEventPlayerHint(rows = dailyLeaderboardRows) {
   } else {
     dailyEventPlayerHint.textContent = `${ini}, play a reef run to post today's best score on this board.`;
   }
+}
+
+function parsePlayerInitials(value) {
+  const raw = String(value || "")
+    .toUpperCase()
+    .replace(/[^A-Z]/g, "")
+    .slice(0, 3);
+  return raw.length >= 1 ? raw : "AAA";
+}
+
+function getPlayerDailyEntryToday(initials, rows = dailyLeaderboardRows) {
+  const ini = parsePlayerInitials(initials);
+  if (ini === "AAA" && !String(initials || "").replace(/[^A-Za-z]/g, "")) return null;
+  return rows.find((r) => r.initials === ini) || null;
+}
+
+function updateDailyGameOverStatus(score, submitted = null, rows = dailyLeaderboardRows) {
+  if (!dailyScoreStatus) return;
+  const ini = gameMeta.playerInitials;
+  if (!ini || score <= 0) {
+    dailyScoreStatus.hidden = true;
+    dailyScoreStatus.textContent = "";
+    return;
+  }
+  const existing = getPlayerDailyEntryToday(ini, rows);
+  if (submitted === true) {
+    dailyScoreStatus.hidden = false;
+    dailyScoreStatus.textContent = `${ini}, ${score} posted to today's board!`;
+    return;
+  }
+  if (submitted === false && existing) {
+    dailyScoreStatus.hidden = false;
+    dailyScoreStatus.textContent = `Your best today is ${existing.score}. Beat it to climb the daily board.`;
+    return;
+  }
+  if (existing && existing.score >= score) {
+    dailyScoreStatus.hidden = false;
+    dailyScoreStatus.textContent = `Your best today is ${existing.score}. Beat it to climb the daily board.`;
+    return;
+  }
+  dailyScoreStatus.hidden = true;
+  dailyScoreStatus.textContent = "";
 }
 
 function updateDailyEventResetLine() {
@@ -4829,6 +4877,11 @@ const leaderboardOver = document.getElementById("leaderboardOver");
 const initialsPanel = document.getElementById("initialsPanel");
 const initialsInput = document.getElementById("initialsInput");
 const btnSaveScore = document.getElementById("btnSaveScore");
+const dailyInitialsPanel = document.getElementById("dailyInitialsPanel");
+const dailyInitialsInput = document.getElementById("dailyInitialsInput");
+const btnSaveDailyScore = document.getElementById("btnSaveDailyScore");
+const dailyScoreStatus = document.getElementById("dailyScoreStatus");
+const dailyLeaderboardOver = document.getElementById("dailyLeaderboardOver");
 const toastEl = document.getElementById("toast");
 const treasureMapReveal = document.getElementById("treasureMapReveal");
 const btnTreasureMapRevealDone = document.getElementById("btnTreasureMapRevealDone");
@@ -6767,10 +6820,21 @@ function endRound() {
   const board = loadLeaderboard();
   const canSave = qualifiesForLeaderboard(score, board);
   if (initialsPanel) initialsPanel.hidden = !canSave;
-  if (initialsInput) initialsInput.value = "";
+  if (initialsInput) {
+    initialsInput.value = canSave && gameMeta.playerInitials ? gameMeta.playerInitials : "";
+  }
+  if (dailyInitialsPanel) dailyInitialsPanel.hidden = score <= 0;
+  if (dailyInitialsInput) {
+    dailyInitialsInput.value = gameMeta.playerInitials || "";
+  }
+  updateDailyGameOverStatus(score);
   if (canSave && initialsInput) {
     requestAnimationFrame(() => {
       initialsInput.focus();
+    });
+  } else if (score > 0 && dailyInitialsInput) {
+    requestAnimationFrame(() => {
+      dailyInitialsInput.focus();
     });
   }
   catchSummary.innerHTML = "";
@@ -6786,9 +6850,13 @@ function endRound() {
     catchSummary.appendChild(li);
   }
   refreshLeaderboardViews();
-  if (gameMeta.playerInitials && score > 0) {
-    void submitDailyScore(gameMeta.playerInitials, score, selectedReefId);
-  }
+  void fetchTodayDailyLeaderboard().then(() => {
+    if (gameMeta.playerInitials && score > 0) {
+      return submitDailyScore(gameMeta.playerInitials, score, selectedReefId).then((submitted) => {
+        updateDailyGameOverStatus(score, submitted);
+      });
+    }
+  });
 }
 
 function hookTipY() {
@@ -10278,9 +10346,34 @@ async function saveCurrentScoreToBoard() {
   if (initialsPanel) initialsPanel.hidden = true;
   gameMeta.playerInitials = ini;
   saveMeta();
-  void submitDailyScore(ini, lastRoundScore, lastRoundReefId);
   refreshLeaderboardViews(false);
-  showToast(savedGlobally ? "Score saved to global leaderboard" : "Score saved on this device", 1700);
+  showToast(savedGlobally ? "Score saved to all-time top 10" : "Score saved on this device", 1700);
+}
+
+async function saveDailyScoreFromGameOver() {
+  if (lastRoundScore <= 0) return;
+  const ini = parsePlayerInitials(dailyInitialsInput?.value);
+  gameMeta.playerInitials = ini;
+  saveMeta();
+  if (dailyInitialsInput) dailyInitialsInput.value = ini;
+  if (btnSaveDailyScore) btnSaveDailyScore.disabled = true;
+  let submitted = false;
+  try {
+    submitted = await submitDailyScore(ini, lastRoundScore, lastRoundReefId);
+  } finally {
+    if (btnSaveDailyScore) btnSaveDailyScore.disabled = false;
+  }
+  updateDailyGameOverStatus(lastRoundScore, submitted);
+  if (submitted) {
+    showToast("Posted to today's Fisher of the Day board", 1700);
+  } else {
+    const existing = getPlayerDailyEntryToday(ini);
+    if (existing) {
+      showToast(`Your best today is ${existing.score} — beat it to climb the board`, 2200);
+    } else {
+      showToast("Could not post score — try again", 1700);
+    }
+  }
 }
 
 btnSaveScore?.addEventListener("click", saveCurrentScoreToBoard);
@@ -10291,8 +10384,23 @@ initialsInput?.addEventListener("keydown", (e) => {
   }
 });
 
+btnSaveDailyScore?.addEventListener("click", () => {
+  void saveDailyScoreFromGameOver();
+});
+dailyInitialsInput?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    void saveDailyScoreFromGameOver();
+  }
+});
+
 btnAgain.addEventListener("click", () => {
   if (initialsPanel) initialsPanel.hidden = true;
+  if (dailyInitialsPanel) dailyInitialsPanel.hidden = true;
+  if (dailyScoreStatus) {
+    dailyScoreStatus.hidden = true;
+    dailyScoreStatus.textContent = "";
+  }
   refreshLeaderboardViews();
   normalizeSelectedBaitId();
   buildBaitUI();
