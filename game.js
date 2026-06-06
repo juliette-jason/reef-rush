@@ -5587,6 +5587,7 @@ const btnOpenShop = document.getElementById("btnOpenShop");
 const btnEvents = document.getElementById("btnEvents");
 const homeLaunchStack = document.getElementById("homeLaunchStack");
 const panelEvents = document.getElementById("panelEvents");
+const eventsOcean = document.getElementById("eventsOcean");
 const btnCloseEvents = document.getElementById("btnCloseEvents");
 const dailyLeaderboardEvents = document.getElementById("dailyLeaderboardEvents");
 const dailyLeaderboardTitle = document.getElementById("dailyLeaderboardTitle");
@@ -5822,6 +5823,7 @@ function hideAllPanels() {
   if (panelOver) panelOver.hidden = true;
   if (panelShop) panelShop.hidden = true;
   if (panelEvents) panelEvents.hidden = true;
+  if (eventsOcean) eventsOcean.hidden = true;
   if (panelIntro) panelIntro.hidden = true;
   if (panelAdventure) panelAdventure.hidden = true;
   if (panelAdventureFail) panelAdventureFail.hidden = true;
@@ -7233,6 +7235,7 @@ function openEvents() {
   if (!panelEvents || !panelStart) return;
   panelStart.hidden = true;
   panelEvents.hidden = false;
+  if (eventsOcean) eventsOcean.hidden = false;
   if (panelDuelOver) panelDuelOver.hidden = true;
   appRoot?.classList.add("app--events-mode");
   refreshDuelTicketsForToday();
@@ -7244,6 +7247,7 @@ function openEvents() {
 function closeEvents() {
   if (!panelEvents || !panelStart) return;
   panelEvents.hidden = true;
+  if (eventsOcean) eventsOcean.hidden = true;
   panelStart.hidden = false;
   appRoot?.classList.remove("app--events-mode");
   stopDailyEventCountdown();
