@@ -320,34 +320,68 @@ const TREASURE_CINEMATIC_FLY_MS = 2400;
 const TREASURE_CINEMATIC_OPEN_MS = 1600;
 const TREASURE_CINEMATIC_HOLD_MS = 1400;
 
+/** Logical map height for trail SVG coords (matches stretched parchment art). */
+const ADVENTURE_MAP_HEIGHT = 2200;
+
+/** Section bands on the chart — top/height are % of the map board. */
+const ADVENTURE_MAP_SECTIONS = {
+  pirates: {
+    id: "pirates",
+    label: ADVENTURE_SECTION_PIRATES_PATH,
+    startIndex: 0,
+    endIndex: ADVENTURE_MAIN_LEVEL_COUNT - 1,
+    topPct: 50,
+    heightPct: 48,
+  },
+  gold: {
+    id: "gold",
+    label: ADVENTURE_SECTION_GOLD_QUEST,
+    startIndex: ADVENTURE_MAIN_LEVEL_COUNT,
+    endIndex: ADVENTURE_ICE_START_INDEX - 1,
+    topPct: 34,
+    heightPct: 24,
+  },
+  ice: {
+    id: "ice",
+    label: ADVENTURE_SECTION_FROZEN_SEA,
+    startIndex: ADVENTURE_ICE_START_INDEX,
+    endIndex: ADVENTURE_LEVEL_COUNT - 1,
+    topPct: 6,
+    heightPct: 32,
+  },
+};
+
+function buildAdventureMapNodeLayout() {
+  const layout = [];
+  const piratesX = [50, 26, 74, 28, 72, 30, 70, 32, 68, 34, 66, 36, 64, 38, 50];
+  for (let i = 0; i < ADVENTURE_MAIN_LEVEL_COUNT; i++) {
+    layout.push({
+      x: piratesX[i],
+      y: 93.5 - (i / Math.max(1, ADVENTURE_MAIN_LEVEL_COUNT - 1)) * 35,
+      section: "pirates",
+    });
+  }
+  const goldX = [62, 38, 66, 34, 50];
+  for (let i = 0; i < ADVENTURE_BONUS_LEVEL_COUNT; i++) {
+    layout.push({
+      x: goldX[i],
+      y: 55 - i * 3,
+      section: "gold",
+    });
+  }
+  const iceX = [36, 64, 38, 62, 50];
+  for (let i = 0; i < ADVENTURE_ICE_LEVEL_COUNT; i++) {
+    layout.push({
+      x: iceX[i],
+      y: 40 - i * 6,
+      section: "ice",
+    });
+  }
+  return layout;
+}
+
 /** Candy Crush–style zigzag positions on the treasure chart (% of map board). */
-const ADVENTURE_MAP_NODE_LAYOUT = [
-  { x: 50, y: 94 },
-  { x: 26, y: 88 },
-  { x: 74, y: 82 },
-  { x: 28, y: 76 },
-  { x: 72, y: 70 },
-  { x: 30, y: 64 },
-  { x: 70, y: 58 },
-  { x: 32, y: 52 },
-  { x: 68, y: 46 },
-  { x: 34, y: 40 },
-  { x: 66, y: 34 },
-  { x: 36, y: 28 },
-  { x: 64, y: 22 },
-  { x: 40, y: 16 },
-  { x: 50, y: 9 },
-  { x: 64, y: 7 },
-  { x: 36, y: 5.5 },
-  { x: 68, y: 4 },
-  { x: 32, y: 2.5 },
-  { x: 50, y: 1 },
-  { x: 66, y: -0.8 },
-  { x: 34, y: -2.2 },
-  { x: 68, y: -3.6 },
-  { x: 30, y: -5 },
-  { x: 50, y: -6.5 },
-];
+const ADVENTURE_MAP_NODE_LAYOUT = buildAdventureMapNodeLayout();
 
 const ADVENTURE_MAP_PLACES = [
   "Skull Shoals",
@@ -4505,6 +4539,7 @@ const adventureUnlockHint = document.getElementById("adventureUnlockHint");
 const panelAdventure = document.getElementById("panelAdventure");
 const adventureLevelList = document.getElementById("adventureLevelList");
 const adventureMapScroll = document.getElementById("adventureMapScroll");
+const adventureMapSections = document.getElementById("adventureMapSections");
 const adventureMapTrail = document.getElementById("adventureMapTrail");
 const adventureMapBanner = document.getElementById("adventureMapBanner");
 const btnAdventureBack = document.getElementById("btnAdventureBack");
@@ -4892,7 +4927,102 @@ function updateAdventureLaunchUI() {
 
 function adventureMapCoords(index) {
   const layout = ADVENTURE_MAP_NODE_LAYOUT[index] || { x: 50, y: 50 };
-  return { x: (layout.x / 100) * 400, y: (layout.y / 100) * 1200 };
+  return { x: (layout.x / 100) * 400, y: (layout.y / 100) * ADVENTURE_MAP_HEIGHT };
+}
+
+function adventureMapExtentVh() {
+  if (isAdventureIceUnlocked()) return 560;
+  if (isAdventureBonusUnlocked()) return 420;
+  return 300;
+}
+
+function applyAdventureMapExtent(animate = false) {
+  const board = adventureMapScroll?.querySelector(".adventure-map-board");
+  if (!board) return;
+  const vh = adventureMapExtentVh();
+  board.style.setProperty("--adv-map-height-vh", String(vh));
+  board.classList.toggle("adventure-map-board--extent-animate", animate);
+  board.classList.toggle("adventure-map-board--bonus-revealed", isAdventureBonusUnlocked());
+  board.classList.toggle("adventure-map-board--ice-revealed", isAdventureIceUnlocked());
+}
+
+function syncAdventureMapSections() {
+  if (!adventureMapSections) return;
+  const bonusRevealed = isAdventureBonusUnlocked();
+  const iceRevealed = isAdventureIceUnlocked();
+  for (const section of adventureMapSections.querySelectorAll(".adventure-map-section")) {
+    const id = section.dataset.section;
+    const meta = ADVENTURE_MAP_SECTIONS[id];
+    if (!meta) continue;
+    section.style.top = `${meta.topPct}%`;
+    section.style.height = `${meta.heightPct}%`;
+    section.querySelector(".adventure-map-section__label").textContent = meta.label;
+    const visible =
+      id === "pirates" ||
+      (id === "gold" && bonusRevealed) ||
+      (id === "ice" && iceRevealed);
+    section.hidden = !visible;
+    section.classList.toggle("adventure-map-section--visible", visible);
+    section.classList.toggle("adventure-map-section--locked", !visible);
+  }
+}
+
+function scrollAdventureMapToSection(sectionId, instant = true) {
+  if (!adventureMapScroll) return;
+  const target =
+    adventureMapSections?.querySelector(`.adventure-map-section[data-section="${sectionId}"]`) ||
+    adventureLevelList?.querySelector(
+      `.adventure-map-node[data-section="${sectionId}"]`,
+    );
+  if (!target) return;
+  const run = () => {
+    target.scrollIntoView({ block: "center", behavior: instant ? "instant" : "smooth" });
+  };
+  if (instant) run();
+  else window.requestAnimationFrame(run);
+}
+
+function runAdventureMapSectionReveal(kind) {
+  const board = adventureMapScroll?.querySelector(".adventure-map-board");
+  if (!board || !adventureLevelList) return;
+  const prefersReducedMotion =
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (prefersReducedMotion) {
+    applyAdventureMapExtent(false);
+    syncAdventureMapSections();
+    scrollAdventureMapToSection(kind, true);
+    if (kind === "gold") clearBonusVoyagesMapCelebration();
+    else clearIceVoyagesMapCelebration();
+    return;
+  }
+  const startIdx = kind === "gold" ? ADVENTURE_MAIN_LEVEL_COUNT : ADVENTURE_ICE_START_INDEX;
+  const endIdx = kind === "gold" ? ADVENTURE_ICE_START_INDEX : ADVENTURE_LEVEL_COUNT;
+  applyAdventureMapExtent(true);
+  syncAdventureMapSections();
+  board.classList.add(`adventure-map-board--revealing-${kind}`);
+  adventureMapSections
+    ?.querySelector(`.adventure-map-section[data-section="${kind}"]`)
+    ?.classList.add("adventure-map-section--revealing");
+  const nodes = adventureLevelList.querySelectorAll(".adventure-map-node");
+  nodes.forEach((node, i) => {
+    if (i < startIdx || i >= endIdx) return;
+    node.classList.add("adventure-map-node--section-reveal");
+    node.style.animationDelay = `${(i - startIdx) * 130}ms`;
+  });
+  window.setTimeout(() => scrollAdventureMapToSection(kind, false), 500);
+  window.setTimeout(() => {
+    board.classList.remove(`adventure-map-board--revealing-${kind}`);
+    adventureMapSections
+      ?.querySelector(`.adventure-map-section[data-section="${kind}"]`)
+      ?.classList.remove("adventure-map-section--revealing");
+    nodes.forEach((node) => {
+      node.classList.remove("adventure-map-node--section-reveal");
+      node.style.animationDelay = "";
+    });
+    board.classList.remove("adventure-map-board--extent-animate");
+    if (kind === "gold") clearBonusVoyagesMapCelebration();
+    else clearIceVoyagesMapCelebration();
+  }, 3600);
 }
 
 function adventureMapVisibleLevelCount() {
@@ -5012,6 +5142,7 @@ function buildAdventureLevelUI(force = false) {
         : ADVENTURE_SECTION_PIRATES_PATH;
     b.title = `${lvl.name} — ${sectionName} · pass ${lvl.passScore}`;
     b.dataset.levelIndex = String(i);
+    b.dataset.section = isIce ? "ice" : isBonus ? "gold" : "pirates";
     const sceneMarkup =
       PERF_CHROMEBOOK && !playable
         ? ADVENTURE_MAP_SCENE_LITE
@@ -5031,11 +5162,8 @@ function buildAdventureLevelUI(force = false) {
     frag.appendChild(b);
   }
   adventureLevelList.appendChild(frag);
-  const mapBoard = adventureMapScroll?.querySelector(".adventure-map-board");
-  if (mapBoard) {
-    mapBoard.classList.toggle("adventure-map-board--bonus-revealed", bonusRevealed);
-    mapBoard.classList.toggle("adventure-map-board--ice-revealed", iceRevealed);
-  }
+  applyAdventureMapExtent(false);
+  syncAdventureMapSections();
   if (adventureMapBanner) {
     adventureMapBanner.hidden = !isAdventureUnlocked();
     if (iceRevealed) {
@@ -5050,7 +5178,9 @@ function buildAdventureLevelUI(force = false) {
     const showBonusBanner =
       (isAdventureBonusUnlocked() || gameMeta.pendingBonusVoyagesCelebration) && isAdventureUnlocked();
     adventureMapBonusBanner.hidden = !showBonusBanner;
-    adventureMapBonusBanner.textContent = `${ADVENTURE_SECTION_GOLD_QUEST} — conquer Treasure Cove to unlock`;
+    adventureMapBonusBanner.textContent = bonusRevealed
+      ? `${ADVENTURE_SECTION_GOLD_QUEST} — riches beyond Treasure Cove`
+      : `${ADVENTURE_SECTION_GOLD_QUEST} — conquer Treasure Cove to unlock`;
     adventureMapBonusBanner.classList.toggle(
       "adventure-map-bonus-banner--reveal",
       Boolean(gameMeta.pendingBonusVoyagesCelebration)
@@ -5060,7 +5190,9 @@ function buildAdventureLevelUI(force = false) {
     const showIceBanner =
       (isAdventureIceUnlocked() || gameMeta.pendingIceVoyagesCelebration) && isAdventureUnlocked();
     adventureMapIceBanner.hidden = !showIceBanner;
-    adventureMapIceBanner.textContent = `${ADVENTURE_SECTION_FROZEN_SEA} — clear Legend's Gate to unlock`;
+    adventureMapIceBanner.textContent = iceRevealed
+      ? `${ADVENTURE_SECTION_FROZEN_SEA} — icy voyages at the top of the chart`
+      : `${ADVENTURE_SECTION_FROZEN_SEA} — clear Legend's Gate to unlock`;
     adventureMapIceBanner.classList.toggle(
       "adventure-map-ice-banner--reveal",
       Boolean(gameMeta.pendingIceVoyagesCelebration)
@@ -5102,12 +5234,11 @@ function openAdventureHub() {
   syncAdventureLaunchVisibility();
   scrollAdventureMapToProgress(true);
   if (gameMeta.pendingBonusVoyagesCelebration) {
-    showToast(`${ADVENTURE_SECTION_GOLD_QUEST} unlocked! Chart the secret path beyond Treasure Cove.`, 4200);
-    window.setTimeout(clearBonusVoyagesMapCelebration, 4500);
-  }
-  if (gameMeta.pendingIceVoyagesCelebration) {
-    showToast(`${ADVENTURE_SECTION_FROZEN_SEA} unlocked! Five frozen voyages await.`, 4200);
-    window.setTimeout(clearIceVoyagesMapCelebration, 4500);
+    showToast(`${ADVENTURE_SECTION_GOLD_QUEST} unlocked! New lands appear on the chart.`, 4200);
+    window.requestAnimationFrame(() => runAdventureMapSectionReveal("gold"));
+  } else if (gameMeta.pendingIceVoyagesCelebration) {
+    showToast(`${ADVENTURE_SECTION_FROZEN_SEA} unlocked! The frozen north extends the chart.`, 4200);
+    window.requestAnimationFrame(() => runAdventureMapSectionReveal("ice"));
   }
   if (musicEnabled) {
     window.requestAnimationFrame(() => startAdventureMusic());

@@ -2397,22 +2397,22 @@ body {
 .adventure-map-board {
   position: relative;
   width: 100%;
-  min-height: 300vh;
+  min-height: calc(var(--adv-map-height-vh, 300) * 1vh);
   padding-bottom: max(100px, calc(env(safe-area-inset-bottom, 0px) + 80px));
   background: #efe6d4;
+  transition: min-height 1.1s cubic-bezier(0.34, 1.2, 0.64, 1);
 }
 
-.adventure-map-board--bonus-revealed,
-.adventure-map-board--bonus-revealed .adventure-map-art {
-  min-height: 340vh;
+.adventure-map-board--extent-animate {
+  transition: min-height 1.1s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+.adventure-map-board--bonus-revealed {
+  --adv-map-height-vh: 420;
 }
 
 .adventure-map-board--ice-revealed {
-  min-height: 400vh;
-}
-
-.adventure-map-board--ice-revealed .adventure-map-art {
-  min-height: 400vh;
+  --adv-map-height-vh: 560;
 }
 
 .adventure-map-board::before {
@@ -2429,10 +2429,200 @@ body {
 .adventure-map-art {
   display: block;
   width: 100%;
-  min-height: 300vh;
+  min-height: calc(var(--adv-map-height-vh, 300) * 1vh);
   height: auto;
   filter: sepia(0.05) contrast(1.03) brightness(1.03);
   contain: layout paint;
+  transition: min-height 1.1s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+.adventure-map-sections {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.adventure-map-section {
+  position: absolute;
+  left: 3%;
+  width: 94%;
+  border-radius: 18px;
+  overflow: hidden;
+  opacity: 0;
+  transform: scaleY(0.92);
+  transition:
+    opacity 0.7s ease,
+    transform 0.9s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+.adventure-map-section--visible {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+.adventure-map-section--locked {
+  display: none;
+}
+
+.adventure-map-section--pirates {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 85%, rgba(180, 150, 100, 0.18), transparent 70%),
+    linear-gradient(180deg, rgba(244, 232, 200, 0.08) 0%, rgba(220, 195, 150, 0.22) 55%, rgba(200, 170, 120, 0.28) 100%);
+  border: 2px solid rgba(92, 64, 51, 0.35);
+  box-shadow: inset 0 0 40px rgba(120, 90, 50, 0.08);
+}
+
+.adventure-map-section--gold {
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 60%, rgba(255, 210, 80, 0.35), transparent 65%),
+    radial-gradient(circle at 18% 72%, rgba(255, 180, 40, 0.2) 0%, transparent 35%),
+    radial-gradient(circle at 82% 38%, rgba(255, 200, 60, 0.18) 0%, transparent 32%),
+    linear-gradient(165deg, rgba(255, 235, 170, 0.55) 0%, rgba(255, 210, 100, 0.42) 45%, rgba(220, 170, 60, 0.38) 100%);
+  border: 2.5px solid rgba(168, 120, 16, 0.65);
+  box-shadow:
+    inset 0 0 50px rgba(255, 200, 60, 0.22),
+    0 0 24px rgba(255, 180, 40, 0.15);
+}
+
+.adventure-map-section--gold.adventure-map-section--revealing {
+  animation: adventureMapGoldSectionReveal 1.4s ease-out forwards;
+}
+
+.adventure-map-section--ice {
+  background:
+    radial-gradient(ellipse 75% 50% at 50% 40%, rgba(200, 235, 255, 0.4), transparent 68%),
+    linear-gradient(180deg, rgba(210, 240, 255, 0.5) 0%, rgba(160, 210, 240, 0.38) 50%, rgba(120, 180, 220, 0.32) 100%);
+  border: 2.5px solid rgba(88, 152, 184, 0.55);
+  box-shadow:
+    inset 0 0 45px rgba(180, 230, 255, 0.25),
+    0 0 20px rgba(140, 200, 240, 0.12);
+}
+
+.adventure-map-section--ice.adventure-map-section--revealing {
+  animation: adventureMapIceSectionReveal 1.4s ease-out forwards;
+}
+
+.adventure-map-section__label {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 16px;
+  border-radius: 999px;
+  font-family: "IM Fell English SC", Georgia, serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.adventure-map-section--pirates .adventure-map-section__label {
+  background: rgba(244, 232, 200, 0.92);
+  border: 2px solid #5c4033;
+  color: #3d2914;
+  box-shadow: 0 3px 12px rgba(60, 40, 20, 0.2);
+}
+
+.adventure-map-section--gold .adventure-map-section__label {
+  background: linear-gradient(135deg, rgba(255, 230, 130, 0.98), rgba(255, 190, 60, 0.95));
+  border: 2px solid #a87810;
+  color: #4a3010;
+  box-shadow: 0 4px 16px rgba(160, 110, 10, 0.35);
+  text-shadow: 0 1px 0 rgba(255, 255, 220, 0.5);
+}
+
+.adventure-map-section--ice .adventure-map-section__label {
+  background: linear-gradient(135deg, rgba(230, 248, 255, 0.98), rgba(180, 220, 245, 0.95));
+  border: 2px solid #5898b8;
+  color: #1a4058;
+  box-shadow: 0 4px 14px rgba(60, 120, 160, 0.25);
+}
+
+.adventure-map-section__decor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+.adventure-map-section__decor--coins {
+  background-image:
+    radial-gradient(circle at 12% 68%, rgba(255, 210, 60, 0.55) 0%, transparent 8%),
+    radial-gradient(circle at 28% 82%, rgba(255, 190, 40, 0.45) 0%, transparent 6%),
+    radial-gradient(circle at 72% 74%, rgba(255, 220, 80, 0.5) 0%, transparent 7%),
+    radial-gradient(circle at 88% 58%, rgba(255, 200, 50, 0.4) 0%, transparent 6%),
+    radial-gradient(circle at 45% 90%, rgba(255, 180, 30, 0.35) 0%, transparent 9%),
+    radial-gradient(circle at 55% 35%, rgba(200, 80, 120, 0.25) 0%, transparent 4%),
+    radial-gradient(circle at 35% 45%, rgba(80, 160, 200, 0.22) 0%, transparent 4%);
+}
+
+.adventure-map-section__decor--snow {
+  background-image:
+    radial-gradient(circle at 15% 25%, rgba(255, 255, 255, 0.7) 0%, transparent 5%),
+    radial-gradient(circle at 85% 35%, rgba(255, 255, 255, 0.6) 0%, transparent 4%),
+    radial-gradient(circle at 50% 60%, rgba(255, 255, 255, 0.5) 0%, transparent 6%),
+    radial-gradient(circle at 30% 75%, rgba(255, 255, 255, 0.55) 0%, transparent 4%),
+    radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.45) 0%, transparent 5%);
+}
+
+.adventure-map-section__decor--compass {
+  background:
+    radial-gradient(circle at 88% 78%, rgba(92, 64, 51, 0.12) 0%, transparent 18%);
+}
+
+.adventure-map-board--revealing-gold .adventure-map-trail {
+  stroke: #c87810;
+  filter: drop-shadow(0 0 4px rgba(255, 200, 60, 0.45));
+}
+
+.adventure-map-board--revealing-ice .adventure-map-trail {
+  stroke: #4898b8;
+  filter: drop-shadow(0 0 4px rgba(160, 220, 255, 0.4));
+}
+
+.adventure-map-node--section-reveal {
+  animation: adventureMapNodeSectionReveal 0.75s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+@keyframes adventureMapNodeSectionReveal {
+  0% {
+    opacity: 0;
+    transform: scale(0.25) translateY(24px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.08) translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes adventureMapGoldSectionReveal {
+  0% {
+    opacity: 0;
+    transform: scaleY(0.4) translateY(40px);
+    box-shadow: inset 0 0 0 rgba(255, 200, 60, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1) translateY(0);
+    box-shadow: inset 0 0 50px rgba(255, 200, 60, 0.22);
+  }
+}
+
+@keyframes adventureMapIceSectionReveal {
+  0% {
+    opacity: 0;
+    transform: scaleY(0.4) translateY(40px);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1) translateY(0);
+  }
 }
 
 .adventure-map-art .adv-map-oceans {
@@ -3068,6 +3258,21 @@ body {
   }
   50% {
     transform: translateX(-50%) translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adventure-map-board,
+  .adventure-map-art,
+  .adventure-map-section {
+    transition: none !important;
+  }
+
+  .adventure-map-node--section-reveal,
+  .adventure-map-section--revealing {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
 
