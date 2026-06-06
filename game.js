@@ -3342,23 +3342,44 @@ function getReef() {
 
 const LEADERBOARD_KEY = "reefRushLeaderboard_v2";
 const LEADERBOARD_MAX = 10;
+/** Pull extra rows so exact duplicates can be collapsed and we still fill the top 10. */
+const LEADERBOARD_FETCH_LIMIT = 80;
 const SUPABASE_REST_URL = "https://htnpfzjhicyzkqfgyhuu.supabase.co/rest/v1";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_SARvsULPYyIUImdhXMjQUQ_T6RtwvZM";
 const LEADERBOARD_TABLE_URL = `${SUPABASE_REST_URL}/leaderboard`;
 let leaderboardRows = [];
 let leaderboardLoading = false;
 let leaderboardLoadId = 0;
+let leaderboardSaveInFlight = false;
+
+function leaderboardEntryKey(e) {
+  return `${e.initials}|${e.score}|${e.reefId || ""}`;
+}
+
+/** Collapse identical runs (same initials, score, reef) — keeps the first seen. */
+function dedupeExactLeaderboardRows(rows) {
+  const seen = new Set();
+  const out = [];
+  for (const e of rows) {
+    const key = leaderboardEntryKey(e);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(e);
+  }
+  return out;
+}
 
 function normalizeLeaderboardRows(rows) {
   if (!Array.isArray(rows)) return [];
-  return rows
+  const parsed = rows
     .map((e) => ({
       initials: String(e.initials || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3),
       score: Math.max(0, Math.floor(Number(e.score) || 0)),
       reefId: e.reefId || e.reef_id || "",
       at: e.at || e.created_at || "",
     }))
-    .filter((e) => e.initials && e.score > 0)
+    .filter((e) => e.initials && e.score > 0);
+  return dedupeExactLeaderboardRows(parsed)
     .sort((a, b) => b.score - a.score || String(a.at).localeCompare(String(b.at)))
     .slice(0, LEADERBOARD_MAX);
 }
@@ -3400,7 +3421,7 @@ async function fetchSharedLeaderboard() {
   renderLeaderboardOl(leaderboardStart);
   renderLeaderboardOl(leaderboardOver);
   try {
-    const url = `${LEADERBOARD_TABLE_URL}?select=initials,score,reef_id,created_at&order=score.desc,created_at.asc&limit=${LEADERBOARD_MAX}`;
+    const url = `${LEADERBOARD_TABLE_URL}?select=initials,score,reef_id,created_at&order=score.desc,created_at.asc&limit=${LEADERBOARD_FETCH_LIMIT}`;
     const res = await fetch(url, { headers: leaderboardHeaders() });
     if (!res.ok) throw new Error(`Leaderboard fetch failed: ${res.status}`);
     const rows = normalizeLeaderboardRows(await res.json());
@@ -3431,8 +3452,12 @@ async function addLeaderboardEntry(initials, score, reefId) {
     reefId: reefId || "",
     at: Date.now(),
   };
-  const rows = [...loadLeaderboard(), entry];
-  leaderboardRows = normalizeLeaderboardRows(rows);
+  const rows = loadLeaderboard();
+  if (rows.some((r) => leaderboardEntryKey(r) === leaderboardEntryKey(entry))) {
+    return true;
+  }
+  const merged = [...rows, entry];
+  leaderboardRows = normalizeLeaderboardRows(merged);
   saveLocalLeaderboard(leaderboardRows);
   try {
     const res = await fetch(LEADERBOARD_TABLE_URL, {
@@ -8830,13 +8855,30 @@ btnResetProgress?.addEventListener("click", resetProgress);
 panelStart?.addEventListener("pointerdown", unlockHomeAudio, { once: true });
 
 async function saveCurrentScoreToBoard() {
+  if (leaderboardSaveInFlight) return;
   const board = loadLeaderboard();
   if (!qualifiesForLeaderboard(lastRoundScore, board)) return;
   const raw = (initialsInput?.value || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3);
   const ini = raw.length >= 1 ? raw : "AAA";
+  const pending = {
+    initials: ini,
+    score: lastRoundScore,
+    reefId: lastRoundReefId || "",
+  };
+  if (board.some((r) => leaderboardEntryKey(r) === leaderboardEntryKey(pending))) {
+    if (initialsPanel) initialsPanel.hidden = true;
+    showToast("This score is already on the leaderboard", 1700);
+    return;
+  }
+  leaderboardSaveInFlight = true;
   if (btnSaveScore) btnSaveScore.disabled = true;
-  const savedGlobally = await addLeaderboardEntry(ini, lastRoundScore, lastRoundReefId);
-  if (btnSaveScore) btnSaveScore.disabled = false;
+  let savedGlobally = false;
+  try {
+    savedGlobally = await addLeaderboardEntry(ini, lastRoundScore, lastRoundReefId);
+  } finally {
+    leaderboardSaveInFlight = false;
+    if (btnSaveScore) btnSaveScore.disabled = false;
+  }
   if (initialsPanel) initialsPanel.hidden = true;
   refreshLeaderboardViews(false);
   showToast(savedGlobally ? "Score saved to global leaderboard" : "Score saved on this device", 1700);
