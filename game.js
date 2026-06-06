@@ -247,6 +247,8 @@ const RODS = [
 const ROD_PRICE = 1000;
 const FREE_ROD_ID = "bamboo";
 const MAGNET_ROD_ID = "magnet";
+const KRAKEN_SPRAY_BAIT_ID = "kraken_spray";
+const DAILY_SECOND_PLACE_KRAKEN_SPRAY = 3;
 
 /** Bait: standard is unlimited; premium types are sold in packs and use one piece each round you start with them equipped. */
 const BAITS = [
@@ -314,6 +316,19 @@ const BAITS = [
     consumesOnRound: true,
     catchRadiusMult: 1.46,
     rareAssistAdd: 0.34,
+    lightRadiusMult: 1,
+  },
+  {
+    id: KRAKEN_SPRAY_BAIT_ID,
+    name: "Kraken spray",
+    desc: "Fisher of the Day prize — keeps the kraken away for one round.",
+    price: 0,
+    packSize: 0,
+    consumesOnRound: true,
+    shopHidden: true,
+    repelsKraken: true,
+    catchRadiusMult: 1,
+    rareAssistAdd: 0,
     lightRadiusMult: 1,
   },
 ];
@@ -3920,6 +3935,16 @@ function grantMagnetRodForToday() {
   buildRodUI();
 }
 
+function grantKrakenSpray(count = DAILY_SECOND_PLACE_KRAKEN_SPRAY) {
+  gameMeta.baitCounts[KRAKEN_SPRAY_BAIT_ID] = getBaitCount(KRAKEN_SPRAY_BAIT_ID) + count;
+}
+
+function dailyPrizeExtrasLabel(rank) {
+  if (rank === 0) return " + Magnet Rod";
+  if (rank === 1) return ` + ${DAILY_SECOND_PLACE_KRAKEN_SPRAY} Kraken Spray`;
+  return "";
+}
+
 function isRodOwned(rodId) {
   if (rodId === MAGNET_ROD_ID) return isMagnetRodActive();
   return rodId === FREE_ROD_ID || (Array.isArray(gameMeta.ownedRodIds) && gameMeta.ownedRodIds.includes(rodId));
@@ -4709,7 +4734,7 @@ function renderDailyLeaderboardOl(el, rows = dailyLeaderboardRows) {
     const pts = document.createElement("span");
     pts.className = "leaderboard__pts";
     pts.textContent =
-      i === 0 ? `${r.score} · ${DAILY_PRIZES[i]}🪙 + Magnet Rod` : i < 3 ? `${r.score} · ${DAILY_PRIZES[i]}🪙` : String(r.score);
+      i < 3 ? `${r.score} · ${DAILY_PRIZES[i]}🪙${dailyPrizeExtrasLabel(i)}` : String(r.score);
     const reef = document.createElement("span");
     reef.className = "leaderboard__reef";
     const reefMeta = REEFS.find((x) => x.id === r.reefId);
@@ -4731,7 +4756,7 @@ function updateDailyEventPlayerHint(rows = dailyLeaderboardRows) {
   if (rank === 0) {
     dailyEventPlayerHint.textContent = `${ini}, you're in 1st! Hold the lead until midnight to win 1,500 coins and the Magnet Rod for a day.`;
   } else if (rank === 1) {
-    dailyEventPlayerHint.textContent = `${ini}, you're in 2nd — 1,000 coins if you stay there at reset.`;
+    dailyEventPlayerHint.textContent = `${ini}, you're in 2nd — 1,000 coins and 3 Kraken Spray if you stay there at reset.`;
   } else if (rank === 2) {
     dailyEventPlayerHint.textContent = `${ini}, you're in 3rd — 800 coins if you stay there at reset.`;
   } else if (rank >= 0) {
@@ -4814,12 +4839,19 @@ async function processDailyPrizePayouts() {
     const prize = DAILY_PRIZES[rank];
     gameMeta.coins += prize;
     if (rank === 0) grantMagnetRodForToday();
+    if (rank === 1) grantKrakenSpray();
     saveMeta();
     refreshCoinDisplays();
+    buildBaitUI();
     if (rank === 0) {
       showToast(
         `Fisher of the Day #1! +${prize} coins & Magnet Rod for today (${formatDailyDayLabel(getDailyDayKey())})`,
         4800,
+      );
+    } else if (rank === 1) {
+      showToast(
+        `Fisher of the Day #2! +${prize} coins & ${DAILY_SECOND_PLACE_KRAKEN_SPRAY} Kraken Spray for ${formatDailyDayLabel(yesterday)}`,
+        4600,
       );
     } else {
       showToast(`Fisher of the Day #${rank + 1}! +${prize} coins for ${formatDailyDayLabel(yesterday)}`, 4200);
@@ -7073,6 +7105,7 @@ function buildBaitUI() {
   normalizeSelectedBaitId();
   baitChoices.innerHTML = "";
   for (const b of BAITS) {
+    if (b.shopHidden && getBaitCount(b.id) <= 0) continue;
     const stock = b.consumesOnRound ? getBaitCount(b.id) : null;
     const dis = Boolean(b.consumesOnRound && stock <= 0);
     const btn = document.createElement("button");
@@ -7136,7 +7169,7 @@ function buildShopUI() {
   shopList.appendChild(duelTicketLi);
 
   for (const b of BAITS) {
-    if (!b.consumesOnRound) continue;
+    if (!b.consumesOnRound || b.shopHidden) continue;
     const li = document.createElement("li");
     li.className = "shop-item";
     const body = document.createElement("div");
@@ -7444,11 +7477,13 @@ function startRound() {
   startHomeWaves();
   normalizeSelectedBaitId();
   const chosen = baitSpecById(gameMeta.selectedBaitId);
+  let roundKrakenSpray = false;
   if (chosen.consumesOnRound) {
     const left = getBaitCount(chosen.id);
     if (left > 0) {
       gameMeta.baitCounts[chosen.id] = left - 1;
       saveMeta();
+      roundKrakenSpray = Boolean(chosen.repelsKraken);
       roundBait = {
         catchRadiusMult: chosen.catchRadiusMult,
         rareAssistAdd: chosen.rareAssistAdd,
@@ -7477,7 +7512,12 @@ function startRound() {
   const roundStart = performance.now();
   roundEndAt = roundStart + reef.roundMs;
   const spawnFrac = 0.18 + Math.random() * 0.52;
-  kraken = { state: "scheduled", spawnAt: roundStart + reef.roundMs * spawnFrac };
+  if (roundKrakenSpray) {
+    kraken = null;
+    showToast("Kraken spray — no kraken this round!", 2400);
+  } else {
+    kraken = { state: "scheduled", spawnAt: roundStart + reef.roundMs * spawnFrac };
+  }
   const dur = reef.roundMs;
   const u0 = roundStart + dur * (0.06 + Math.random() * 0.14);
   const u1 = roundStart + dur * (0.32 + Math.random() * 0.16);

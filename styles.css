@@ -537,6 +537,10 @@ body {
   border-left: 5px solid #d4a017;
 }
 
+.rod-option--bait-kraken-spray {
+  border-left: 5px solid #7c6bcf;
+}
+
 .rod-option--disabled {
   opacity: 0.48;
   cursor: not-allowed;
