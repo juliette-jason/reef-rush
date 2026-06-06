@@ -2169,6 +2169,39 @@ body {
   z-index: 40;
 }
 
+.events-ticket-badge {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 13px;
+  border-radius: var(--radius);
+  background: rgba(8, 28, 48, 0.9);
+  border: 1px solid rgba(255, 213, 74, 0.38);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+}
+
+.events-ticket-badge__icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  color: #ffd54a;
+  filter: drop-shadow(0 0 6px rgba(255, 213, 74, 0.45));
+}
+
+.events-ticket-badge__count {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.35rem;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 10px rgba(77, 255, 243, 0.35);
+}
+
 .panel--events__inner {
   position: relative;
   z-index: 1;

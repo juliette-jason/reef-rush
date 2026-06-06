@@ -5004,9 +5004,10 @@ function refreshDuelEventCard() {
 
   if (eventCardDuel) eventCardDuel.classList.toggle("event-card--duel-unavailable", !available);
   if (duelEventUnavailable) duelEventUnavailable.hidden = available;
+  if (eventsTicketCount) eventsTicketCount.textContent = String(tickets);
   if (duelEventTickets) {
     duelEventTickets.textContent = available
-      ? `${tickets} ticket${tickets === 1 ? "" : "s"} ready · ${DUEL_DAILY_TICKETS} free daily`
+      ? `${DUEL_DAILY_TICKETS} free daily · extra in shop (700 coins)`
       : "Tickets can't be used on phones";
   }
 
@@ -5628,6 +5629,7 @@ const dailyEventPlayerHint = document.getElementById("dailyEventPlayerHint");
 const duelEventMatchup = document.getElementById("duelEventMatchup");
 const duelEventReef = document.getElementById("duelEventReef");
 const duelEventTickets = document.getElementById("duelEventTickets");
+const eventsTicketCount = document.getElementById("eventsTicketCount");
 const duelEventUnavailable = document.getElementById("duelEventUnavailable");
 const eventCardDuel = document.getElementById("eventCardDuel");
 const btnStartDuel = document.getElementById("btnStartDuel");
