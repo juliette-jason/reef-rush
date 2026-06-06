@@ -3831,6 +3831,8 @@ function defaultMeta() {
     playerInitials: "",
     dailyPrizeCheckedDay: "",
     magnetRodDayKey: "",
+    duelTickets: 0,
+    duelTicketsDayKey: "",
   };
 }
 
@@ -3873,6 +3875,8 @@ function loadMeta() {
         .slice(0, 3),
       dailyPrizeCheckedDay: String(o.dailyPrizeCheckedDay || ""),
       magnetRodDayKey: String(o.magnetRodDayKey || ""),
+      duelTickets: Math.max(0, Math.floor(Number(o.duelTickets) || 0)),
+      duelTicketsDayKey: String(o.duelTicketsDayKey || ""),
     };
   } catch {
     return defaultMeta();
@@ -4838,10 +4842,50 @@ async function refreshEventsPanel() {
 }
 
 const DUEL_WIN_COINS = 800;
+const DUEL_DAILY_TICKETS = 5;
+const DUEL_TICKET_PRICE = 700;
 /** null during classic/adventure play; set for split-screen duel fishing. */
 let duelSession = null;
 /** Random reef picked on the Events page before starting a duel. */
 let duelPendingReefId = null;
+
+function refreshDuelTicketsForToday() {
+  const today = getDailyDayKey();
+  if (gameMeta.duelTicketsDayKey === today) return;
+  gameMeta.duelTickets = DUEL_DAILY_TICKETS;
+  gameMeta.duelTicketsDayKey = today;
+  saveMeta();
+}
+
+function getDuelTicketCount() {
+  refreshDuelTicketsForToday();
+  return Math.max(0, Math.floor(Number(gameMeta.duelTickets) || 0));
+}
+
+function spendDuelTicket() {
+  refreshDuelTicketsForToday();
+  if (gameMeta.duelTickets <= 0) return false;
+  gameMeta.duelTickets -= 1;
+  saveMeta();
+  return true;
+}
+
+function isPhoneDevice() {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent || "";
+  if (/iPhone|iPod|Windows Phone|webOS|BlackBerry|Opera Mini|IEMobile/i.test(ua)) return true;
+  if (/Android/i.test(ua) && /Mobile/i.test(ua)) return true;
+  if (typeof window.matchMedia === "function") {
+    const narrowTouch =
+      window.matchMedia("(max-width: 767px)").matches && window.matchMedia("(pointer: coarse)").matches;
+    if (narrowTouch && !isChromebookOrIPad()) return true;
+  }
+  return false;
+}
+
+function isDuelAvailableOnThisDevice() {
+  return !isPhoneDevice();
+}
 
 function isDuelActive() {
   return Boolean(duelSession);
@@ -4894,11 +4938,30 @@ function createOpponentHook() {
 
 function refreshDuelEventCard() {
   if (!duelEventMatchup || !duelEventReef) return;
+  refreshDuelTicketsForToday();
+  const available = isDuelAvailableOnThisDevice();
+  const tickets = getDuelTicketCount();
+
+  if (eventCardDuel) eventCardDuel.classList.toggle("event-card--duel-unavailable", !available);
+  if (duelEventUnavailable) duelEventUnavailable.hidden = available;
+  if (duelEventTickets) {
+    duelEventTickets.textContent = available
+      ? `${tickets} ticket${tickets === 1 ? "" : "s"} ready · ${DUEL_DAILY_TICKETS} free daily`
+      : "Tickets can't be used on phones";
+  }
+
   duelPendingReefId = pickRandomDuelReefId();
   const reef = REEFS.find((r) => r.id === duelPendingReefId) || REEFS[0];
   const target = getPlayerPersonalBestScore();
   duelEventMatchup.textContent = `Rival targets ${target} pts — matched to your best score.`;
   duelEventReef.textContent = `Random reef: ${reef.name} (${reef.difficulty})`;
+
+  if (btnStartDuel) {
+    btnStartDuel.disabled = !available || tickets <= 0;
+    if (!available) btnStartDuel.textContent = "Desktop or tablet only";
+    else if (tickets <= 0) btnStartDuel.textContent = "No tickets — visit shop";
+    else btnStartDuel.textContent = "Play duel (1 ticket)";
+  }
 }
 
 function updateDuelHudScores() {
@@ -5228,6 +5291,21 @@ function drawTrenchRodLightForHook(hx) {
 
 function startDuelRound() {
   if (playing) return;
+  if (!isDuelAvailableOnThisDevice()) {
+    showToast("Duel Fishing needs a tablet or computer — not available on phones.", 3200);
+    refreshDuelEventCard();
+    return;
+  }
+  refreshDuelTicketsForToday();
+  if (getDuelTicketCount() <= 0) {
+    showToast("No duel tickets left — buy more in the shop or come back tomorrow.", 2800);
+    refreshDuelEventCard();
+    return;
+  }
+  if (!spendDuelTicket()) {
+    refreshDuelEventCard();
+    return;
+  }
   refreshDuelEventCard();
   const reefId = duelPendingReefId || pickRandomDuelReefId();
   const targetScore = getPlayerPersonalBestScore();
@@ -5334,6 +5412,17 @@ function endDuelRound() {
 function openDuelFromResult(replay) {
   if (panelDuelOver) panelDuelOver.hidden = true;
   if (replay) {
+    if (!isDuelAvailableOnThisDevice()) {
+      openEvents();
+      showToast("Duel Fishing needs a tablet or computer — not available on phones.", 3200);
+      return;
+    }
+    refreshDuelTicketsForToday();
+    if (getDuelTicketCount() <= 0) {
+      openEvents();
+      showToast("No duel tickets left — buy more in the shop or come back tomorrow.", 2800);
+      return;
+    }
     refreshDuelEventCard();
     startDuelRound();
     return;
@@ -5477,6 +5566,9 @@ const dailyEventReset = document.getElementById("dailyEventReset");
 const dailyEventPlayerHint = document.getElementById("dailyEventPlayerHint");
 const duelEventMatchup = document.getElementById("duelEventMatchup");
 const duelEventReef = document.getElementById("duelEventReef");
+const duelEventTickets = document.getElementById("duelEventTickets");
+const duelEventUnavailable = document.getElementById("duelEventUnavailable");
+const eventCardDuel = document.getElementById("eventCardDuel");
 const btnStartDuel = document.getElementById("btnStartDuel");
 const duelHud = document.getElementById("duelHud");
 const duelHudPlayerScore = document.getElementById("duelHudPlayerScore");
@@ -6978,6 +7070,40 @@ function buildBaitUI() {
 function buildShopUI() {
   if (!shopList) return;
   shopList.innerHTML = "";
+  refreshDuelTicketsForToday();
+
+  const duelTicketLi = document.createElement("li");
+  duelTicketLi.className = "shop-item shop-item--duel-ticket";
+  const duelBody = document.createElement("div");
+  duelBody.className = "shop-item__body";
+  const duelTitle = document.createElement("h3");
+  duelTitle.className = "shop-item__title";
+  duelTitle.textContent = "Duel ticket";
+  const duelDesc = document.createElement("p");
+  duelDesc.className = "shop-item__desc";
+  duelDesc.textContent = "One split-screen Duel Fishing run on Events. You get 5 free tickets each day.";
+  const duelMeta = document.createElement("div");
+  duelMeta.className = "shop-item__meta";
+  duelMeta.textContent = `You have ${getDuelTicketCount()} · ${DUEL_TICKET_PRICE} coins each`;
+  duelBody.append(duelTitle, duelDesc, duelMeta);
+  const duelBuy = document.createElement("button");
+  duelBuy.type = "button";
+  duelBuy.className = "btn btn--secondary";
+  duelBuy.textContent = "Buy 1 ticket";
+  duelBuy.disabled = gameMeta.coins < DUEL_TICKET_PRICE;
+  duelBuy.addEventListener("click", () => {
+    if (gameMeta.coins < DUEL_TICKET_PRICE) return;
+    gameMeta.coins -= DUEL_TICKET_PRICE;
+    gameMeta.duelTickets = getDuelTicketCount() + 1;
+    saveMeta();
+    refreshCoinDisplays();
+    buildShopUI();
+    if (panelEvents && !panelEvents.hidden) refreshDuelEventCard();
+    showToast("Duel ticket +1", 1600);
+  });
+  duelTicketLi.append(duelBody, duelBuy);
+  shopList.appendChild(duelTicketLi);
+
   for (const b of BAITS) {
     if (!b.consumesOnRound) continue;
     const li = document.createElement("li");
@@ -7079,6 +7205,7 @@ function openEvents() {
   panelStart.hidden = true;
   panelEvents.hidden = false;
   if (panelDuelOver) panelDuelOver.hidden = true;
+  refreshDuelTicketsForToday();
   syncHomeLaunchButtons();
   void processDailyPrizePayouts().then(() => refreshEventsPanel());
   startDailyEventCountdown();
@@ -11042,7 +11169,8 @@ window.addEventListener("keydown", (e) => {
   if (e.key === "ArrowRight") {
     e.preventDefault();
     hook.targetX += w * 0.11;
-    hook.targetX = Math.min(w - margin, hook.targetX);
+    const maxX = isDuelActive() ? duelHalfW() - margin : w - margin;
+    hook.targetX = Math.min(maxX, hook.targetX);
     return;
   }
   if (e.key === "Enter") {
@@ -11067,6 +11195,11 @@ btnStartDuel?.addEventListener("click", () => {
 });
 btnDuelPlayAgain?.addEventListener("click", () => openDuelFromResult(true));
 btnDuelBackEvents?.addEventListener("click", () => openDuelFromResult(false));
+
+window.addEventListener("resize", () => {
+  if (panelEvents && !panelEvents.hidden) refreshDuelEventCard();
+});
+
 btnCloseShop?.addEventListener("click", closeShop);
 btnOpenShopGuide?.addEventListener("click", openShopGuide);
 btnShopGuideDone?.addEventListener("click", closeShopGuide);
@@ -11231,6 +11364,7 @@ window.addEventListener("resize", () => {
 });
 
 gameMeta = loadMeta();
+refreshDuelTicketsForToday();
 normalizeSelectedRod();
 buildReefUI();
 buildRodUI();

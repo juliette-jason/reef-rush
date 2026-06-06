@@ -615,6 +615,9 @@
           <ul class="event-card__prizes" aria-label="Duel prize">
             <li><span class="event-card__medal event-card__medal--win">Win</span> 800 coins</li>
           </ul>
+          <p class="event-card__desc event-card__desc--tickets">1 ticket per duel · 5 free tickets daily · extra tickets in the shop (700 coins)</p>
+          <p id="duelEventUnavailable" class="event-card__unavailable" hidden>Desktop or tablet only — Duel Fishing is not available on phones.</p>
+          <p id="duelEventTickets" class="event-card__tickets">Tickets: 5</p>
           <p id="duelEventMatchup" class="event-card__matchup">Rival targets your best score.</p>
           <p id="duelEventReef" class="event-card__reef-pick">Reef: —</p>
           <button type="button" id="btnStartDuel" class="btn btn--secondary event-card__play">Play duel</button>
@@ -633,7 +636,7 @@
 
       <section id="panelShop" class="panel panel--shop" hidden>
         <h2 class="panel__headline">Fishing shop</h2>
-        <p class="panel__lede panel__lede--shop">Earn coins from your score each round. Spend coins here on bait packs and new rods.</p>
+        <p class="panel__lede panel__lede--shop">Earn coins from your score each round. Spend coins on bait, rods, and duel tickets.</p>
         <p class="shop-balance">Balance: <strong id="coinDisplayShop">0</strong> coins</p>
         <div id="shopGuide" class="shop-guide" hidden>
           <div class="shop-guide__sailor" aria-hidden="true">
