@@ -171,9 +171,9 @@ body {
 }
 
 .adventure-play-theme--treasure-cove {
-  border-color: rgba(255, 200, 50, 0.55);
-  background: rgba(20, 32, 42, 0.75);
-  box-shadow: 0 0 20px rgba(255, 210, 70, 0.28);
+  border-color: rgba(200, 160, 60, 0.45);
+  background: rgba(12, 22, 32, 0.88);
+  box-shadow: 0 0 18px rgba(255, 190, 70, 0.18);
 }
 
 .adventure-play-theme--treasure-cove .adventure-play-theme__scene {
@@ -192,8 +192,8 @@ body {
 
 #app.app--adventure-theme-treasure-cove .canvas-wrap {
   box-shadow:
-    inset 0 0 0 2px rgba(255, 220, 100, 0.5),
-    inset 0 0 56px rgba(255, 210, 80, 0.2);
+    inset 0 0 0 2px rgba(180, 140, 50, 0.35),
+    inset 0 0 64px rgba(0, 24, 36, 0.35);
 }
 
 #app.app--adventure-theme-stormbreak-isle .canvas-wrap {
@@ -2865,10 +2865,10 @@ body {
 @keyframes adventureMapTreasureCoveGlow {
   0%,
   100% {
-    filter: brightness(1) saturate(1);
+    filter: brightness(0.95) saturate(1.05);
   }
   50% {
-    filter: brightness(1.12) saturate(1.15);
+    filter: brightness(1.05) saturate(1.1);
   }
 }
 

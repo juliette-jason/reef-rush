@@ -539,31 +539,43 @@ function adventureMapSceneSvg(themeId, idSuffix = "") {
     "treasure-cove": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <defs>
         <linearGradient id="tcWater-${sid}" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#2a8898"/>
-          <stop offset="100%" stop-color="#0a3848"/>
+          <stop offset="0%" stop-color="#1a4858"/>
+          <stop offset="100%" stop-color="#0a1828"/>
         </linearGradient>
         <linearGradient id="tcCave-${sid}" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#3a3028"/>
-          <stop offset="100%" stop-color="#1a1410"/>
+          <stop offset="0%" stop-color="#2a2820"/>
+          <stop offset="100%" stop-color="#12100c"/>
+        </linearGradient>
+        <linearGradient id="tcRay-${sid}" x1="0.5" y1="0" x2="0.5" y2="1">
+          <stop offset="0%" stop-color="#ffe8a0" stop-opacity="0.45"/>
+          <stop offset="100%" stop-color="#ffc850" stop-opacity="0"/>
         </linearGradient>
       </defs>
       <rect width="72" height="52" fill="url(#tcWater-${sid})"/>
-      <path d="M0 30 Q36 18 72 30 L72 52 L0 52 Z" fill="#1a5868" opacity="0.85"/>
-      <path d="M6 52 L6 22 Q36 4 66 22 L66 52 Z" fill="url(#tcCave-${sid})"/>
-      <ellipse cx="36" cy="22" rx="24" ry="14" fill="#0a0806"/>
-      <ellipse cx="36" cy="38" rx="28" ry="8" fill="#208898" opacity="0.5"/>
-      <circle cx="18" cy="40" r="3" fill="#f0c830" stroke="#a88010" stroke-width="0.6"/>
-      <circle cx="28" cy="42" r="2.5" fill="#e8b820" stroke="#a88010" stroke-width="0.5"/>
-      <circle cx="44" cy="41" r="3" fill="#f0d040" stroke="#a88010" stroke-width="0.6"/>
-      <circle cx="54" cy="43" r="2" fill="#e8b820" stroke="#a88010" stroke-width="0.5"/>
-      <circle cx="36" cy="44" r="2.8" fill="#f8e050" stroke="#a88010" stroke-width="0.5"/>
-      <rect x="28" y="32" width="16" height="10" rx="1" fill="#8a5020" stroke="#5a3010" stroke-width="0.8"/>
-      <path d="M28 32 Q36 26 44 32" fill="#a86828" stroke="#5a3010" stroke-width="0.8"/>
-      <rect x="30" y="34" width="12" height="2" fill="#f0d060"/>
-      <circle cx="14" cy="28" r="1.2" fill="#a8e8f0" opacity="0.7"/>
-      <circle cx="22" cy="24" r="0.9" fill="#a8e8f0" opacity="0.6"/>
-      <circle cx="50" cy="26" r="1" fill="#a8e8f0" opacity="0.65"/>
-      <circle cx="58" cy="30" r="1.1" fill="#a8e8f0" opacity="0.55"/>
+      <path d="M0 28 Q36 16 72 28 L72 52 L0 52 Z" fill="#143038" opacity="0.9"/>
+      <path d="M4 52 L4 20 Q36 2 68 20 L68 52 Z" fill="url(#tcCave-${sid})"/>
+      <path d="M28 2 L32 18 L36 2" fill="#3a3228"/>
+      <path d="M40 4 L44 16 L48 3" fill="#3a3228"/>
+      <rect x="30" y="0" width="12" height="14" fill="url(#tcRay-${sid})" opacity="0.55"/>
+      <path d="M32 0 L36 14 L40 0 Z" fill="url(#tcRay-${sid})" opacity="0.35"/>
+      <path d="M46 34 L58 18 L66 36 L58 40 Z" fill="#142028" stroke="#0a1018" stroke-width="0.6"/>
+      <path d="M52 18 L54 6 L56 18" stroke="#0a1018" stroke-width="1.2" fill="none"/>
+      <path d="M48 12 L58 10" stroke="#0a1018" stroke-width="0.8"/>
+      <rect x="10" y="30" width="5" height="14" fill="#384858" opacity="0.7"/>
+      <rect x="58" y="28" width="5" height="16" fill="#384858" opacity="0.65"/>
+      <ellipse cx="34" cy="42" rx="22" ry="6" fill="#ffc840" opacity="0.25"/>
+      <circle cx="22" cy="41" r="2.2" fill="#f0c830" stroke="#a88010" stroke-width="0.5"/>
+      <circle cx="30" cy="43" r="2.5" fill="#e8b820" stroke="#a88010" stroke-width="0.5"/>
+      <circle cx="38" cy="42" r="2.8" fill="#f0d040" stroke="#a88010" stroke-width="0.5"/>
+      <circle cx="46" cy="44" r="2" fill="#e8b820" stroke="#a88010" stroke-width="0.5"/>
+      <circle cx="52" cy="41" r="2.3" fill="#f8e050" stroke="#a88010" stroke-width="0.5"/>
+      <rect x="28" y="34" width="14" height="9" rx="1" fill="#8a5020" stroke="#5a3010" stroke-width="0.7"/>
+      <path d="M28 34 Q35 28 42 34" fill="#a86828" stroke="#5a3010" stroke-width="0.7"/>
+      <rect x="30" y="36" width="10" height="1.5" fill="#f0d060"/>
+      <rect x="18" y="38" width="9" height="6" rx="1" fill="#7a4818" stroke="#5a3010" stroke-width="0.5"/>
+      <circle cx="12" cy="26" r="0.8" fill="#a8d8e8" opacity="0.5"/>
+      <circle cx="20" cy="22" r="0.7" fill="#a8d8e8" opacity="0.45"/>
+      <circle cx="54" cy="24" r="0.8" fill="#a8d8e8" opacity="0.4"/>
     </svg>`,
     "bounty-trench": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="72" height="52" fill="#061018"/>
@@ -656,6 +668,7 @@ function getActiveAdventureTheme() {
 /** Base reef gameplay (fish pool, spawns) — overrides index rotation when a voyage must not play like Mariana Trench. */
 const ADVENTURE_THEME_REEF_ID = {
   "lava-falls": "caribbean",
+  "treasure-cove": "caribbean",
 };
 
 function isSkullShoalsPlay() {
@@ -712,9 +725,10 @@ const ADVENTURE_PLAY_ATMOSPHERE = {
   "captains-landing": { stops: [[0, "rgba(140, 120, 90, 0.12)"], [1, "rgba(60, 50, 40, 0.18)"]], effect: "captains-landing" },
   "treasure-cove": {
     stops: [
-      [0, "rgba(255, 245, 210, 0.08)"],
-      [0.45, "rgba(180, 240, 255, 0.06)"],
-      [1, "rgba(255, 210, 90, 0.1)"],
+      [0, "rgba(10, 32, 42, 0.22)"],
+      [0.45, "rgba(18, 48, 58, 0.18)"],
+      [0.72, "rgba(255, 170, 60, 0.06)"],
+      [1, "rgba(28, 38, 32, 0.32)"],
     ],
     effect: "treasure-cove",
   },
@@ -837,11 +851,12 @@ const ADVENTURE_THEME_SAND = {
   },
   "treasure-cove": {
     stops: [
-      [0, "rgba(255, 235, 180, 0)"],
-      [0.35, "rgba(240, 200, 120, 0.2)"],
-      [1, "rgba(210, 165, 75, 0.42)"],
+      [0, "rgba(18, 42, 52, 0)"],
+      [0.35, "rgba(32, 58, 68, 0.22)"],
+      [0.72, "rgba(55, 48, 32, 0.38)"],
+      [1, "rgba(38, 32, 22, 0.58)"],
     ],
-    speck: "rgba(255, 220, 100, 0.35)",
+    speck: "rgba(255, 200, 80, 0.22)",
   },
 };
 
@@ -932,10 +947,10 @@ const ADVENTURE_THEME_REEF_OVERRIDES = {
     bubble: "rgba(220, 200, 160, 0.16)",
   },
   "treasure-cove": {
-    gradient: ["#5ec8e8", "#6ed8f0", "#7ee8f8", "#c89840"],
-    shaft: ["rgba(255, 245, 200, 0.38)", "rgba(255, 245, 200, 0)"],
-    silhouette: "rgba(40, 55, 65, 0.28)",
-    bubble: "rgba(255, 240, 160, 0.4)",
+    gradient: ["#1a4858", "#143848", "#102838", "#2a2018"],
+    shaft: ["rgba(255, 210, 120, 0.14)", "rgba(255, 210, 120, 0)"],
+    silhouette: "rgba(12, 22, 32, 0.55)",
+    bubble: "rgba(180, 220, 230, 0.18)",
   },
 };
 
@@ -1599,41 +1614,152 @@ function drawTreasureChest(cx, cy, sc) {
 
 function drawTreasureCoveCaveWalls() {
   const sandTop = h - dpr * 92;
-  ctx.fillStyle = "rgba(72, 58, 42, 0.55)";
+  const wy = waterTop;
+
+  ctx.fillStyle = "rgba(6, 14, 20, 0.72)";
   ctx.beginPath();
-  ctx.moveTo(0, waterTop);
-  ctx.lineTo(w * 0.24, waterTop);
-  ctx.quadraticCurveTo(w * 0.16, sandTop - dpr * 20, w * 0.1, h);
+  ctx.moveTo(w * 0.28, wy);
+  ctx.quadraticCurveTo(w * 0.5, wy + dpr * 28, w * 0.72, wy);
+  ctx.lineTo(w * 0.72, wy + dpr * 14);
+  ctx.quadraticCurveTo(w * 0.5, wy + dpr * 42, w * 0.28, wy + dpr * 14);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = "rgba(42, 34, 28, 0.82)";
+  ctx.beginPath();
+  ctx.moveTo(0, wy);
+  ctx.lineTo(w * 0.22, wy);
+  ctx.quadraticCurveTo(w * 0.14, sandTop - dpr * 28, w * 0.08, h);
   ctx.lineTo(0, h);
   ctx.closePath();
   ctx.fill();
   ctx.beginPath();
-  ctx.moveTo(w, waterTop);
-  ctx.lineTo(w * 0.76, waterTop);
-  ctx.quadraticCurveTo(w * 0.84, sandTop - dpr * 20, w * 0.9, h);
+  ctx.moveTo(w, wy);
+  ctx.lineTo(w * 0.78, wy);
+  ctx.quadraticCurveTo(w * 0.86, sandTop - dpr * 32, w * 0.92, h);
   ctx.lineTo(w, h);
   ctx.closePath();
   ctx.fill();
-  ctx.fillStyle = "rgba(48, 38, 30, 0.42)";
+
+  ctx.fillStyle = "rgba(28, 22, 18, 0.68)";
+  for (const sx of [0.1, 0.88]) {
+    for (let i = 0; i < perfN(6); i++) {
+      const x = w * (sx + (i % 2 ? 0.02 : -0.01));
+      const len = dpr * (18 + (i % 4) * 10);
+      ctx.beginPath();
+      ctx.moveTo(x, wy + dpr * (8 + i * 7));
+      ctx.quadraticCurveTo(x + dpr * (i % 2 ? 8 : -8), wy + dpr * (14 + i * 9) + len * 0.4, x, wy + dpr * (8 + i * 7) + len);
+      ctx.quadraticCurveTo(x - dpr * 6, wy + dpr * (12 + i * 8) + len * 0.55, x, wy + dpr * (8 + i * 7));
+      ctx.fill();
+    }
+  }
+
+  ctx.fillStyle = "rgba(52, 42, 34, 0.55)";
   ctx.beginPath();
-  ctx.moveTo(w * 0.24, waterTop);
-  ctx.quadraticCurveTo(w * 0.5, waterTop + dpr * 36, w * 0.76, waterTop);
-  ctx.lineTo(w * 0.76, waterTop + dpr * 10);
-  ctx.quadraticCurveTo(w * 0.5, waterTop + dpr * 46, w * 0.24, waterTop + dpr * 10);
+  ctx.moveTo(w * 0.22, wy);
+  ctx.quadraticCurveTo(w * 0.5, wy + dpr * 48, w * 0.78, wy);
+  ctx.lineTo(w * 0.76, wy + dpr * 12);
+  ctx.quadraticCurveTo(w * 0.5, wy + dpr * 56, w * 0.24, wy + dpr * 12);
   ctx.closePath();
   ctx.fill();
 }
 
+function drawTreasureCoveShipwreck() {
+  const sandTop = h - dpr * 92;
+  const cx = w * 0.58;
+  const cy = sandTop - dpr * 52;
+  ctx.save();
+  ctx.globalAlpha = 0.88;
+
+  ctx.fillStyle = "rgba(14, 24, 34, 0.92)";
+  ctx.strokeStyle = "rgba(8, 14, 22, 0.95)";
+  ctx.lineWidth = dpr * 1.2;
+  ctx.beginPath();
+  ctx.moveTo(cx - w * 0.24, cy + dpr * 38);
+  ctx.quadraticCurveTo(cx - w * 0.2, cy + dpr * 8, cx - w * 0.14, cy - dpr * 6);
+  ctx.lineTo(cx + w * 0.1, cy - dpr * 22);
+  ctx.quadraticCurveTo(cx + w * 0.18, cy - dpr * 4, cx + w * 0.22, cy + dpr * 32);
+  ctx.lineTo(cx + w * 0.08, cy + dpr * 42);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(10, 18, 28, 0.85)";
+  for (let i = 0; i < 5; i++) {
+    const rx = cx - w * 0.16 + i * w * 0.07;
+    ctx.fillRect(rx, cy + dpr * 6, dpr * 3, dpr * 28);
+  }
+
+  ctx.strokeStyle = "rgba(12, 20, 30, 0.95)";
+  ctx.lineWidth = dpr * 4.5;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(cx - w * 0.04, cy - dpr * 10);
+  ctx.lineTo(cx - w * 0.1, cy - dpr * 88);
+  ctx.stroke();
+  ctx.lineWidth = dpr * 2.8;
+  ctx.beginPath();
+  ctx.moveTo(cx - w * 0.18, cy - dpr * 68);
+  ctx.lineTo(cx + w * 0.02, cy - dpr * 58);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - w * 0.06, cy - dpr * 78);
+  ctx.lineTo(cx - w * 0.14, cy - dpr * 82);
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(255, 190, 70, 0.18)";
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath();
+    ctx.arc(cx - w * 0.1 + i * w * 0.07, cy + dpr * 14, dpr * 3.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawTreasureCoveRuins() {
+  const sandTop = h - dpr * 92;
+  const base = sandTop + dpr * 8;
+  ctx.save();
+  ctx.globalAlpha = 0.62;
+  ctx.fillStyle = "rgba(38, 48, 58, 0.75)";
+  ctx.strokeStyle = "rgba(22, 32, 42, 0.8)";
+  ctx.lineWidth = dpr * 1;
+  for (const px of [0.14, 0.32, 0.78]) {
+    const x = w * px;
+    const colH = dpr * (48 + (px * 100) % 30);
+    ctx.fillRect(x - dpr * 5, base - colH, dpr * 10, colH);
+    ctx.strokeRect(x - dpr * 5, base - colH, dpr * 10, colH);
+    ctx.fillRect(x - dpr * 7, base - colH - dpr * 4, dpr * 14, dpr * 5);
+  }
+  ctx.restore();
+}
+
 function drawTreasureCoveBed() {
   drawTreasureCoveCaveWalls();
+  drawTreasureCoveRuins();
+  drawTreasureCoveShipwreck();
   const sandTop = h - dpr * 92;
-  const base = sandTop + dpr * 16;
-  scatterGoldCoins(sandTop, 42, 7, 34);
-  drawTreasureChest(w * 0.5, base - dpr * 12, 1.1);
-  scatterGoldCoins(sandTop + dpr * 6, 18, 13, 22);
-  ctx.fillStyle = "rgba(255, 220, 90, 0.28)";
+  const base = sandTop + dpr * 14;
+
+  ctx.fillStyle = "rgba(255, 190, 70, 0.16)";
   ctx.beginPath();
-  ctx.ellipse(w * 0.5, base - dpr * 4, w * 0.28, dpr * 18, 0, 0, Math.PI * 2);
+  ctx.ellipse(w * 0.42, base - dpr * 2, w * 0.32, dpr * 22, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  for (let pile = 0; pile < 4; pile++) {
+    const px = w * (0.22 + pile * 0.14);
+    for (let j = 0; j < 5 + (pile % 3); j++) {
+      drawGoldCoin(px + (j - 2) * dpr * 5.5, base - j * dpr * 3.2, dpr * (2.2 + (j % 3) * 0.35), j * 0.35 + pile);
+    }
+  }
+  scatterGoldCoins(sandTop, 36, 7, 28);
+  drawTreasureChest(w * 0.42, base - dpr * 14, 1.15);
+  drawTreasureChest(w * 0.28, base - dpr * 4, 0.72);
+  drawTreasureChest(w * 0.56, base - dpr * 6, 0.68);
+
+  ctx.fillStyle = "rgba(255, 210, 90, 0.2)";
+  ctx.beginPath();
+  ctx.ellipse(w * 0.42, base - dpr * 6, w * 0.26, dpr * 14, 0, 0, Math.PI * 2);
   ctx.fill();
 }
 
@@ -2286,35 +2412,67 @@ function drawAdventureGoldGlintsHeavy(now, count) {
   }
 }
 
+function drawTreasureCoveGodRays(now) {
+  const t = now * 0.001;
+  const wy = waterTop;
+  const rayCount = PERF_CHROMEBOOK ? 4 : 6;
+  for (let i = 0; i < rayCount; i++) {
+    const cx = w * (0.34 + i * 0.06);
+    const sway = Math.sin(t * 0.45 + i * 1.1) * w * 0.012;
+    const grad = ctx.createLinearGradient(cx + sway, wy, cx + sway * 2, h);
+    grad.addColorStop(0, "rgba(255, 235, 180, 0.16)");
+    grad.addColorStop(0.35, "rgba(255, 205, 110, 0.09)");
+    grad.addColorStop(0.72, "rgba(255, 180, 80, 0.04)");
+    grad.addColorStop(1, "rgba(255, 160, 60, 0)");
+    ctx.fillStyle = grad;
+    ctx.globalAlpha = 0.65 + Math.sin(t * 0.7 + i) * 0.1;
+    ctx.beginPath();
+    ctx.moveTo(cx - w * 0.035 + sway, wy);
+    ctx.lineTo(cx + w * 0.045 + sway, wy);
+    ctx.lineTo(cx + w * 0.12 + i * 0.012, h);
+    ctx.lineTo(cx - w * 0.07, h);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
 function drawAdventureTreasureCoveEffect(now) {
   const t = now * 0.001;
-
-  const caveGlow = ctx.createRadialGradient(w * 0.5, waterTop, 0, w * 0.5, waterTop + (h - waterTop) * 0.6, w * 0.72);
-  caveGlow.addColorStop(0, "rgba(255, 250, 220, 0.35)");
-  caveGlow.addColorStop(0.4, "rgba(255, 230, 140, 0.22)");
-  caveGlow.addColorStop(0.75, "rgba(120, 220, 255, 0.12)");
-  caveGlow.addColorStop(1, "rgba(80, 200, 240, 0)");
-  ctx.fillStyle = caveGlow;
-  ctx.fillRect(0, waterTop, w, h - waterTop);
-
-  const sunShaft = ctx.createLinearGradient(w * 0.5, waterTop, w * 0.5, h);
-  sunShaft.addColorStop(0, "rgba(255, 245, 200, 0.28)");
-  sunShaft.addColorStop(0.35, "rgba(255, 215, 100, 0.16)");
-  sunShaft.addColorStop(1, "rgba(255, 190, 70, 0.06)");
-  ctx.fillStyle = sunShaft;
-  ctx.fillRect(w * 0.22, waterTop, w * 0.56, h - waterTop);
-
-  drawAdventureGoldGlintsHeavy(now, 36);
-
   const sandTop = h - dpr * 92;
-  scatterGoldCoins(sandTop - dpr * 4, 10, 19, 14);
+  const wh = h - waterTop;
 
-  ctx.fillStyle = "rgba(200, 245, 255, 0.45)";
-  for (let i = 0; i < perfN(14); i++) {
-    const bx = w * (0.18 + ((i * 73 + Math.floor(t * 18)) % 640) / 1000);
-    const by = waterTop + dpr * (16 + (i * 41) % 140);
+  drawTreasureCoveGodRays(now);
+
+  const caveMouth = ctx.createRadialGradient(w * 0.5, waterTop, 0, w * 0.5, waterTop + wh * 0.35, w * 0.55);
+  caveMouth.addColorStop(0, "rgba(255, 240, 190, 0.12)");
+  caveMouth.addColorStop(0.45, "rgba(120, 180, 200, 0.06)");
+  caveMouth.addColorStop(1, "rgba(8, 28, 38, 0)");
+  ctx.fillStyle = caveMouth;
+  ctx.fillRect(0, waterTop, w, wh);
+
+  const treasureGlow = ctx.createRadialGradient(w * 0.42, sandTop - dpr * 8, 0, w * 0.42, sandTop, w * 0.38);
+  treasureGlow.addColorStop(0, "rgba(255, 210, 90, 0.24)");
+  treasureGlow.addColorStop(0.55, "rgba(255, 180, 60, 0.1)");
+  treasureGlow.addColorStop(1, "rgba(255, 160, 40, 0)");
+  ctx.fillStyle = treasureGlow;
+  ctx.fillRect(0, sandTop - dpr * 40, w, h - sandTop + dpr * 40);
+
+  drawAdventureGoldGlintsHeavy(now, PERF_CHROMEBOOK ? 16 : 22);
+
+  const vig = ctx.createRadialGradient(w * 0.5, h * 0.52, w * 0.08, w * 0.5, h * 0.52, w * 0.92);
+  vig.addColorStop(0, "rgba(0, 0, 0, 0)");
+  vig.addColorStop(0.75, "rgba(0, 18, 28, 0.18)");
+  vig.addColorStop(1, "rgba(0, 12, 22, 0.42)");
+  ctx.fillStyle = vig;
+  ctx.fillRect(0, waterTop, w, wh);
+
+  ctx.fillStyle = "rgba(160, 210, 225, 0.22)";
+  for (let i = 0; i < perfN(10); i++) {
+    const bx = w * (0.2 + ((i * 73 + Math.floor(t * 14)) % 620) / 1000);
+    const by = waterTop + dpr * (12 + (i * 37) % Math.floor(wh * 0.55));
     ctx.beginPath();
-    ctx.arc(bx, by, dpr * (1.2 + (i % 2) * 0.5), 0, Math.PI * 2);
+    ctx.arc(bx, by, dpr * (0.8 + (i % 2) * 0.35), 0, Math.PI * 2);
     ctx.fill();
   }
 }
@@ -3336,6 +3494,9 @@ function getReef() {
   if (themeId === "lava-falls") {
     merged.subtitle = "Volcanic shallows";
     merged.desc = `Bright lava-lit waters · score ${lvl.passScore}+ to continue`;
+  }
+  if (themeId === "treasure-cove" || themeId === "legends-gate") {
+    merged.desc = `Dim shipwreck cave · golden treasure glow · score ${lvl.passScore}+ to continue`;
   }
   return merged;
 }
