@@ -6492,6 +6492,14 @@ function applyAdventureMapExtent(animate = false) {
   board.classList.toggle("adventure-map-board--bonus-revealed", isAdventureBonusUnlocked());
   board.classList.toggle("adventure-map-board--ice-revealed", isAdventureIceUnlocked());
   board.classList.toggle("adventure-map-board--lost-city-revealed", isAdventureLostCityUnlocked());
+  const lostCityBand = adventureMapSectionBounds()["lost-city"];
+  if (lostCityBand) {
+    board.style.setProperty("--adv-lost-city-theme-top", `${lostCityBand.topPct}%`);
+    board.style.setProperty("--adv-lost-city-theme-height", `${lostCityBand.heightPct}%`);
+  } else {
+    board.style.removeProperty("--adv-lost-city-theme-top");
+    board.style.removeProperty("--adv-lost-city-theme-height");
+  }
 }
 
 function syncAdventureMapSections() {
