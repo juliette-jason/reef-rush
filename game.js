@@ -309,6 +309,10 @@ const TREASURE_COVE_INDEX = ADVENTURE_MAIN_LEVEL_COUNT - 1;
 const LEGENDS_GATE_INDEX = ADVENTURE_MAIN_LEVEL_COUNT + ADVENTURE_BONUS_LEVEL_COUNT - 1;
 const ADVENTURE_ICE_START_INDEX = ADVENTURE_MAIN_LEVEL_COUNT + ADVENTURE_BONUS_LEVEL_COUNT;
 
+const ADVENTURE_SECTION_PIRATES_PATH = "Pirates Path";
+const ADVENTURE_SECTION_GOLD_QUEST = "Gold Quest";
+const ADVENTURE_SECTION_FROZEN_SEA = "Frozen Sea";
+
 const TREASURE_CINEMATIC_ANTICIPATE_MS = 800;
 const TREASURE_CINEMATIC_FLY_MS = 2400;
 const TREASURE_CINEMATIC_OPEN_MS = 1600;
@@ -3777,7 +3781,11 @@ function buildAdventureLevels() {
       level: i + 1,
       id: `adv_${i + 1}`,
       name: ADVENTURE_MAP_PLACES[i] || `Voyage ${i + 1}`,
-      subtitle: isIce ? `Ice · ${reef.name}` : isBonus ? `Bonus · ${reef.name}` : reef.name,
+      subtitle: isIce
+        ? `${ADVENTURE_SECTION_FROZEN_SEA} · ${reef.name}`
+        : isBonus
+          ? `${ADVENTURE_SECTION_GOLD_QUEST} · ${reef.name}`
+          : `${ADVENTURE_SECTION_PIRATES_PATH} · ${reef.name}`,
       mapPlace: ADVENTURE_MAP_PLACES[i] || `Isle ${i + 1}`,
       reefId: reef.id,
       isBonus,
@@ -4718,7 +4726,12 @@ function buildAdventureLevelUI(force = false) {
     b.disabled = !playable;
     b.style.left = `${layout.x}%`;
     b.style.top = `${layout.y}%`;
-    b.title = `${lvl.name} — ${lvl.subtitle} · pass ${lvl.passScore}`;
+    const sectionName = isIce
+      ? ADVENTURE_SECTION_FROZEN_SEA
+      : isBonus
+        ? ADVENTURE_SECTION_GOLD_QUEST
+        : ADVENTURE_SECTION_PIRATES_PATH;
+    b.title = `${lvl.name} — ${sectionName} · pass ${lvl.passScore}`;
     b.dataset.levelIndex = String(i);
     const sceneMarkup =
       PERF_CHROMEBOOK && !playable
@@ -4734,7 +4747,7 @@ function buildAdventureLevelUI(force = false) {
         ${!playable ? '<span class="adventure-map-node__lock" aria-hidden="true"></span>' : ""}
       </span>
       <span class="adventure-map-node__label">${lvl.name}</span>
-      <span class="adventure-map-node__meta">${lvl.passScore} pts</span>
+      <span class="adventure-map-node__meta">${sectionName} · ${lvl.passScore} pts</span>
     `;
     frag.appendChild(b);
   }
@@ -4747,18 +4760,18 @@ function buildAdventureLevelUI(force = false) {
   if (adventureMapBanner) {
     adventureMapBanner.hidden = !isAdventureUnlocked();
     if (iceRevealed) {
-      adventureMapBanner.textContent = "Chart the course — ice voyages unlocked in the frozen north!";
+      adventureMapBanner.textContent = `Chart the course — ${ADVENTURE_SECTION_FROZEN_SEA} unlocked!`;
     } else if (bonusRevealed) {
-      adventureMapBanner.textContent = "Chart the course — bonus voyages unlocked beyond Treasure Cove!";
+      adventureMapBanner.textContent = `Chart the course — ${ADVENTURE_SECTION_GOLD_QUEST} unlocked beyond Pirates Path!`;
     } else {
-      adventureMapBanner.textContent =
-        "Chart the course — 15 voyages to Treasure Cove, then bonus and ice voyages!";
+      adventureMapBanner.textContent = `Chart the course — ${ADVENTURE_SECTION_PIRATES_PATH}, then ${ADVENTURE_SECTION_GOLD_QUEST} and ${ADVENTURE_SECTION_FROZEN_SEA}!`;
     }
   }
   if (adventureMapBonusBanner) {
     const showBonusBanner =
       (isAdventureBonusUnlocked() || gameMeta.pendingBonusVoyagesCelebration) && isAdventureUnlocked();
     adventureMapBonusBanner.hidden = !showBonusBanner;
+    adventureMapBonusBanner.textContent = `${ADVENTURE_SECTION_GOLD_QUEST} — conquer Treasure Cove to unlock`;
     adventureMapBonusBanner.classList.toggle(
       "adventure-map-bonus-banner--reveal",
       Boolean(gameMeta.pendingBonusVoyagesCelebration)
@@ -4768,6 +4781,7 @@ function buildAdventureLevelUI(force = false) {
     const showIceBanner =
       (isAdventureIceUnlocked() || gameMeta.pendingIceVoyagesCelebration) && isAdventureUnlocked();
     adventureMapIceBanner.hidden = !showIceBanner;
+    adventureMapIceBanner.textContent = `${ADVENTURE_SECTION_FROZEN_SEA} — clear Legend's Gate to unlock`;
     adventureMapIceBanner.classList.toggle(
       "adventure-map-ice-banner--reveal",
       Boolean(gameMeta.pendingIceVoyagesCelebration)
@@ -4809,11 +4823,11 @@ function openAdventureHub() {
   syncAdventureLaunchVisibility();
   scrollAdventureMapToProgress(true);
   if (gameMeta.pendingBonusVoyagesCelebration) {
-    showToast("Bonus voyages unlocked! Chart the secret path beyond Treasure Cove.", 4200);
+    showToast(`${ADVENTURE_SECTION_GOLD_QUEST} unlocked! Chart the secret path beyond Treasure Cove.`, 4200);
     window.setTimeout(clearBonusVoyagesMapCelebration, 4500);
   }
   if (gameMeta.pendingIceVoyagesCelebration) {
-    showToast("Ice voyages unlocked! Five frozen voyages await in the polar waters.", 4200);
+    showToast(`${ADVENTURE_SECTION_FROZEN_SEA} unlocked! Five frozen voyages await.`, 4200);
     window.setTimeout(clearIceVoyagesMapCelebration, 4500);
   }
   if (musicEnabled) {
@@ -4880,9 +4894,9 @@ function endAdventureRound() {
     }
     if (adventureWinScore) {
       adventureWinScore.textContent = clearedTreasureCove
-        ? `You scored ${score} (needed ${lvl.passScore}). Five secret bonus voyages await beyond the cove!`
+        ? `You scored ${score} (needed ${lvl.passScore}). ${ADVENTURE_SECTION_GOLD_QUEST} voyages await beyond the cove!`
         : clearedLegendsGate
-          ? `You scored ${score} (needed ${lvl.passScore}). Five ice voyages now appear in the frozen north!`
+          ? `You scored ${score} (needed ${lvl.passScore}). ${ADVENTURE_SECTION_FROZEN_SEA} voyages now appear on the map!`
           : `You scored ${score} (needed ${lvl.passScore}).`;
     }
     if (adventureWinTreasureCelebrate) {
@@ -4899,9 +4913,9 @@ function endAdventureRound() {
     if (btnAdventureNext) {
       btnAdventureNext.hidden = !hasNext;
       btnAdventureNext.textContent = clearedTreasureCove
-        ? "Start bonus voyage 1"
+        ? `Start ${ADVENTURE_SECTION_GOLD_QUEST} voyage 1`
         : clearedLegendsGate
-          ? "Start ice voyage 1"
+          ? `Start ${ADVENTURE_SECTION_FROZEN_SEA} voyage 1`
           : hasNext
             ? `Start level ${lvl.level + 1}`
             : "Back to map";
@@ -5173,7 +5187,7 @@ function endTreasureMapReveal() {
     treasureMapReveal.hidden = true;
     treasureMapReveal.setAttribute("aria-hidden", "true");
   }
-  showToast("Treasure map unlocked! Adventure Mode is ready.", 3200);
+  showToast(`Treasure map unlocked! ${ADVENTURE_SECTION_PIRATES_PATH} awaits.`, 3200);
   updateAdventureLaunchUI();
 }
 
@@ -8680,7 +8694,7 @@ function drawTreasureChestCinematic() {
     ctx.shadowBlur = 10 * dpr;
     ctx.font = `400 ${subSize}px system-ui, sans-serif`;
     ctx.fillStyle = `rgba(200, 230, 255, ${bannerAlpha * 0.85})`;
-    ctx.fillText("Fifteen voyages await on the chart", w * 0.5, h * 0.13 + titleSize * 1.15 + subSize * 1.6);
+    ctx.fillText("Pirates Path · Gold Quest · Frozen Sea", w * 0.5, h * 0.13 + titleSize * 1.15 + subSize * 1.6);
     ctx.restore();
   }
 
