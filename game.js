@@ -323,33 +323,64 @@ const TREASURE_CINEMATIC_HOLD_MS = 1400;
 /** Logical map height for trail SVG coords (matches stretched parchment art). */
 const ADVENTURE_MAP_HEIGHT = 2200;
 
-/** Section bands on the chart — top/height are % of the map board. */
+/** Section metadata — bounds computed dynamically in adventureMapSectionBounds(). */
 const ADVENTURE_MAP_SECTIONS = {
   pirates: {
     id: "pirates",
     label: ADVENTURE_SECTION_PIRATES_PATH,
     startIndex: 0,
     endIndex: ADVENTURE_MAIN_LEVEL_COUNT - 1,
-    topPct: 50,
-    heightPct: 48,
   },
   gold: {
     id: "gold",
     label: ADVENTURE_SECTION_GOLD_QUEST,
     startIndex: ADVENTURE_MAIN_LEVEL_COUNT,
     endIndex: ADVENTURE_ICE_START_INDEX - 1,
-    topPct: 34,
-    heightPct: 24,
   },
   ice: {
     id: "ice",
     label: ADVENTURE_SECTION_FROZEN_SEA,
     startIndex: ADVENTURE_ICE_START_INDEX,
     endIndex: ADVENTURE_LEVEL_COUNT - 1,
-    topPct: 6,
-    heightPct: 32,
   },
 };
+
+/** Vertical split lines (% from top of map board) aligned to voyage nodes. */
+const ADVENTURE_MAP_PIRATES_TOP_PCT = 56;
+const ADVENTURE_MAP_GOLD_ICE_SPLIT_PCT = 41;
+const ADVENTURE_MAP_TOP_PCT = 4;
+
+/** Tile the chart into non-overlapping bands; gold fills to the top until ice unlocks. */
+function adventureMapSectionBounds() {
+  const pirates = {
+    topPct: ADVENTURE_MAP_PIRATES_TOP_PCT,
+    heightPct: 100 - ADVENTURE_MAP_PIRATES_TOP_PCT,
+  };
+  if (!isAdventureBonusUnlocked()) {
+    return { pirates, gold: null, ice: null };
+  }
+  if (!isAdventureIceUnlocked()) {
+    return {
+      pirates,
+      gold: {
+        topPct: ADVENTURE_MAP_TOP_PCT,
+        heightPct: ADVENTURE_MAP_PIRATES_TOP_PCT - ADVENTURE_MAP_TOP_PCT,
+      },
+      ice: null,
+    };
+  }
+  return {
+    pirates,
+    gold: {
+      topPct: ADVENTURE_MAP_GOLD_ICE_SPLIT_PCT,
+      heightPct: ADVENTURE_MAP_PIRATES_TOP_PCT - ADVENTURE_MAP_GOLD_ICE_SPLIT_PCT,
+    },
+    ice: {
+      topPct: ADVENTURE_MAP_TOP_PCT,
+      heightPct: ADVENTURE_MAP_GOLD_ICE_SPLIT_PCT - ADVENTURE_MAP_TOP_PCT,
+    },
+  };
+}
 
 function buildAdventureMapNodeLayout() {
   const layout = [];
@@ -5251,32 +5282,35 @@ function applyAdventureMapExtent(animate = false) {
 
 function syncAdventureMapSections() {
   if (!adventureMapSections) return;
-  const bonusRevealed = isAdventureBonusUnlocked();
-  const iceRevealed = isAdventureIceUnlocked();
+  const bounds = adventureMapSectionBounds();
   for (const section of adventureMapSections.querySelectorAll(".adventure-map-section")) {
     const id = section.dataset.section;
     const meta = ADVENTURE_MAP_SECTIONS[id];
     if (!meta) continue;
-    section.style.top = `${meta.topPct}%`;
-    section.style.height = `${meta.heightPct}%`;
+    const band = bounds[id];
     section.querySelector(".adventure-map-section__label").textContent = meta.label;
-    const visible =
-      id === "pirates" ||
-      (id === "gold" && bonusRevealed) ||
-      (id === "ice" && iceRevealed);
+    const visible = Boolean(band);
+    if (band) {
+      section.style.top = `${band.topPct}%`;
+      section.style.height = `${band.heightPct}%`;
+    }
     section.hidden = !visible;
     section.classList.toggle("adventure-map-section--visible", visible);
     section.classList.toggle("adventure-map-section--locked", !visible);
+    section.classList.toggle("adventure-map-section--extends-north", id === "gold" && visible && !bounds.ice);
   }
 }
 
 function scrollAdventureMapToSection(sectionId, instant = true) {
   if (!adventureMapScroll) return;
+  const meta = ADVENTURE_MAP_SECTIONS[sectionId];
   const target =
+    (meta &&
+      adventureLevelList?.querySelector(
+        `.adventure-map-node[data-level-index="${meta.startIndex}"]`,
+      )) ||
     adventureMapSections?.querySelector(`.adventure-map-section[data-section="${sectionId}"]`) ||
-    adventureLevelList?.querySelector(
-      `.adventure-map-node[data-section="${sectionId}"]`,
-    );
+    adventureLevelList?.querySelector(`.adventure-map-node[data-section="${sectionId}"]`);
   if (!target) return;
   const run = () => {
     target.scrollIntoView({ block: "center", behavior: instant ? "instant" : "smooth" });
