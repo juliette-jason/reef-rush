@@ -4270,6 +4270,9 @@ function getAdventureLevel(index) {
 }
 
 function getReef() {
+  if (duelSession) {
+    return REEFS.find((r) => r.id === duelSession.reefId) || REEFS[0];
+  }
   const base = REEFS.find((r) => r.id === selectedReefId) || REEFS[0];
   if (!adventureSession) return base;
   const lvl = getAdventureLevel(adventureSession.levelIndex);
@@ -4831,6 +4834,511 @@ async function refreshEventsPanel() {
   updateDailyEventResetLine();
   const rows = await fetchTodayDailyLeaderboard();
   updateDailyEventPlayerHint(rows);
+  refreshDuelEventCard();
+}
+
+const DUEL_WIN_COINS = 800;
+/** null during classic/adventure play; set for split-screen duel fishing. */
+let duelSession = null;
+/** Random reef picked on the Events page before starting a duel. */
+let duelPendingReefId = null;
+
+function isDuelActive() {
+  return Boolean(duelSession);
+}
+
+function duelHalfW() {
+  return w * 0.5;
+}
+
+function duelSideCenter(side) {
+  return side === "player" ? duelHalfW() * 0.5 : duelHalfW() * 1.5;
+}
+
+function pickRandomDuelReefId() {
+  return REEFS[Math.floor(Math.random() * REEFS.length)].id;
+}
+
+function getPlayerPersonalBestScore() {
+  const board = loadLeaderboard();
+  const ini = gameMeta.playerInitials;
+  let best = 0;
+  for (const row of board) {
+    if (!ini || row.initials === ini) best = Math.max(best, row.score);
+  }
+  const daily = normalizeDailyLeaderboardRows(loadLocalDailyLeaderboard());
+  for (const row of daily) {
+    if (!ini || row.initials === ini) best = Math.max(best, row.score);
+  }
+  if (lastRoundScore > best) best = lastRoundScore;
+  return Math.max(150, best);
+}
+
+function createOpponentHook() {
+  const half = duelHalfW();
+  const cx = half * 0.5;
+  return {
+    x: cx,
+    targetX: cx,
+    tipY: 0,
+    castState: "idle",
+    castTimer: 0,
+    castFromY: 0,
+    castToY: 0,
+    castRiseTargetY: 0,
+    snagPulse: 0,
+    castCooldown: 700 + Math.random() * 1400,
+    aimTimer: 0,
+  };
+}
+
+function refreshDuelEventCard() {
+  if (!duelEventMatchup || !duelEventReef) return;
+  duelPendingReefId = pickRandomDuelReefId();
+  const reef = REEFS.find((r) => r.id === duelPendingReefId) || REEFS[0];
+  const target = getPlayerPersonalBestScore();
+  duelEventMatchup.textContent = `Rival targets ${target} pts — matched to your best score.`;
+  duelEventReef.textContent = `Random reef: ${reef.name} (${reef.difficulty})`;
+}
+
+function updateDuelHudScores() {
+  if (!duelHud || !duelHudPlayerScore || !duelHudOpponentScore) return;
+  duelHudPlayerScore.textContent = String(score);
+  duelHudOpponentScore.textContent = String(duelSession?.opponentScore || 0);
+}
+
+function showDuelHud() {
+  if (duelHud) duelHud.hidden = false;
+  updateDuelHudScores();
+}
+
+function hideDuelHud() {
+  if (duelHud) duelHud.hidden = true;
+}
+
+function duelExpectedOpponentScore(now) {
+  if (!duelSession) return 0;
+  const reef = getReef();
+  const elapsed = now - duelSession.roundStart;
+  const t = Math.min(1, Math.max(0, elapsed / reef.roundMs));
+  const ease = t * t * (3 - 2 * t);
+  return Math.floor(duelSession.targetScore * ease * duelSession.pacingBias);
+}
+
+function spawnFishInDuelHalf(side) {
+  const spec = pickSpecies();
+  const shark = spec.morph === "hammerhead" || spec.morph === "reefshark";
+  const len = SIZE[spec.size].length * dpr * (shark ? 1.4 : 1);
+  const reef = getReef();
+  const half = duelHalfW();
+  const xMin = side === "player" ? 0 : half;
+  const xMax = side === "player" ? half : w;
+  const fromLeft = Math.random() < 0.5;
+  const trench = reef.id === "mariana_trench";
+  const minY = trench ? waterTop + waterH * 0.32 : waterTop + len;
+  const maxY = trench ? h - dpr * 95 : waterTop + waterH - len - dpr * 80;
+  const y = minY + Math.random() * Math.max(len, maxY - minY);
+  const base = (0.56 + Math.random() * 0.48) * dpr;
+  const jitter = 0.85 + Math.random() * 0.34;
+  const speed =
+    base * spec.speed * jitter * (spec.size === "small" ? 1.12 : spec.size === "medium" ? 1.06 : 1) * reef.fishSpeed;
+  const fish = {
+    spec,
+    x: fromLeft ? xMin - len : xMax + len,
+    y,
+    vx: fromLeft ? speed : -speed,
+    len,
+    phase: Math.random() * Math.PI * 2,
+    caught: false,
+  };
+  if (side === "player") fishList.push(fish);
+  else duelSession.opponentFish.push(fish);
+}
+
+function countUncaughtOpponentFish() {
+  let n = 0;
+  for (const f of duelSession?.opponentFish || []) {
+    if (!f.caught) n++;
+  }
+  return n;
+}
+
+function updateOpponentFish(dt) {
+  if (!duelSession) return;
+  const t = performance.now();
+  const half = duelHalfW();
+  for (const f of duelSession.opponentFish) {
+    if (f.caught) continue;
+    f.x += f.vx * (dt / 16) * 1.2;
+  }
+  duelSession.opponentFish = duelSession.opponentFish.filter((f) => {
+    if (f.caught && f.removeAt && t >= f.removeAt) return false;
+    if (f.caught) return true;
+    if (f.x < half - f.len * 2 || f.x > w + f.len * 2) return false;
+    return true;
+  });
+}
+
+function addOpponentScore(pts) {
+  if (!duelSession || pts <= 0) return;
+  duelSession.opponentScore += pts;
+  updateDuelHudScores();
+}
+
+function tryCatchOpponentFish(opts) {
+  if (!duelSession) return;
+  const oh = duelSession.opponentHook;
+  const worldX = duelHalfW() + oh.x;
+  const hy = oh.tipY;
+  const casting = opts?.casting === true;
+  let hookR = selectedRod.catchRadius * dpr * 0.92;
+  if (oh.snagPulse > 0) hookR *= 1.35;
+  if (casting) hookR *= 1.32;
+
+  const candidates = [];
+  for (const f of duelSession.opponentFish) {
+    if (f.caught) continue;
+    const dx = f.x - worldX;
+    const dy = f.y - hy;
+    const reach = fishHitRadius(f, hookR);
+    if (dx * dx + dy * dy > reach * reach) continue;
+    const rar = RARITY[f.spec.rarity];
+    if (rar.mult >= 2.1 && Math.random() > 0.72) continue;
+    candidates.push(f);
+  }
+  if (!candidates.length) return;
+
+  let batchPts = 0;
+  for (const f of candidates) {
+    f.caught = true;
+    f.removeAt = performance.now() + 320;
+    batchPts += pointsFor(f.spec);
+  }
+  addOpponentScore(batchPts);
+  oh.snagPulse = 260;
+}
+
+function boostOpponentIfBehind(now) {
+  if (!duelSession) return;
+  const expected = duelExpectedOpponentScore(now);
+  if (duelSession.opponentScore >= expected - 8) return;
+  if (Math.random() > 0.035) return;
+  const bump = Math.min(38, Math.max(12, expected - duelSession.opponentScore));
+  addOpponentScore(bump);
+}
+
+function updateOpponentHook(dt) {
+  if (!duelSession) return;
+  const oh = duelSession.opponentHook;
+  const half = duelHalfW();
+  const margin = dpr * 14;
+  oh.aimTimer -= dt;
+
+  if (oh.castState === "idle") {
+    oh.tipY = surfaceTipY();
+    oh.castCooldown -= dt;
+    let nearest = null;
+    let nearestD = Infinity;
+    for (const f of duelSession.opponentFish) {
+      if (f.caught) continue;
+      const dx = f.x - (duelHalfW() + oh.x);
+      const dy = f.y - oh.tipY;
+      const d = dx * dx + dy * dy;
+      if (d < nearestD) {
+        nearestD = d;
+        nearest = f;
+      }
+    }
+    if (nearest && oh.aimTimer <= 0) {
+      oh.targetX = Math.max(margin, Math.min(half - margin, nearest.x - duelHalfW()));
+      oh.aimTimer = 180 + Math.random() * 320;
+    } else if (oh.aimTimer <= 0) {
+      oh.targetX = margin + Math.random() * (half - margin * 2);
+      oh.aimTimer = 260 + Math.random() * 420;
+    }
+    if (oh.castCooldown <= 0) {
+      oh.castState = "down";
+      oh.castTimer = 0;
+      oh.castFromY = oh.tipY;
+      oh.castToY = deepestTipY();
+      oh.castCooldown = 900 + Math.random() * 1600;
+    }
+  } else if (oh.castState === "down") {
+    oh.castTimer += dt;
+    const t = Math.min(1, oh.castTimer / effectiveCastDownMs());
+    const smooth = t * t * (3 - 2 * t);
+    oh.tipY = oh.castFromY + (oh.castToY - oh.castFromY) * smooth;
+    tryCatchOpponentFish({ casting: true });
+    if (t >= 1) {
+      oh.snagPulse = 280;
+      tryCatchOpponentFish({ casting: true });
+      oh.castState = "up";
+      oh.castTimer = 0;
+      oh.castFromY = oh.tipY;
+      oh.castRiseTargetY = surfaceTipY();
+    }
+  } else if (oh.castState === "up") {
+    oh.castTimer += dt;
+    const t = Math.min(1, oh.castTimer / effectiveCastUpMs());
+    const ease = 1 - (1 - t) * (1 - t);
+    oh.tipY = oh.castFromY + (oh.castRiseTargetY - oh.castFromY) * ease;
+    if (t >= 1) oh.castState = "idle";
+  }
+
+  const k = dt / 16;
+  const follow = 1 - Math.pow(0.5, k);
+  oh.x += (oh.targetX - oh.x) * Math.min(1, follow * 2.1);
+  oh.x = Math.max(margin, Math.min(half - margin, oh.x));
+  if (oh.snagPulse > 0) oh.snagPulse -= dt;
+}
+
+function updateDuelOpponent(dt, now) {
+  if (!duelSession) return;
+  duelSession.opponentSpawnAcc += dt;
+  const reef = getReef();
+  const maxFish = Math.max(5, Math.floor(reef.maxFish * 0.55));
+  if (duelSession.opponentSpawnAcc >= duelSession.opponentNextSpawn && countUncaughtOpponentFish() < maxFish) {
+    spawnFishInDuelHalf("opponent");
+    duelSession.opponentSpawnAcc = 0;
+    duelSession.opponentNextSpawn = rollNextSpawnDelay(reef);
+  }
+  updateOpponentFish(dt);
+  updateOpponentHook(dt);
+  boostOpponentIfBehind(now);
+}
+
+function drawDuelDivider() {
+  const mid = duelHalfW();
+  ctx.save();
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.45)";
+  ctx.lineWidth = 3 * dpr;
+  ctx.setLineDash([dpr * 6, dpr * 5]);
+  ctx.beginPath();
+  ctx.moveTo(mid, waterTop);
+  ctx.lineTo(mid, h);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = "rgba(255, 255, 255, 0.72)";
+  ctx.font = `800 ${Math.max(10, 11 * dpr)}px Nunito, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.fillText("YOU", mid * 0.5, waterTop + dpr * 18);
+  ctx.fillStyle = "rgba(252, 165, 165, 0.88)";
+  ctx.fillText("RIVAL", mid + mid * 0.5, waterTop + dpr * 18);
+  ctx.restore();
+}
+
+function drawHookLineForState(hookState, anchorX) {
+  const hx = anchorX;
+  const hy = hookState.tipY;
+  const topY = lineAnchorY();
+  const v = selectedRod.visual;
+
+  const reelW = 14 * dpr * (isDuelActive() ? 0.82 : 1);
+  const reelH = 7 * dpr * (isDuelActive() ? 0.82 : 1);
+  const rg = ctx.createLinearGradient(hx - reelW, topY - reelH, hx + reelW, topY + reelH * 0.5);
+  rg.addColorStop(0, v.reelBody);
+  rg.addColorStop(0.5, v.reelBand);
+  rg.addColorStop(1, v.reelBody);
+  ctx.fillStyle = rg;
+  ctx.beginPath();
+  ctx.ellipse(hx, topY - dpr * 3.2, reelW * 0.48, reelH * 1.15, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = v.lineMain;
+  ctx.lineWidth = v.lineW * dpr;
+  ctx.beginPath();
+  ctx.moveTo(hx, topY);
+  ctx.lineTo(hx, hy);
+  ctx.stroke();
+
+  ctx.strokeStyle = v.lineSheen;
+  ctx.lineWidth = v.sheenW * dpr;
+  ctx.beginPath();
+  ctx.moveTo(hx - dpr * 0.85, topY);
+  ctx.lineTo(hx - dpr * 0.85, hy);
+  ctx.stroke();
+
+  const pulse = hookState.snagPulse > 0 ? 1.28 : 1;
+  const forOpponent = hookState !== hook;
+  let hookR = selectedRod.catchRadius * dpr * (forOpponent ? 1 : roundBait.catchRadiusMult);
+  if (forOpponent) hookR *= 0.92;
+  const R = hookR * pulse;
+
+  ctx.strokeStyle = hookState.snagPulse > 0 ? v.ringSnag : v.ringIdle;
+  ctx.lineWidth = 2 * dpr;
+  ctx.beginPath();
+  ctx.arc(hx, hy, R, 0, Math.PI * 2);
+  ctx.stroke();
+
+  const hs = v.hookScale * (isDuelActive() ? 0.9 : 1);
+  const tipGlowY = v.tipType === "magnet" ? hy + dpr * 8 * hs : hy + dpr * 12 * hs;
+  const tipGlow = ctx.createRadialGradient(hx, tipGlowY, 0, hx, tipGlowY, dpr * 22 * hs);
+  tipGlow.addColorStop(0, v.tipGlow);
+  tipGlow.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = tipGlow;
+  ctx.beginPath();
+  ctx.arc(hx, tipGlowY, dpr * 18 * hs, 0, Math.PI * 2);
+  ctx.fill();
+  drawHookTip(hx, hy, v, hs);
+}
+
+function drawDuelPlayfield() {
+  const half = duelHalfW();
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, half, h);
+  ctx.clip();
+  for (const f of fishList) drawFish(f);
+  drawBoatHullAndCatchNetAt(duelSideCenter("player"));
+  drawHookLineForState(hook, hook.x);
+  drawReleasedFishJumpFx();
+  drawTrenchRodLightForHook(hook.x);
+  ctx.restore();
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(half, 0, half, h);
+  ctx.clip();
+  for (const f of duelSession.opponentFish) drawFish(f);
+  drawBoatHullAt(duelSideCenter("opponent"));
+  drawHookLineForState(duelSession.opponentHook, duelHalfW() + duelSession.opponentHook.x);
+  ctx.restore();
+
+  drawDuelDivider();
+}
+
+function drawTrenchRodLightForHook(hx) {
+  if (getReef().id !== "mariana_trench") return;
+  const hy = hookTipY();
+  const lampY = hy + dpr * 8;
+  const lightMult = effectiveTrenchLightMult();
+  const radius = Math.max(72 * dpr, Math.min(w, h) * 0.12) * lightMult;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(hx, lampY, radius, 0, Math.PI * 2);
+  ctx.clip();
+  const glow = ctx.createRadialGradient(hx, lampY, 0, hx, lampY, radius);
+  glow.addColorStop(0, `rgba(190, 255, 255, ${0.28 + Math.min(0.2, (lightMult - 1) * 0.15)})`);
+  glow.addColorStop(1, "rgba(45, 212, 191, 0)");
+  ctx.fillStyle = glow;
+  ctx.fillRect(hx - radius, lampY - radius, radius * 2, radius * 2);
+  ctx.restore();
+}
+
+function startDuelRound() {
+  if (playing) return;
+  refreshDuelEventCard();
+  const reefId = duelPendingReefId || pickRandomDuelReefId();
+  const targetScore = getPlayerPersonalBestScore();
+  duelSession = {
+    reefId,
+    targetScore,
+    opponentScore: 0,
+    opponentHook: createOpponentHook(),
+    opponentFish: [],
+    opponentSpawnAcc: 0,
+    opponentNextSpawn: rollNextSpawnDelay(REEFS.find((r) => r.id === reefId) || REEFS[0], true),
+    roundStart: 0,
+    pacingBias: 0.93 + Math.random() * 0.1,
+  };
+
+  playing = true;
+  normalizeSelectedRod();
+  stopHomeMusic();
+  syncMusicMasterGain();
+  startHomeWaves();
+  roundBait = { catchRadiusMult: 1, rareAssistAdd: 0, lightRadiusMult: 1 };
+  score = 0;
+  fishList = [];
+  catchLog = [];
+  spawnAcc = 0;
+  const reef = getReef();
+  nextSpawnIn = rollNextSpawnDelay(reef, true);
+  seedStarterFish(reef);
+  const roundStart = performance.now();
+  duelSession.roundStart = roundStart;
+  roundEndAt = roundStart + reef.roundMs;
+  kraken = null;
+  jackpotCrab = null;
+  hideAllPanels();
+  if (panelDuelOver) panelDuelOver.hidden = true;
+  appRoot.classList.add("app--playing", "app--duel");
+  showDuelHud();
+  lastPearlAt = -999999;
+  scoreDisplay.textContent = "0";
+  timeDisplay.textContent = formatTime(reef.roundMs);
+  initBubbles();
+  resize();
+  hook.targetX = duelSideCenter("player");
+  hook.x = hook.targetX;
+  hook.tipY = surfaceTipY();
+  hook.castState = "idle";
+  hook.castTimer = 0;
+  hook.snagPulse = 0;
+  touchAim = null;
+  celebration.particles.length = 0;
+  celebration.rings.length = 0;
+  releasedFishFx.length = 0;
+  catchFlash = 0;
+  hook.krakenBiteLocked = false;
+  duelSession.opponentHook.tipY = surfaceTipY();
+  for (let i = 0; i < 3; i++) spawnFishInDuelHalf("opponent");
+  controlHint.textContent = isTouchControlsPreferred()
+    ? "Your side only — drag & tap to fish · beat the rival!"
+    : "Your side only — aim & cast · beat the rival before time runs out!";
+  updateDuelHudScores();
+  startReefMusic();
+}
+
+function endDuelRound() {
+  const playerScore = score;
+  const opponentScore = duelSession?.opponentScore || 0;
+  const targetScore = duelSession?.targetScore || 0;
+  const reefName = getReef().name;
+  const won = playerScore > opponentScore;
+
+  playing = false;
+  stopReefMusic();
+  appRoot.classList.remove("app--playing", "app--duel");
+  hideDuelHud();
+  duelSession = null;
+  hook.castState = "idle";
+  touchAim = null;
+
+  if (panelDuelOver) panelDuelOver.hidden = false;
+  if (duelOverHeadline) {
+    duelOverHeadline.textContent = won ? "You win the duel!" : playerScore === opponentScore ? "It's a tie!" : "Rival wins";
+  }
+  if (duelOverScores) {
+    duelOverScores.textContent = `You ${playerScore} · Rival ${opponentScore}`;
+  }
+  if (duelOverDetail) {
+    duelOverDetail.textContent = `${reefName} · rival was matched to ${targetScore} pts`;
+  }
+  if (duelOverPrize) {
+    if (won) {
+      gameMeta.coins += DUEL_WIN_COINS;
+      saveMeta();
+      refreshCoinDisplays();
+      duelOverPrize.hidden = false;
+      duelOverPrize.textContent = `+${DUEL_WIN_COINS} coins!`;
+    } else {
+      duelOverPrize.hidden = true;
+      duelOverPrize.textContent = "";
+    }
+  }
+  roundBait = { catchRadiusMult: 1, rareAssistAdd: 0, lightRadiusMult: 1 };
+}
+
+function openDuelFromResult(replay) {
+  if (panelDuelOver) panelDuelOver.hidden = true;
+  if (replay) {
+    refreshDuelEventCard();
+    startDuelRound();
+    return;
+  }
+  openEvents();
 }
 
 const PEARL_POINTS = 420;
@@ -4967,6 +5475,19 @@ const dailyLeaderboardEvents = document.getElementById("dailyLeaderboardEvents")
 const dailyLeaderboardTitle = document.getElementById("dailyLeaderboardTitle");
 const dailyEventReset = document.getElementById("dailyEventReset");
 const dailyEventPlayerHint = document.getElementById("dailyEventPlayerHint");
+const duelEventMatchup = document.getElementById("duelEventMatchup");
+const duelEventReef = document.getElementById("duelEventReef");
+const btnStartDuel = document.getElementById("btnStartDuel");
+const duelHud = document.getElementById("duelHud");
+const duelHudPlayerScore = document.getElementById("duelHudPlayerScore");
+const duelHudOpponentScore = document.getElementById("duelHudOpponentScore");
+const panelDuelOver = document.getElementById("panelDuelOver");
+const duelOverHeadline = document.getElementById("duelOverHeadline");
+const duelOverScores = document.getElementById("duelOverScores");
+const duelOverDetail = document.getElementById("duelOverDetail");
+const duelOverPrize = document.getElementById("duelOverPrize");
+const btnDuelPlayAgain = document.getElementById("btnDuelPlayAgain");
+const btnDuelBackEvents = document.getElementById("btnDuelBackEvents");
 const btnCloseShop = document.getElementById("btnCloseShop");
 const btnShopGuideDone = document.getElementById("btnShopGuideDone");
 const btnToggleMusic = document.getElementById("btnToggleMusic");
@@ -5185,6 +5706,7 @@ function hideAllPanels() {
   if (panelAdventure) panelAdventure.hidden = true;
   if (panelAdventureFail) panelAdventureFail.hidden = true;
   if (panelAdventureWin) panelAdventureWin.hidden = true;
+  if (panelDuelOver) panelDuelOver.hidden = true;
   stopDailyEventCountdown();
 }
 
@@ -5327,7 +5849,7 @@ function showHomePanel() {
 function isHomeScreenActive() {
   if (playing) return false;
   if (!panelStart || panelStart.hidden) return false;
-  const blocking = [panelOver, panelShop, panelEvents, panelIntro, panelAdventure, panelAdventureFail, panelAdventureWin];
+  const blocking = [panelOver, panelShop, panelEvents, panelIntro, panelAdventure, panelAdventureFail, panelAdventureWin, panelDuelOver];
   for (const panel of blocking) {
     if (panel && !panel.hidden) return false;
   }
@@ -6556,6 +7078,7 @@ function openEvents() {
   if (!panelEvents || !panelStart) return;
   panelStart.hidden = true;
   panelEvents.hidden = false;
+  if (panelDuelOver) panelDuelOver.hidden = true;
   syncHomeLaunchButtons();
   void processDailyPrizePayouts().then(() => refreshEventsPanel());
   startDailyEventCountdown();
@@ -6676,6 +7199,11 @@ function effectiveCastUpMs() {
 }
 
 function seedStarterFish(reef) {
+  if (isDuelActive()) {
+    const n = Math.min(3, Math.max(2, Math.floor(reef.maxFish * 0.28)));
+    for (let i = 0; i < n; i++) spawnFishInDuelHalf("player");
+    return;
+  }
   if (!PERF_CHROMEBOOK || !adventureSession) return;
   const n = Math.min(3, Math.max(2, Math.floor(reef.maxFish * 0.3)));
   for (let i = 0; i < n; i++) spawnFish();
@@ -6700,6 +7228,10 @@ function resize() {
 }
 
 function spawnFish() {
+  if (isDuelActive()) {
+    spawnFishInDuelHalf("player");
+    return;
+  }
   const spec = pickSpecies();
   const shark = spec.morph === "hammerhead" || spec.morph === "reefshark";
   const len = SIZE[spec.size].length * dpr * (shark ? 1.4 : 1);
@@ -6855,6 +7387,10 @@ function endRound() {
   hook.krakenBiteLocked = false;
   if (adventureSession) {
     endAdventureRound();
+    return;
+  }
+  if (duelSession) {
+    endDuelRound();
     return;
   }
   panelOver.hidden = false;
@@ -7153,6 +7689,7 @@ function tryCatchFish(opts) {
   }
 
   scoreDisplay.textContent = String(score);
+  if (isDuelActive()) updateDuelHudScores();
 
   if (candidates.length === 1) {
     const f = candidates[0];
@@ -7307,13 +7844,17 @@ function getFishOnlyCatchEntries() {
   return catchLog.filter(isFishCatchLogEntry);
 }
 
-function catchNetLayout() {
-  const boatCx = w * 0.5;
+function catchNetLayout(boatCx = w * 0.5) {
   const rimRx = 58 * dpr;
   const rimRy = 16 * dpr;
   const sackHx = 54 * dpr;
   const sackVy = 74 * dpr;
-  const rimCx = w - 58 * dpr;
+  let rimCx;
+  if (isDuelActive()) {
+    rimCx = duelHalfW() - 58 * dpr;
+  } else {
+    rimCx = w - 58 * dpr;
+  }
   const rimCy = waterTop + 10 * dpr;
   const sackCx = rimCx;
   const sackCy = rimCy + rimRy + sackVy * 0.52;
@@ -7351,10 +7892,11 @@ function spawnFishEscapingFromNet(freedEntries, sackCx, sackCy) {
   celebration.rings.push({ x: sackCx, y: sackCy, t: 0, life: 0.95 });
 }
 
-function getCharterBoatGeo() {
-  const cx = w * 0.5;
+function getCharterBoatGeo(centerX = w * 0.5) {
+  const cx = centerX;
   const wt = waterTop;
-  const L = Math.min(w * 0.32, 260 * dpr);
+  const scale = isDuelActive() ? 0.58 : 1;
+  const L = Math.min(w * 0.32, 260 * dpr) * scale;
   const bowX = cx - L;
   const sternX = cx + L;
   const bowDeck = 68 * dpr;
@@ -7369,8 +7911,8 @@ function getCharterBoatGeo() {
   return { cx, wt, L, bowX, sternX, deckY };
 }
 
-function drawBoatHullInWater() {
-  const { cx, wt, L, bowX, sternX, deckY } = getCharterBoatGeo();
+function drawBoatHullInWater(centerX = w * 0.5) {
+  const { cx, wt, L, bowX, sternX, deckY } = getCharterBoatGeo(centerX);
   const belowD = 54 * dpr;
 
   ctx.save();
@@ -7575,8 +8117,61 @@ function drawCatchNetWithFish() {
   ctx.restore();
 }
 
+function drawBoatHullAt(centerX) {
+  drawBoatHullInWater(centerX);
+}
+
+function drawCatchNetForSide(centerX) {
+  const lay = catchNetLayout(centerX);
+  const { rimCx, rimCy, rimRx, rimRy, sackCx, sackCy, sackHx, sackVy } = lay;
+  const g = getCharterBoatGeo(centerX);
+  const ropeAx = g.cx + g.L * 0.34;
+  const ropeAy = g.deckY(ropeAx) - dpr * 6;
+  ctx.save();
+  ctx.strokeStyle = "rgba(55, 58, 62, 0.92)";
+  ctx.lineWidth = 2.4 * dpr;
+  ctx.beginPath();
+  ctx.moveTo(ropeAx, ropeAy);
+  ctx.quadraticCurveTo((ropeAx + rimCx) * 0.5 + 22 * dpr, (ropeAy + rimCy) * 0.5 + 14 * dpr, rimCx, rimCy - rimRy * 0.55);
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(88, 92, 98, 0.96)";
+  ctx.lineWidth = 2.9 * dpr;
+  ctx.beginPath();
+  ctx.ellipse(rimCx, rimCy, rimRx, rimRy, 0.06, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(sackCx, sackCy, sackHx, sackVy, 0.05, 0, Math.PI * 2);
+  ctx.clip();
+  ctx.strokeStyle = "rgba(210, 220, 232, 0.42)";
+  ctx.lineWidth = 1.1 * dpr;
+  for (let yy = sackCy - sackVy; yy < sackCy + sackVy; yy += dpr * 9) {
+    const wv = Math.sin(yy * 0.035 + performance.now() * 0.001) * dpr * 3.5;
+    ctx.beginPath();
+    ctx.moveTo(sackCx - sackHx, yy + wv);
+    ctx.lineTo(sackCx + sackHx, yy - wv);
+    ctx.stroke();
+  }
+  ctx.restore();
+  ctx.fillStyle = "rgba(8, 20, 36, 0.28)";
+  ctx.beginPath();
+  ctx.ellipse(sackCx, sackCy + dpr * 7, sackHx * 0.92, sackVy * 0.9, 0.05, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawBoatHullAndCatchNetAt(centerX) {
+  if (w <= 0 || h <= 0) return;
+  drawBoatHullAt(centerX);
+  drawCatchNetForSide(centerX);
+}
+
 function drawBoatHullAndCatchNet() {
   if (w <= 0 || h <= 0) return;
+  if (isDuelActive()) {
+    drawBoatHullAndCatchNetAt(duelSideCenter("player"));
+    return;
+  }
   drawBoatHullInWater();
   drawCatchNetWithFish();
 }
@@ -10066,7 +10661,9 @@ function updateFish(dt) {
   fishList = fishList.filter((f) => {
     if (f.caught && f.removeAt && t >= f.removeAt) return false;
     if (f.caught) return true;
-    if (f.x < -f.len * 2 || f.x > w + f.len * 2) return false;
+    const maxX = isDuelActive() ? duelHalfW() + f.len * 2 : w + f.len * 2;
+    const minX = isDuelActive() ? -f.len * 2 : -f.len * 2;
+    if (f.x < minX || f.x > maxX) return false;
     return true;
   });
 }
@@ -10115,7 +10712,8 @@ function updateHook(dt) {
     hook.x = hook.targetX;
   }
   const margin = dpr * 16;
-  hook.x = Math.max(margin, Math.min(w - margin, hook.x));
+  const maxX = isDuelActive() ? duelHalfW() - margin : w - margin;
+  hook.x = Math.max(margin, Math.min(maxX, hook.x));
 
   hook.y = hook.tipY;
   if (hook.snagPulse > 0) hook.snagPulse -= dt;
@@ -10217,7 +10815,13 @@ function gameLoop(now) {
         }
         updateFish(dt);
         updateHook(dt);
+        if (isDuelActive()) updateDuelOpponent(dt, now);
       }
+      if (isDuelActive()) {
+        drawDuelPlayfield();
+        drawCatchFlash();
+        drawCelebration();
+      } else {
       drawKraken();
       drawJackpotCrab();
       for (const f of fishList) drawFish(f);
@@ -10228,6 +10832,7 @@ function gameLoop(now) {
       drawCatchFlash();
       drawTreasureChestCinematic();
       drawCelebration();
+      }
     }
   } else {
     if (w > 0) {
@@ -10254,7 +10859,14 @@ function clientToCanvas(clientX, clientY) {
 function setHookTargetX(clientX) {
   const margin = dpr * 16;
   const x = clientToCanvas(clientX, 0);
-  hook.targetX = Math.max(margin, Math.min(w - margin, x));
+  const maxX = isDuelActive() ? duelHalfW() - margin : w - margin;
+  hook.targetX = Math.max(margin, Math.min(maxX, x));
+}
+
+function isClientInPlayerDuelHalf(clientX) {
+  if (!isDuelActive()) return true;
+  const rect = canvas.getBoundingClientRect();
+  return clientX - rect.left <= rect.width * 0.5;
 }
 
 function isTouchControlsPreferred() {
@@ -10298,6 +10910,7 @@ function finishTouchAim(pointerId, clientX, clientY) {
 
 canvas.addEventListener("pointerdown", (e) => {
   if (!playing || isGameplayFrozen()) return;
+  if (!isClientInPlayerDuelHalf(e.clientX)) return;
   try {
     canvas.setPointerCapture(e.pointerId);
   } catch (_) {
@@ -10313,6 +10926,7 @@ canvas.addEventListener("pointerdown", (e) => {
 
 canvas.addEventListener("pointermove", (e) => {
   if (!playing || isGameplayFrozen()) return;
+  if (isDuelActive() && !isClientInPlayerDuelHalf(e.clientX)) return;
   if (e.pointerType === "mouse" && e.buttons !== 1) return;
   if (isTouchAimEvent(e)) e.preventDefault();
   setHookTargetX(e.clientX);
@@ -10332,6 +10946,7 @@ function releaseCanvasPointer(e) {
 canvas.addEventListener("pointerup", (e) => {
   releaseCanvasPointer(e);
   if (!playing || isGameplayFrozen()) return;
+  if (!isClientInPlayerDuelHalf(e.clientX)) return;
   setHookTargetX(e.clientX);
   if (isTouchAimEvent(e)) {
     e.preventDefault();
@@ -10351,6 +10966,7 @@ canvas.addEventListener(
   (e) => {
     if (!playing || isGameplayFrozen() || e.changedTouches.length < 1) return;
     const touch = e.changedTouches[0];
+    if (!isClientInPlayerDuelHalf(touch.clientX)) return;
     e.preventDefault();
     setHookTargetX(touch.clientX);
     hook.x = hook.targetX;
@@ -10364,6 +10980,7 @@ canvas.addEventListener(
   (e) => {
     if (!playing || isGameplayFrozen() || e.changedTouches.length < 1) return;
     const touch = e.changedTouches[0];
+    if (isDuelActive() && !isClientInPlayerDuelHalf(touch.clientX)) return;
     e.preventDefault();
     setHookTargetX(touch.clientX);
     updateTouchAim("touch", touch.clientX, touch.clientY);
@@ -10376,6 +10993,7 @@ canvas.addEventListener(
   (e) => {
     if (!playing || isGameplayFrozen() || e.changedTouches.length < 1) return;
     const touch = e.changedTouches[0];
+    if (!isClientInPlayerDuelHalf(touch.clientX)) return;
     e.preventDefault();
     setHookTargetX(touch.clientX);
     finishTouchAim("touch", touch.clientX, touch.clientY);
@@ -10444,6 +11062,11 @@ btnStart.addEventListener("click", startRound);
 btnOpenShop?.addEventListener("click", openShop);
 btnEvents?.addEventListener("click", openEvents);
 btnCloseEvents?.addEventListener("click", closeEvents);
+btnStartDuel?.addEventListener("click", () => {
+  startDuelRound();
+});
+btnDuelPlayAgain?.addEventListener("click", () => openDuelFromResult(true));
+btnDuelBackEvents?.addEventListener("click", () => openDuelFromResult(false));
 btnCloseShop?.addEventListener("click", closeShop);
 btnOpenShopGuide?.addEventListener("click", openShopGuide);
 btnShopGuideDone?.addEventListener("click", closeShopGuide);

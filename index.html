@@ -41,6 +41,17 @@
             <p id="adventureGoalLine" class="adventure-play-theme__goal" hidden></p>
           </div>
         </div>
+        <div id="duelHud" class="duel-hud" hidden>
+          <div class="duel-hud__side duel-hud__side--you">
+            <span class="duel-hud__label">You</span>
+            <span id="duelHudPlayerScore" class="duel-hud__score">0</span>
+          </div>
+          <span class="duel-hud__vs">vs</span>
+          <div class="duel-hud__side duel-hud__side--rival">
+            <span class="duel-hud__label">Rival</span>
+            <span id="duelHudOpponentScore" class="duel-hud__score">0</span>
+          </div>
+        </div>
       </header>
 
       <div class="canvas-wrap">
@@ -593,7 +604,31 @@
           </div>
           <p id="dailyEventPlayerHint" class="event-card__hint"></p>
         </article>
+        <article class="event-card event-card--duel" id="eventCardDuel">
+          <header class="event-card__head">
+            <h3 class="event-card__title">Duel Fishing</h3>
+            <p class="event-card__reset">Split-screen</p>
+          </header>
+          <p class="event-card__desc">
+            Face a rival fisher on a random home-screen reef. Your half of the screen is yours — beat their score before time runs out.
+          </p>
+          <ul class="event-card__prizes" aria-label="Duel prize">
+            <li><span class="event-card__medal event-card__medal--win">Win</span> 800 coins</li>
+          </ul>
+          <p id="duelEventMatchup" class="event-card__matchup">Rival targets your best score.</p>
+          <p id="duelEventReef" class="event-card__reef-pick">Reef: —</p>
+          <button type="button" id="btnStartDuel" class="btn btn--secondary event-card__play">Play duel</button>
+        </article>
         <button type="button" id="btnCloseEvents" class="btn btn--primary">Back</button>
+      </section>
+
+      <section id="panelDuelOver" class="panel panel--duel-over" hidden>
+        <h2 id="duelOverHeadline" class="panel__headline">Duel complete</h2>
+        <p id="duelOverScores" class="panel__scoreline">You 0 · Rival 0</p>
+        <p id="duelOverDetail" class="panel__lede"></p>
+        <p id="duelOverPrize" class="panel__coinline" hidden></p>
+        <button type="button" id="btnDuelPlayAgain" class="btn btn--primary">Duel again</button>
+        <button type="button" id="btnDuelBackEvents" class="btn btn--secondary">Back to Events</button>
       </section>
 
       <section id="panelShop" class="panel panel--shop" hidden>
