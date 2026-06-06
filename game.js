@@ -3771,6 +3771,8 @@ function defaultMeta() {
     pendingAdventureHomeCelebration: false,
     pendingBonusVoyagesCelebration: false,
     pendingIceVoyagesCelebration: false,
+    playerInitials: "",
+    dailyPrizeCheckedDay: "",
   };
 }
 
@@ -3805,6 +3807,11 @@ function loadMeta() {
       pendingAdventureHomeCelebration: Boolean(o.pendingAdventureHomeCelebration),
       pendingBonusVoyagesCelebration: Boolean(o.pendingBonusVoyagesCelebration),
       pendingIceVoyagesCelebration: Boolean(o.pendingIceVoyagesCelebration),
+      playerInitials: String(o.playerInitials || "")
+        .toUpperCase()
+        .replace(/[^A-Z]/g, "")
+        .slice(0, 3),
+      dailyPrizeCheckedDay: String(o.dailyPrizeCheckedDay || ""),
     };
   } catch {
     return defaultMeta();
@@ -4405,6 +4412,287 @@ function refreshLeaderboardViews(syncShared = true) {
   if (syncShared) fetchSharedLeaderboard();
 }
 
+const DAILY_LEADERBOARD_KEY = "reefRushDailyLeaderboard_v1";
+const DAILY_LEADERBOARD_MAX = 10;
+const DAILY_LEADERBOARD_FETCH_LIMIT = 80;
+const DAILY_LEADERBOARD_TABLE_URL = `${SUPABASE_REST_URL}/daily_leaderboard`;
+const DAILY_PRIZES = [1500, 1000, 800];
+let dailyLeaderboardRows = [];
+let dailyLeaderboardLoading = false;
+let dailyLeaderboardLoadId = 0;
+let dailyEventCountdownTimer = 0;
+
+function getDailyDayKey(d = new Date()) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function getPreviousDailyDayKey() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return getDailyDayKey(d);
+}
+
+function formatDailyDayLabel(dayKey) {
+  const [y, m, d] = dayKey.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function msUntilDailyReset() {
+  const now = new Date();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
+  return Math.max(0, tomorrow.getTime() - now.getTime());
+}
+
+function formatDailyResetCountdown(ms) {
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  if (h <= 0) return `Resets in ${m}m`;
+  return `Resets in ${h}h ${m}m`;
+}
+
+function loadLocalDailyStore() {
+  try {
+    const raw = localStorage.getItem(DAILY_LEADERBOARD_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveLocalDailyStore(store) {
+  try {
+    localStorage.setItem(DAILY_LEADERBOARD_KEY, JSON.stringify(store));
+  } catch {
+    /* ignore quota */
+  }
+}
+
+function loadLocalDailyLeaderboard(dayKey = getDailyDayKey()) {
+  const store = loadLocalDailyStore();
+  return Array.isArray(store[dayKey]) ? store[dayKey] : [];
+}
+
+function saveLocalDailyLeaderboard(dayKey, rows) {
+  const store = loadLocalDailyStore();
+  store[dayKey] = rows;
+  const cutoff = Date.now() - 8 * 24 * 60 * 60 * 1000;
+  for (const key of Object.keys(store)) {
+    const sample = store[key]?.[0];
+    const at = sample?.at || sample?.created_at || 0;
+    if (at && Number(at) < cutoff) delete store[key];
+  }
+  saveLocalDailyStore(store);
+}
+
+function normalizeDailyLeaderboardRows(rows) {
+  if (!Array.isArray(rows)) return [];
+  const bestByIni = new Map();
+  for (const raw of rows) {
+    const entry = {
+      initials: String(raw.initials || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3),
+      score: Math.max(0, Math.floor(Number(raw.score) || 0)),
+      reefId: raw.reefId || raw.reef_id || "",
+      at: raw.at || raw.created_at || "",
+      dayKey: raw.dayKey || raw.day_key || getDailyDayKey(),
+    };
+    if (!entry.initials || entry.score <= 0) continue;
+    const prev = bestByIni.get(entry.initials);
+    if (!prev || entry.score > prev.score || (entry.score === prev.score && String(entry.at) < String(prev.at))) {
+      bestByIni.set(entry.initials, entry);
+    }
+  }
+  return [...bestByIni.values()]
+    .sort((a, b) => b.score - a.score || String(a.at).localeCompare(String(b.at)))
+    .slice(0, DAILY_LEADERBOARD_MAX);
+}
+
+async function fetchDailyLeaderboardForDay(dayKey = getDailyDayKey()) {
+  try {
+    const url = `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=initials,score,reef_id,created_at,day_key&order=score.desc,created_at.asc&limit=${DAILY_LEADERBOARD_FETCH_LIMIT}`;
+    const res = await fetch(url, { headers: leaderboardHeaders() });
+    if (!res.ok) throw new Error(`Daily leaderboard fetch failed: ${res.status}`);
+    const rows = normalizeDailyLeaderboardRows(await res.json());
+    saveLocalDailyLeaderboard(dayKey, rows);
+    return rows;
+  } catch (err) {
+    console.warn(err);
+    return normalizeDailyLeaderboardRows(loadLocalDailyLeaderboard(dayKey));
+  }
+}
+
+async function fetchTodayDailyLeaderboard() {
+  const loadId = ++dailyLeaderboardLoadId;
+  dailyLeaderboardLoading = true;
+  renderDailyLeaderboardOl(dailyLeaderboardEvents);
+  try {
+    const rows = await fetchDailyLeaderboardForDay(getDailyDayKey());
+    if (loadId !== dailyLeaderboardLoadId) return rows;
+    dailyLeaderboardRows = rows;
+    return rows;
+  } finally {
+    if (loadId === dailyLeaderboardLoadId) {
+      dailyLeaderboardLoading = false;
+      renderDailyLeaderboardOl(dailyLeaderboardEvents, dailyLeaderboardRows);
+    }
+  }
+}
+
+async function submitDailyScore(initials, score, reefId) {
+  const ini = String(initials || "")
+    .toUpperCase()
+    .replace(/[^A-Z]/g, "")
+    .slice(0, 3);
+  const pts = Math.max(0, Math.floor(Number(score) || 0));
+  if (!ini || pts <= 0) return false;
+
+  const dayKey = getDailyDayKey();
+  const localRows = normalizeDailyLeaderboardRows(loadLocalDailyLeaderboard(dayKey));
+  const existing = localRows.find((r) => r.initials === ini);
+  if (existing && existing.score >= pts) return false;
+
+  const entry = { initials: ini, score: pts, reefId: reefId || "", at: Date.now(), dayKey };
+  const merged = normalizeDailyLeaderboardRows([...localRows, entry]);
+  dailyLeaderboardRows = merged;
+  saveLocalDailyLeaderboard(dayKey, merged);
+  renderDailyLeaderboardOl(dailyLeaderboardEvents, merged);
+
+  try {
+    const res = await fetch(DAILY_LEADERBOARD_TABLE_URL, {
+      method: "POST",
+      headers: leaderboardHeaders({
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      }),
+      body: JSON.stringify({
+        initials: entry.initials,
+        score: entry.score,
+        reef_id: entry.reefId,
+        day_key: dayKey,
+      }),
+    });
+    if (!res.ok) throw new Error(`Daily leaderboard save failed: ${res.status}`);
+    await fetchTodayDailyLeaderboard();
+    return true;
+  } catch (err) {
+    console.warn(err);
+    return false;
+  }
+}
+
+function renderDailyLeaderboardOl(el, rows = dailyLeaderboardRows) {
+  if (!el) return;
+  el.innerHTML = "";
+  if (!rows.length) {
+    const li = document.createElement("li");
+    li.className = "leaderboard__empty";
+    li.textContent = dailyLeaderboardLoading
+      ? "Loading today's scores..."
+      : "No scores yet today — play a reef run to climb the board!";
+    el.appendChild(li);
+    return;
+  }
+  rows.forEach((r, i) => {
+    const li = document.createElement("li");
+    li.className = "leaderboard__row";
+    if (i < 3) li.classList.add(`leaderboard__row--prize-${i + 1}`);
+    const rank = document.createElement("span");
+    rank.className = "leaderboard__rank";
+    rank.textContent = i < 3 ? ["🥇", "🥈", "🥉"][i] : String(i + 1);
+    const ini = document.createElement("span");
+    ini.className = "leaderboard__ini";
+    ini.textContent = r.initials;
+    const pts = document.createElement("span");
+    pts.className = "leaderboard__pts";
+    pts.textContent = i < 3 ? `${r.score} · ${DAILY_PRIZES[i]}🪙` : String(r.score);
+    const reef = document.createElement("span");
+    reef.className = "leaderboard__reef";
+    const reefMeta = REEFS.find((x) => x.id === r.reefId);
+    reef.textContent = reefMeta ? reefMeta.name : "";
+    li.append(rank, ini, pts, reef);
+    el.appendChild(li);
+  });
+}
+
+function updateDailyEventPlayerHint(rows = dailyLeaderboardRows) {
+  if (!dailyEventPlayerHint) return;
+  const ini = gameMeta.playerInitials;
+  if (!ini) {
+    dailyEventPlayerHint.textContent =
+      "Save a top-10 global score with your initials to join today's Fisher of the Day board.";
+    return;
+  }
+  const rank = rows.findIndex((r) => r.initials === ini);
+  if (rank === 0) {
+    dailyEventPlayerHint.textContent = `${ini}, you're in 1st! Hold the lead until midnight to win 1,500 coins.`;
+  } else if (rank === 1) {
+    dailyEventPlayerHint.textContent = `${ini}, you're in 2nd — 1,000 coins if you stay there at reset.`;
+  } else if (rank === 2) {
+    dailyEventPlayerHint.textContent = `${ini}, you're in 3rd — 800 coins if you stay there at reset.`;
+  } else if (rank >= 0) {
+    dailyEventPlayerHint.textContent = `${ini}, you're #${rank + 1} today. Climb into the top 3 before the board resets!`;
+  } else {
+    dailyEventPlayerHint.textContent = `${ini}, play a reef run to post today's best score on this board.`;
+  }
+}
+
+function updateDailyEventResetLine() {
+  if (!dailyEventReset) return;
+  dailyEventReset.textContent = formatDailyResetCountdown(msUntilDailyReset());
+}
+
+function stopDailyEventCountdown() {
+  if (dailyEventCountdownTimer) {
+    window.clearInterval(dailyEventCountdownTimer);
+    dailyEventCountdownTimer = 0;
+  }
+}
+
+function startDailyEventCountdown() {
+  stopDailyEventCountdown();
+  updateDailyEventResetLine();
+  dailyEventCountdownTimer = window.setInterval(updateDailyEventResetLine, 30000);
+}
+
+async function processDailyPrizePayouts() {
+  const ini = gameMeta.playerInitials;
+  if (!ini) return;
+  const yesterday = getPreviousDailyDayKey();
+  if (gameMeta.dailyPrizeCheckedDay === yesterday) return;
+
+  const rows = await fetchDailyLeaderboardForDay(yesterday);
+  gameMeta.dailyPrizeCheckedDay = yesterday;
+  const rank = rows.findIndex((r) => r.initials === ini);
+  if (rank >= 0 && rank < DAILY_PRIZES.length) {
+    const prize = DAILY_PRIZES[rank];
+    gameMeta.coins += prize;
+    saveMeta();
+    refreshCoinDisplays();
+    showToast(`Fisher of the Day #${rank + 1}! +${prize} coins for ${formatDailyDayLabel(yesterday)}`, 4200);
+  } else {
+    saveMeta();
+  }
+}
+
+async function refreshEventsPanel() {
+  if (!panelEvents || panelEvents.hidden) return;
+  const dayKey = getDailyDayKey();
+  if (dailyLeaderboardTitle) {
+    dailyLeaderboardTitle.textContent = `Today's standings · ${formatDailyDayLabel(dayKey)}`;
+  }
+  updateDailyEventResetLine();
+  const rows = await fetchTodayDailyLeaderboard();
+  updateDailyEventPlayerHint(rows);
+}
+
 const PEARL_POINTS = 420;
 const PEARL_CATCH_LABEL = "Giant Pearl (clam)";
 /** Rarer than the pearl: scuttles the seabed with a chest (vector look inspired by crab-character stock art). */
@@ -4526,6 +4814,13 @@ const shopList = document.getElementById("shopList");
 const shopGuide = document.getElementById("shopGuide");
 const btnOpenShopGuide = document.getElementById("btnOpenShopGuide");
 const btnOpenShop = document.getElementById("btnOpenShop");
+const btnEvents = document.getElementById("btnEvents");
+const panelEvents = document.getElementById("panelEvents");
+const btnCloseEvents = document.getElementById("btnCloseEvents");
+const dailyLeaderboardEvents = document.getElementById("dailyLeaderboardEvents");
+const dailyLeaderboardTitle = document.getElementById("dailyLeaderboardTitle");
+const dailyEventReset = document.getElementById("dailyEventReset");
+const dailyEventPlayerHint = document.getElementById("dailyEventPlayerHint");
 const btnCloseShop = document.getElementById("btnCloseShop");
 const btnShopGuideDone = document.getElementById("btnShopGuideDone");
 const btnToggleMusic = document.getElementById("btnToggleMusic");
@@ -4739,10 +5034,12 @@ function hideAllPanels() {
   if (panelStart) panelStart.hidden = true;
   if (panelOver) panelOver.hidden = true;
   if (panelShop) panelShop.hidden = true;
+  if (panelEvents) panelEvents.hidden = true;
   if (panelIntro) panelIntro.hidden = true;
   if (panelAdventure) panelAdventure.hidden = true;
   if (panelAdventureFail) panelAdventureFail.hidden = true;
   if (panelAdventureWin) panelAdventureWin.hidden = true;
+  stopDailyEventCountdown();
 }
 
 function isAdventureHomeCelebrationActive() {
@@ -4876,29 +5173,35 @@ function showHomePanel() {
   if (panelStart) panelStart.hidden = false;
   adventureSession = null;
   updateAdventureLaunchUI();
-  syncAdventureLaunchVisibility();
+  syncHomeLaunchButtons();
   window.requestAnimationFrame(() => startAdventureHomeUnlockAnimation());
+  void processDailyPrizePayouts();
 }
 
 function isHomeScreenActive() {
   if (playing) return false;
   if (!panelStart || panelStart.hidden) return false;
-  const blocking = [panelOver, panelShop, panelIntro, panelAdventure, panelAdventureFail, panelAdventureWin];
+  const blocking = [panelOver, panelShop, panelEvents, panelIntro, panelAdventure, panelAdventureFail, panelAdventureWin];
   for (const panel of blocking) {
     if (panel && !panel.hidden) return false;
   }
   return true;
 }
 
-function syncAdventureLaunchVisibility() {
+function syncHomeLaunchButtons() {
   const onHome = isHomeScreenActive();
   appRoot.classList.toggle("app--home-screen", onHome);
   if (btnAdventureMode) btnAdventureMode.hidden = !onHome;
+  if (btnEvents) btnEvents.hidden = !onHome;
   if (adventureUnlockHint) {
     const showChestHint =
       onHome && (!isAdventureUnlocked() || isAdventureHomeCelebrationActive());
     adventureUnlockHint.hidden = !showChestHint;
   }
+}
+
+function syncAdventureLaunchVisibility() {
+  syncHomeLaunchButtons();
 }
 
 function updateAdventureLaunchUI() {
@@ -6087,7 +6390,7 @@ function openShop() {
   showShopGuideIfNeeded();
   panelStart.hidden = true;
   panelShop.hidden = false;
-  syncAdventureLaunchVisibility();
+  syncHomeLaunchButtons();
 }
 
 function closeShop() {
@@ -6098,7 +6401,24 @@ function closeShop() {
   buildBaitUI();
   buildRodUI();
   refreshCoinDisplays();
-  syncAdventureLaunchVisibility();
+  syncHomeLaunchButtons();
+}
+
+function openEvents() {
+  if (!panelEvents || !panelStart) return;
+  panelStart.hidden = true;
+  panelEvents.hidden = false;
+  syncHomeLaunchButtons();
+  void processDailyPrizePayouts().then(() => refreshEventsPanel());
+  startDailyEventCountdown();
+}
+
+function closeEvents() {
+  if (!panelEvents || !panelStart) return;
+  panelEvents.hidden = true;
+  panelStart.hidden = false;
+  stopDailyEventCountdown();
+  syncHomeLaunchButtons();
 }
 
 function updateStartButtonSubtext() {
@@ -6432,6 +6752,9 @@ function endRound() {
     catchSummary.appendChild(li);
   }
   refreshLeaderboardViews();
+  if (gameMeta.playerInitials && score > 0) {
+    void submitDailyScore(gameMeta.playerInitials, score, selectedReefId);
+  }
 }
 
 function hookTipY() {
@@ -9882,6 +10205,8 @@ window.addEventListener("keydown", (e) => {
 btnStart.addEventListener("click", startRound);
 
 btnOpenShop?.addEventListener("click", openShop);
+btnEvents?.addEventListener("click", openEvents);
+btnCloseEvents?.addEventListener("click", closeEvents);
 btnCloseShop?.addEventListener("click", closeShop);
 btnOpenShopGuide?.addEventListener("click", openShopGuide);
 btnShopGuideDone?.addEventListener("click", closeShopGuide);
@@ -9917,6 +10242,9 @@ async function saveCurrentScoreToBoard() {
     if (btnSaveScore) btnSaveScore.disabled = false;
   }
   if (initialsPanel) initialsPanel.hidden = true;
+  gameMeta.playerInitials = ini;
+  saveMeta();
+  void submitDailyScore(ini, lastRoundScore, lastRoundReefId);
   refreshLeaderboardViews(false);
   showToast(savedGlobally ? "Score saved to global leaderboard" : "Score saved on this device", 1700);
 }

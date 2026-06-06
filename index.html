@@ -205,6 +205,11 @@
         <p class="adventure-unlock-banner__title">Adventure Mode Unlocked!</p>
         <p class="adventure-unlock-banner__sub">Watch the button rise — then tap to chart your course</p>
       </div>
+      <button type="button" id="btnEvents" class="events-launch" hidden aria-label="Events">
+        <span class="events-launch__icon" aria-hidden="true">★</span>
+        <span class="events-launch__label">Events</span>
+      </button>
+
       <button type="button" id="btnAdventureMode" class="adventure-launch" hidden aria-label="Adventure Mode">
         <span id="adventureLock" class="adventure-launch__lock" aria-hidden="true"></span>
         <span class="adventure-launch__label">Adventure Mode</span>
@@ -563,6 +568,31 @@
         <p id="adventureWinScore" class="panel__scoreline">You scored enough fish.</p>
         <button type="button" id="btnAdventureNext" class="btn btn--primary">Next level</button>
         <button type="button" id="btnAdventureWinBack" class="btn btn--secondary">Back to map</button>
+      </section>
+
+      <section id="panelEvents" class="panel panel--events" hidden>
+        <h2 class="panel__headline">Events</h2>
+        <p class="panel__lede">Compete with fishers worldwide for bonus coins.</p>
+        <article class="event-card event-card--daily">
+          <header class="event-card__head">
+            <h3 class="event-card__title">Fisher of the Day</h3>
+            <p id="dailyEventReset" class="event-card__reset">Resets tonight</p>
+          </header>
+          <p class="event-card__desc">
+            Climb today's leaderboard with your best reef run. Top scorers win coins when the day ends.
+          </p>
+          <ul class="event-card__prizes" aria-label="Daily coin prizes">
+            <li><span class="event-card__medal event-card__medal--1">1st</span> 1,500 coins</li>
+            <li><span class="event-card__medal event-card__medal--2">2nd</span> 1,000 coins</li>
+            <li><span class="event-card__medal event-card__medal--3">3rd</span> 800 coins</li>
+          </ul>
+          <div class="leaderboard-block leaderboard-block--compact">
+            <h4 id="dailyLeaderboardTitle" class="leaderboard-block__title">Today's standings</h4>
+            <ol id="dailyLeaderboardEvents" class="leaderboard leaderboard--daily" aria-label="Fisher of the Day"></ol>
+          </div>
+          <p id="dailyEventPlayerHint" class="event-card__hint"></p>
+        </article>
+        <button type="button" id="btnCloseEvents" class="btn btn--primary">Back</button>
       </section>
 
       <section id="panelShop" class="panel panel--shop" hidden>
