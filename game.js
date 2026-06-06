@@ -969,12 +969,12 @@ const ADVENTURE_THEME_SAND = {
   },
   "treasure-cove": {
     stops: [
-      [0, "rgba(18, 42, 52, 0)"],
-      [0.35, "rgba(32, 58, 68, 0.22)"],
-      [0.72, "rgba(55, 48, 32, 0.38)"],
-      [1, "rgba(38, 32, 22, 0.58)"],
+      [0, "rgba(255, 230, 160, 0)"],
+      [0.32, "rgba(240, 210, 120, 0.24)"],
+      [0.68, "rgba(220, 180, 80, 0.42)"],
+      [1, "rgba(180, 140, 55, 0.58)"],
     ],
-    speck: "rgba(255, 200, 80, 0.22)",
+    speck: "rgba(255, 220, 100, 0.32)",
   },
   "frost-fjord": {
     stops: [
@@ -1800,6 +1800,239 @@ function drawTreasureChest(cx, cy, sc) {
   ctx.restore();
 }
 
+const CAVE_JEWEL_PALETTE = [
+  { fill: "#c62828", hi: "#ff6659", stroke: "#8e0000" },
+  { fill: "#2e7d32", hi: "#66bb6a", stroke: "#1b5e20" },
+  { fill: "#1565c0", hi: "#42a5f5", stroke: "#0d47a1" },
+  { fill: "#6a1b9a", hi: "#ab47bc", stroke: "#4a148c" },
+  { fill: "#eceff1", hi: "#ffffff", stroke: "#90a4ae" },
+  { fill: "#f9a825", hi: "#ffd54f", stroke: "#f57f17" },
+];
+
+function drawJewelGem(cx, cy, r, variant = 0) {
+  const c = CAVE_JEWEL_PALETTE[variant % CAVE_JEWEL_PALETTE.length];
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.fillStyle = c.fill;
+  ctx.strokeStyle = c.stroke;
+  ctx.lineWidth = Math.max(dpr * 0.5, r * 0.15);
+  ctx.beginPath();
+  ctx.moveTo(0, -r);
+  ctx.lineTo(r * 0.65, -r * 0.2);
+  ctx.lineTo(r * 0.55, r * 0.75);
+  ctx.lineTo(0, r);
+  ctx.lineTo(-r * 0.55, r * 0.75);
+  ctx.lineTo(-r * 0.65, -r * 0.2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = c.hi;
+  ctx.globalAlpha = 0.55;
+  ctx.beginPath();
+  ctx.moveTo(0, -r * 0.85);
+  ctx.lineTo(r * 0.35, -r * 0.15);
+  ctx.lineTo(0, r * 0.3);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawGoldIngot(cx, cy, sc, tilt) {
+  const s = dpr * sc;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(tilt);
+  ctx.fillStyle = "#f5d040";
+  ctx.strokeStyle = "#b8940a";
+  ctx.lineWidth = s * 0.12;
+  ctx.beginPath();
+  ctx.moveTo(-s * 5, -s * 1.8);
+  ctx.lineTo(s * 5, -s * 1.8);
+  ctx.lineTo(s * 4.2, s * 1.8);
+  ctx.lineTo(-s * 4.2, s * 1.8);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#ffe080";
+  ctx.fillRect(-s * 3.5, -s * 0.8, s * 7, s * 0.5);
+  ctx.restore();
+}
+
+function drawPearl(cx, cy, r) {
+  const g = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, 0, cx, cy, r);
+  g.addColorStop(0, "rgba(255, 255, 255, 0.95)");
+  g.addColorStop(0.5, "rgba(240, 235, 220, 0.9)");
+  g.addColorStop(1, "rgba(200, 195, 185, 0.85)");
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawMiniCrown(cx, cy, sc) {
+  const s = dpr * sc;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.fillStyle = "#f0c830";
+  ctx.strokeStyle = "#a88010";
+  ctx.lineWidth = s * 0.15;
+  ctx.beginPath();
+  ctx.moveTo(-s * 5, s);
+  ctx.lineTo(-s * 4, -s * 2);
+  ctx.lineTo(-s * 2, s * 0.5);
+  ctx.lineTo(0, -s * 4);
+  ctx.lineTo(s * 2, s * 0.5);
+  ctx.lineTo(s * 4, -s * 2);
+  ctx.lineTo(s * 5, s);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  drawJewelGem(0, -s * 1.5, s * 1.2, 0);
+  drawJewelGem(-s * 3, 0, s * 0.8, 4);
+  drawJewelGem(s * 3, 0, s * 0.8, 1);
+  ctx.restore();
+}
+
+function drawGoldenChalice(cx, cy, sc) {
+  const s = dpr * sc;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.fillStyle = "#e8b820";
+  ctx.strokeStyle = "#9a7010";
+  ctx.lineWidth = s * 0.12;
+  ctx.beginPath();
+  ctx.moveTo(-s * 3, -s * 2);
+  ctx.quadraticCurveTo(-s * 4, s * 2, -s * 2, s * 5);
+  ctx.lineTo(s * 2, s * 5);
+  ctx.quadraticCurveTo(s * 4, s * 2, s * 3, -s * 2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillRect(-s * 0.8, s * 5, s * 1.6, s * 4);
+  ctx.fillRect(-s * 2.5, s * 9, s * 5, s * 1.2);
+  drawJewelGem(0, -s * 0.5, s * 1, 4);
+  ctx.restore();
+}
+
+function drawOpenTreasureChest(cx, cy, sc) {
+  const s = dpr * sc;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.fillStyle = "#8a5020";
+  ctx.strokeStyle = "#5a3010";
+  ctx.lineWidth = s * 0.14;
+  ctx.fillRect(-s * 8, -s * 2, s * 16, s * 9);
+  ctx.strokeRect(-s * 8, -s * 2, s * 16, s * 9);
+  ctx.fillStyle = "#a86828";
+  ctx.beginPath();
+  ctx.moveTo(-s * 8, -s * 2);
+  ctx.quadraticCurveTo(-s * 9, -s * 12, -s * 4, -s * 14);
+  ctx.lineTo(s * 4, -s * 14);
+  ctx.quadraticCurveTo(s * 9, -s * 12, s * 8, -s * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#f0d060";
+  ctx.fillRect(-s * 6, s * 1.2, s * 12, s * 1.8);
+  ctx.strokeRect(-s * 6, s * 1.2, s * 12, s * 1.8);
+  for (let i = 0; i < 5; i++) {
+    drawGoldCoin((i - 2) * s * 2.2, -s * 5 - (i % 2) * s * 1.5, s * 1.4, i * 0.35);
+  }
+  drawJewelGem(-s * 4, -s * 3, s * 1.3, 0);
+  drawJewelGem(s * 3.5, -s * 4, s * 1.1, 2);
+  ctx.restore();
+}
+
+function drawCaveTreasurePile(cx, baseY, pileIdx) {
+  const layers = 4 + (pileIdx % 4);
+  for (let j = 0; j < layers; j++) {
+    const coinsInLayer = 3 + (j % 3);
+    for (let k = 0; k < coinsInLayer; k++) {
+      drawGoldCoin(
+        cx + (k - coinsInLayer / 2) * dpr * 4.5,
+        baseY - j * dpr * 2.8,
+        dpr * (2 + j * 0.2),
+        (pileIdx + j + k) * 0.3,
+      );
+    }
+  }
+  if (pileIdx % 3 === 0) {
+    drawJewelGem(cx, baseY - layers * dpr * 2.8 - dpr * 3, dpr * (2.2 + (pileIdx % 2)), pileIdx);
+  }
+  if (pileIdx % 4 === 1) {
+    drawGoldIngot(cx + dpr * 7, baseY - dpr * 4, 0.85, 0.15 + pileIdx * 0.08);
+  }
+  if (pileIdx % 5 === 2) {
+    drawPearl(cx - dpr * 5, baseY - dpr * 2, dpr * (1.6 + (pileIdx % 2) * 0.4));
+  }
+}
+
+/** Aladdin-style cave floor — gold piles, jewels, ingots, pearls, crowns, and chests. */
+function drawCaveOfWondersFloorTreasure(sandTop, seed, density = 1) {
+  const base = sandTop + dpr * 14;
+  const d = Math.max(0.4, Math.min(1, density));
+
+  ctx.fillStyle = "rgba(255, 190, 70, 0.2)";
+  ctx.beginPath();
+  ctx.ellipse(w * 0.5, base - dpr * 4, w * 0.46, dpr * 28, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255, 210, 90, 0.14)";
+  ctx.beginPath();
+  ctx.ellipse(w * 0.32, base, w * 0.3, dpr * 20, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(w * 0.7, base + dpr * 2, w * 0.26, dpr * 18, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  const pileSlots = [0.08, 0.2, 0.32, 0.44, 0.56, 0.68, 0.8, 0.92];
+  const pileCount = Math.max(4, Math.round(perfN(pileSlots.length) * d));
+  for (let pile = 0; pile < pileCount; pile++) {
+    const px = w * pileSlots[pile];
+    drawCaveTreasurePile(px, base + dpr * (pile % 3), pile + seed);
+  }
+
+  scatterGoldCoins(sandTop, Math.round(78 * d), seed, 36);
+
+  const jewelCount = Math.round(perfN(32) * d);
+  for (let i = 0; i < jewelCount; i++) {
+    const px = ((i * 173 + seed * 61) % 1000) / 1000;
+    const py = sandTop + dpr * (5 + ((i * 47 + seed) % 34));
+    drawJewelGem(px * w, py, dpr * (1.6 + (i % 5) * 0.5), i + seed);
+  }
+
+  const ingotCount = Math.round(perfN(16) * d);
+  for (let i = 0; i < ingotCount; i++) {
+    const px = ((i * 211 + seed * 37) % 1000) / 1000;
+    const py = sandTop + dpr * (10 + ((i * 31 + seed) % 24));
+    drawGoldIngot(px * w, py, 0.7 + (i % 3) * 0.15, (i * 0.55 + seed) * 0.35);
+  }
+
+  const pearlCount = Math.round(perfN(18) * d);
+  for (let i = 0; i < pearlCount; i++) {
+    const px = ((i * 149 + seed * 53) % 1000) / 1000;
+    const py = sandTop + dpr * (8 + ((i * 23 + seed) % 28));
+    drawPearl(px * w, py, dpr * (1.4 + (i % 4) * 0.35));
+  }
+
+  if (d >= 0.7) {
+    drawMiniCrown(w * 0.16, base - dpr * 10, 0.88);
+    drawMiniCrown(w * 0.84, base - dpr * 7, 0.75);
+    drawGoldenChalice(w * 0.64, base - dpr * 12, 0.68);
+    drawGoldenChalice(w * 0.36, base - dpr * 6, 0.58);
+    drawOpenTreasureChest(w * 0.5, base - dpr * 16, 1.05);
+    drawTreasureChest(w * 0.24, base - dpr * 5, 0.78);
+    drawTreasureChest(w * 0.76, base - dpr * 8, 0.72);
+    drawOpenTreasureChest(w * 0.12, base - dpr * 3, 0.62);
+  } else {
+    drawTreasureChest(w * 0.5, base - dpr * 10, 0.85);
+    drawOpenTreasureChest(w * 0.72, base - dpr * 4, 0.65);
+  }
+
+  ctx.fillStyle = "rgba(255, 210, 90, 0.22)";
+  ctx.beginPath();
+  ctx.ellipse(w * 0.5, base - dpr * 8, w * 0.3, dpr * 16, 0, 0, Math.PI * 2);
+  ctx.fill();
+}
+
 function drawTreasureCoveCaveWalls() {
   const sandTop = h - dpr * 92;
   const wy = waterTop;
@@ -1901,6 +2134,12 @@ function drawTreasureCoveShipwreck() {
     ctx.arc(cx - w * 0.1 + i * w * 0.07, cy + dpr * 14, dpr * 3.2, 0, Math.PI * 2);
     ctx.fill();
   }
+  const wreckBase = cy + dpr * 38;
+  for (let i = 0; i < perfN(6); i++) {
+    drawGoldCoin(cx - w * 0.14 + i * w * 0.05, wreckBase - (i % 3) * dpr * 2.5, dpr * 1.8, i * 0.4);
+  }
+  drawJewelGem(cx - w * 0.06, wreckBase - dpr * 5, dpr * 2, 1);
+  drawGoldIngot(cx + w * 0.04, wreckBase - dpr * 2, 0.55, 0.3);
   ctx.restore();
 }
 
@@ -1927,28 +2166,7 @@ function drawTreasureCoveBed() {
   drawTreasureCoveRuins();
   drawTreasureCoveShipwreck();
   const sandTop = h - dpr * 92;
-  const base = sandTop + dpr * 14;
-
-  ctx.fillStyle = "rgba(255, 190, 70, 0.16)";
-  ctx.beginPath();
-  ctx.ellipse(w * 0.42, base - dpr * 2, w * 0.32, dpr * 22, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  for (let pile = 0; pile < 4; pile++) {
-    const px = w * (0.22 + pile * 0.14);
-    for (let j = 0; j < 5 + (pile % 3); j++) {
-      drawGoldCoin(px + (j - 2) * dpr * 5.5, base - j * dpr * 3.2, dpr * (2.2 + (j % 3) * 0.35), j * 0.35 + pile);
-    }
-  }
-  scatterGoldCoins(sandTop, 36, 7, 28);
-  drawTreasureChest(w * 0.42, base - dpr * 14, 1.15);
-  drawTreasureChest(w * 0.28, base - dpr * 4, 0.72);
-  drawTreasureChest(w * 0.56, base - dpr * 6, 0.68);
-
-  ctx.fillStyle = "rgba(255, 210, 90, 0.2)";
-  ctx.beginPath();
-  ctx.ellipse(w * 0.42, base - dpr * 6, w * 0.26, dpr * 14, 0, 0, Math.PI * 2);
-  ctx.fill();
+  drawCaveOfWondersFloorTreasure(sandTop, 7, 1);
 }
 
 function drawDoubloonBayBed() {
@@ -3345,6 +3563,35 @@ const ADVENTURE_BONUS_THEME_BASE = {
   "legends-gate": "treasure-cove",
 };
 
+const ADVENTURE_GOLD_QUEST_THEMES = [
+  "bounty-trench",
+  "molten-maelstrom",
+  "pearl-abyss",
+  "crown-reef",
+  "legends-gate",
+];
+
+const ADVENTURE_GOLD_QUEST_SAND = {
+  stops: [
+    [0, "rgba(255, 230, 160, 0)"],
+    [0.35, "rgba(245, 215, 125, 0.26)"],
+    [0.72, "rgba(225, 185, 85, 0.44)"],
+    [1, "rgba(190, 150, 60, 0.56)"],
+  ],
+  speck: "rgba(255, 225, 120, 0.3)",
+};
+
+function drawAdventureGoldQuestFloorGlow(now) {
+  const sandTop = h - dpr * 92;
+  const treasureGlow = ctx.createRadialGradient(w * 0.5, sandTop - dpr * 6, 0, w * 0.5, sandTop, w * 0.44);
+  treasureGlow.addColorStop(0, "rgba(255, 210, 90, 0.2)");
+  treasureGlow.addColorStop(0.55, "rgba(255, 180, 60, 0.09)");
+  treasureGlow.addColorStop(1, "rgba(255, 160, 40, 0)");
+  ctx.fillStyle = treasureGlow;
+  ctx.fillRect(0, sandTop - dpr * 40, w, h - sandTop + dpr * 40);
+  drawAdventureGoldGlintsHeavy(now, PERF_CHROMEBOOK ? 14 : 20);
+}
+
 function registerAdventureBonusThemes() {
   for (const [slug, base] of Object.entries(ADVENTURE_BONUS_THEME_BASE)) {
     if (ADVENTURE_THEME_SAND[base]) ADVENTURE_THEME_SAND[slug] = { ...ADVENTURE_THEME_SAND[base] };
@@ -3360,6 +3607,34 @@ function registerAdventureBonusThemes() {
     if (ADVENTURE_THEME_BED_DRAW[base]) ADVENTURE_THEME_BED_DRAW[slug] = ADVENTURE_THEME_BED_DRAW[base];
     if (ADVENTURE_THEME_EFFECT_DRAW[base]) ADVENTURE_THEME_EFFECT_DRAW[slug] = ADVENTURE_THEME_EFFECT_DRAW[base];
     if (ADVENTURE_THEME_REEF_ID[base]) ADVENTURE_THEME_REEF_ID[slug] = ADVENTURE_THEME_REEF_ID[base];
+  }
+  registerGoldQuestTreasureBeds();
+}
+
+function registerGoldQuestTreasureBeds() {
+  const treasureSeeds = {
+    "bounty-trench": 21,
+    "molten-maelstrom": 22,
+    "pearl-abyss": 23,
+    "crown-reef": 24,
+  };
+  for (const slug of ADVENTURE_GOLD_QUEST_THEMES) {
+    ADVENTURE_THEME_SAND[slug] = { ...ADVENTURE_GOLD_QUEST_SAND };
+    if (slug === "legends-gate") continue;
+    const baseDraw = ADVENTURE_THEME_BED_DRAW[slug];
+    if (!baseDraw) continue;
+    const seed = treasureSeeds[slug] || 20;
+    ADVENTURE_THEME_BED_DRAW[slug] = () => {
+      baseDraw();
+      drawCaveOfWondersFloorTreasure(h - dpr * 92, seed, 0.88);
+    };
+    const baseEffect = ADVENTURE_THEME_EFFECT_DRAW[slug];
+    if (baseEffect) {
+      ADVENTURE_THEME_EFFECT_DRAW[slug] = (now) => {
+        baseEffect(now);
+        drawAdventureGoldQuestFloorGlow(now);
+      };
+    }
   }
 }
 registerAdventureBonusThemes();
