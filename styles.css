@@ -2646,11 +2646,32 @@ body {
 }
 
 .event-card__matchup,
-.event-card__reef-pick {
+.event-card__reef-pick,
+.event-card__status {
   margin: 0 0 8px;
   font-size: 0.84rem;
   font-weight: 800;
   color: var(--text);
+}
+
+.event-card__status {
+  color: var(--neon-cyan);
+  animation: eventCardStatusPulse 1.4s ease-in-out infinite;
+}
+
+.event-card__status[hidden] {
+  display: none;
+  animation: none;
+}
+
+@keyframes eventCardStatusPulse {
+  0%,
+  100% {
+    opacity: 0.82;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .event-card__reef-pick {

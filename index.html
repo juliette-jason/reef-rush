@@ -56,7 +56,7 @@
           </div>
           <span class="duel-hud__vs">vs</span>
           <div class="duel-hud__side duel-hud__side--rival">
-            <span class="duel-hud__label">Rival</span>
+            <span id="duelHudOpponentLabel" class="duel-hud__label">Rival</span>
             <span id="duelHudOpponentScore" class="duel-hud__score">0</span>
           </div>
         </div>
@@ -846,9 +846,10 @@
           <p class="event-card__desc event-card__desc--tickets">1 ticket per duel · 5 free tickets daily · extra tickets in the shop (700 coins)</p>
           <p id="duelEventUnavailable" class="event-card__unavailable" hidden>Desktop or tablet only — Duel Fishing is not available on phones.</p>
           <p id="duelEventTickets" class="event-card__tickets">Tickets: 5</p>
-          <p id="duelEventMatchup" class="event-card__matchup">Rival targets your best score.</p>
+          <p id="duelEventMatchup" class="event-card__matchup">Find a real rival in the lobby — or face COM if nobody's waiting.</p>
+          <p id="duelEventStatus" class="event-card__status" hidden></p>
           <p id="duelEventReef" class="event-card__reef-pick">Reef: —</p>
-          <button type="button" id="btnStartDuel" class="btn btn--secondary event-card__play">Play duel</button>
+          <button type="button" id="btnStartDuel" class="btn btn--secondary event-card__play">Find duel rival</button>
         </article>
         <button type="button" id="btnCloseEvents" class="btn btn--primary">Back</button>
         </div>
