@@ -4844,10 +4844,14 @@ async function refreshEventsPanel() {
 const DUEL_WIN_COINS = 800;
 const DUEL_DAILY_TICKETS = 5;
 const DUEL_TICKET_PRICE = 700;
+/** Easiest rival difficulty — AI target score floor. */
+const DUEL_RIVAL_MIN_TARGET = 4000;
 /** null during classic/adventure play; set for split-screen duel fishing. */
 let duelSession = null;
 /** Random reef picked on the Events page before starting a duel. */
 let duelPendingReefId = null;
+/** Rival score target rolled for the next duel (4000 … player best). */
+let duelPendingTargetScore = DUEL_RIVAL_MIN_TARGET;
 
 function refreshDuelTicketsForToday() {
   const today = getDailyDayKey();
@@ -4903,7 +4907,7 @@ function pickRandomDuelReefId() {
   return REEFS[Math.floor(Math.random() * REEFS.length)].id;
 }
 
-function getPlayerPersonalBestScore() {
+function getPlayerPersonalBestScoreRaw() {
   const board = loadLeaderboard();
   const ini = gameMeta.playerInitials;
   let best = 0;
@@ -4915,7 +4919,31 @@ function getPlayerPersonalBestScore() {
     if (!ini || row.initials === ini) best = Math.max(best, row.score);
   }
   if (lastRoundScore > best) best = lastRoundScore;
-  return Math.max(150, best);
+  return best;
+}
+
+function getPlayerPersonalBestScore() {
+  return Math.max(150, getPlayerPersonalBestScoreRaw());
+}
+
+function getDuelRivalTargetBounds() {
+  const best = getPlayerPersonalBestScoreRaw();
+  const hard = Math.max(DUEL_RIVAL_MIN_TARGET, best);
+  return { easy: DUEL_RIVAL_MIN_TARGET, hard, best };
+}
+
+function rollDuelRivalTargetScore() {
+  const { easy, hard } = getDuelRivalTargetBounds();
+  if (hard <= easy) return easy;
+  return easy + Math.floor(Math.random() * (hard - easy + 1));
+}
+
+function formatDuelRivalMatchupLine(targetScore) {
+  const { easy, hard, best } = getDuelRivalTargetBounds();
+  if (hard > easy) {
+    return `Rival targets ${targetScore} pts (${easy.toLocaleString()} easy · up to ${hard.toLocaleString()} from your ${best.toLocaleString()} best).`;
+  }
+  return `Rival targets ${targetScore} pts (${easy.toLocaleString()} minimum difficulty).`;
 }
 
 function createOpponentHook() {
@@ -4952,8 +4980,8 @@ function refreshDuelEventCard() {
 
   duelPendingReefId = pickRandomDuelReefId();
   const reef = REEFS.find((r) => r.id === duelPendingReefId) || REEFS[0];
-  const target = getPlayerPersonalBestScore();
-  duelEventMatchup.textContent = `Rival targets ${target} pts — matched to your best score.`;
+  duelPendingTargetScore = rollDuelRivalTargetScore();
+  duelEventMatchup.textContent = formatDuelRivalMatchupLine(duelPendingTargetScore);
   duelEventReef.textContent = `Random reef: ${reef.name} (${reef.difficulty})`;
 
   if (btnStartDuel) {
@@ -5306,9 +5334,8 @@ function startDuelRound() {
     refreshDuelEventCard();
     return;
   }
-  refreshDuelEventCard();
   const reefId = duelPendingReefId || pickRandomDuelReefId();
-  const targetScore = getPlayerPersonalBestScore();
+  const targetScore = duelPendingTargetScore || rollDuelRivalTargetScore();
   duelSession = {
     reefId,
     targetScore,
@@ -5367,6 +5394,7 @@ function startDuelRound() {
     : "Your side only — aim & cast · beat the rival before time runs out!";
   updateDuelHudScores();
   startReefMusic();
+  refreshDuelEventCard();
 }
 
 function endDuelRound() {
@@ -5392,7 +5420,7 @@ function endDuelRound() {
     duelOverScores.textContent = `You ${playerScore} · Rival ${opponentScore}`;
   }
   if (duelOverDetail) {
-    duelOverDetail.textContent = `${reefName} · rival was matched to ${targetScore} pts`;
+    duelOverDetail.textContent = `${reefName} · rival target ${targetScore.toLocaleString()} pts`;
   }
   if (duelOverPrize) {
     if (won) {
