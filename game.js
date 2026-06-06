@@ -420,7 +420,8 @@ const ADVENTURE_MAP_SECTIONS = {
 /** Vertical split lines (% from top of map board) aligned to voyage nodes. */
 const ADVENTURE_MAP_PIRATES_TOP_PCT = 58;
 const ADVENTURE_MAP_GOLD_ICE_SPLIT_PCT = 38;
-const ADVENTURE_MAP_ICE_LOST_CITY_SPLIT_PCT = 17;
+/** Sits between Lost City nodes (≤14%) and Frozen Sea nodes (≥21%). */
+const ADVENTURE_MAP_ICE_LOST_CITY_SPLIT_PCT = 19;
 const ADVENTURE_MAP_TOP_PCT = 4;
 
 /** Tile the chart into non-overlapping bands; gold fills to the top until ice unlocks. */
@@ -496,7 +497,7 @@ function buildAdventureMapNodeLayout() {
   for (let i = 0; i < ADVENTURE_ICE_LEVEL_COUNT; i++) {
     layout.push({
       x: iceX[i],
-      y: 36 - i * 4.5,
+      y: 35 - i * 3.5,
       section: "ice",
     });
   }
@@ -504,7 +505,7 @@ function buildAdventureMapNodeLayout() {
   for (let i = 0; i < ADVENTURE_LOST_CITY_LEVEL_COUNT; i++) {
     layout.push({
       x: lostCityX[i],
-      y: 14 - i * 2.5,
+      y: 14 - i * 2,
       section: "lost-city",
     });
   }
