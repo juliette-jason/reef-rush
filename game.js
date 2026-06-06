@@ -361,8 +361,25 @@ const ADVENTURE_SECTION_PIRATES_PATH = "Pirates Path";
 const ADVENTURE_SECTION_GOLD_QUEST = "Gold Quest";
 const ADVENTURE_SECTION_FROZEN_SEA = "Frozen Sea";
 const ADVENTURE_SECTION_LOST_CITY = "The Lost City";
-/** +1s on the clock per voyage index as difficulty ramps up. */
+/** +1s on the clock per voyage index as difficulty ramps up (Pirates Path & Gold Quest). */
 const ADVENTURE_LEVEL_TIME_BONUS_MS = 1_000;
+/** +5s per voyage within Frozen Sea and The Lost City. */
+const ADVENTURE_ICE_LOST_CITY_TIME_BONUS_MS = 5_000;
+
+function adventureLevelTimeBonusMs(levelIndex) {
+  if (levelIndex < ADVENTURE_ICE_START_INDEX) {
+    return levelIndex * ADVENTURE_LEVEL_TIME_BONUS_MS;
+  }
+  const piratesGoldBonus = ADVENTURE_ICE_START_INDEX * ADVENTURE_LEVEL_TIME_BONUS_MS;
+  if (levelIndex < ADVENTURE_LOST_CITY_START_INDEX) {
+    return piratesGoldBonus + (levelIndex - ADVENTURE_ICE_START_INDEX) * ADVENTURE_ICE_LOST_CITY_TIME_BONUS_MS;
+  }
+  return (
+    piratesGoldBonus +
+    ADVENTURE_ICE_LEVEL_COUNT * ADVENTURE_ICE_LOST_CITY_TIME_BONUS_MS +
+    (levelIndex - ADVENTURE_LOST_CITY_START_INDEX) * ADVENTURE_ICE_LOST_CITY_TIME_BONUS_MS
+  );
+}
 
 const TREASURE_CINEMATIC_ANTICIPATE_MS = 800;
 const TREASURE_CINEMATIC_FLY_MS = 2400;
@@ -4619,7 +4636,7 @@ function buildAdventureLevels() {
         Math.max(
           isLostCity ? 36_000 : isIce ? 38_000 : isBonus ? 40_000 : 46_000,
           reef.roundMs - tier * 3500 - i * 600,
-        ) + i * ADVENTURE_LEVEL_TIME_BONUS_MS,
+        ) + adventureLevelTimeBonusMs(i),
       spawnMin: Math.max(isLostCity ? 120 : isIce ? 130 : isBonus ? 140 : 160, reef.spawnMin - i * 18),
       spawnMax: Math.max(isLostCity ? 300 : isIce ? 320 : isBonus ? 340 : 380, reef.spawnMax - i * 45),
       maxFish: Math.min(22, reef.maxFish + Math.floor(i / 2)),
