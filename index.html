@@ -199,14 +199,14 @@
                 <path fill="none" stroke="#4a3310" stroke-width="2.5" d="M90 360 Q120 340 150 355 Q180 375 210 360 Q240 345 280 370" opacity="0.6" />
                 <ellipse cx="280" cy="370" rx="18" ry="8" fill="none" stroke="#4a3310" stroke-width="1.5" opacity="0.5" />
                 <text x="400" y="42" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="28" font-weight="bold" fill="#3d2914" letter-spacing="0.12em">REEF RUSH</text>
-                <text x="400" y="68" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#5c3d1e" letter-spacing="0.2em">ADVENTURE CHART · XXV VOYAGES</text>
+                <text x="400" y="68" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#5c3d1e" letter-spacing="0.2em">ADVENTURE CHART · XXX VOYAGES</text>
                 <text x="95" y="395" font-family="Georgia, serif" font-size="13" fill="#5c3d1e" transform="rotate(-8 95 395)">Here be monsters</text>
                 <text x="620" y="400" font-family="Georgia, serif" font-size="12" fill="#8b1a1a" font-style="italic">X marks the reef</text>
               </svg>
             </div>
             <p class="treasure-map-reveal__badge">★ Adventure Mode Unlocked ★</p>
             <h2 id="treasureMapRevealTitle" class="treasure-map-reveal__title">Treasure map unlocked!</h2>
-            <p class="treasure-map-reveal__lede">Adventure Mode awaits — Pirates Path, Gold Quest, and Frozen Sea.</p>
+            <p class="treasure-map-reveal__lede">Adventure Mode awaits — Pirates Path, Gold Quest, Frozen Sea, and The Lost City.</p>
             <button type="button" id="btnTreasureMapRevealDone" class="btn btn--primary treasure-map-reveal__btn">Continue fishing</button>
           </div>
         </div>
@@ -619,7 +619,7 @@
                   <text y="52" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="11" fill="#2e2418" opacity="0.75">N</text>
                 </g>
                 <text x="200" y="175" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="28" fill="#2a2014" opacity="0.88">Chart of the Reefs</text>
-                <text x="200" y="198" text-anchor="middle" font-family="'IM Fell English', Georgia, serif" font-size="12" fill="#4a3d2e" font-style="italic" opacity="0.75">Pirates Path · Gold Quest · Frozen Sea</text>
+                <text x="200" y="198" text-anchor="middle" font-family="'IM Fell English', Georgia, serif" font-size="12" fill="#4a3d2e" font-style="italic" opacity="0.75">Pirates Path · Gold Quest · Frozen Sea · The Lost City</text>
                 <rect x="24" y="24" width="352" height="1152" fill="none" stroke="#3d3020" stroke-width="1.2" opacity="0.35" />
                 <rect x="32" y="32" width="336" height="1136" fill="none" stroke="#3d3020" stroke-width="0.6" opacity="0.22" />
                 <path id="adventureMapTrail" class="adventure-map-trail" fill="none" d="" />
@@ -640,14 +640,19 @@
                 <span class="adventure-map-section__label">Frozen Sea</span>
                 <span class="adventure-map-section__decor adventure-map-section__decor--snow" aria-hidden="true"></span>
               </div>
+              <div class="adventure-map-section adventure-map-section--lost-city" data-section="lost-city" hidden>
+                <span class="adventure-map-section__label">The Lost City</span>
+                <span class="adventure-map-section__decor adventure-map-section__decor--atlantis" aria-hidden="true"></span>
+              </div>
             </div>
             <div id="adventureLevelList" class="adventure-map-nodes" aria-label="Adventure voyage map"></div>
           </div>
         </div>
         <header class="adventure-map-header">
-          <p id="adventureMapBanner" class="adventure-map-banner" hidden>Chart the course — Pirates Path, then Gold Quest and Frozen Sea!</p>
+          <p id="adventureMapBanner" class="adventure-map-banner" hidden>Chart the course — Pirates Path, then Gold Quest, Frozen Sea, and The Lost City!</p>
           <p id="adventureMapBonusBanner" class="adventure-map-bonus-banner" hidden>Gold Quest — conquer Treasure Cove to unlock</p>
           <p id="adventureMapIceBanner" class="adventure-map-ice-banner" hidden>Frozen Sea — clear Legend's Gate to unlock</p>
+          <p id="adventureMapLostCityBanner" class="adventure-map-lost-city-banner" hidden>The Lost City — clear Aurora Reach to unlock</p>
         </header>
         <button type="button" id="btnAdventureBack" class="btn btn--secondary adventure-map-back">← Back to home</button>
       </section>

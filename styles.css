@@ -206,6 +206,16 @@ body {
     inset 0 0 48px rgba(80, 140, 180, 0.18);
 }
 
+#app.app--adventure-theme-sunken-gate .canvas-wrap,
+#app.app--adventure-theme-coral-colonnade .canvas-wrap,
+#app.app--adventure-theme-poseidons-plaza .canvas-wrap,
+#app.app--adventure-theme-temple-of-tides .canvas-wrap,
+#app.app--adventure-theme-throne-of-atlantis .canvas-wrap {
+  box-shadow:
+    inset 0 0 0 2px rgba(120, 220, 240, 0.42),
+    inset 0 0 52px rgba(255, 200, 100, 0.12);
+}
+
 .adventure-play-theme--frost-fjord,
 .adventure-play-theme--iceberg-drift,
 .adventure-play-theme--glacier-maw,
@@ -216,12 +226,30 @@ body {
   box-shadow: 0 0 18px rgba(160, 220, 255, 0.22);
 }
 
+.adventure-play-theme--sunken-gate,
+.adventure-play-theme--coral-colonnade,
+.adventure-play-theme--poseidons-plaza,
+.adventure-play-theme--temple-of-tides,
+.adventure-play-theme--throne-of-atlantis {
+  border-color: rgba(120, 220, 240, 0.52);
+  background: rgba(10, 36, 52, 0.86);
+  box-shadow: 0 0 20px rgba(255, 210, 120, 0.18);
+}
+
 .adventure-play-theme--frost-fjord .adventure-play-theme__name,
 .adventure-play-theme--iceberg-drift .adventure-play-theme__name,
 .adventure-play-theme--glacier-maw .adventure-play-theme__name,
 .adventure-play-theme--polar-narrows .adventure-play-theme__name,
 .adventure-play-theme--aurora-reach .adventure-play-theme__name {
   color: #b8e8ff;
+}
+
+.adventure-play-theme--sunken-gate .adventure-play-theme__name,
+.adventure-play-theme--coral-colonnade .adventure-play-theme__name,
+.adventure-play-theme--poseidons-plaza .adventure-play-theme__name,
+.adventure-play-theme--temple-of-tides .adventure-play-theme__name,
+.adventure-play-theme--throne-of-atlantis .adventure-play-theme__name {
+  color: #7ee8ff;
 }
 
 #app.app--adventure-theme-stormbreak-isle .canvas-wrap {
@@ -3096,6 +3124,10 @@ body {
   --adv-map-height-vh: 560;
 }
 
+.adventure-map-board--lost-city-revealed {
+  --adv-map-height-vh: 680;
+}
+
 .adventure-map-board::before {
   content: "";
   position: fixed;
@@ -3195,6 +3227,22 @@ body {
   animation: adventureMapIceSectionReveal 1.4s ease-out forwards;
 }
 
+.adventure-map-section--lost-city {
+  z-index: 4;
+  background:
+    radial-gradient(ellipse 80% 55% at 50% 18%, rgba(255, 230, 150, 0.38), transparent 62%),
+    radial-gradient(ellipse 75% 50% at 50% 82%, rgba(80, 180, 210, 0.42), transparent 68%),
+    linear-gradient(180deg, rgba(255, 220, 140, 0.28) 0%, rgba(40, 130, 160, 0.34) 45%, rgba(12, 45, 68, 0.42) 100%);
+  border: 2.5px solid rgba(100, 190, 220, 0.58);
+  box-shadow:
+    inset 0 0 45px rgba(255, 220, 140, 0.18),
+    0 0 22px rgba(80, 180, 220, 0.16);
+}
+
+.adventure-map-section--lost-city.adventure-map-section--revealing {
+  animation: adventureMapLostCitySectionReveal 1.4s ease-out forwards;
+}
+
 .adventure-map-section__label {
   position: absolute;
   top: auto;
@@ -3233,6 +3281,13 @@ body {
   box-shadow: 0 4px 14px rgba(60, 120, 160, 0.25);
 }
 
+.adventure-map-section--lost-city .adventure-map-section__label {
+  background: linear-gradient(135deg, rgba(255, 240, 180, 0.98), rgba(120, 200, 220, 0.92));
+  border: 2px solid #48a8c8;
+  color: #0a3848;
+  box-shadow: 0 4px 16px rgba(40, 120, 150, 0.28);
+}
+
 .adventure-map-section__decor {
   position: absolute;
   inset: 0;
@@ -3260,6 +3315,15 @@ body {
     radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.45) 0%, transparent 5%);
 }
 
+.adventure-map-section__decor--atlantis {
+  background-image:
+    radial-gradient(circle at 50% 18%, rgba(255, 230, 150, 0.45) 0%, transparent 16%),
+    radial-gradient(circle at 20% 55%, rgba(120, 210, 230, 0.35) 0%, transparent 8%),
+    radial-gradient(circle at 80% 62%, rgba(120, 210, 230, 0.32) 0%, transparent 8%),
+    radial-gradient(circle at 35% 82%, rgba(255, 200, 120, 0.28) 0%, transparent 6%),
+    radial-gradient(circle at 65% 78%, rgba(255, 200, 120, 0.25) 0%, transparent 6%);
+}
+
 .adventure-map-section__decor--compass {
   background:
     radial-gradient(circle at 88% 78%, rgba(92, 64, 51, 0.12) 0%, transparent 18%);
@@ -3273,6 +3337,11 @@ body {
 .adventure-map-board--revealing-ice .adventure-map-trail {
   stroke: #4898b8;
   filter: drop-shadow(0 0 4px rgba(160, 220, 255, 0.4));
+}
+
+.adventure-map-board--revealing-lost-city .adventure-map-trail {
+  stroke: #48a8c8;
+  filter: drop-shadow(0 0 4px rgba(255, 220, 140, 0.45));
 }
 
 .adventure-map-node--section-reveal {
@@ -3315,6 +3384,19 @@ body {
   100% {
     opacity: 1;
     transform: scaleY(1) translateY(0);
+  }
+}
+
+@keyframes adventureMapLostCitySectionReveal {
+  0% {
+    opacity: 0;
+    transform: scaleY(0.35) translateY(48px);
+    box-shadow: inset 0 0 0 rgba(255, 220, 140, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1) translateY(0);
+    box-shadow: inset 0 0 45px rgba(255, 220, 140, 0.18);
   }
 }
 
@@ -3436,6 +3518,46 @@ body {
 
 .adventure-map-ice-banner--reveal {
   animation: adventureIceBannerPulse 1.8s ease-in-out infinite;
+}
+
+.adventure-map-lost-city-banner {
+  position: fixed;
+  top: max(118px, calc(env(safe-area-inset-top, 0px) + 108px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  width: min(92vw, 420px);
+  margin: 0;
+  padding: 7px 12px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(255, 240, 190, 0.96), rgba(120, 200, 220, 0.9));
+  border: 2px solid #48a8c8;
+  color: #0a3848;
+  font-weight: 800;
+  font-size: 0.72rem;
+  text-align: center;
+  box-shadow: 0 4px 18px rgba(40, 120, 150, 0.35);
+  pointer-events: none;
+}
+
+.adventure-map-lost-city-banner[hidden] {
+  display: none;
+}
+
+.adventure-map-lost-city-banner--reveal {
+  animation: adventureLostCityBannerPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes adventureLostCityBannerPulse {
+  0%,
+  100% {
+    box-shadow: 0 4px 18px rgba(40, 120, 150, 0.35);
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    box-shadow: 0 6px 28px rgba(255, 220, 140, 0.55);
+    transform: translateX(-50%) scale(1.03);
+  }
 }
 
 @keyframes adventureIceBannerPulse {
@@ -3787,6 +3909,37 @@ body {
   }
   50% {
     filter: brightness(1.08) saturate(1.12);
+  }
+}
+
+.adventure-map-node--lost-city .adventure-map-node__scene-wrap {
+  border-color: #68c8e8;
+  box-shadow:
+    0 0 10px rgba(255, 220, 140, 0.35),
+    0 4px 12px rgba(20, 50, 70, 0.35);
+}
+
+.adventure-map-node--lost-city:not(.adventure-map-node--locked) .adventure-map-node__scene {
+  animation: adventureMapAtlantisGlow 3.2s ease-in-out infinite;
+}
+
+.adventure-map-node--lost-city-finale .adventure-map-node__scene-wrap {
+  width: 84px;
+  height: 60px;
+  border-color: #ffe898;
+  box-shadow:
+    0 0 0 2px rgba(255, 232, 152, 0.45),
+    0 0 18px rgba(255, 220, 140, 0.55),
+    0 4px 14px rgba(20, 50, 70, 0.4);
+}
+
+@keyframes adventureMapAtlantisGlow {
+  0%,
+  100% {
+    filter: brightness(0.98) saturate(1.08);
+  }
+  50% {
+    filter: brightness(1.1) saturate(1.18);
   }
 }
 
