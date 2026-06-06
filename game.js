@@ -4815,6 +4815,7 @@ const shopGuide = document.getElementById("shopGuide");
 const btnOpenShopGuide = document.getElementById("btnOpenShopGuide");
 const btnOpenShop = document.getElementById("btnOpenShop");
 const btnEvents = document.getElementById("btnEvents");
+const homeLaunchStack = document.getElementById("homeLaunchStack");
 const panelEvents = document.getElementById("panelEvents");
 const btnCloseEvents = document.getElementById("btnCloseEvents");
 const dailyLeaderboardEvents = document.getElementById("dailyLeaderboardEvents");
@@ -5191,8 +5192,7 @@ function isHomeScreenActive() {
 function syncHomeLaunchButtons() {
   const onHome = isHomeScreenActive();
   appRoot.classList.toggle("app--home-screen", onHome);
-  if (btnAdventureMode) btnAdventureMode.hidden = !onHome;
-  if (btnEvents) btnEvents.hidden = !onHome;
+  if (homeLaunchStack) homeLaunchStack.hidden = !onHome;
   if (adventureUnlockHint) {
     const showChestHint =
       onHome && (!isAdventureUnlocked() || isAdventureHomeCelebrationActive());

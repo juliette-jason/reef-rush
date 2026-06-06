@@ -205,16 +205,17 @@
         <p class="adventure-unlock-banner__title">Adventure Mode Unlocked!</p>
         <p class="adventure-unlock-banner__sub">Watch the button rise — then tap to chart your course</p>
       </div>
-      <button type="button" id="btnEvents" class="events-launch" hidden aria-label="Events">
-        <span class="events-launch__icon" aria-hidden="true">★</span>
-        <span class="events-launch__label">Events</span>
-      </button>
-
-      <button type="button" id="btnAdventureMode" class="adventure-launch" hidden aria-label="Adventure Mode">
-        <span id="adventureLock" class="adventure-launch__lock" aria-hidden="true"></span>
-        <span class="adventure-launch__label">Adventure Mode</span>
-        <span class="adventure-launch__arrow" aria-hidden="true">→</span>
-      </button>
+      <div id="homeLaunchStack" class="home-launch-stack" hidden>
+        <button type="button" id="btnAdventureMode" class="adventure-launch" aria-label="Adventure Mode">
+          <span id="adventureLock" class="adventure-launch__lock" aria-hidden="true"></span>
+          <span class="adventure-launch__label">Adventure Mode</span>
+          <span class="adventure-launch__arrow" aria-hidden="true">→</span>
+        </button>
+        <button type="button" id="btnEvents" class="events-launch" aria-label="Events">
+          <span class="events-launch__icon" aria-hidden="true">★</span>
+          <span class="events-launch__label">Events</span>
+        </button>
+      </div>
 
       <section id="panelAdventure" class="panel panel--adventure" hidden>
         <div id="adventureMapScroll" class="adventure-map-scroll">

@@ -419,7 +419,7 @@ body {
 
 .panel--start {
   padding-top: max(88px, env(safe-area-inset-top, 0px));
-  padding-bottom: max(108px, env(safe-area-inset-bottom, 0px) + 88px);
+  padding-bottom: max(24px, env(safe-area-inset-bottom, 0px) + 16px);
 }
 
 .panel--start .start-toolbar {
@@ -1919,15 +1919,17 @@ body {
 
 .adventure-launch__hint {
   position: fixed;
-  left: 50%;
-  bottom: max(62px, calc(env(safe-area-inset-bottom, 0px) + 52px));
-  transform: translateX(-50%);
+  right: max(14px, env(safe-area-inset-right, 0px));
+  bottom: max(132px, calc(env(safe-area-inset-bottom, 0px) + 122px));
+  left: auto;
+  top: auto;
+  transform: none;
   z-index: 35;
   margin: 0;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   color: var(--muted);
-  max-width: min(420px, 92vw);
-  text-align: center;
+  max-width: min(220px, 48vw);
+  text-align: right;
   pointer-events: none;
   transition: color 0.4s ease, font-size 0.4s ease, text-shadow 0.4s ease;
 }
@@ -1946,11 +1948,31 @@ body {
   animation: adventureHintCelebrate 1.6s ease-in-out infinite;
 }
 
+.adventure-launch__hint--celebrate:not(.adventure-launch__hint--centered) {
+  animation: adventureHintCelebrateSide 1.6s ease-in-out infinite;
+}
+
+@keyframes adventureHintCelebrateSide {
+  0%,
+  100% {
+    transform: none;
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.04);
+    filter: brightness(1.15);
+  }
+}
+
 .adventure-launch__hint--centered {
   bottom: auto;
+  right: auto;
+  left: 50%;
   top: calc(50% + clamp(62px, 16vw, 96px));
+  transform: translateX(-50%);
   z-index: 50;
   max-width: min(360px, 88vw);
+  text-align: center;
   transition: top 1.65s cubic-bezier(0.22, 1, 0.36, 1), font-size 0.5s ease;
 }
 
@@ -2051,17 +2073,34 @@ body {
   display: none;
 }
 
-#app:not(.app--home-screen) .adventure-launch,
-#app:not(.app--home-screen) .adventure-launch__hint,
-#app:not(.app--home-screen) .events-launch {
+#app:not(.app--home-screen) .home-launch-stack,
+#app:not(.app--home-screen) .adventure-launch__hint {
   display: none !important;
 }
 
-.events-launch {
+.home-launch-stack {
   position: fixed;
   right: max(14px, env(safe-area-inset-right, 0px));
   bottom: max(14px, env(safe-area-inset-bottom, 0px));
   z-index: 35;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  width: min(220px, 46vw);
+  pointer-events: none;
+}
+
+.home-launch-stack > .adventure-launch,
+.home-launch-stack > .events-launch {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  width: 100%;
+  pointer-events: auto;
+}
+
+.events-launch {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2076,7 +2115,6 @@ body {
   letter-spacing: 0.08em;
   cursor: pointer;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.42), 0 0 16px rgba(255, 180, 60, 0.18);
-  pointer-events: auto;
 }
 
 .events-launch:hover {
@@ -2203,10 +2241,21 @@ body {
 }
 
 @media (max-width: 560px) {
-  .events-launch {
-    bottom: max(68px, calc(env(safe-area-inset-bottom, 0px) + 58px));
+  .home-launch-stack {
+    width: min(180px, 46vw);
+    gap: 8px;
+  }
+
+  .home-launch-stack .events-launch,
+  .home-launch-stack .adventure-launch {
     padding: 10px 14px;
-    font-size: 1.1rem;
+    font-size: 1.05rem;
+  }
+
+  .adventure-launch__hint {
+    bottom: max(118px, calc(env(safe-area-inset-bottom, 0px) + 108px));
+    max-width: min(180px, 46vw);
+    font-size: 0.62rem;
   }
 }
 
@@ -2230,11 +2279,6 @@ body {
 }
 
 .adventure-launch {
-  position: fixed;
-  left: 50%;
-  bottom: max(14px, env(safe-area-inset-bottom, 0px));
-  transform: translateX(-50%);
-  z-index: 35;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2252,6 +2296,25 @@ body {
   pointer-events: auto;
 }
 
+.home-launch-stack .adventure-launch {
+  padding: 12px 18px;
+  font-size: 1.15rem;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.42), 0 0 16px rgba(77, 255, 243, 0.15);
+}
+
+.adventure-launch--rise {
+  position: fixed;
+  top: auto;
+  bottom: max(68px, calc(env(safe-area-inset-bottom, 0px) + 58px));
+  right: max(14px, env(safe-area-inset-right, 0px));
+  left: auto;
+  width: min(220px, 46vw);
+  transform: none;
+  z-index: 50;
+  animation: adventureLaunchRiseToCenter 1.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
 .adventure-launch--locked {
   border-color: rgba(180, 180, 190, 0.35);
   background: linear-gradient(180deg, rgba(40, 48, 58, 0.92), rgba(22, 26, 34, 0.96));
@@ -2262,15 +2325,12 @@ body {
   background: linear-gradient(180deg, rgba(24, 88, 120, 0.98), rgba(8, 40, 64, 0.99));
 }
 
-.adventure-launch--rise {
-  z-index: 50;
-  animation: adventureLaunchRiseToCenter 1.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
 .adventure-launch--centered {
+  position: fixed;
   top: 50%;
   bottom: auto;
   left: 50%;
+  right: auto;
   z-index: 50;
   transform: translate(-50%, -50%) scale(1.72);
   font-size: clamp(1.85rem, 6.5vw, 2.4rem);
@@ -2304,10 +2364,12 @@ body {
 @keyframes adventureLaunchRiseToCenter {
   0% {
     top: auto;
-    bottom: max(14px, env(safe-area-inset-bottom, 0px));
-    transform: translateX(-50%) scale(1);
-    font-size: 1.35rem;
-    padding: 12px 22px;
+    bottom: max(68px, calc(env(safe-area-inset-bottom, 0px) + 58px));
+    right: max(14px, env(safe-area-inset-right, 0px));
+    left: auto;
+    transform: none;
+    font-size: 1.15rem;
+    padding: 12px 18px;
     gap: 10px;
     filter: brightness(1);
   }
@@ -2316,6 +2378,8 @@ body {
   }
   100% {
     top: 50%;
+    right: auto;
+    left: 50%;
     bottom: auto;
     transform: translate(-50%, -50%) scale(1.72);
     font-size: clamp(1.85rem, 6.5vw, 2.4rem);
@@ -2334,7 +2398,7 @@ body {
 }
 
 .adventure-launch--unlock-ready:not(.adventure-launch--centered) {
-  transform: translateX(-50%) scale(1.06);
+  transform: scale(1.03);
   animation: adventureLaunchFlash 1.85s ease-in-out infinite, adventureLaunchUnlockBounce 2.4s ease-in-out infinite;
 }
 
@@ -2351,10 +2415,10 @@ body {
 @keyframes adventureLaunchUnlockBounce {
   0%,
   100% {
-    transform: translateX(-50%) scale(1.06);
+    transform: scale(1.03);
   }
   50% {
-    transform: translateX(-50%) scale(1.12);
+    transform: scale(1.08);
   }
 }
 
@@ -2498,7 +2562,10 @@ body {
 
   .adventure-launch--rise {
     animation: none;
+    position: fixed;
     top: 50%;
+    right: auto;
+    left: 50%;
     bottom: auto;
     transform: translate(-50%, -50%) scale(1.72);
   }
