@@ -3160,9 +3160,10 @@ body {
   border-radius: 18px 18px 8px 8px;
   overflow: hidden;
   pointer-events: none;
-  box-shadow:
-    inset 0 0 40px rgba(255, 220, 140, 0.14),
-    0 4px 20px rgba(10, 40, 60, 0.28);
+  background:
+    radial-gradient(ellipse 85% 70% at 50% 35%, rgba(255, 230, 150, 0.14), transparent 68%),
+    linear-gradient(180deg, rgba(158, 189, 208, 0.16) 0%, rgba(120, 180, 200, 0.1) 55%, rgba(90, 150, 170, 0.06) 100%);
+  box-shadow: inset 0 0 32px rgba(255, 220, 140, 0.08);
 }
 
 .adventure-map-board--lost-city-revealed .adventure-map-lost-city-theme {
@@ -3176,17 +3177,12 @@ body {
   }
 }
 
-.adventure-map-lost-city-theme__art {
-  display: block;
-  width: 100%;
-  height: 100%;
+.adventure-map-art .adv-map-lost-city {
+  pointer-events: none;
 }
 
-.adventure-map-board--lost-city-revealed .adventure-map-art #advMapTitle,
-.adventure-map-board--lost-city-revealed .adventure-map-art #advMapSubtitle,
-.adventure-map-board--lost-city-revealed .adventure-map-art #advMapCompassRose {
-  opacity: 0;
-  transition: opacity 0.5s ease;
+.adventure-map-board--lost-city-revealed .adv-map-lost-city {
+  filter: drop-shadow(0 1px 0 rgba(46, 36, 24, 0.08));
 }
 
 @keyframes adventureMapLostCityThemeReveal {
@@ -3301,16 +3297,18 @@ body {
 
 .adventure-map-section--lost-city {
   z-index: 4;
-  background: linear-gradient(
-    180deg,
-    rgba(8, 36, 52, 0.08) 0%,
-    rgba(8, 36, 52, 0.02) 55%,
-    transparent 100%
-  );
-  border: 2.5px solid rgba(100, 190, 220, 0.62);
+  background:
+    radial-gradient(ellipse 80% 55% at 50% 40%, rgba(255, 230, 150, 0.12), transparent 62%),
+    linear-gradient(
+      180deg,
+      rgba(158, 189, 208, 0.14) 0%,
+      rgba(244, 232, 200, 0.06) 55%,
+      transparent 100%
+    );
+  border: 2.5px solid rgba(92, 64, 51, 0.42);
   box-shadow:
-    inset 0 0 28px rgba(255, 220, 140, 0.1),
-    0 0 22px rgba(80, 180, 220, 0.14);
+    inset 0 0 28px rgba(255, 220, 140, 0.08),
+    0 0 18px rgba(80, 180, 220, 0.1);
 }
 
 .adventure-map-section--lost-city.adventure-map-section--revealing {
@@ -3390,7 +3388,18 @@ body {
 }
 
 .adventure-map-section__decor--atlantis {
-  opacity: 0;
+  opacity: 0.28;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 18px,
+      rgba(46, 36, 24, 0.08) 18px,
+      rgba(46, 36, 24, 0.08) 20px
+    ),
+    radial-gradient(circle at 22% 62%, rgba(46, 36, 24, 0.1) 0%, transparent 7%),
+    radial-gradient(circle at 78% 58%, rgba(46, 36, 24, 0.09) 0%, transparent 7%),
+    radial-gradient(circle at 50% 28%, rgba(255, 220, 140, 0.12) 0%, transparent 14%);
 }
 
 .adventure-map-section__decor--compass {

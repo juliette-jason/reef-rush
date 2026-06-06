@@ -6929,6 +6929,8 @@ function applyAdventureMapExtent(animate = false) {
     board.style.removeProperty("--adv-lost-city-theme-top");
     board.style.removeProperty("--adv-lost-city-theme-height");
   }
+  const advMapLostCity = document.getElementById("advMapLostCity");
+  if (advMapLostCity) advMapLostCity.hidden = !isAdventureLostCityUnlocked();
 }
 
 function syncAdventureMapSections() {
