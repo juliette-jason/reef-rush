@@ -217,10 +217,36 @@ const RODS = [
       tipGlow: "rgba(248, 113, 113, 0.23)",
     },
   },
+  {
+    id: "magnet",
+    name: "Magnet Rod",
+    desc: "Fisher of the Day prize — magnetic tip pulls fish from much farther away.",
+    catchRadius: 66,
+    rareAssist: 0.12,
+    visual: {
+      tipType: "magnet",
+      lineMain: "rgba(100, 116, 139, 0.95)",
+      lineSheen: "rgba(226, 232, 240, 0.48)",
+      lineW: 1.85,
+      sheenW: 0.78,
+      reelBody: "#334155",
+      reelBand: "#94a3b8",
+      ringIdle: "rgba(167, 139, 250, 0.38)",
+      ringSnag: "rgba(196, 181, 253, 0.72)",
+      hookMetal: "#cbd5e1",
+      hookBarb: "#64748b",
+      hookScale: 1.16,
+      tipGlow: "rgba(167, 139, 250, 0.32)",
+      magnetNorth: "#ef4444",
+      magnetSouth: "#3b82f6",
+      magnetBody: "#64748b",
+    },
+  },
 ];
 
 const ROD_PRICE = 1000;
 const FREE_ROD_ID = "bamboo";
+const MAGNET_ROD_ID = "magnet";
 
 /** Bait: standard is unlimited; premium types are sold in packs and use one piece each round you start with them equipped. */
 const BAITS = [
@@ -3804,6 +3830,7 @@ function defaultMeta() {
     pendingIceVoyagesCelebration: false,
     playerInitials: "",
     dailyPrizeCheckedDay: "",
+    magnetRodDayKey: "",
   };
 }
 
@@ -3823,7 +3850,9 @@ function loadMeta() {
     }
     let selectedBaitId = typeof o.selectedBaitId === "string" ? o.selectedBaitId : "standard";
     if (!BAITS.some((b) => b.id === selectedBaitId)) selectedBaitId = "standard";
-    const owned = Array.isArray(o.ownedRodIds) ? o.ownedRodIds.filter((id) => RODS.some((r) => r.id === id)) : [];
+    const owned = Array.isArray(o.ownedRodIds)
+      ? o.ownedRodIds.filter((id) => RODS.some((r) => r.id === id) && id !== MAGNET_ROD_ID)
+      : [];
     const ownedRodIds = Array.from(new Set([FREE_ROD_ID, ...owned]));
     let selectedRodId = typeof o.selectedRodId === "string" ? o.selectedRodId : FREE_ROD_ID;
     if (!ownedRodIds.includes(selectedRodId)) selectedRodId = FREE_ROD_ID;
@@ -3843,6 +3872,7 @@ function loadMeta() {
         .replace(/[^A-Z]/g, "")
         .slice(0, 3),
       dailyPrizeCheckedDay: String(o.dailyPrizeCheckedDay || ""),
+      magnetRodDayKey: String(o.magnetRodDayKey || ""),
     };
   } catch {
     return defaultMeta();
@@ -3866,11 +3896,33 @@ function rodSpecById(id) {
   return RODS.find((r) => r.id === id) || RODS[0];
 }
 
+function isMagnetRodActive() {
+  return gameMeta.magnetRodDayKey === getDailyDayKey();
+}
+
+function expireMagnetRodIfNeeded() {
+  if (!gameMeta.magnetRodDayKey) return;
+  if (isMagnetRodActive()) return;
+  gameMeta.magnetRodDayKey = "";
+  if (gameMeta.selectedRodId === MAGNET_ROD_ID) gameMeta.selectedRodId = FREE_ROD_ID;
+  saveMeta();
+}
+
+function grantMagnetRodForToday() {
+  gameMeta.magnetRodDayKey = getDailyDayKey();
+  gameMeta.selectedRodId = MAGNET_ROD_ID;
+  selectedRod = rodSpecById(MAGNET_ROD_ID);
+  saveMeta();
+  buildRodUI();
+}
+
 function isRodOwned(rodId) {
+  if (rodId === MAGNET_ROD_ID) return isMagnetRodActive();
   return rodId === FREE_ROD_ID || (Array.isArray(gameMeta.ownedRodIds) && gameMeta.ownedRodIds.includes(rodId));
 }
 
 function normalizeSelectedRod() {
+  expireMagnetRodIfNeeded();
   if (!Array.isArray(gameMeta.ownedRodIds)) gameMeta.ownedRodIds = [FREE_ROD_ID];
   if (!gameMeta.ownedRodIds.includes(FREE_ROD_ID)) gameMeta.ownedRodIds.unshift(FREE_ROD_ID);
   if (!isRodOwned(gameMeta.selectedRodId)) gameMeta.selectedRodId = FREE_ROD_ID;
@@ -4649,7 +4701,8 @@ function renderDailyLeaderboardOl(el, rows = dailyLeaderboardRows) {
     ini.textContent = r.initials;
     const pts = document.createElement("span");
     pts.className = "leaderboard__pts";
-    pts.textContent = i < 3 ? `${r.score} · ${DAILY_PRIZES[i]}🪙` : String(r.score);
+    pts.textContent =
+      i === 0 ? `${r.score} · ${DAILY_PRIZES[i]}🪙 + Magnet Rod` : i < 3 ? `${r.score} · ${DAILY_PRIZES[i]}🪙` : String(r.score);
     const reef = document.createElement("span");
     reef.className = "leaderboard__reef";
     const reefMeta = REEFS.find((x) => x.id === r.reefId);
@@ -4669,7 +4722,7 @@ function updateDailyEventPlayerHint(rows = dailyLeaderboardRows) {
   }
   const rank = rows.findIndex((r) => r.initials === ini);
   if (rank === 0) {
-    dailyEventPlayerHint.textContent = `${ini}, you're in 1st! Hold the lead until midnight to win 1,500 coins.`;
+    dailyEventPlayerHint.textContent = `${ini}, you're in 1st! Hold the lead until midnight to win 1,500 coins and the Magnet Rod for a day.`;
   } else if (rank === 1) {
     dailyEventPlayerHint.textContent = `${ini}, you're in 2nd — 1,000 coins if you stay there at reset.`;
   } else if (rank === 2) {
@@ -4753,9 +4806,17 @@ async function processDailyPrizePayouts() {
   if (rank >= 0 && rank < DAILY_PRIZES.length) {
     const prize = DAILY_PRIZES[rank];
     gameMeta.coins += prize;
+    if (rank === 0) grantMagnetRodForToday();
     saveMeta();
     refreshCoinDisplays();
-    showToast(`Fisher of the Day #${rank + 1}! +${prize} coins for ${formatDailyDayLabel(yesterday)}`, 4200);
+    if (rank === 0) {
+      showToast(
+        `Fisher of the Day #1! +${prize} coins & Magnet Rod for today (${formatDailyDayLabel(getDailyDayKey())})`,
+        4800,
+      );
+    } else {
+      showToast(`Fisher of the Day #${rank + 1}! +${prize} coins for ${formatDailyDayLabel(yesterday)}`, 4200);
+    }
   } else {
     saveMeta();
   }
@@ -6431,7 +6492,7 @@ function buildShopUI() {
     shopList.appendChild(li);
   }
   for (const rod of RODS) {
-    if (rod.id === FREE_ROD_ID) continue;
+    if (rod.id === FREE_ROD_ID || rod.id === MAGNET_ROD_ID) continue;
     const owned = isRodOwned(rod.id);
     const li = document.createElement("li");
     li.className = "shop-item shop-item--rod";
@@ -6572,7 +6633,10 @@ function buildRodUI() {
     b.className =
       `rod-option rod-option--rod-${rod.id}` +
       (rod.id === selectedRod.id ? " rod-option--selected" : "");
-    const stockLine = `<span class="rod-option__stock">Owned</span>`;
+    const stockLine =
+      rod.id === MAGNET_ROD_ID
+        ? `<span class="rod-option__stock rod-option__stock--prize">Prize · expires tonight</span>`
+        : `<span class="rod-option__stock">Owned</span>`;
     b.innerHTML = `<span class="rod-option__name">${rod.name}</span><span class="rod-option__desc">${rod.desc}</span>${stockLine}`;
     b.addEventListener("click", () => {
       selectedRod = rod;
@@ -6680,6 +6744,7 @@ function initBubbles() {
 
 function startRound() {
   playing = true;
+  normalizeSelectedRod();
   stopHomeMusic();
   syncMusicMasterGain();
   startHomeWaves();
@@ -9769,6 +9834,78 @@ function drawJackpotCrab() {
   ctx.restore();
 }
 
+function drawMagnetTip(hx, hy, v, hs) {
+  const cy = hy + dpr * 8 * hs;
+  const legW = dpr * 8.5 * hs;
+  const legH = dpr * 15 * hs;
+  const thick = dpr * 4.4 * hs;
+  const t = performance.now() * 0.0045;
+
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  for (let i = 0; i < 3; i++) {
+    const sway = Math.sin(t + i * 1.4) * dpr * 2.5;
+    const arcR = dpr * (10 + i * 5) * hs;
+    ctx.strokeStyle = `rgba(167, 139, 250, ${0.22 - i * 0.05})`;
+    ctx.lineWidth = 1.2 * dpr;
+    ctx.beginPath();
+    ctx.arc(hx + sway, cy + dpr * 4 * hs, arcR, Math.PI * 0.15, Math.PI * 0.85);
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle = v.magnetNorth || "#ef4444";
+  ctx.lineWidth = thick;
+  ctx.beginPath();
+  ctx.moveTo(hx - legW, cy + legH * 0.55);
+  ctx.lineTo(hx - legW, cy - legH * 0.2);
+  ctx.stroke();
+
+  ctx.strokeStyle = v.magnetSouth || "#3b82f6";
+  ctx.beginPath();
+  ctx.moveTo(hx + legW, cy + legH * 0.55);
+  ctx.lineTo(hx + legW, cy - legH * 0.2);
+  ctx.stroke();
+
+  ctx.strokeStyle = v.magnetBody || "#64748b";
+  ctx.lineWidth = thick * 0.92;
+  ctx.beginPath();
+  ctx.arc(hx, cy - legH * 0.2, legW, Math.PI, 0, false);
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
+  ctx.beginPath();
+  ctx.arc(hx - legW * 0.55, cy - legH * 0.35, dpr * 2.2 * hs, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = v.hookMetal || "#cbd5e1";
+  ctx.beginPath();
+  ctx.arc(hx, cy - legH * 0.2 - thick * 0.35, dpr * 2.8 * hs, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawHookTip(hx, hy, v, hs) {
+  if (v.tipType === "magnet") {
+    drawMagnetTip(hx, hy, v, hs);
+    return;
+  }
+
+  ctx.fillStyle = v.hookBarb;
+  ctx.beginPath();
+  ctx.moveTo(hx, hy);
+  ctx.lineTo(hx - dpr * 6 * hs, hy + dpr * 14 * hs);
+  ctx.lineTo(hx + dpr * 6 * hs, hy + dpr * 14 * hs);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = v.hookMetal;
+  ctx.beginPath();
+  ctx.arc(hx, hy + dpr * 15 * hs, dpr * 3.2 * hs, 0, Math.PI * 2);
+  ctx.fill();
+}
+
 function drawHookLine() {
   const hx = hook.x;
   const hy = hook.tipY;
@@ -9831,45 +9968,43 @@ function drawHookLine() {
   const R = effectiveCatchRadiusBasePx() * pulse;
   ctx.strokeStyle = hook.snagPulse > 0 ? v.ringSnag : v.ringIdle;
   ctx.lineWidth = 2 * dpr;
+  if (v.tipType === "magnet") {
+    ctx.setLineDash([dpr * 5, dpr * 4]);
+    ctx.beginPath();
+    ctx.arc(hx, hy, R * 0.72, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
   ctx.beginPath();
   ctx.arc(hx, hy, R, 0, Math.PI * 2);
   ctx.stroke();
 
   const hs = v.hookScale;
-  const tipGlow = ctx.createRadialGradient(hx, hy + dpr * 12, 0, hx, hy + dpr * 12, dpr * 22 * hs);
+  const tipGlowY = v.tipType === "magnet" ? hy + dpr * 8 * hs : hy + dpr * 12 * hs;
+  const tipGlow = ctx.createRadialGradient(hx, tipGlowY, 0, hx, tipGlowY, dpr * 22 * hs);
   tipGlow.addColorStop(0, v.tipGlow);
   tipGlow.addColorStop(1, "rgba(0,0,0,0)");
   ctx.fillStyle = tipGlow;
   ctx.beginPath();
-  ctx.arc(hx, hy + dpr * 12, dpr * 18 * hs, 0, Math.PI * 2);
+  ctx.arc(hx, tipGlowY, dpr * 18 * hs, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = v.hookBarb;
-  ctx.beginPath();
-  ctx.moveTo(hx, hy);
-  ctx.lineTo(hx - dpr * 6 * hs, hy + dpr * 14 * hs);
-  ctx.lineTo(hx + dpr * 6 * hs, hy + dpr * 14 * hs);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.fillStyle = v.hookMetal;
-  ctx.beginPath();
-  ctx.arc(hx, hy + dpr * 15 * hs, dpr * 3.2 * hs, 0, Math.PI * 2);
-  ctx.fill();
+  drawHookTip(hx, hy, v, hs);
 
   if (getReef().id === "mariana_trench") {
+    const lightY = v.tipType === "magnet" ? tipGlowY : hy + dpr * 8 * hs;
     const lightMult = effectiveTrenchLightMult();
     ctx.fillStyle = "#bff7ff";
     ctx.shadowColor = "#67e8f9";
     ctx.shadowBlur = 22 * dpr * Math.min(2.2, lightMult);
     ctx.beginPath();
-    ctx.arc(hx, hy + dpr * 8 * hs, dpr * 5.8 * hs * Math.min(1.55, lightMult), 0, Math.PI * 2);
+    ctx.arc(hx, lightY, dpr * 5.8 * hs * Math.min(1.55, lightMult), 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
     ctx.strokeStyle = "rgba(190, 255, 255, 0.62)";
     ctx.lineWidth = 1.5 * dpr;
     ctx.beginPath();
-    ctx.arc(hx, hy + dpr * 8 * hs, dpr * 12 * hs * Math.min(1.9, lightMult), 0, Math.PI * 2);
+    ctx.arc(hx, lightY, dpr * 12 * hs * Math.min(1.9, lightMult), 0, Math.PI * 2);
     ctx.stroke();
   }
 }
