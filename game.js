@@ -387,7 +387,7 @@ const TREASURE_CINEMATIC_OPEN_MS = 1600;
 const TREASURE_CINEMATIC_HOLD_MS = 1400;
 
 /** Logical map height for trail SVG coords (matches stretched parchment art). */
-const ADVENTURE_MAP_HEIGHT = 2200;
+const ADVENTURE_MAP_HEIGHT = 3100;
 
 /** Section metadata — bounds computed dynamically in adventureMapSectionBounds(). */
 const ADVENTURE_MAP_SECTIONS = {
@@ -418,9 +418,9 @@ const ADVENTURE_MAP_SECTIONS = {
 };
 
 /** Vertical split lines (% from top of map board) aligned to voyage nodes. */
-const ADVENTURE_MAP_PIRATES_TOP_PCT = 56;
-const ADVENTURE_MAP_GOLD_ICE_SPLIT_PCT = 41;
-const ADVENTURE_MAP_ICE_LOST_CITY_SPLIT_PCT = 24;
+const ADVENTURE_MAP_PIRATES_TOP_PCT = 58;
+const ADVENTURE_MAP_GOLD_ICE_SPLIT_PCT = 38;
+const ADVENTURE_MAP_ICE_LOST_CITY_SPLIT_PCT = 17;
 const ADVENTURE_MAP_TOP_PCT = 4;
 
 /** Tile the chart into non-overlapping bands; gold fills to the top until ice unlocks. */
@@ -480,7 +480,7 @@ function buildAdventureMapNodeLayout() {
   for (let i = 0; i < ADVENTURE_MAIN_LEVEL_COUNT; i++) {
     layout.push({
       x: piratesX[i],
-      y: 93.5 - (i / Math.max(1, ADVENTURE_MAIN_LEVEL_COUNT - 1)) * 35,
+      y: 98 - (i / Math.max(1, ADVENTURE_MAIN_LEVEL_COUNT - 1)) * 40,
       section: "pirates",
     });
   }
@@ -488,7 +488,7 @@ function buildAdventureMapNodeLayout() {
   for (let i = 0; i < ADVENTURE_BONUS_LEVEL_COUNT; i++) {
     layout.push({
       x: goldX[i],
-      y: 55 - i * 3,
+      y: 56 - i * 4,
       section: "gold",
     });
   }
@@ -496,7 +496,7 @@ function buildAdventureMapNodeLayout() {
   for (let i = 0; i < ADVENTURE_ICE_LEVEL_COUNT; i++) {
     layout.push({
       x: iceX[i],
-      y: 40 - i * 6,
+      y: 36 - i * 4.5,
       section: "ice",
     });
   }
@@ -504,7 +504,7 @@ function buildAdventureMapNodeLayout() {
   for (let i = 0; i < ADVENTURE_LOST_CITY_LEVEL_COUNT; i++) {
     layout.push({
       x: lostCityX[i],
-      y: 22 - i * 4,
+      y: 14 - i * 2.5,
       section: "lost-city",
     });
   }
@@ -6477,10 +6477,10 @@ function adventureMapCoords(index) {
 }
 
 function adventureMapExtentVh() {
-  if (isAdventureLostCityUnlocked()) return 680;
-  if (isAdventureIceUnlocked()) return 560;
-  if (isAdventureBonusUnlocked()) return 420;
-  return 300;
+  if (isAdventureLostCityUnlocked()) return 960;
+  if (isAdventureIceUnlocked()) return 760;
+  if (isAdventureBonusUnlocked()) return 560;
+  return 400;
 }
 
 function applyAdventureMapExtent(animate = false) {
