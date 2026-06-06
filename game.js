@@ -300,9 +300,14 @@ const TREASURE_CHESTS_TO_UNLOCK_ADVENTURE = 20;
 const SECRET_TREASURE_CHEST_GRANT = 19;
 const ADVENTURE_MAIN_LEVEL_COUNT = 15;
 const ADVENTURE_BONUS_LEVEL_COUNT = 5;
-const ADVENTURE_LEVEL_COUNT = ADVENTURE_MAIN_LEVEL_COUNT + ADVENTURE_BONUS_LEVEL_COUNT;
+const ADVENTURE_ICE_LEVEL_COUNT = 5;
+const ADVENTURE_LEVEL_COUNT =
+  ADVENTURE_MAIN_LEVEL_COUNT + ADVENTURE_BONUS_LEVEL_COUNT + ADVENTURE_ICE_LEVEL_COUNT;
 /** Index of Treasure Cove (level 15) — clearing it unlocks bonus voyages. */
 const TREASURE_COVE_INDEX = ADVENTURE_MAIN_LEVEL_COUNT - 1;
+/** Index of Legend's Gate (level 20) — clearing it unlocks ice voyages. */
+const LEGENDS_GATE_INDEX = ADVENTURE_MAIN_LEVEL_COUNT + ADVENTURE_BONUS_LEVEL_COUNT - 1;
+const ADVENTURE_ICE_START_INDEX = ADVENTURE_MAIN_LEVEL_COUNT + ADVENTURE_BONUS_LEVEL_COUNT;
 
 const TREASURE_CINEMATIC_ANTICIPATE_MS = 800;
 const TREASURE_CINEMATIC_FLY_MS = 2400;
@@ -331,6 +336,11 @@ const ADVENTURE_MAP_NODE_LAYOUT = [
   { x: 68, y: 4 },
   { x: 32, y: 2.5 },
   { x: 50, y: 1 },
+  { x: 66, y: -0.8 },
+  { x: 34, y: -2.2 },
+  { x: 68, y: -3.6 },
+  { x: 30, y: -5 },
+  { x: 50, y: -6.5 },
 ];
 
 const ADVENTURE_MAP_PLACES = [
@@ -354,6 +364,11 @@ const ADVENTURE_MAP_PLACES = [
   "Pearl Abyss",
   "Crown Reef",
   "Legend's Gate",
+  "Frostbite Fjord",
+  "Iceberg Drift",
+  "Glacier Maw",
+  "Polar Narrows",
+  "Aurora Reach",
 ];
 
 /** Visual theme slug per voyage — matches ADVENTURE_MAP_PLACES order. */
@@ -378,6 +393,11 @@ const ADVENTURE_LEVEL_THEMES = [
   "pearl-abyss",
   "crown-reef",
   "legends-gate",
+  "frost-fjord",
+  "iceberg-drift",
+  "glacier-maw",
+  "polar-narrows",
+  "aurora-reach",
 ];
 
 function adventureMapSceneSvg(themeId, idSuffix = "") {
@@ -613,6 +633,52 @@ function adventureMapSceneSvg(themeId, idSuffix = "") {
       <circle cx="36" cy="20" r="5" fill="#ffd700"/>
       <path d="M32 20 L36 14 L40 20 L38 18 L36 20 L34 18 Z" fill="#8a6010"/>
     </svg>`,
+    "frost-fjord": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#88c8e8"/>
+      <path d="M0 30 Q36 22 72 30 L72 52 L0 52 Z" fill="#5898b8"/>
+      <path d="M8 38 L14 28 L20 36 L18 42 Z" fill="#e8f8ff" stroke="#a8d8f0" stroke-width="0.6"/>
+      <path d="M52 34 L60 22 L66 38 L58 42 Z" fill="#f0faff" stroke="#b8e8ff" stroke-width="0.6"/>
+      <path d="M28 40 L34 30 L40 38 L36 44 Z" fill="#dceef8" stroke="#98c8e0" stroke-width="0.5"/>
+      <rect x="10" y="44" width="52" height="4" fill="#486878" opacity="0.6"/>
+    </svg>`,
+    "iceberg-drift": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#78b8d8"/>
+      <path d="M12 36 L22 14 L32 36 Z" fill="#eefaff" stroke="#a8d8f0" stroke-width="0.7"/>
+      <path d="M40 38 L50 18 L62 40 Z" fill="#f8fdff" stroke="#b0e0f8" stroke-width="0.7"/>
+      <path d="M24 42 L30 32 L36 42 Z" fill="#dceef8" stroke="#90c0d8" stroke-width="0.5"/>
+      <ellipse cx="36" cy="46" rx="28" ry="4" fill="#487888" opacity="0.5"/>
+    </svg>`,
+    "glacier-maw": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#68a8c8"/>
+      <path d="M0 52 L0 18 Q18 8 36 14 Q54 8 72 18 L72 52 Z" fill="#d8f0ff" stroke="#98c8e0" stroke-width="0.8"/>
+      <path d="M0 52 L0 28 Q36 20 72 28 L72 52 Z" fill="#5898b8" opacity="0.55"/>
+      <path d="M30 24 L36 10 L42 24 Z" fill="#f0faff" opacity="0.85"/>
+    </svg>`,
+    "polar-narrows": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#5898b8"/>
+      <path d="M0 52 L8 20 Q14 14 18 52 Z" fill="#284858"/>
+      <path d="M72 52 L64 18 Q58 12 54 52 Z" fill="#284858"/>
+      <path d="M22 38 L28 26 L34 38 Z" fill="#eef8ff" stroke="#a0d0e8" stroke-width="0.6"/>
+      <path d="M46 36 L52 24 L58 38 Z" fill="#f4fbff" stroke="#a8d8f0" stroke-width="0.6"/>
+      <ellipse cx="36" cy="46" rx="14" ry="3" fill="#386878" opacity="0.5"/>
+    </svg>`,
+    "aurora-reach": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="aur-${sid}" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#88e8c8" stop-opacity="0.5"/>
+          <stop offset="50%" stop-color="#88a8f0" stop-opacity="0.35"/>
+          <stop offset="100%" stop-color="#4898b8" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <rect width="72" height="52" fill="#487898"/>
+      <rect width="72" height="28" fill="url(#aur-${sid})"/>
+      <path d="M14 40 L22 22 L30 40 Z" fill="#f0faff" stroke="#c0e8ff" stroke-width="0.7"/>
+      <path d="M48 38 L56 20 L64 40 Z" fill="#eef8ff" stroke="#b0e0f8" stroke-width="0.7"/>
+      <path d="M30 42 L36 32 L42 42 Z" fill="#dceef8" stroke="#98c8e0" stroke-width="0.5"/>
+      <circle cx="20" cy="12" r="1.2" fill="#a8f0d0" opacity="0.8"/>
+      <circle cx="36" cy="8" r="1" fill="#b8c8ff" opacity="0.75"/>
+      <circle cx="52" cy="14" r="1.1" fill="#98e8c8" opacity="0.7"/>
+    </svg>`,
   };
   return scenes[themeId] || scenes["skull-shoals"];
 }
@@ -669,6 +735,11 @@ function getActiveAdventureTheme() {
 const ADVENTURE_THEME_REEF_ID = {
   "lava-falls": "caribbean",
   "treasure-cove": "caribbean",
+  "frost-fjord": "mediterranean",
+  "iceberg-drift": "mediterranean",
+  "glacier-maw": "mediterranean",
+  "polar-narrows": "mediterranean",
+  "aurora-reach": "mediterranean",
 };
 
 function isSkullShoalsPlay() {
@@ -731,6 +802,47 @@ const ADVENTURE_PLAY_ATMOSPHERE = {
       [1, "rgba(28, 38, 32, 0.32)"],
     ],
     effect: "treasure-cove",
+  },
+  "frost-fjord": {
+    stops: [
+      [0, "rgba(200, 230, 255, 0.12)"],
+      [0.5, "rgba(140, 190, 230, 0.14)"],
+      [1, "rgba(50, 80, 110, 0.22)"],
+    ],
+    effect: "frost-fjord",
+  },
+  "iceberg-drift": {
+    stops: [
+      [0, "rgba(210, 240, 255, 0.1)"],
+      [0.45, "rgba(160, 210, 240, 0.12)"],
+      [1, "rgba(45, 75, 105, 0.24)"],
+    ],
+    effect: "iceberg-drift",
+  },
+  "glacier-maw": {
+    stops: [
+      [0, "rgba(220, 245, 255, 0.14)"],
+      [0.4, "rgba(170, 215, 245, 0.1)"],
+      [1, "rgba(35, 65, 95, 0.26)"],
+    ],
+    effect: "glacier-maw",
+  },
+  "polar-narrows": {
+    stops: [
+      [0, "rgba(190, 225, 250, 0.11)"],
+      [0.55, "rgba(130, 175, 215, 0.13)"],
+      [1, "rgba(30, 55, 85, 0.28)"],
+    ],
+    effect: "polar-narrows",
+  },
+  "aurora-reach": {
+    stops: [
+      [0, "rgba(160, 240, 210, 0.1)"],
+      [0.35, "rgba(140, 180, 240, 0.12)"],
+      [0.7, "rgba(100, 160, 220, 0.1)"],
+      [1, "rgba(25, 50, 80, 0.26)"],
+    ],
+    effect: "aurora-reach",
   },
 };
 
@@ -858,6 +970,46 @@ const ADVENTURE_THEME_SAND = {
     ],
     speck: "rgba(255, 200, 80, 0.22)",
   },
+  "frost-fjord": {
+    stops: [
+      [0, "rgba(200, 230, 245, 0)"],
+      [0.35, "rgba(170, 200, 220, 0.24)"],
+      [1, "rgba(120, 150, 175, 0.52)"],
+    ],
+    speck: "rgba(240, 250, 255, 0.32)",
+  },
+  "iceberg-drift": {
+    stops: [
+      [0, "rgba(190, 225, 240, 0)"],
+      [0.4, "rgba(160, 195, 215, 0.22)"],
+      [1, "rgba(110, 140, 165, 0.5)"],
+    ],
+    speck: "rgba(235, 248, 255, 0.28)",
+  },
+  "glacier-maw": {
+    stops: [
+      [0, "rgba(210, 235, 248, 0)"],
+      [0.38, "rgba(180, 210, 228, 0.26)"],
+      [1, "rgba(130, 160, 185, 0.55)"],
+    ],
+    speck: "rgba(245, 252, 255, 0.35)",
+  },
+  "polar-narrows": {
+    stops: [
+      [0, "rgba(185, 215, 235, 0)"],
+      [0.42, "rgba(150, 185, 210, 0.24)"],
+      [1, "rgba(95, 125, 155, 0.52)"],
+    ],
+    speck: "rgba(230, 245, 255, 0.3)",
+  },
+  "aurora-reach": {
+    stops: [
+      [0, "rgba(195, 230, 245, 0)"],
+      [0.36, "rgba(165, 200, 225, 0.22)"],
+      [1, "rgba(105, 135, 165, 0.54)"],
+    ],
+    speck: "rgba(220, 255, 250, 0.32)",
+  },
 };
 
 /** Water column palette overrides while on a voyage. */
@@ -951,6 +1103,36 @@ const ADVENTURE_THEME_REEF_OVERRIDES = {
     shaft: ["rgba(255, 210, 120, 0.14)", "rgba(255, 210, 120, 0)"],
     silhouette: "rgba(12, 22, 32, 0.55)",
     bubble: "rgba(180, 220, 230, 0.18)",
+  },
+  "frost-fjord": {
+    gradient: ["#98cce8", "#78b4d8", "#5898c0", "#386880"],
+    shaft: ["rgba(220, 240, 255, 0.18)", "rgba(220, 240, 255, 0)"],
+    silhouette: "rgba(35, 60, 85, 0.42)",
+    bubble: "rgba(210, 240, 255, 0.32)",
+  },
+  "iceberg-drift": {
+    gradient: ["#8cc4e4", "#6cacd0", "#5090b8", "#307098"],
+    shaft: ["rgba(230, 245, 255, 0.16)", "rgba(230, 245, 255, 0)"],
+    silhouette: "rgba(30, 55, 80, 0.44)",
+    bubble: "rgba(200, 235, 255, 0.3)",
+  },
+  "glacier-maw": {
+    gradient: ["#a0d4f0", "#80bcd8", "#60a4c8", "#4088a8"],
+    shaft: ["rgba(240, 250, 255, 0.2)", "rgba(240, 250, 255, 0)"],
+    silhouette: "rgba(40, 65, 90, 0.4)",
+    bubble: "rgba(215, 242, 255, 0.34)",
+  },
+  "polar-narrows": {
+    gradient: ["#88c0dc", "#68a8c8", "#4890b0", "#287898"],
+    shaft: ["rgba(210, 235, 255, 0.15)", "rgba(210, 235, 255, 0)"],
+    silhouette: "rgba(28, 50, 72, 0.48)",
+    bubble: "rgba(195, 230, 255, 0.28)",
+  },
+  "aurora-reach": {
+    gradient: ["#90c8e8", "#70b0d8", "#5098c8", "#3080a8"],
+    shaft: ["rgba(180, 240, 220, 0.14)", "rgba(180, 220, 255, 0)"],
+    silhouette: "rgba(32, 58, 82, 0.42)",
+    bubble: "rgba(190, 255, 240, 0.3)",
   },
 };
 
@@ -2373,6 +2555,195 @@ function drawCaptainsLandingBed() {
   }
 }
 
+function drawIceChunkShape(cx, cy, sc, rot, alpha = 0.92) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(rot);
+  ctx.globalAlpha = alpha;
+  const s = dpr * sc;
+  ctx.fillStyle = "rgba(225, 242, 255, 0.94)";
+  ctx.strokeStyle = "rgba(150, 210, 240, 0.88)";
+  ctx.lineWidth = Math.max(dpr * 0.7, s * 0.12);
+  ctx.beginPath();
+  ctx.moveTo(-s * 8, s * 2);
+  ctx.lineTo(-s * 3, -s * 7);
+  ctx.lineTo(s * 5, -s * 5);
+  ctx.lineTo(s * 9, s * 3);
+  ctx.lineTo(s * 2, s * 7);
+  ctx.lineTo(-s * 6, s * 5);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "rgba(255, 255, 255, 0.58)";
+  ctx.beginPath();
+  ctx.moveTo(-s * 2, -s * 2);
+  ctx.lineTo(s * 3, -s * 5);
+  ctx.lineTo(s * 5, s * 1);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawIceWaterBed(themeId) {
+  const sandTop = h - dpr * 92;
+  const base = sandTop + dpr * 10;
+  ctx.fillStyle = "rgba(140, 170, 195, 0.35)";
+  ctx.beginPath();
+  ctx.ellipse(w * 0.5, base + dpr * 4, w * 0.42, dpr * 16, 0, 0, Math.PI * 2);
+  ctx.fill();
+  for (const px of [0.12, 0.32, 0.58, 0.82]) {
+    ctx.fillStyle = "rgba(100, 130, 160, 0.55)";
+    ctx.beginPath();
+    ctx.moveTo(w * px - dpr * 8, base + dpr * 6);
+    ctx.lineTo(w * px, base - dpr * (14 + (px * 100) % 18));
+    ctx.lineTo(w * px + dpr * 10, base + dpr * 4);
+    ctx.closePath();
+    ctx.fill();
+  }
+  if (themeId === "glacier-maw") {
+    ctx.fillStyle = "rgba(210, 235, 250, 0.72)";
+    ctx.strokeStyle = "rgba(160, 210, 240, 0.65)";
+    ctx.lineWidth = dpr * 1.2;
+    ctx.beginPath();
+    ctx.moveTo(0, sandTop - dpr * 20);
+    ctx.lineTo(0, sandTop - dpr * 95);
+    ctx.quadraticCurveTo(w * 0.22, sandTop - dpr * 110, w * 0.38, sandTop - dpr * 75);
+    ctx.lineTo(w * 0.38, sandTop - dpr * 15);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(w, sandTop - dpr * 18);
+    ctx.lineTo(w, sandTop - dpr * 100);
+    ctx.quadraticCurveTo(w * 0.78, sandTop - dpr * 115, w * 0.62, sandTop - dpr * 78);
+    ctx.lineTo(w * 0.62, sandTop - dpr * 12);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+  if (themeId === "polar-narrows") {
+    ctx.fillStyle = "rgba(45, 70, 95, 0.65)";
+    ctx.beginPath();
+    ctx.moveTo(0, sandTop);
+    ctx.lineTo(w * 0.18, sandTop - dpr * 80);
+    ctx.lineTo(w * 0.22, h);
+    ctx.lineTo(0, h);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(w, sandTop);
+    ctx.lineTo(w * 0.82, sandTop - dpr * 85);
+    ctx.lineTo(w * 0.78, h);
+    ctx.lineTo(w, h);
+    ctx.closePath();
+    ctx.fill();
+  }
+  drawIceChunkShape(w * 0.2, base - dpr * 8, 1.1, 0.15, 0.85);
+  drawIceChunkShape(w * 0.72, base - dpr * 6, 0.95, -0.2, 0.82);
+  drawIceChunkShape(w * 0.48, base - dpr * 12, 1.25, 0.05, 0.88);
+}
+
+function drawFrostFjordBed() {
+  drawIceWaterBed("frost-fjord");
+}
+function drawIcebergDriftBed() {
+  drawIceWaterBed("iceberg-drift");
+}
+function drawGlacierMawBed() {
+  drawIceWaterBed("glacier-maw");
+}
+function drawPolarNarrowsBed() {
+  drawIceWaterBed("polar-narrows");
+}
+function drawAuroraReachBed() {
+  drawIceWaterBed("aurora-reach");
+}
+
+const ADVENTURE_ICE_THEME_VARIANT = {
+  "frost-fjord": { chunks: 9, aurora: false, frost: 12 },
+  "iceberg-drift": { chunks: 17, aurora: false, frost: 8 },
+  "glacier-maw": { chunks: 7, aurora: false, frost: 18 },
+  "polar-narrows": { chunks: 11, aurora: false, frost: 14 },
+  "aurora-reach": { chunks: 13, aurora: true, frost: 10 },
+};
+
+function drawFloatingIceChunks(now, themeId) {
+  const t = now * 0.001;
+  const v = ADVENTURE_ICE_THEME_VARIANT[themeId] || ADVENTURE_ICE_THEME_VARIANT["frost-fjord"];
+  const wh = h - waterTop;
+  const n = PERF_CHROMEBOOK ? Math.max(5, Math.floor(v.chunks * 0.55)) : v.chunks;
+  for (let i = 0; i < n; i++) {
+    const drift = Math.sin(t * 0.22 + i * 1.7) * w * 0.018;
+    const px = w * (((i * 137 + 41) % 920) / 1000) + drift;
+    const py = waterTop + wh * (0.08 + ((i * 53 + Math.floor(t * 12 + i * 9)) % 720) / 1000);
+    const sc = 0.65 + (i % 5) * 0.22;
+    const rot = (i * 0.55 + t * 0.08) % (Math.PI * 2);
+    const alpha = 0.55 + (i % 4) * 0.1;
+    drawIceChunkShape(px, py, sc, rot, alpha);
+  }
+}
+
+function drawIceFrostParticles(now, count) {
+  const t = now * 0.001;
+  for (let i = 0; i < perfN(count); i++) {
+    const px = w * (((i * 89 + Math.floor(t * 22)) % 1000) / 1000);
+    const py = waterTop + ((i * 67 + Math.floor(t * 18 + i * 11)) % 1000) / 1000 * (h - waterTop);
+    ctx.fillStyle = `rgba(240, 250, 255, ${0.2 + (i % 3) * 0.08})`;
+    ctx.beginPath();
+    ctx.arc(px, py, dpr * (0.6 + (i % 2) * 0.35), 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawAuroraShimmer(now) {
+  const t = now * 0.001;
+  const bands = PERF_CHROMEBOOK ? 3 : 4;
+  for (let i = 0; i < bands; i++) {
+    const y0 = waterTop + dpr * (8 + i * 22);
+    const grad = ctx.createLinearGradient(0, y0, w, y0 + dpr * 40);
+    const phase = t * 0.5 + i * 1.2;
+    grad.addColorStop(0, `rgba(120, 240, 190, ${0.06 + Math.sin(phase) * 0.03})`);
+    grad.addColorStop(0.5, `rgba(140, 180, 255, ${0.08 + Math.sin(phase + 1) * 0.04})`);
+    grad.addColorStop(1, `rgba(100, 220, 200, ${0.05 + Math.sin(phase + 2) * 0.03})`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, y0, w, dpr * 45);
+  }
+}
+
+function drawAdventureIceThemeEffect(now, themeId) {
+  const t = now * 0.001;
+  const v = ADVENTURE_ICE_THEME_VARIANT[themeId] || ADVENTURE_ICE_THEME_VARIANT["frost-fjord"];
+  const wh = h - waterTop;
+
+  if (v.aurora) drawAuroraShimmer(now);
+
+  const coldHaze = ctx.createLinearGradient(0, waterTop, 0, h);
+  coldHaze.addColorStop(0, "rgba(210, 240, 255, 0.1)");
+  coldHaze.addColorStop(0.45, "rgba(160, 200, 230, 0.06)");
+  coldHaze.addColorStop(1, "rgba(40, 70, 100, 0.14)");
+  ctx.fillStyle = coldHaze;
+  ctx.fillRect(0, waterTop, w, wh);
+
+  drawFloatingIceChunks(now, themeId);
+  drawIceFrostParticles(now, v.frost);
+
+  const surfaceSheen = ctx.createLinearGradient(0, waterTop, 0, waterTop + dpr * 80);
+  surfaceSheen.addColorStop(0, "rgba(240, 250, 255, 0.22)");
+  surfaceSheen.addColorStop(1, "rgba(200, 230, 250, 0)");
+  ctx.fillStyle = surfaceSheen;
+  ctx.fillRect(0, waterTop, w, dpr * 80);
+
+  ctx.strokeStyle = "rgba(200, 230, 255, 0.12)";
+  ctx.lineWidth = dpr * 0.8;
+  for (let i = 0; i < perfN(6); i++) {
+    const y = waterTop + dpr * (20 + i * 28 + Math.sin(t + i) * 4);
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.quadraticCurveTo(w * 0.5, y + dpr * 3, w, y);
+    ctx.stroke();
+  }
+}
+
 const ADVENTURE_THEME_BED_DRAW = {
   "skull-shoals": drawSkullShoalsGraveyardBed,
   "mariners-rest": drawMarinersRestBed,
@@ -2389,6 +2760,11 @@ const ADVENTURE_THEME_BED_DRAW = {
   "leviathan-deep": drawLeviathanDeepBed,
   "captains-landing": drawCaptainsLandingBed,
   "treasure-cove": drawTreasureCoveBed,
+  "frost-fjord": drawFrostFjordBed,
+  "iceberg-drift": drawIcebergDriftBed,
+  "glacier-maw": drawGlacierMawBed,
+  "polar-narrows": drawPolarNarrowsBed,
+  "aurora-reach": drawAuroraReachBed,
 };
 
 function drawAdventureThemeBed(themeId) {
@@ -2948,6 +3324,11 @@ const ADVENTURE_THEME_EFFECT_DRAW = {
   "leviathan-deep": drawAdventureLeviathanDeepEffect,
   "captains-landing": drawAdventureCaptainsLandingEffect,
   "treasure-cove": drawAdventureTreasureCoveEffect,
+  "frost-fjord": (now) => drawAdventureIceThemeEffect(now, "frost-fjord"),
+  "iceberg-drift": (now) => drawAdventureIceThemeEffect(now, "iceberg-drift"),
+  "glacier-maw": (now) => drawAdventureIceThemeEffect(now, "glacier-maw"),
+  "polar-narrows": (now) => drawAdventureIceThemeEffect(now, "polar-narrows"),
+  "aurora-reach": (now) => drawAdventureIceThemeEffect(now, "aurora-reach"),
 };
 
 const ADVENTURE_BONUS_THEME_BASE = {
@@ -2981,8 +3362,12 @@ function adventurePassScoreForIndex(i) {
   if (i < ADVENTURE_MAIN_LEVEL_COUNT) {
     return 3000 + Math.round((i * (7000 - 3000)) / Math.max(1, ADVENTURE_MAIN_LEVEL_COUNT - 1));
   }
-  const bonusI = i - ADVENTURE_MAIN_LEVEL_COUNT;
-  return 7500 + Math.round((bonusI * (9000 - 7500)) / Math.max(1, ADVENTURE_BONUS_LEVEL_COUNT - 1));
+  if (i < ADVENTURE_ICE_START_INDEX) {
+    const bonusI = i - ADVENTURE_MAIN_LEVEL_COUNT;
+    return 7500 + Math.round((bonusI * (9000 - 7500)) / Math.max(1, ADVENTURE_BONUS_LEVEL_COUNT - 1));
+  }
+  const iceI = i - ADVENTURE_ICE_START_INDEX;
+  return 9250 + Math.round((iceI * (11000 - 9250)) / Math.max(1, ADVENTURE_ICE_LEVEL_COUNT - 1));
 }
 
 function drawAdventureThemeOverlayInner(now) {
@@ -3070,6 +3455,7 @@ function defaultMeta() {
     adventureHighestLevel: 0,
     pendingAdventureHomeCelebration: false,
     pendingBonusVoyagesCelebration: false,
+    pendingIceVoyagesCelebration: false,
   };
 }
 
@@ -3103,6 +3489,7 @@ function loadMeta() {
       adventureHighestLevel: Math.max(0, Math.min(ADVENTURE_LEVEL_COUNT, Math.floor(Number(o.adventureHighestLevel) || 0))),
       pendingAdventureHomeCelebration: Boolean(o.pendingAdventureHomeCelebration),
       pendingBonusVoyagesCelebration: Boolean(o.pendingBonusVoyagesCelebration),
+      pendingIceVoyagesCelebration: Boolean(o.pendingIceVoyagesCelebration),
     };
   } catch {
     return defaultMeta();
@@ -3384,19 +3771,21 @@ function buildAdventureLevels() {
   for (let i = 0; i < ADVENTURE_LEVEL_COUNT; i++) {
     const reef = REEFS[i % REEFS.length];
     const tier = Math.floor(i / REEFS.length);
-    const isBonus = i >= ADVENTURE_MAIN_LEVEL_COUNT;
+    const isBonus = i >= ADVENTURE_MAIN_LEVEL_COUNT && i < ADVENTURE_ICE_START_INDEX;
+    const isIce = i >= ADVENTURE_ICE_START_INDEX;
     levels.push({
       level: i + 1,
       id: `adv_${i + 1}`,
       name: ADVENTURE_MAP_PLACES[i] || `Voyage ${i + 1}`,
-      subtitle: isBonus ? `Bonus · ${reef.name}` : reef.name,
+      subtitle: isIce ? `Ice · ${reef.name}` : isBonus ? `Bonus · ${reef.name}` : reef.name,
       mapPlace: ADVENTURE_MAP_PLACES[i] || `Isle ${i + 1}`,
       reefId: reef.id,
       isBonus,
+      isIce,
       passScore: adventurePassScoreForIndex(i),
-      roundMs: Math.max(isBonus ? 40_000 : 46_000, reef.roundMs - tier * 3500 - i * 600),
-      spawnMin: Math.max(isBonus ? 140 : 160, reef.spawnMin - i * 18),
-      spawnMax: Math.max(isBonus ? 340 : 380, reef.spawnMax - i * 45),
+      roundMs: Math.max(isIce ? 38_000 : isBonus ? 40_000 : 46_000, reef.roundMs - tier * 3500 - i * 600),
+      spawnMin: Math.max(isIce ? 130 : isBonus ? 140 : 160, reef.spawnMin - i * 18),
+      spawnMax: Math.max(isIce ? 320 : isBonus ? 340 : 380, reef.spawnMax - i * 45),
       maxFish: Math.min(22, reef.maxFish + Math.floor(i / 2)),
       fishSpeed: reef.fishSpeed * (1 + i * 0.035),
       rareRollMult: Math.max(0.5, reef.rareRollMult * (0.98 - i * 0.012)),
@@ -3453,11 +3842,16 @@ function isAdventureLevelPlayable(levelNum) {
   if (!isAdventureUnlocked()) return false;
   const highest = gameMeta.adventureHighestLevel || 0;
   if (levelNum > ADVENTURE_MAIN_LEVEL_COUNT && highest < ADVENTURE_MAIN_LEVEL_COUNT) return false;
+  if (levelNum > ADVENTURE_ICE_START_INDEX && highest < ADVENTURE_ICE_START_INDEX) return false;
   return levelNum <= highest + 1;
 }
 
 function isAdventureBonusUnlocked() {
   return (gameMeta.adventureHighestLevel || 0) >= ADVENTURE_MAIN_LEVEL_COUNT;
+}
+
+function isAdventureIceUnlocked() {
+  return (gameMeta.adventureHighestLevel || 0) >= ADVENTURE_ICE_START_INDEX;
 }
 
 function getAdventureLevel(index) {
@@ -3497,6 +3891,15 @@ function getReef() {
   }
   if (themeId === "treasure-cove" || themeId === "legends-gate") {
     merged.desc = `Dim shipwreck cave · golden treasure glow · score ${lvl.passScore}+ to continue`;
+  }
+  if (
+    themeId === "frost-fjord" ||
+    themeId === "iceberg-drift" ||
+    themeId === "glacier-maw" ||
+    themeId === "polar-narrows" ||
+    themeId === "aurora-reach"
+  ) {
+    merged.desc = `Icy waters · floating ice chunks · score ${lvl.passScore}+ to continue`;
   }
   return merged;
 }
@@ -3835,6 +4238,7 @@ const adventurePlayName = document.getElementById("adventurePlayName");
 const adventureWinTheme = document.getElementById("adventureWinTheme");
 const adventureWinTreasureCelebrate = document.getElementById("adventureWinTreasureCelebrate");
 const adventureMapBonusBanner = document.getElementById("adventureMapBonusBanner");
+const adventureMapIceBanner = document.getElementById("adventureMapIceBanner");
 const adventureFailTheme = document.getElementById("adventureFailTheme");
 
 let selectedRod = RODS[0];
@@ -4205,7 +4609,9 @@ function adventureMapCoords(index) {
 }
 
 function adventureMapVisibleLevelCount() {
-  return isAdventureBonusUnlocked() ? ADVENTURE_LEVEL_COUNT : ADVENTURE_MAIN_LEVEL_COUNT;
+  if (!isAdventureBonusUnlocked()) return ADVENTURE_MAIN_LEVEL_COUNT;
+  if (!isAdventureIceUnlocked()) return ADVENTURE_ICE_START_INDEX;
+  return ADVENTURE_LEVEL_COUNT;
 }
 
 function buildAdventureTrailPath() {
@@ -4237,6 +4643,7 @@ function scrollAdventureMapToProgress(instant = true) {
 
 let adventureMapUiProgress = -1;
 let adventureMapUiBonusRevealed = null;
+let adventureMapUiIceRevealed = null;
 
 function syncAdventureMapNodeStates() {
   if (!adventureLevelList) return;
@@ -4260,11 +4667,13 @@ function buildAdventureLevelUI(force = false) {
   if (!adventureLevelList) return;
   const highest = gameMeta.adventureHighestLevel || 0;
   const bonusRevealed = isAdventureBonusUnlocked();
+  const iceRevealed = isAdventureIceUnlocked();
   const visibleCount = adventureMapVisibleLevelCount();
   if (
     !force &&
     adventureMapUiProgress === highest &&
     adventureMapUiBonusRevealed === bonusRevealed &&
+    adventureMapUiIceRevealed === iceRevealed &&
     adventureLevelList.children.length === visibleCount
   ) {
     syncAdventureMapNodeStates();
@@ -4272,6 +4681,7 @@ function buildAdventureLevelUI(force = false) {
   }
   adventureMapUiProgress = highest;
   adventureMapUiBonusRevealed = bonusRevealed;
+  adventureMapUiIceRevealed = iceRevealed;
   adventureLevelList.innerHTML = "";
   const nextPlayable = Math.min(ADVENTURE_LEVEL_COUNT, highest + 1);
 
@@ -4281,14 +4691,16 @@ function buildAdventureLevelUI(force = false) {
 
   const frag = document.createDocumentFragment();
   for (let i = 0; i < ADVENTURE_LEVELS.length; i++) {
-    if (i >= ADVENTURE_MAIN_LEVEL_COUNT && !bonusRevealed) continue;
+    if (i >= ADVENTURE_ICE_START_INDEX && !iceRevealed) continue;
+    if (i >= ADVENTURE_MAIN_LEVEL_COUNT && i < ADVENTURE_ICE_START_INDEX && !bonusRevealed) continue;
     const lvl = ADVENTURE_LEVELS[i];
     const layout = ADVENTURE_MAP_NODE_LAYOUT[i] || { x: 50, y: 50 };
     const playable = isAdventureLevelPlayable(lvl.level);
     const cleared = lvl.level <= highest;
     const isCurrent = playable && !cleared && lvl.level === nextPlayable;
     const isTreasureCoveFinale = i === TREASURE_COVE_INDEX;
-    const isBonus = i >= ADVENTURE_MAIN_LEVEL_COUNT;
+    const isBonus = i >= ADVENTURE_MAIN_LEVEL_COUNT && i < ADVENTURE_ICE_START_INDEX;
+    const isIce = i >= ADVENTURE_ICE_START_INDEX;
     const isUltimateFinale = i === ADVENTURE_LEVEL_COUNT - 1;
     const themeId = getAdventureLevelTheme(i);
     const b = document.createElement("button");
@@ -4300,7 +4712,9 @@ function buildAdventureLevelUI(force = false) {
     if (isCurrent) b.classList.add("adventure-map-node--current");
     if (isTreasureCoveFinale) b.classList.add("adventure-map-node--finale");
     if (isBonus) b.classList.add("adventure-map-node--bonus");
+    if (isIce) b.classList.add("adventure-map-node--ice");
     if (isUltimateFinale) b.classList.add("adventure-map-node--bonus-finale");
+    if (isIce && isUltimateFinale) b.classList.add("adventure-map-node--ice-finale");
     b.disabled = !playable;
     b.style.left = `${layout.x}%`;
     b.style.top = `${layout.y}%`;
@@ -4326,20 +4740,37 @@ function buildAdventureLevelUI(force = false) {
   }
   adventureLevelList.appendChild(frag);
   const mapBoard = adventureMapScroll?.querySelector(".adventure-map-board");
-  if (mapBoard) mapBoard.classList.toggle("adventure-map-board--bonus-revealed", bonusRevealed);
+  if (mapBoard) {
+    mapBoard.classList.toggle("adventure-map-board--bonus-revealed", bonusRevealed);
+    mapBoard.classList.toggle("adventure-map-board--ice-revealed", iceRevealed);
+  }
   if (adventureMapBanner) {
     adventureMapBanner.hidden = !isAdventureUnlocked();
-    const bonusUnlocked = isAdventureBonusUnlocked();
-    adventureMapBanner.textContent = bonusUnlocked
-      ? "Chart the course — bonus voyages unlocked beyond Treasure Cove!"
-      : "Chart the course — 15 voyages to Treasure Cove, then 5 bonus voyages!";
+    if (iceRevealed) {
+      adventureMapBanner.textContent = "Chart the course — ice voyages unlocked in the frozen north!";
+    } else if (bonusRevealed) {
+      adventureMapBanner.textContent = "Chart the course — bonus voyages unlocked beyond Treasure Cove!";
+    } else {
+      adventureMapBanner.textContent =
+        "Chart the course — 15 voyages to Treasure Cove, then bonus and ice voyages!";
+    }
   }
   if (adventureMapBonusBanner) {
-    const showBonusBanner = isAdventureBonusUnlocked() || (gameMeta.pendingBonusVoyagesCelebration && isAdventureUnlocked());
+    const showBonusBanner =
+      (isAdventureBonusUnlocked() || gameMeta.pendingBonusVoyagesCelebration) && isAdventureUnlocked();
     adventureMapBonusBanner.hidden = !showBonusBanner;
     adventureMapBonusBanner.classList.toggle(
       "adventure-map-bonus-banner--reveal",
       Boolean(gameMeta.pendingBonusVoyagesCelebration)
+    );
+  }
+  if (adventureMapIceBanner) {
+    const showIceBanner =
+      (isAdventureIceUnlocked() || gameMeta.pendingIceVoyagesCelebration) && isAdventureUnlocked();
+    adventureMapIceBanner.hidden = !showIceBanner;
+    adventureMapIceBanner.classList.toggle(
+      "adventure-map-ice-banner--reveal",
+      Boolean(gameMeta.pendingIceVoyagesCelebration)
     );
   }
 }
@@ -4350,6 +4781,15 @@ function clearBonusVoyagesMapCelebration() {
   saveMeta();
   if (adventureMapBonusBanner) {
     adventureMapBonusBanner.classList.remove("adventure-map-bonus-banner--reveal");
+  }
+}
+
+function clearIceVoyagesMapCelebration() {
+  if (!gameMeta.pendingIceVoyagesCelebration) return;
+  gameMeta.pendingIceVoyagesCelebration = false;
+  saveMeta();
+  if (adventureMapIceBanner) {
+    adventureMapIceBanner.classList.remove("adventure-map-ice-banner--reveal");
   }
 }
 
@@ -4371,6 +4811,10 @@ function openAdventureHub() {
   if (gameMeta.pendingBonusVoyagesCelebration) {
     showToast("Bonus voyages unlocked! Chart the secret path beyond Treasure Cove.", 4200);
     window.setTimeout(clearBonusVoyagesMapCelebration, 4500);
+  }
+  if (gameMeta.pendingIceVoyagesCelebration) {
+    showToast("Ice voyages unlocked! Five frozen voyages await in the polar waters.", 4200);
+    window.setTimeout(clearIceVoyagesMapCelebration, 4500);
   }
   if (musicEnabled) {
     window.requestAnimationFrame(() => startAdventureMusic());
@@ -4405,9 +4849,11 @@ function endAdventureRound() {
   const lvl = getAdventureLevel(levelIndex);
   const passed = score >= lvl.passScore;
   const clearedTreasureCove = passed && levelIndex === TREASURE_COVE_INDEX;
+  const clearedLegendsGate = passed && levelIndex === LEGENDS_GATE_INDEX;
   if (passed) {
     gameMeta.adventureHighestLevel = Math.max(gameMeta.adventureHighestLevel || 0, lvl.level);
     if (clearedTreasureCove) gameMeta.pendingBonusVoyagesCelebration = true;
+    if (clearedLegendsGate) gameMeta.pendingIceVoyagesCelebration = true;
     saveMeta();
     adventureMapUiProgress = -1;
   }
@@ -4428,12 +4874,16 @@ function endAdventureRound() {
     if (adventureWinLevel) {
       adventureWinLevel.textContent = clearedTreasureCove
         ? "Treasure Cove conquered!"
-        : `Level ${lvl.level} cleared!`;
+        : clearedLegendsGate
+          ? "Legend's Gate cleared!"
+          : `Level ${lvl.level} cleared!`;
     }
     if (adventureWinScore) {
       adventureWinScore.textContent = clearedTreasureCove
         ? `You scored ${score} (needed ${lvl.passScore}). Five secret bonus voyages await beyond the cove!`
-        : `You scored ${score} (needed ${lvl.passScore}).`;
+        : clearedLegendsGate
+          ? `You scored ${score} (needed ${lvl.passScore}). Five ice voyages now appear in the frozen north!`
+          : `You scored ${score} (needed ${lvl.passScore}).`;
     }
     if (adventureWinTreasureCelebrate) {
       adventureWinTreasureCelebrate.hidden = !clearedTreasureCove;
@@ -4450,9 +4900,11 @@ function endAdventureRound() {
       btnAdventureNext.hidden = !hasNext;
       btnAdventureNext.textContent = clearedTreasureCove
         ? "Start bonus voyage 1"
-        : hasNext
-          ? `Start level ${lvl.level + 1}`
-          : "Back to map";
+        : clearedLegendsGate
+          ? "Start ice voyage 1"
+          : hasNext
+            ? `Start level ${lvl.level + 1}`
+            : "Back to map";
     }
     if (panelAdventureWin) panelAdventureWin.hidden = false;
   } else {
