@@ -5831,19 +5831,6 @@ function hideAllPanels() {
   stopDailyEventCountdown();
 }
 
-function initEventsWavesImages() {
-  for (const img of document.querySelectorAll(".events-waves__slice[data-fallback]")) {
-    img.addEventListener(
-      "error",
-      () => {
-        const fb = img.dataset.fallback;
-        if (fb && !img.src.endsWith(fb)) img.src = fb;
-      },
-      { once: true },
-    );
-  }
-}
-
 function isAdventureHomeCelebrationActive() {
   return Boolean(gameMeta.pendingAdventureHomeCelebration && isAdventureUnlocked() && isHomeScreenActive());
 }
@@ -11434,7 +11421,6 @@ function deferStartupWork() {
 }
 
 updateMusicButton();
-initEventsWavesImages();
 resize();
 initBubbles();
 showIntroIfNeeded();

@@ -2157,7 +2157,7 @@ body {
 .panel--events {
   max-width: none;
   width: 100%;
-  background: #041826;
+  background: transparent;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   overflow-x: hidden;
@@ -2173,7 +2173,7 @@ body {
   align-items: center;
 }
 
-.events-waves {
+.events-ocean {
   position: absolute;
   inset: 0;
   z-index: 0;
@@ -2181,63 +2181,137 @@ body {
   pointer-events: none;
 }
 
-.events-waves__swell {
+.events-ocean__sky {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 8%, rgba(77, 255, 243, 0.14), transparent 58%),
+    radial-gradient(ellipse 70% 40% at 20% 30%, rgba(255, 213, 74, 0.06), transparent 50%),
+    linear-gradient(180deg, #041826 0%, #062a4a 22%, #0a3a5c 52%, #0d6a8a 78%, #1096b8 100%);
+}
+
+.events-ocean__layer {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: min(58vh, 420px);
-  min-height: 200px;
-  animation: events-waves-swell 9s ease-in-out infinite alternate;
+  overflow: hidden;
 }
 
-.events-waves__track {
+.events-ocean__layer--1 {
+  height: 100%;
+  opacity: 0.72;
+  animation: events-ocean-swell 10s ease-in-out infinite alternate;
+}
+
+.events-ocean__layer--2 {
+  height: 78%;
+  opacity: 0.88;
+  animation: events-ocean-swell 8s ease-in-out infinite alternate-reverse;
+}
+
+.events-ocean__layer--3 {
+  height: 58%;
+  opacity: 0.94;
+  animation: events-ocean-swell 6.5s ease-in-out infinite alternate;
+}
+
+.events-ocean__layer--4 {
+  height: 38%;
+  animation: events-ocean-swell 5s ease-in-out infinite alternate-reverse;
+}
+
+.events-ocean__layer--1 .events-ocean__track {
+  height: 52%;
+  animation-duration: 44s;
+}
+
+.events-ocean__layer--2 .events-ocean__track {
+  height: 46%;
+  animation-duration: 32s;
+  animation-direction: reverse;
+}
+
+.events-ocean__layer--3 .events-ocean__track {
+  height: 40%;
+  animation-duration: 22s;
+}
+
+.events-ocean__layer--4 .events-ocean__track {
+  height: 100%;
+  animation-duration: 16s;
+  animation-direction: reverse;
+}
+
+.events-ocean__track {
   position: absolute;
   left: 0;
   bottom: 0;
   display: flex;
-  height: 100%;
   width: 200%;
-  animation: events-waves-drift 42s linear infinite;
+  height: 100%;
+  animation: events-ocean-drift 28s linear infinite;
   will-change: transform;
 }
 
-.events-waves__track--far {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  height: min(44vh, 320px);
-  min-height: 160px;
-  opacity: 0.42;
-  filter: blur(1px) saturate(1.08);
-  animation-duration: 58s;
-  animation-direction: reverse;
-}
-
-.events-waves__slice {
+.events-ocean__svg {
   flex: 0 0 50%;
   width: 50%;
   height: 100%;
-  object-fit: cover;
-  object-position: center 72%;
-  user-select: none;
-  -webkit-user-drag: none;
+  display: block;
 }
 
-.events-waves__shade {
+.events-ocean__layer--1 path:not(.events-ocean__foam) {
+  fill: #06324f;
+}
+
+.events-ocean__layer--2 path:not(.events-ocean__foam) {
+  fill: #0a6888;
+}
+
+.events-ocean__layer--3 path:not(.events-ocean__foam) {
+  fill: #12a0c4;
+}
+
+.events-ocean__layer--4 path:not(.events-ocean__foam) {
+  fill: #22d3ee;
+}
+
+.events-ocean__foam {
+  fill: none;
+  stroke: rgba(240, 252, 255, 0.45);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.events-ocean__foam--bright {
+  stroke: rgba(255, 255, 255, 0.72);
+  stroke-width: 4.5;
+  filter: drop-shadow(0 0 6px rgba(77, 255, 243, 0.45));
+}
+
+.events-ocean__bubbles {
   position: absolute;
   inset: 0;
-  z-index: 1;
-  background: linear-gradient(
-    180deg,
-    rgba(3, 21, 37, 0.9) 0%,
-    rgba(3, 21, 37, 0.62) 32%,
-    rgba(3, 21, 37, 0.28) 58%,
-    rgba(3, 21, 37, 0.48) 100%
-  );
+  opacity: 0.45;
+  background-image:
+    radial-gradient(circle, rgba(190, 255, 255, 0.55) 0 1.5px, transparent 2px),
+    radial-gradient(circle, rgba(77, 255, 243, 0.35) 0 1px, transparent 1.5px);
+  background-size: 56px 56px, 34px 34px;
+  background-position: 0 0, 12px 18px;
+  animation: events-ocean-bubbles 18s linear infinite;
 }
 
-@keyframes events-waves-drift {
+.events-ocean__shine {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 55% 35% at 50% 100%, rgba(77, 255, 243, 0.12), transparent 70%);
+  animation: events-ocean-shine 8s ease-in-out infinite alternate;
+}
+
+@keyframes events-ocean-drift {
   from {
     transform: translateX(0);
   }
@@ -2246,20 +2320,53 @@ body {
   }
 }
 
-@keyframes events-waves-swell {
+@keyframes events-ocean-swell {
   from {
     transform: translateY(0);
   }
   to {
-    transform: translateY(-14px);
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes events-ocean-bubbles {
+  from {
+    background-position: 0 0, 12px 18px;
+  }
+  to {
+    background-position: 0 -120px, 12px 98px;
+  }
+}
+
+@keyframes events-ocean-shine {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .events-waves__track,
-  .events-waves__swell {
+  .events-ocean__track,
+  .events-ocean__layer,
+  .events-ocean__bubbles,
+  .events-ocean__shine {
     animation: none;
   }
+}
+
+.panel--events .event-card {
+  background: linear-gradient(165deg, rgba(8, 28, 48, 0.9), rgba(12, 24, 38, 0.94));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.panel--events .leaderboard-block {
+  background: rgba(8, 28, 48, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .panel--events .btn--primary {
