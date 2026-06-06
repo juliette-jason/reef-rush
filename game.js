@@ -312,6 +312,8 @@ const ADVENTURE_ICE_START_INDEX = ADVENTURE_MAIN_LEVEL_COUNT + ADVENTURE_BONUS_L
 const ADVENTURE_SECTION_PIRATES_PATH = "Pirates Path";
 const ADVENTURE_SECTION_GOLD_QUEST = "Gold Quest";
 const ADVENTURE_SECTION_FROZEN_SEA = "Frozen Sea";
+/** Extra round time for Frozen Sea voyages (easier cold levels). */
+const ADVENTURE_ICE_ROUND_BONUS_MS = 7_000;
 
 const TREASURE_CINEMATIC_ANTICIPATE_MS = 800;
 const TREASURE_CINEMATIC_FLY_MS = 2400;
@@ -3791,7 +3793,9 @@ function buildAdventureLevels() {
       isBonus,
       isIce,
       passScore: adventurePassScoreForIndex(i),
-      roundMs: Math.max(isIce ? 38_000 : isBonus ? 40_000 : 46_000, reef.roundMs - tier * 3500 - i * 600),
+      roundMs:
+        Math.max(isIce ? 38_000 : isBonus ? 40_000 : 46_000, reef.roundMs - tier * 3500 - i * 600) +
+        (isIce ? ADVENTURE_ICE_ROUND_BONUS_MS : 0),
       spawnMin: Math.max(isIce ? 130 : isBonus ? 140 : 160, reef.spawnMin - i * 18),
       spawnMax: Math.max(isIce ? 320 : isBonus ? 340 : 380, reef.spawnMax - i * 45),
       maxFish: Math.min(22, reef.maxFish + Math.floor(i / 2)),
