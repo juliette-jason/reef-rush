@@ -6959,6 +6959,48 @@ function isAdventureHomeCelebrationActive() {
 }
 
 let adventureLockUnlockListener = null;
+let adventureHomeReturnInProgress = false;
+
+function returnAdventureButtonFromCenter(done) {
+  if (!btnAdventureMode) {
+    done();
+    return;
+  }
+  const prefersReducedMotion =
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (prefersReducedMotion || !btnAdventureMode.classList.contains("adventure-launch--centered")) {
+    done();
+    return;
+  }
+
+  appRoot?.classList.remove("app--adventure-unlock-celebrate");
+  if (adventureUnlockBanner) {
+    adventureUnlockBanner.hidden = true;
+    adventureUnlockBanner.setAttribute("aria-hidden", "true");
+    adventureUnlockBanner.classList.remove("adventure-unlock-banner--active");
+  }
+
+  btnAdventureMode.classList.remove("adventure-launch--flash", "adventure-launch--unlock-ready");
+  adventureUnlockHint?.classList.remove("adventure-launch__hint--centered");
+  btnAdventureMode.classList.add("adventure-launch--return");
+
+  let finished = false;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    btnAdventureMode.removeEventListener("animationend", onReturnDone);
+    btnAdventureMode.classList.remove("adventure-launch--return");
+    done();
+  };
+
+  const onReturnDone = (e) => {
+    if (e.target !== btnAdventureMode || e.animationName !== "adventureLaunchReturnFromCenter") return;
+    finish();
+  };
+
+  btnAdventureMode.addEventListener("animationend", onReturnDone);
+  window.setTimeout(finish, 1100);
+}
 
 function clearAdventureHomeCelebration() {
   if (!gameMeta.pendingAdventureHomeCelebration) return;
@@ -12713,6 +12755,16 @@ btnAdventureMode?.addEventListener("click", () => {
   if (!isAdventureUnlocked()) {
     updateAdventureLaunchUI();
     showToast(adventureUnlockBlockedMessage(), 2800);
+    return;
+  }
+  if (adventureHomeReturnInProgress) return;
+  if (isAdventureHomeCelebrationActive() && btnAdventureMode?.classList.contains("adventure-launch--centered")) {
+    adventureHomeReturnInProgress = true;
+    returnAdventureButtonFromCenter(() => {
+      adventureHomeReturnInProgress = false;
+      clearAdventureHomeCelebration();
+      openAdventureHub();
+    });
     return;
   }
   clearAdventureHomeCelebration();
