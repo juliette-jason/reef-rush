@@ -361,24 +361,17 @@ const ADVENTURE_SECTION_PIRATES_PATH = "Pirates Path";
 const ADVENTURE_SECTION_GOLD_QUEST = "Gold Quest";
 const ADVENTURE_SECTION_FROZEN_SEA = "Frozen Sea";
 const ADVENTURE_SECTION_LOST_CITY = "The Lost City";
-/** +1s on the clock per voyage index as difficulty ramps up (Pirates Path & Gold Quest). */
+/** +1s on the clock per voyage index as difficulty ramps up (Pirates Path only). */
 const ADVENTURE_LEVEL_TIME_BONUS_MS = 1_000;
-/** +5s per voyage within Frozen Sea and The Lost City. */
-const ADVENTURE_ICE_LOST_CITY_TIME_BONUS_MS = 5_000;
+/** +2s per voyage from Gold Quest through The Lost City. */
+const ADVENTURE_GOLD_TO_LOST_CITY_TIME_BONUS_MS = 2_000;
 
 function adventureLevelTimeBonusMs(levelIndex) {
-  if (levelIndex < ADVENTURE_ICE_START_INDEX) {
+  if (levelIndex < ADVENTURE_MAIN_LEVEL_COUNT) {
     return levelIndex * ADVENTURE_LEVEL_TIME_BONUS_MS;
   }
-  const piratesGoldBonus = ADVENTURE_ICE_START_INDEX * ADVENTURE_LEVEL_TIME_BONUS_MS;
-  if (levelIndex < ADVENTURE_LOST_CITY_START_INDEX) {
-    return piratesGoldBonus + (levelIndex - ADVENTURE_ICE_START_INDEX) * ADVENTURE_ICE_LOST_CITY_TIME_BONUS_MS;
-  }
-  return (
-    piratesGoldBonus +
-    ADVENTURE_ICE_LEVEL_COUNT * ADVENTURE_ICE_LOST_CITY_TIME_BONUS_MS +
-    (levelIndex - ADVENTURE_LOST_CITY_START_INDEX) * ADVENTURE_ICE_LOST_CITY_TIME_BONUS_MS
-  );
+  const piratesBonus = ADVENTURE_MAIN_LEVEL_COUNT * ADVENTURE_LEVEL_TIME_BONUS_MS;
+  return piratesBonus + (levelIndex - ADVENTURE_MAIN_LEVEL_COUNT) * ADVENTURE_GOLD_TO_LOST_CITY_TIME_BONUS_MS;
 }
 
 const TREASURE_CINEMATIC_ANTICIPATE_MS = 800;
