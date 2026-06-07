@@ -4250,6 +4250,7 @@ function defaultMeta() {
     pendingBonusVoyagesCelebration: false,
     pendingIceVoyagesCelebration: false,
     pendingLostCityCelebration: false,
+    pendingDailyPrizeCelebration: null,
     playerInitials: "",
     dailyPrizeCheckedDay: "",
     magnetRodDayKey: "",
@@ -4292,6 +4293,7 @@ function loadMeta() {
       pendingBonusVoyagesCelebration: Boolean(o.pendingBonusVoyagesCelebration),
       pendingIceVoyagesCelebration: Boolean(o.pendingIceVoyagesCelebration),
       pendingLostCityCelebration: Boolean(o.pendingLostCityCelebration),
+      pendingDailyPrizeCelebration: normalizePendingDailyPrizeCelebration(o.pendingDailyPrizeCelebration),
       playerInitials: String(o.playerInitials || "")
         .toUpperCase()
         .replace(/[^A-Z]/g, "")
@@ -4345,6 +4347,15 @@ function grantMagnetRodForToday() {
 
 function grantKrakenSpray(count = DAILY_SECOND_PLACE_KRAKEN_SPRAY) {
   gameMeta.baitCounts[KRAKEN_SPRAY_BAIT_ID] = getBaitCount(KRAKEN_SPRAY_BAIT_ID) + count;
+}
+
+function normalizePendingDailyPrizeCelebration(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const rank = Math.max(0, Math.min(2, Math.floor(Number(raw.rank) || 0)));
+  const coins = Math.max(0, Math.floor(Number(raw.coins) || 0));
+  const dayLabel = String(raw.dayLabel || "").trim();
+  if (!coins) return null;
+  return { rank, coins, dayLabel };
 }
 
 function dailyPrizeExtrasLabel(rank) {
@@ -5256,28 +5267,157 @@ async function processDailyPrizePayouts() {
   const rank = rows.findIndex((r) => r.initials === ini);
   if (rank >= 0 && rank < DAILY_PRIZES.length) {
     const prize = DAILY_PRIZES[rank];
-    gameMeta.coins += prize;
-    if (rank === 0) grantMagnetRodForToday();
-    if (rank === 1) grantKrakenSpray();
+    gameMeta.pendingDailyPrizeCelebration = {
+      rank,
+      coins: prize,
+      dayLabel: formatDailyDayLabel(yesterday),
+    };
     saveMeta();
-    refreshCoinDisplays();
-    buildBaitUI();
-    if (rank === 0) {
-      showToast(
-        `Fisher of the Day #1! +${prize} coins & Magnet Rod for today (${formatDailyDayLabel(getDailyDayKey())})`,
-        4800,
-      );
-    } else if (rank === 1) {
-      showToast(
-        `Fisher of the Day #2! +${prize} coins & ${DAILY_SECOND_PLACE_KRAKEN_SPRAY} Kraken Spray for ${formatDailyDayLabel(yesterday)}`,
-        4600,
-      );
-    } else {
-      showToast(`Fisher of the Day #${rank + 1}! +${prize} coins for ${formatDailyDayLabel(yesterday)}`, 4200);
-    }
   } else {
     saveMeta();
   }
+}
+
+function homeTreasureChestAnchor() {
+  const sandTop = h - dpr * 92;
+  const base = sandTop + dpr * 14;
+  return { x: w * 0.5, y: base - dpr * 16 };
+}
+
+function dailyPrizeOrdinal(rank) {
+  return ["1st", "2nd", "3rd"][rank] || `${rank + 1}th`;
+}
+
+function buildDailyPrizeAwardRows(prize) {
+  const rows = [{ icon: "🪙", label: `${prize.coins.toLocaleString()} coins` }];
+  if (prize.rank === 0) rows.push({ icon: "🧲", label: "Magnet Rod (today)" });
+  if (prize.rank === 1) {
+    rows.push({ icon: "🦑", label: `${DAILY_SECOND_PLACE_KRAKEN_SPRAY} Kraken Spray` });
+  }
+  return rows;
+}
+
+function applyPendingDailyPrizeRewards() {
+  const prize = gameMeta.pendingDailyPrizeCelebration;
+  if (!prize) return;
+  gameMeta.coins += prize.coins;
+  if (prize.rank === 0) grantMagnetRodForToday();
+  if (prize.rank === 1) grantKrakenSpray();
+  gameMeta.pendingDailyPrizeCelebration = null;
+  saveMeta();
+  refreshCoinDisplays();
+  buildBaitUI();
+  buildRodUI();
+}
+
+function populateDailyPrizeRevealUI(prize) {
+  if (!dailyPrizeRevealTitle || !dailyPrizeRevealAwards) return;
+  const ord = dailyPrizeOrdinal(prize.rank);
+  dailyPrizeRevealTitle.textContent = `${ord} place!`;
+  if (dailyPrizeRevealDay) {
+    dailyPrizeRevealDay.textContent = prize.dayLabel ? `Rewards for ${prize.dayLabel}` : "Yesterday's leaderboard rewards";
+  }
+  dailyPrizeRevealAwards.innerHTML = "";
+  for (const row of buildDailyPrizeAwardRows(prize)) {
+    const li = document.createElement("li");
+    li.className = "daily-prize-reveal__award";
+    li.innerHTML = `<span class="daily-prize-reveal__award-icon" aria-hidden="true">${row.icon}</span><span class="daily-prize-reveal__award-label">${row.label}</span>`;
+    dailyPrizeRevealAwards.appendChild(li);
+  }
+}
+
+function showDailyPrizeAwardsOverlay(prize) {
+  if (!dailyPrizeReveal) return;
+  populateDailyPrizeRevealUI(prize);
+  treasureChestCinematic = null;
+  dailyPrizeReveal.hidden = false;
+  dailyPrizeReveal.setAttribute("aria-hidden", "false");
+  dailyPrizeReveal.classList.remove("daily-prize-reveal--active");
+  void dailyPrizeReveal.offsetWidth;
+  dailyPrizeReveal.classList.add("daily-prize-reveal--active");
+}
+
+function endDailyPrizeCelebration() {
+  if (!dailyPrizeCelebrationActive) return;
+  const prize = gameMeta.pendingDailyPrizeCelebration;
+  dailyPrizeCelebrationActive = false;
+  treasureMapRevealPaused = false;
+  treasureChestCinematic = null;
+  appRoot?.classList.remove("app--daily-prize-cinematic");
+  dailyPrizeReveal?.classList.remove("daily-prize-reveal--active");
+  if (dailyPrizeReveal) {
+    dailyPrizeReveal.hidden = true;
+    dailyPrizeReveal.setAttribute("aria-hidden", "true");
+  }
+  if (panelStart) panelStart.hidden = false;
+  if (homeLaunchStack) homeLaunchStack.hidden = !isHomeScreenActive();
+  applyPendingDailyPrizeRewards();
+  if (prize) {
+    const extras = dailyPrizeExtrasLabel(prize.rank);
+    showToast(`Fisher of the Day ${dailyPrizeOrdinal(prize.rank)} place collected! +${prize.coins} coins${extras}.`, 4200);
+  }
+  syncHomeLaunchButtons();
+}
+
+function startDailyPrizeChestCinematic(prize) {
+  if (!prize || dailyPrizeCelebrationActive || treasureMapRevealPaused || w <= 0) return;
+  dailyPrizeCelebrationActive = true;
+  treasureMapRevealPaused = true;
+  appRoot?.classList.add("app--daily-prize-cinematic");
+  if (panelStart) panelStart.hidden = true;
+  if (homeLaunchStack) homeLaunchStack.hidden = true;
+
+  const prefersReducedMotion =
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (prefersReducedMotion) {
+    showDailyPrizeAwardsOverlay(prize);
+    return;
+  }
+
+  const anchor = homeTreasureChestAnchor();
+  const sc = dpr * 0.85;
+  const now = performance.now();
+  treasureChestCinematic = {
+    kind: "dailyPrize",
+    rank: prize.rank,
+    coins: prize.coins,
+    dayLabel: prize.dayLabel,
+    phase: "anticipate",
+    startX: anchor.x,
+    startY: anchor.y,
+    x: anchor.x,
+    y: anchor.y,
+    targetX: w * 0.5,
+    targetY: h * 0.48,
+    sc,
+    scale: 1,
+    facing: 1,
+    lidOpen: 0,
+    startedAt: now,
+    anticipateStartedAt: now,
+    flyStartedAt: 0,
+    openStartedAt: 0,
+    holdStartedAt: 0,
+    lastSparkleAt: 0,
+    glowPulse: 0,
+  };
+  if (dailyPrizeReveal) {
+    dailyPrizeReveal.hidden = true;
+    dailyPrizeReveal.setAttribute("aria-hidden", "true");
+    dailyPrizeReveal.classList.remove("daily-prize-reveal--active");
+  }
+  spawnTreasureCinematicBurst(anchor.x, anchor.y, 24, 40);
+  playTreasureMapUnlockSound();
+}
+
+function tryStartDailyPrizeCelebration() {
+  const prize = gameMeta.pendingDailyPrizeCelebration;
+  if (!prize || dailyPrizeCelebrationActive || treasureMapRevealPaused || !isHomeScreenActive()) return;
+  if (isAdventureHomeCelebrationActive()) {
+    window.setTimeout(tryStartDailyPrizeCelebration, 1200);
+    return;
+  }
+  startDailyPrizeChestCinematic(prize);
 }
 
 async function refreshEventsPanel() {
@@ -6449,6 +6589,11 @@ const dailyLeaderboardOver = document.getElementById("dailyLeaderboardOver");
 const toastEl = document.getElementById("toast");
 const treasureMapReveal = document.getElementById("treasureMapReveal");
 const btnTreasureMapRevealDone = document.getElementById("btnTreasureMapRevealDone");
+const dailyPrizeReveal = document.getElementById("dailyPrizeReveal");
+const btnDailyPrizeRevealDone = document.getElementById("btnDailyPrizeRevealDone");
+const dailyPrizeRevealTitle = document.getElementById("dailyPrizeRevealTitle");
+const dailyPrizeRevealDay = document.getElementById("dailyPrizeRevealDay");
+const dailyPrizeRevealAwards = document.getElementById("dailyPrizeRevealAwards");
 const adventureUnlockBanner = document.getElementById("adventureUnlockBanner");
 const controlHint = document.getElementById("controlHint");
 const baitChoices = document.getElementById("baitChoices");
@@ -6541,6 +6686,8 @@ let playing = false;
 let treasureMapRevealPaused = false;
 /** Canvas chest flies from the caught jackpot crab, then opens before the HTML map. */
 let treasureChestCinematic = null;
+/** Home-screen Fisher of the Day chest fly-up and award reveal. */
+let dailyPrizeCelebrationActive = false;
 let roundEndAt = 0;
 let score = 0;
 let fishList = [];
@@ -6795,6 +6942,7 @@ function beginAdventureLockUnlockSequence() {
     adventureLock.removeEventListener("animationend", adventureLockUnlockListener);
     adventureLockUnlockListener = null;
     updateAdventureLaunchUI();
+    tryStartDailyPrizeCelebration();
   };
   adventureLock.addEventListener("animationend", adventureLockUnlockListener);
   updateAdventureLaunchUI();
@@ -6848,7 +6996,9 @@ function showHomePanel() {
   updateAdventureLaunchUI();
   syncHomeLaunchButtons();
   window.requestAnimationFrame(() => startAdventureHomeUnlockAnimation());
-  void processDailyPrizePayouts();
+  void processDailyPrizePayouts().then(() => {
+    window.setTimeout(tryStartDailyPrizeCelebration, 500);
+  });
 }
 
 function isHomeScreenActive() {
@@ -7589,7 +7739,8 @@ function updateTreasureChestCinematic(now) {
     }
   } else if (c.phase === "fly") {
     const elapsed = now - c.flyStartedAt;
-    const t = Math.min(1, elapsed / TREASURE_CINEMATIC_FLY_MS);
+    const flyMs = c.kind === "dailyPrize" ? 1600 : TREASURE_CINEMATIC_FLY_MS;
+    const t = Math.min(1, elapsed / flyMs);
     const ease = 1 - (1 - t) ** 4;
     const arc = Math.sin(t * Math.PI) * -h * 0.14;
     c.x = c.startX + (c.targetX - c.startX) * ease;
@@ -7632,8 +7783,13 @@ function updateTreasureChestCinematic(now) {
       c.lastSparkleAt = now;
     }
     if (holdT >= 1) {
-      c.phase = "map";
-      showTreasureMapOverlay();
+      if (c.kind === "dailyPrize") {
+        c.phase = "awards";
+        showDailyPrizeAwardsOverlay(c);
+      } else {
+        c.phase = "map";
+        showTreasureMapOverlay();
+      }
     }
   }
 }
@@ -8213,6 +8369,7 @@ function closeEvents() {
   appRoot?.classList.remove("app--events-mode");
   stopDailyEventCountdown();
   syncHomeLaunchButtons();
+  window.setTimeout(tryStartDailyPrizeCelebration, 300);
 }
 
 function updateStartButtonSubtext() {
@@ -11270,7 +11427,7 @@ function drawJackpotCrabChestArms(sc) {
 
 function drawTreasureChestCinematic() {
   const c = treasureChestCinematic;
-  if (!c || c.phase === "map" || w <= 0) return;
+  if (!c || c.phase === "map" || c.phase === "awards" || w <= 0) return;
   const now = performance.now();
   const elapsed = now - c.startedAt;
   const dim = Math.min(0.88, (elapsed / 520) * 0.88);
@@ -11312,16 +11469,25 @@ function drawTreasureChestCinematic() {
     ctx.textAlign = "center";
     ctx.shadowColor = "rgba(255, 213, 74, 0.85)";
     ctx.shadowBlur = 22 * dpr;
+    let badgeText = "★  TREASURE MAP FOUND  ★";
+    let titleText = "ADVENTURE MODE UNLOCKED!";
+    let subText = "Pirates Path · Gold Quest · Frozen Sea";
+    if (c.kind === "dailyPrize") {
+      const ord = dailyPrizeOrdinal(c.rank).toUpperCase();
+      badgeText = "★  FISHER OF THE DAY  ★";
+      titleText = `${ord} PLACE PRIZE!`;
+      subText = c.dayLabel ? `Rewards for ${c.dayLabel}` : "Yesterday's leaderboard rewards";
+    }
     ctx.font = `400 ${Math.round(11 * dpr)}px "Bebas Neue", sans-serif`;
     ctx.fillStyle = `rgba(255, 248, 200, ${bannerAlpha * 0.9})`;
-    ctx.fillText("★  TREASURE MAP FOUND  ★", w * 0.5, h * 0.13);
+    ctx.fillText(badgeText, w * 0.5, h * 0.13);
     ctx.font = `400 ${titleSize}px "Bebas Neue", sans-serif`;
     ctx.fillStyle = `rgba(255, 213, 74, ${bannerAlpha})`;
-    ctx.fillText("ADVENTURE MODE UNLOCKED!", w * 0.5, h * 0.13 + titleSize * 1.15);
+    ctx.fillText(titleText, w * 0.5, h * 0.13 + titleSize * 1.15);
     ctx.shadowBlur = 10 * dpr;
     ctx.font = `400 ${subSize}px system-ui, sans-serif`;
     ctx.fillStyle = `rgba(200, 230, 255, ${bannerAlpha * 0.85})`;
-    ctx.fillText("Pirates Path · Gold Quest · Frozen Sea", w * 0.5, h * 0.13 + titleSize * 1.15 + subSize * 1.6);
+    ctx.fillText(subText, w * 0.5, h * 0.13 + titleSize * 1.15 + subSize * 1.6);
     ctx.restore();
   }
 
@@ -11922,8 +12088,8 @@ function gameLoop(now) {
   if (!PERF_CHROMEBOOK || gameLoopTick % bubbleFrame === 0) drawBubbles(treasureMapRevealPaused ? 0 : dt);
   if (!treasureMapRevealPaused) updateJackpotCrab(now, dt);
 
-  if (playing && treasureMapRevealPaused) {
-    roundEndAt += dt;
+  if ((playing && treasureMapRevealPaused) || (dailyPrizeCelebrationActive && treasureChestCinematic)) {
+    if (playing) roundEndAt += dt;
     updateTreasureChestCinematic(now);
   }
 
@@ -11975,6 +12141,7 @@ function gameLoop(now) {
     drawHookLine();
     drawTrenchRodLight();
     drawCatchFlash();
+    if (dailyPrizeCelebrationActive) drawTreasureChestCinematic();
     drawCelebration();
   }
 
@@ -12138,7 +12305,15 @@ canvas.addEventListener("touchcancel", () => {
 });
 
 window.addEventListener("keydown", (e) => {
-  if (treasureMapRevealPaused && (e.key === "Enter" || e.key === " " || e.key === "Escape")) {
+  if (dailyPrizeCelebrationActive && dailyPrizeReveal && !dailyPrizeReveal.hidden && (e.key === "Enter" || e.key === " " || e.key === "Escape")) {
+    const tag = e.target?.tagName;
+    if (tag !== "INPUT" && tag !== "TEXTAREA") {
+      e.preventDefault();
+      endDailyPrizeCelebration();
+      return;
+    }
+  }
+  if (treasureMapRevealPaused && !dailyPrizeCelebrationActive && (e.key === "Enter" || e.key === " " || e.key === "Escape")) {
     const tag = e.target?.tagName;
     if (tag !== "INPUT" && tag !== "TEXTAREA") {
       e.preventDefault();
@@ -12308,6 +12483,7 @@ btnAgain.addEventListener("click", () => {
 });
 
 btnTreasureMapRevealDone?.addEventListener("click", endTreasureMapReveal);
+btnDailyPrizeRevealDone?.addEventListener("click", endDailyPrizeCelebration);
 
 function prefetchAdventureHub() {
   if (!isAdventureUnlocked()) return;

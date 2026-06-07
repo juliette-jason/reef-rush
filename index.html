@@ -210,6 +210,17 @@
             <button type="button" id="btnTreasureMapRevealDone" class="btn btn--primary treasure-map-reveal__btn">Continue fishing</button>
           </div>
         </div>
+        <div id="dailyPrizeReveal" class="treasure-map-reveal daily-prize-reveal" hidden aria-hidden="true">
+          <div class="treasure-map-reveal__backdrop"></div>
+          <div class="treasure-map-reveal__stage" role="dialog" aria-labelledby="dailyPrizeRevealTitle" aria-modal="true">
+            <div class="daily-prize-reveal__sparkle" aria-hidden="true">✦</div>
+            <p class="treasure-map-reveal__badge" id="dailyPrizeRevealBadge">★ Fisher of the Day ★</p>
+            <h2 id="dailyPrizeRevealTitle" class="treasure-map-reveal__title">1st place!</h2>
+            <p id="dailyPrizeRevealDay" class="daily-prize-reveal__day"></p>
+            <ul id="dailyPrizeRevealAwards" class="daily-prize-reveal__awards"></ul>
+            <button type="button" id="btnDailyPrizeRevealDone" class="btn btn--primary treasure-map-reveal__btn">Collect prizes</button>
+          </div>
+        </div>
       </div>
 
       <p class="hint" id="controlHint">Laptop: aim left/right, Enter casts · Phone: drag left/right, tap to cast</p>

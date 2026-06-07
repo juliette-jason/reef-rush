@@ -4548,4 +4548,127 @@ body {
     opacity: 1;
     transform: none;
   }
+
+  .daily-prize-reveal--active .daily-prize-reveal__sparkle,
+  .daily-prize-reveal--active .treasure-map-reveal__badge,
+  .daily-prize-reveal--active .treasure-map-reveal__title,
+  .daily-prize-reveal--active .daily-prize-reveal__day,
+  .daily-prize-reveal--active .daily-prize-reveal__award,
+  .daily-prize-reveal--active .treasure-map-reveal__btn {
+    animation-duration: 0.01ms;
+    animation-delay: 0s;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* --- Fisher of the Day prize reveal --- */
+.app--daily-prize-cinematic #panelStart,
+.app--daily-prize-cinematic #homeLaunchStack {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.daily-prize-reveal__sparkle {
+  font-size: 2rem;
+  color: #ffe08a;
+  text-shadow: 0 0 18px rgba(255, 213, 74, 0.85);
+  opacity: 0;
+  transform: scale(0.6) rotate(-12deg);
+}
+
+.daily-prize-reveal__day {
+  margin: 0 0 12px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.daily-prize-reveal__awards {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(88vw, 360px);
+}
+
+.daily-prize-reveal__award {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255, 213, 74, 0.1);
+  border: 1px solid rgba(255, 213, 74, 0.32);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  opacity: 0;
+  transform: translateY(16px) scale(0.92);
+}
+
+.daily-prize-reveal__award-icon {
+  font-size: 1.55rem;
+  line-height: 1;
+}
+
+.daily-prize-reveal__award-label {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(1.15rem, 4.5vw, 1.4rem);
+  letter-spacing: 0.06em;
+  color: #ffe08a;
+}
+
+.daily-prize-reveal--active .treasure-map-reveal__backdrop {
+  animation: treasureRevealBackdrop 0.7s ease forwards;
+}
+
+.daily-prize-reveal--active .daily-prize-reveal__sparkle {
+  animation: dailyPrizeSparkleIn 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards,
+    dailyPrizeSparklePulse 2.4s ease-in-out 1s infinite;
+}
+
+.daily-prize-reveal--active .treasure-map-reveal__badge {
+  animation: treasureRevealTextIn 0.65s ease 0.35s forwards;
+}
+
+.daily-prize-reveal--active .treasure-map-reveal__title {
+  animation: treasureRevealTextIn 0.65s ease 0.55s forwards;
+}
+
+.daily-prize-reveal--active .daily-prize-reveal__day {
+  animation: treasureRevealTextIn 0.6s ease 0.75s forwards;
+}
+
+.daily-prize-reveal--active .daily-prize-reveal__award:nth-child(1) {
+  animation: treasureRevealTextIn 0.6s ease 0.95s forwards;
+}
+
+.daily-prize-reveal--active .daily-prize-reveal__award:nth-child(2) {
+  animation: treasureRevealTextIn 0.6s ease 1.2s forwards;
+}
+
+.daily-prize-reveal--active .treasure-map-reveal__btn {
+  animation: treasureRevealTextIn 0.65s ease 1.45s forwards;
+}
+
+@keyframes dailyPrizeSparkleIn {
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes dailyPrizeSparklePulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 8px rgba(255, 213, 74, 0.45));
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 20px rgba(255, 213, 74, 0.9));
+    transform: scale(1.08);
+  }
 }
