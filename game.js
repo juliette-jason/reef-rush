@@ -5715,7 +5715,7 @@ async function finishDuelMatchOnServer() {
 
 let duelLobbyCountdownTimer = null;
 
-function updateDuelLobbyCountdown(secondsLeft, label = "Rival joins in") {
+function updateDuelLobbyCountdown(secondsLeft, label = "Trying to find a rival") {
   if (!duelLobbyCountdown) return;
   duelLobbyCountdown.hidden = false;
   duelLobbyCountdown.setAttribute("aria-hidden", "false");
@@ -5735,7 +5735,7 @@ function hideDuelLobbyCountdown() {
   duelLobbyCountdown.setAttribute("aria-hidden", "true");
 }
 
-function startDuelLobbyCountdown(deadlineMs, label = "Rival joins in") {
+function startDuelLobbyCountdown(deadlineMs, label = "Trying to find a rival") {
   hideDuelLobbyCountdown();
   const tick = () => {
     const secsLeft = Math.max(0, (deadlineMs - Date.now()) / 1000);
@@ -5763,32 +5763,39 @@ function setDuelMatchmakingUi(active, message = "") {
   }
 }
 
-async function findDuelMatchOnline(roundMs) {
-  for (let attempt = 0; attempt < 4; attempt++) {
+async function findDuelMatchOnline(roundMs, deadlineMs) {
+  setDuelMatchmakingUi(true, "Trying to find a rival…");
+
+  for (let attempt = 0; attempt < 4 && Date.now() < deadlineMs; attempt++) {
     const lobby = await fetchOldestOpenDuelLobby();
     if (!lobby) break;
-    setDuelMatchmakingUi(true, `Joining ${lobby.hostInitials}'s duel…`);
     const joined = await tryJoinDuelLobby(lobby.matchId);
     if (joined) {
       const role = duelRoleFromMatch(joined);
       if (role) {
         duelPendingReefId = joined.reefId;
+        hideDuelLobbyCountdown();
         return duelPlanFromMatch(joined, role);
       }
     }
     await duelSleep(350);
   }
 
+  if (Date.now() >= deadlineMs) {
+    hideDuelLobbyCountdown();
+    setDuelMatchmakingUi(true, "No rival found — facing COM…");
+    const reefId = pickRandomDuelReefId(duelLastReefId);
+    duelPendingReefId = reefId;
+    return buildLocalComDuelPlan(reefId);
+  }
+
   const reefId = pickRandomDuelReefId(duelLastReefId);
   duelPendingReefId = reefId;
-  const deadline = Date.now() + DUEL_LOBBY_TIMEOUT_MS;
-  setDuelMatchmakingUi(true, "Your lobby is open — waiting for a real rival…");
-  startDuelLobbyCountdown(deadline, "Rival joins in");
   const created = await createDuelLobby(reefId, roundMs);
   if (!created?.matchId) throw new Error("Duel lobby missing id");
   duelLobbyMatchId = created.matchId;
 
-  while (Date.now() < deadline) {
+  while (Date.now() < deadlineMs) {
     if (!duelMatchmakingActive) throw new Error("Duel matchmaking cancelled");
     await duelSleep(DUEL_LOBBY_POLL_MS);
     const row = await fetchDuelMatchById(created.matchId);
@@ -5832,9 +5839,9 @@ function buildLocalComDuelPlan(reefId) {
   };
 }
 
-async function resolveDuelMatchPlan() {
+async function resolveDuelMatchPlan(deadlineMs) {
   try {
-    return await findDuelMatchOnline(DUEL_ROUND_MS);
+    return await findDuelMatchOnline(DUEL_ROUND_MS, deadlineMs);
   } catch (err) {
     console.warn(err);
     if (duelLobbyMatchId) {
@@ -6457,10 +6464,13 @@ async function startDuelFromEvents() {
 
   hideAllPanels();
   if (panelEvents) panelEvents.hidden = false;
-  setDuelMatchmakingUi(true, "Searching the duel lobby…");
+  const matchmakingDeadline = Date.now() + DUEL_LOBBY_TIMEOUT_MS;
+  setDuelMatchmakingUi(true, "Trying to find a rival…");
+  startDuelLobbyCountdown(matchmakingDeadline, "Trying to find a rival");
 
   try {
-    const plan = await resolveDuelMatchPlan();
+    const plan = await resolveDuelMatchPlan(matchmakingDeadline);
+    hideDuelLobbyCountdown();
     await waitForDuelRoundStart(plan);
     setDuelMatchmakingUi(false);
     if (plan.mode === "pvp") {
