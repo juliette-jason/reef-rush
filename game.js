@@ -5428,6 +5428,8 @@ async function refreshEventsPanel() {
 const DUEL_WIN_COINS = 800;
 const DUEL_DAILY_TICKETS = 5;
 const DUEL_TICKET_PRICE = 700;
+/** Every duel round is exactly one minute, regardless of reef. */
+const DUEL_ROUND_MS = 60_000;
 /** Easiest rival difficulty — AI target score floor. */
 const DUEL_RIVAL_MIN_TARGET = 4000;
 const DUEL_MATCH_TABLE_URL = `${SUPABASE_REST_URL}/duel_matches`;
@@ -5491,7 +5493,7 @@ function normalizeDuelMatchRow(row) {
     hostScore: Math.max(0, Math.floor(Number(row.host_score ?? row.hostScore) || 0)),
     guestScore: Math.max(0, Math.floor(Number(row.guest_score ?? row.guestScore) || 0)),
     roundStartMs: Number(row.round_start_ms ?? row.roundStartMs) || 0,
-    roundMs: Math.max(10_000, Math.floor(Number(row.round_ms ?? row.roundMs) || 60_000)),
+    roundMs: DUEL_ROUND_MS,
     isComGuest: Boolean(row.is_com_guest ?? row.isComGuest),
     status: row.status || "lobby",
   };
@@ -5518,7 +5520,7 @@ function duelPlanFromMatch(row, role) {
     hostClientId: row.hostClientId,
     guestClientId: row.guestClientId,
     roundStartMs: row.roundStartMs,
-    roundMs: row.roundMs,
+    roundMs: DUEL_ROUND_MS,
     targetScore: mode === "com" ? rollDuelRivalTargetScore() : 0,
   };
 }
@@ -5752,7 +5754,7 @@ function buildLocalComDuelPlan(reefId) {
     opponentInitials: "COM",
     opponentScore: 0,
     roundStartMs: Date.now() + 800,
-    roundMs: reef.roundMs,
+    roundMs: DUEL_ROUND_MS,
     targetScore: rollDuelRivalTargetScore(),
   };
 }
@@ -5761,7 +5763,7 @@ async function resolveDuelMatchPlan() {
   const reefId = duelPendingReefId || pickRandomDuelReefId();
   const reef = REEFS.find((r) => r.id === reefId) || REEFS[0];
   try {
-    return await findDuelMatchOnline(reef.id, reef.roundMs);
+    return await findDuelMatchOnline(reef.id, DUEL_ROUND_MS);
   } catch (err) {
     console.warn(err);
     if (duelLobbyMatchId) {
@@ -5922,7 +5924,7 @@ function refreshDuelEventCard() {
   const reef = REEFS.find((r) => r.id === duelPendingReefId) || REEFS[0];
   duelPendingTargetScore = rollDuelRivalTargetScore();
   duelEventMatchup.textContent = formatDuelEventMatchupLine();
-  duelEventReef.textContent = `Random reef: ${reef.name} (${reef.difficulty}) · COM fallback ${duelPendingTargetScore.toLocaleString()} pts`;
+  duelEventReef.textContent = `Random reef: ${reef.name} (${reef.difficulty}) · 1:00 round · COM fallback ${duelPendingTargetScore.toLocaleString()} pts`;
 
   if (btnStartDuel) {
     btnStartDuel.disabled = !available || tickets <= 0;
@@ -5951,9 +5953,8 @@ function hideDuelHud() {
 
 function duelExpectedOpponentScore(now) {
   if (!duelSession) return 0;
-  const reef = getReef();
   const elapsed = now - duelSession.roundStart;
-  const t = Math.min(1, Math.max(0, elapsed / reef.roundMs));
+  const t = Math.min(1, Math.max(0, elapsed / DUEL_ROUND_MS));
   const ease = t * t * (3 - 2 * t);
   return Math.floor(duelSession.targetScore * ease * duelSession.pacingBias);
 }
@@ -6313,7 +6314,7 @@ function beginDuelSession(plan) {
   seedStarterFish(reef);
   const roundStart = Math.max(performance.now(), plan.roundStartMs || performance.now());
   duelSession.roundStart = roundStart;
-  roundEndAt = roundStart + (plan.roundMs || reef.roundMs);
+  roundEndAt = roundStart + DUEL_ROUND_MS;
   kraken = null;
   jackpotCrab = null;
   hideAllPanels();
@@ -6322,7 +6323,7 @@ function beginDuelSession(plan) {
   showDuelHud();
   lastPearlAt = -999999;
   scoreDisplay.textContent = "0";
-  timeDisplay.textContent = formatTime(plan.roundMs || reef.roundMs);
+  timeDisplay.textContent = formatTime(DUEL_ROUND_MS);
   initBubbles();
   resize();
   hook.targetX = duelSideCenter("player");
