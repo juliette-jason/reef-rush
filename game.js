@@ -7824,13 +7824,34 @@ function isChromebookOrIPad() {
   return false;
 }
 
-const HOME_MUSIC_VOLUME_BOOST = isChromebookOrIPad() ? 5.5 : 1;
+const HOME_MUSIC_VOLUME_BOOST = isChromebookOrIPad() ? 5.5 : 2.2;
 const DEFAULT_MUSIC_MASTER_GAIN = 0.2;
-const HOME_MUSIC_MASTER_GAIN = isChromebookOrIPad() ? 0.5 : DEFAULT_MUSIC_MASTER_GAIN;
+const HOME_MUSIC_MASTER_GAIN = isChromebookOrIPad() ? 0.5 : 0.32;
+
+async function resumeMusicContext() {
+  const ac = ensureMusicContext();
+  if (!ac) return null;
+  if (ac.state === "suspended") {
+    try {
+      await ac.resume();
+    } catch {
+      return null;
+    }
+  }
+  return ac.state === "running" ? ac : null;
+}
 
 function syncMusicMasterGain() {
   if (!musicMaster) return;
-  musicMaster.gain.value = musicEnabled && !playing && isChromebookOrIPad() ? HOME_MUSIC_MASTER_GAIN : DEFAULT_MUSIC_MASTER_GAIN;
+  if (!musicEnabled) {
+    musicMaster.gain.value = 0;
+    return;
+  }
+  if (!playing && isChromebookOrIPad()) {
+    musicMaster.gain.value = HOME_MUSIC_MASTER_GAIN;
+  } else {
+    musicMaster.gain.value = DEFAULT_MUSIC_MASTER_GAIN;
+  }
 }
 
 function scheduleSailingMusicBar() {
@@ -7986,19 +8007,20 @@ function scheduleAdventurePirateMusicBar() {
 
 function startAdventureMusic() {
   if (!musicEnabled || !isAdventureMusicActive()) return;
-  startHomeWaves();
-  if (!musicCtx) return;
-  const ac = ensureMusicContext();
-  if (!ac) return;
-  if (ac.state === "suspended") ac.resume();
-  stopHomeMusic();
-  stopReefMusic();
-  syncMusicMasterGain();
-  if (!adventureMusicTimer) {
+  void resumeMusicContext().then((ac) => {
+    if (!ac || !musicEnabled || !isAdventureMusicActive()) return;
+    homeAudioUnlocked = true;
+    stopHomeMusic();
+    stopReefMusic();
+    syncMusicMasterGain();
+    if (adventureMusicTimer) {
+      clearInterval(adventureMusicTimer);
+      adventureMusicTimer = null;
+    }
     adventureMusicStep = 0;
     scheduleAdventurePirateMusicBar();
     adventureMusicTimer = setInterval(scheduleAdventurePirateMusicBar, ADVENTURE_PIRATE_TEMPO_MS);
-  }
+  });
 }
 
 function stopAdventureMusic() {
@@ -8036,14 +8058,17 @@ function startReefMusic() {
     return;
   }
   stopAdventureMusic();
-  const ac = ensureMusicContext();
-  if (!ac) return;
-  if (ac.state === "suspended") ac.resume();
-  if (!gameMusicTimer) {
+  void resumeMusicContext().then((ac) => {
+    if (!ac || !musicEnabled || !playing) return;
+    syncMusicMasterGain();
+    if (gameMusicTimer) {
+      clearInterval(gameMusicTimer);
+      gameMusicTimer = null;
+    }
     gameMusicStep = 0;
     scheduleReefMusicBar();
     gameMusicTimer = setInterval(scheduleReefMusicBar, reefMusicSpec(getReef().id).tempoMs);
-  }
+  });
 }
 
 function stopReefMusic() {
@@ -8054,21 +8079,24 @@ function stopReefMusic() {
 }
 
 function startHomeWaves() {
-  const ac = ensureMusicContext();
-  if (!ac) return;
-  if (ac.state === "suspended") ac.resume();
-  homeAudioUnlocked = true;
+  void resumeMusicContext().then((ac) => {
+    if (ac) homeAudioUnlocked = true;
+  });
 }
 
 function startHomeMusic() {
   if (!musicEnabled || playing || isAdventureMusicActive()) return;
-  startHomeWaves();
-  if (!musicCtx) return;
-  syncMusicMasterGain();
-  if (!musicTimer) {
+  void resumeMusicContext().then((ac) => {
+    if (!ac || !musicEnabled || playing || isAdventureMusicActive()) return;
+    homeAudioUnlocked = true;
+    syncMusicMasterGain();
+    if (musicTimer) {
+      clearInterval(musicTimer);
+      musicTimer = null;
+    }
     scheduleSailingMusicBar();
     musicTimer = setInterval(scheduleSailingMusicBar, 1600);
-  }
+  });
 }
 
 function stopHomeMusic() {
@@ -8085,31 +8113,42 @@ function stopHomeAudio() {
   stopAdventureMusic();
 }
 
-function toggleHomeMusic() {
+async function toggleHomeMusic() {
   musicEnabled = !musicEnabled;
   updateMusicButton();
-  syncMusicMasterGain();
-  if (playing) {
-    if (musicEnabled) startReefMusic();
-    else {
-      stopReefMusic();
-      stopAdventureMusic();
-    }
-  } else if (musicEnabled) {
-    if (isAdventureMusicActive()) startAdventureMusic();
-    else startHomeMusic();
-  } else {
+  if (!musicEnabled) {
+    syncMusicMasterGain();
     stopHomeMusic();
     stopAdventureMusic();
-    if (homeAudioUnlocked) startHomeWaves();
+    stopReefMusic();
+    return;
+  }
+  const ac = await resumeMusicContext();
+  if (!ac) {
+    musicEnabled = false;
+    updateMusicButton();
+    syncMusicMasterGain();
+    showToast("Music unavailable in this browser.", 2200);
+    return;
+  }
+  homeAudioUnlocked = true;
+  syncMusicMasterGain();
+  if (playing) {
+    if (adventureSession) startAdventureMusic();
+    else startReefMusic();
+  } else if (isAdventureMusicActive()) {
+    startAdventureMusic();
+  } else {
+    startHomeMusic();
   }
 }
 
 function unlockHomeAudio() {
-  if (!playing) {
-    startHomeWaves();
-    if (musicEnabled) startHomeMusic();
-  }
+  void resumeMusicContext().then((ac) => {
+    if (!ac) return;
+    homeAudioUnlocked = true;
+    if (!playing && musicEnabled) startHomeMusic();
+  });
 }
 
 function refreshCoinDisplays() {
@@ -12378,7 +12417,10 @@ window.addEventListener("resize", () => {
 btnCloseShop?.addEventListener("click", closeShop);
 btnOpenShopGuide?.addEventListener("click", openShopGuide);
 btnShopGuideDone?.addEventListener("click", closeShopGuide);
-btnToggleMusic?.addEventListener("click", toggleHomeMusic);
+btnToggleMusic?.addEventListener("click", () => {
+  void toggleHomeMusic();
+});
+btnToggleMusic?.addEventListener("pointerdown", unlockHomeAudio);
 btnIntroDone?.addEventListener("click", closeIntro);
 btnOpenIntro?.addEventListener("click", openIntro);
 btnResetProgress?.addEventListener("click", resetProgress);
