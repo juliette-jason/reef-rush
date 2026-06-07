@@ -2649,8 +2649,6 @@ function drawCompassCayBed() {
   ctx.fill();
   ctx.fillStyle = "#2e2418";
   ctx.fillRect(cx - r * 0.55, cy - r * 0.08, r * 1.1, r * 0.16);
-  drawCrossMarker(w * 0.18, sandTop + dpr * 14, 36);
-  drawCrossMarker(w * 0.82, sandTop + dpr * 14, 36);
   ctx.strokeStyle = "rgba(160, 140, 100, 0.4)";
   ctx.lineWidth = dpr * 0.9;
   ctx.beginPath();
@@ -3859,18 +3857,15 @@ function drawAdventureLavaFallsEffect(now) {
 }
 
 function drawAdventureCompassCayEffect(now) {
-  if (Math.sin(now * 0.002) > 0.7) {
-    ctx.strokeStyle = "rgba(255, 220, 160, 0.15)";
-    ctx.lineWidth = dpr * 1.5;
-    const cx = w * 0.5;
-    const cy = h - dpr * 54;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy - dpr * 20);
-    ctx.lineTo(cx, cy + dpr * 20);
-    ctx.moveTo(cx - dpr * 20, cy);
-    ctx.lineTo(cx + dpr * 20, cy);
-    ctx.stroke();
-  }
+  if (Math.sin(now * 0.002) <= 0.7) return;
+  const cx = w * 0.5;
+  const cy = h - dpr * 54;
+  const pulse = 0.85 + Math.sin(now * 0.003) * 0.15;
+  ctx.strokeStyle = `rgba(255, 220, 160, ${0.12 * pulse})`;
+  ctx.lineWidth = dpr * 1.2;
+  ctx.beginPath();
+  ctx.arc(cx, cy, dpr * 18 * pulse, 0, Math.PI * 2);
+  ctx.stroke();
 }
 
 function drawAdventurePalmwoodHarborEffect(now) {
