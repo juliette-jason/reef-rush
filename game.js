@@ -5471,12 +5471,29 @@ function getDuelClientId() {
   }
 }
 
-function getDuelPlayerInitials() {
-  const ini = String(gameMeta.playerInitials || "")
+function formatDuelInitials(value) {
+  const ini = String(value ?? "")
     .toUpperCase()
     .replace(/[^A-Z]/g, "")
     .slice(0, 3);
-  return ini.length >= 1 ? ini : "AAA";
+  return ini.length >= 1 ? ini : "";
+}
+
+function getDuelPlayerInitials() {
+  return formatDuelInitials(gameMeta.playerInitials) || "AAA";
+}
+
+function duelOpponentInitialsFromRow(row, role) {
+  if (!row) return "COM";
+  if (row.isComGuest) return "COM";
+  const raw = role === "host" ? row.guestInitials : row.hostInitials;
+  return formatDuelInitials(raw) || "Rival";
+}
+
+function getDuelOpponentDisplayName() {
+  if (!duelSession) return "Rival";
+  if (duelSession.mode === "com") return "COM";
+  return formatDuelInitials(duelSession.opponentInitials) || "Rival";
 }
 
 function isDuelPvpSession() {
@@ -5490,8 +5507,10 @@ function normalizeDuelMatchRow(row) {
     reefId: row.reef_id || row.reefId,
     hostClientId: row.host_client_id || row.hostClientId,
     guestClientId: row.guest_client_id || row.guestClientId,
-    hostInitials: row.host_initials || row.hostInitials || "AAA",
-    guestInitials: row.guest_initials || row.guestInitials || "COM",
+    hostInitials: formatDuelInitials(row.host_initials || row.hostInitials) || "AAA",
+    guestInitials: Boolean(row.is_com_guest ?? row.isComGuest)
+      ? "COM"
+      : formatDuelInitials(row.guest_initials || row.guestInitials),
     hostScore: Math.max(0, Math.floor(Number(row.host_score ?? row.hostScore) || 0)),
     guestScore: Math.max(0, Math.floor(Number(row.guest_score ?? row.guestScore) || 0)),
     roundStartMs: Number(row.round_start_ms ?? row.roundStartMs) || 0,
@@ -5510,7 +5529,7 @@ function duelRoleFromMatch(row) {
 
 function duelPlanFromMatch(row, role) {
   const mode = row.isComGuest ? "com" : "pvp";
-  const opponentInitials = role === "host" ? row.guestInitials || "COM" : row.hostInitials;
+  const opponentInitials = duelOpponentInitialsFromRow(row, role);
   const opponentScore = role === "host" ? row.guestScore : row.hostScore;
   return {
     matchId: row.matchId,
@@ -5658,10 +5677,17 @@ async function pollDuelOpponentScoreFromMatch() {
     const row = await fetchDuelMatchById(duelSession.matchId);
     if (!row) return;
     const opp = duelSession.role === "host" ? row.guestScore : row.hostScore;
+    const oppIni = duelOpponentInitialsFromRow(row, duelSession.role);
+    let hudDirty = false;
     if (opp !== duelSession.opponentScore) {
       duelSession.opponentScore = opp;
-      updateDuelHudScores();
+      hudDirty = true;
     }
+    if (oppIni && oppIni !== "Rival" && oppIni !== duelSession.opponentInitials) {
+      duelSession.opponentInitials = oppIni;
+      hudDirty = true;
+    }
+    if (hudDirty) updateDuelHudScores();
   } catch (err) {
     console.warn(err);
   }
@@ -5830,10 +5856,13 @@ function scheduleDuelScoreSync() {
   void pushDuelMatchScore();
 }
 
-function updateDuelOpponentLabel() {
-  if (!duelHudOpponentLabel || !duelSession) return;
-  const name = duelSession.opponentInitials || (duelSession.mode === "com" ? "COM" : "Rival");
-  duelHudOpponentLabel.textContent = name;
+function updateDuelHudLabels() {
+  if (duelHudPlayerLabel) {
+    duelHudPlayerLabel.textContent = isDuelPvpSession() ? getDuelPlayerInitials() : "You";
+  }
+  if (duelHudOpponentLabel && duelSession) {
+    duelHudOpponentLabel.textContent = getDuelOpponentDisplayName();
+  }
 }
 
 function formatDuelEventMatchupLine() {
@@ -5986,12 +6015,13 @@ function updateDuelHudScores() {
   if (!duelHud || !duelHudPlayerScore || !duelHudOpponentScore) return;
   duelHudPlayerScore.textContent = String(score);
   duelHudOpponentScore.textContent = String(duelSession?.opponentScore || 0);
+  updateDuelHudLabels();
   scheduleDuelScoreSync();
 }
 
 function showDuelHud() {
   if (duelHud) duelHud.hidden = false;
-  updateDuelOpponentLabel();
+  updateDuelHudLabels();
   updateDuelHudScores();
 }
 
@@ -6334,7 +6364,7 @@ function beginDuelSession(plan) {
     reefId: plan.reefId,
     targetScore: plan.targetScore || 0,
     opponentScore: plan.opponentScore || 0,
-    opponentInitials: plan.opponentInitials || "COM",
+    opponentInitials: plan.mode === "com" ? "COM" : formatDuelInitials(plan.opponentInitials) || "Rival",
     mode: plan.mode || "com",
     matchId: plan.matchId || null,
     role: plan.role || null,
@@ -6392,7 +6422,7 @@ function beginDuelSession(plan) {
   hook.krakenBiteLocked = false;
   duelSession.opponentHook.tipY = surfaceTipY();
   for (let i = 0; i < 3; i++) spawnFishInDuelHalf("opponent");
-  const rivalName = duelSession.opponentInitials || "COM";
+  const rivalName = getDuelOpponentDisplayName();
   controlHint.textContent =
     duelSession.mode === "pvp"
       ? isTouchControlsPreferred()
@@ -6458,7 +6488,7 @@ function endDuelRound() {
   const opponentScore = duelSession?.opponentScore || 0;
   const targetScore = duelSession?.targetScore || 0;
   const reefName = getReef().name;
-  const rivalName = duelSession?.opponentInitials || "COM";
+  const rivalName = getDuelOpponentDisplayName();
   const won = playerScore > opponentScore;
   const isPvp = isDuelPvpSession();
   const matchId = duelSession?.matchId;
@@ -6674,6 +6704,7 @@ const duelEventUnavailable = document.getElementById("duelEventUnavailable");
 const eventCardDuel = document.getElementById("eventCardDuel");
 const btnStartDuel = document.getElementById("btnStartDuel");
 const duelHud = document.getElementById("duelHud");
+const duelHudPlayerLabel = document.getElementById("duelHudPlayerLabel");
 const duelHudPlayerScore = document.getElementById("duelHudPlayerScore");
 const duelHudOpponentScore = document.getElementById("duelHudOpponentScore");
 const duelHudOpponentLabel = document.getElementById("duelHudOpponentLabel");
