@@ -4822,6 +4822,37 @@ function leaderboardHeaders(extra = {}) {
   };
 }
 
+const DUEL_BACKEND_MISSING = "DUEL_BACKEND_MISSING";
+
+function isDuelBackendMissingResponse(res, body) {
+  if (res.status !== 404) return false;
+  const code = body?.code || "";
+  const message = String(body?.message || "");
+  return code === "PGRST205" || message.includes("duel_matches");
+}
+
+async function readDuelResponse(res) {
+  const text = await res.text();
+  let body = null;
+  if (text) {
+    try {
+      body = JSON.parse(text);
+    } catch {
+      body = { message: text };
+    }
+  }
+  if (isDuelBackendMissingResponse(res, body)) {
+    const err = new Error(DUEL_BACKEND_MISSING);
+    err.duelBackendMissing = true;
+    throw err;
+  }
+  return { res, body };
+}
+
+function isDuelBackendMissingError(err) {
+  return Boolean(err?.duelBackendMissing || err?.message === DUEL_BACKEND_MISSING);
+}
+
 function loadLocalLeaderboard() {
   try {
     const raw = localStorage.getItem(LEADERBOARD_KEY);
@@ -5434,8 +5465,9 @@ const DUEL_ROUND_MS = 60_000;
 const DUEL_RIVAL_MIN_TARGET = 4000;
 const DUEL_MATCH_TABLE_URL = `${SUPABASE_REST_URL}/duel_matches`;
 const DUEL_CLIENT_ID_KEY = "reefRushDuelClientId_v1";
-const DUEL_LOBBY_TIMEOUT_MS = 15_000;
-const DUEL_LOBBY_POLL_MS = 1200;
+const DUEL_LOBBY_TIMEOUT_MS = 20_000;
+const DUEL_LOBBY_POLL_MS = 900;
+const DUEL_LOBBY_CREATE_GRACE_MS = 1_200;
 const DUEL_SCORE_SYNC_MS = 650;
 const DUEL_OPPONENT_POLL_MS = 750;
 const DUEL_MATCH_START_DELAY_MS = 4000;
@@ -5546,12 +5578,20 @@ function duelPlanFromMatch(row, role) {
   };
 }
 
+async function probeDuelBackendReady() {
+  const res = await fetch(`${DUEL_MATCH_TABLE_URL}?select=id&limit=1`, { headers: leaderboardHeaders() });
+  const { body } = await readDuelResponse(res);
+  if (!res.ok) throw new Error(`Duel lobby service error: ${res.status}`);
+  return Array.isArray(body);
+}
+
 async function fetchDuelMatchById(matchId) {
   const res = await fetch(`${DUEL_MATCH_TABLE_URL}?id=eq.${encodeURIComponent(matchId)}&select=*`, {
     headers: leaderboardHeaders(),
   });
+  const { body } = await readDuelResponse(res);
   if (!res.ok) throw new Error(`Duel match fetch failed: ${res.status}`);
-  const rows = await res.json();
+  const rows = Array.isArray(body) ? body : [];
   return normalizeDuelMatchRow(rows[0]);
 }
 
@@ -5564,8 +5604,9 @@ async function fetchOldestOpenDuelLobby() {
     `&created_at=gte.${encodeURIComponent(since)}` +
     `&order=created_at.asc&limit=1`;
   const res = await fetch(url, { headers: leaderboardHeaders() });
+  const { body } = await readDuelResponse(res);
   if (!res.ok) throw new Error(`Duel lobby fetch failed: ${res.status}`);
-  const rows = await res.json();
+  const rows = Array.isArray(body) ? body : [];
   return normalizeDuelMatchRow(rows[0]);
 }
 
@@ -5587,8 +5628,9 @@ async function createDuelLobby(reefId, roundMs) {
       is_com_guest: false,
     }),
   });
+  const { body } = await readDuelResponse(res);
   if (!res.ok) throw new Error(`Duel lobby create failed: ${res.status}`);
-  const rows = await res.json();
+  const rows = Array.isArray(body) ? body : [];
   return normalizeDuelMatchRow(rows[0]);
 }
 
@@ -5610,8 +5652,9 @@ async function tryJoinDuelLobby(lobbyId) {
       }),
     },
   );
+  const { body } = await readDuelResponse(res);
   if (!res.ok) return null;
-  const rows = await res.json();
+  const rows = Array.isArray(body) ? body : [];
   return normalizeDuelMatchRow(rows[0]);
 }
 
@@ -5765,53 +5808,64 @@ function setDuelMatchmakingUi(active, message = "") {
 
 async function findDuelMatchOnline(roundMs, deadlineMs) {
   setDuelMatchmakingUi(true, "Trying to find a rival…");
+  await probeDuelBackendReady();
 
-  for (let attempt = 0; attempt < 4 && Date.now() < deadlineMs; attempt++) {
-    const lobby = await fetchOldestOpenDuelLobby();
-    if (!lobby) break;
-    const joined = await tryJoinDuelLobby(lobby.matchId);
-    if (joined) {
-      const role = duelRoleFromMatch(joined);
-      if (role) {
-        duelPendingReefId = joined.reefId;
-        hideDuelLobbyCountdown();
-        return duelPlanFromMatch(joined, role);
-      }
-    }
-    await duelSleep(350);
-  }
-
-  if (Date.now() >= deadlineMs) {
-    hideDuelLobbyCountdown();
-    setDuelMatchmakingUi(true, "No rival found — facing COM…");
-    const reefId = pickRandomDuelReefId(duelLastReefId);
-    duelPendingReefId = reefId;
-    return buildLocalComDuelPlan(reefId);
-  }
-
-  const reefId = pickRandomDuelReefId(duelLastReefId);
-  duelPendingReefId = reefId;
-  const created = await createDuelLobby(reefId, roundMs);
-  if (!created?.matchId) throw new Error("Duel lobby missing id");
-  duelLobbyMatchId = created.matchId;
+  const startedAt = Date.now();
+  let hostedMatchId = null;
 
   while (Date.now() < deadlineMs) {
     if (!duelMatchmakingActive) throw new Error("Duel matchmaking cancelled");
-    await duelSleep(DUEL_LOBBY_POLL_MS);
-    const row = await fetchDuelMatchById(created.matchId);
-    if (!row || row.status === "cancelled") throw new Error("Duel lobby cancelled");
-    if (row.guestClientId || row.isComGuest) {
-      hideDuelLobbyCountdown();
-      duelLobbyMatchId = null;
-      return duelPlanFromMatch(row, "host");
+
+    const lobby = await fetchOldestOpenDuelLobby();
+    if (lobby?.matchId) {
+      const joined = await tryJoinDuelLobby(lobby.matchId);
+      if (joined) {
+        const role = duelRoleFromMatch(joined);
+        if (role) {
+          if (hostedMatchId && hostedMatchId !== joined.matchId) {
+            await cancelDuelLobbyIfHost(hostedMatchId);
+          }
+          duelLobbyMatchId = null;
+          duelPendingReefId = joined.reefId;
+          hideDuelLobbyCountdown();
+          return duelPlanFromMatch(joined, role);
+        }
+      }
     }
+
+    if (!hostedMatchId && Date.now() - startedAt >= DUEL_LOBBY_CREATE_GRACE_MS) {
+      const reefId = pickRandomDuelReefId(duelLastReefId);
+      duelPendingReefId = reefId;
+      const created = await createDuelLobby(reefId, roundMs);
+      if (!created?.matchId) throw new Error("Duel lobby missing id");
+      hostedMatchId = created.matchId;
+      duelLobbyMatchId = hostedMatchId;
+    } else if (hostedMatchId) {
+      const row = await fetchDuelMatchById(hostedMatchId);
+      if (!row || row.status === "cancelled") throw new Error("Duel lobby cancelled");
+      if (row.guestClientId && !row.isComGuest) {
+        hideDuelLobbyCountdown();
+        duelLobbyMatchId = null;
+        return duelPlanFromMatch(row, "host");
+      }
+    }
+
+    await duelSleep(DUEL_LOBBY_POLL_MS);
+  }
+
+  if (hostedMatchId) {
+    hideDuelLobbyCountdown();
+    setDuelMatchmakingUi(true, "No rival found — facing COM…");
+    const comRow = await activateComDuelGuest(hostedMatchId);
+    duelLobbyMatchId = null;
+    return duelPlanFromMatch(comRow, "host");
   }
 
   hideDuelLobbyCountdown();
   setDuelMatchmakingUi(true, "No rival found — facing COM…");
-  const comRow = await activateComDuelGuest(created.matchId);
-  duelLobbyMatchId = null;
-  return duelPlanFromMatch(comRow, "host");
+  const reefId = pickRandomDuelReefId(duelLastReefId);
+  duelPendingReefId = reefId;
+  return buildLocalComDuelPlan(reefId);
 }
 
 async function waitForDuelRoundStart(plan) {
@@ -5848,6 +5902,7 @@ async function resolveDuelMatchPlan(deadlineMs) {
       await cancelDuelLobbyIfHost(duelLobbyMatchId);
       duelLobbyMatchId = null;
     }
+    if (isDuelBackendMissingError(err)) throw err;
     showToast("Lobby offline — duel vs COM instead.", 2600);
     const reefId = pickRandomDuelReefId(duelLastReefId);
     duelPendingReefId = reefId;
@@ -6485,7 +6540,14 @@ async function startDuelFromEvents() {
     gameMeta.duelTickets += 1;
     saveMeta();
     refreshDuelEventCard();
-    showToast("Duel matchmaking cancelled.", 2400);
+    if (isDuelBackendMissingError(err)) {
+      showToast(
+        "Duel matchmaking isn't set up yet — run supabase/duel_matches.sql in your Supabase SQL editor, then try again.",
+        5200,
+      );
+    } else {
+      showToast("Duel matchmaking cancelled.", 2400);
+    }
   }
 }
 
