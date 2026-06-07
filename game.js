@@ -7191,6 +7191,7 @@ function showHomePanel() {
   adventureSession = null;
   updateAdventureLaunchUI();
   syncHomeLaunchButtons();
+  if (musicEnabled) startHomeMusic();
   window.requestAnimationFrame(() => startAdventureHomeUnlockAnimation());
   void processDailyPrizePayouts().then(() => {
     window.setTimeout(tryStartDailyPrizeCelebration, 500);
@@ -7629,7 +7630,8 @@ function openAdventureHub() {
     window.requestAnimationFrame(() => runAdventureMapSectionReveal("lost-city"));
   }
   if (musicEnabled) {
-    window.requestAnimationFrame(() => startAdventureMusic());
+    stopHomeMusic();
+    startAdventureMusic();
   }
 }
 
@@ -8034,17 +8036,37 @@ const HOME_MUSIC_VOLUME_BOOST = isChromebookOrIPad() ? 5.5 : 2.2;
 const DEFAULT_MUSIC_MASTER_GAIN = 0.2;
 const HOME_MUSIC_MASTER_GAIN = isChromebookOrIPad() ? 0.5 : 0.32;
 
-async function resumeMusicContext() {
+function kickMusicContext() {
   const ac = ensureMusicContext();
+  if (!ac || ac.state === "closed") return null;
+  if (ac.state === "suspended") {
+    try {
+      ac.resume();
+    } catch {
+      return null;
+    }
+  }
+  return ac;
+}
+
+async function resumeMusicContext() {
+  const ac = kickMusicContext();
   if (!ac) return null;
   if (ac.state === "suspended") {
     try {
       await ac.resume();
     } catch {
-      return null;
+      return ac.state === "closed" ? null : ac;
     }
   }
-  return ac.state === "running" ? ac : null;
+  return ac.state === "closed" ? null : ac;
+}
+
+function musicSchedulerReady() {
+  if (!musicEnabled || !musicCtx || !musicMaster) return false;
+  if (musicCtx.state === "suspended") kickMusicContext();
+  if (musicMaster.gain.value <= 0) syncMusicMasterGain();
+  return musicCtx.state !== "closed";
 }
 
 function syncMusicMasterGain() {
@@ -8053,17 +8075,17 @@ function syncMusicMasterGain() {
     musicMaster.gain.value = 0;
     return;
   }
-  if (!playing && isEventsMusicActive()) {
-    musicMaster.gain.value = EVENTS_MUSIC_MASTER_GAIN;
-  } else if (!playing && isChromebookOrIPad()) {
-    musicMaster.gain.value = HOME_MUSIC_MASTER_GAIN;
-  } else {
+  if (playing) {
     musicMaster.gain.value = DEFAULT_MUSIC_MASTER_GAIN;
+  } else if (isEventsMusicActive()) {
+    musicMaster.gain.value = EVENTS_MUSIC_MASTER_GAIN;
+  } else {
+    musicMaster.gain.value = HOME_MUSIC_MASTER_GAIN;
   }
 }
 
 function scheduleSailingMusicBar() {
-  if (!musicCtx || !musicEnabled || playing || isEventsMusicActive()) return;
+  if (!musicSchedulerReady() || playing || isEventsMusicActive() || isAdventureMusicActive()) return;
   const now = musicCtx.currentTime + 0.04;
   const v = HOME_MUSIC_VOLUME_BOOST;
   // Original soft yacht-rock radio bed: smooth major-7/add-9 colors, not a cover melody.
@@ -8176,7 +8198,7 @@ const EVENTS_MUSIC_VOLUME_BOOST = isChromebookOrIPad() ? 7 : 3.2;
 const EVENTS_MUSIC_MASTER_GAIN = isChromebookOrIPad() ? 0.5 : 0.34;
 
 function scheduleEventsLaidbackMusicBar() {
-  if (!musicCtx || !musicEnabled || !isEventsMusicActive()) return;
+  if (!musicSchedulerReady() || !isEventsMusicActive()) return;
   const now = musicCtx.currentTime + 0.04;
   const v = EVENTS_MUSIC_VOLUME_BOOST;
   const chords = [
@@ -8208,7 +8230,7 @@ function scheduleEventsLaidbackMusicBar() {
 }
 
 function scheduleAdventurePirateMusicBar() {
-  if (!musicCtx || !musicEnabled || !isAdventureMusicActive()) return;
+  if (!musicSchedulerReady() || !isAdventureMusicActive()) return;
   const now = musicCtx.currentTime + 0.04;
   const v = 1.25;
   const bars = [
@@ -8301,7 +8323,7 @@ function stopAdventureMusic() {
 }
 
 function scheduleReefMusicBar() {
-  if (!musicCtx || !musicEnabled || !playing || adventureSession) return;
+  if (!musicSchedulerReady() || !playing || adventureSession) return;
   const reef = getReef();
   const spec = reefMusicSpec(reef.id);
   const now = musicCtx.currentTime + 0.035;
@@ -8396,8 +8418,9 @@ async function toggleHomeMusic() {
     stopReefMusic();
     return;
   }
+  kickMusicContext();
   const ac = await resumeMusicContext();
-  if (!ac) {
+  if (!ac || ac.state === "closed") {
     musicEnabled = false;
     updateMusicButton();
     syncMusicMasterGain();
@@ -8419,12 +8442,14 @@ async function toggleHomeMusic() {
 }
 
 function unlockHomeAudio() {
+  kickMusicContext();
   void resumeMusicContext().then((ac) => {
     if (!ac) return;
     homeAudioUnlocked = true;
     if (!playing && musicEnabled) {
       if (isEventsMusicActive()) startEventsMusic();
-      else if (!isAdventureMusicActive()) startHomeMusic();
+      else if (isAdventureMusicActive()) startAdventureMusic();
+      else startHomeMusic();
     }
   });
 }
@@ -8652,6 +8677,7 @@ function closeShop() {
   buildRodUI();
   refreshCoinDisplays();
   syncHomeLaunchButtons();
+  if (musicEnabled) startHomeMusic();
 }
 
 function openEvents() {
@@ -12685,7 +12711,10 @@ btnShopGuideDone?.addEventListener("click", closeShopGuide);
 btnToggleMusic?.addEventListener("click", () => {
   void toggleHomeMusic();
 });
-btnToggleMusic?.addEventListener("pointerdown", unlockHomeAudio);
+btnToggleMusic?.addEventListener("pointerdown", () => {
+  kickMusicContext();
+  unlockHomeAudio();
+});
 btnIntroDone?.addEventListener("click", closeIntro);
 btnOpenIntro?.addEventListener("click", openIntro);
 btnResetProgress?.addEventListener("click", resetProgress);
