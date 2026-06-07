@@ -47,14 +47,14 @@ const FISH_SPECIES = [
   { id: "gulper_eel", name: "Gulper Eel", rarity: "rare", size: "large", morph: "deepsea", speed: 0.82, hue: 258, colors: ["#211632", "#05030a", "#c084fc"] },
   { id: "fangtooth", name: "Fangtooth", rarity: "epic", size: "medium", morph: "deepsea", speed: 1.08, hue: 24, colors: ["#2a201b", "#080503", "#fed7aa"] },
   { id: "giant_isopod", name: "Giant Isopod", rarity: "legendary", size: "large", morph: "deepsea", speed: 0.58, hue: 190, colors: ["#475569", "#111827", "#cffafe"] },
-  { id: "bonefish", name: "Bonefish", rarity: "common", size: "medium", morph: "skullfish", speed: 1.02, hue: 280, colors: ["#1c1618", "#0a0608", "#ff4040"] },
-  { id: "grave_eel", name: "Grave Eel", rarity: "common", size: "large", morph: "skullfish", speed: 0.86, hue: 265, colors: ["#141018", "#050308", "#f87171"] },
-  { id: "specter_ray", name: "Specter Ray", rarity: "uncommon", size: "large", morph: "skullfish", speed: 0.7, hue: 255, colors: ["#121018", "#040208", "#ef4444"] },
-  { id: "dread_fangtooth", name: "Dread Fangtooth", rarity: "uncommon", size: "medium", morph: "skullfish", speed: 1.12, hue: 8, colors: ["#1a100e", "#060302", "#ff6b6b"] },
-  { id: "skeletal_marlin", name: "Skeletal Marlin", rarity: "rare", size: "large", morph: "skullfish", speed: 1.32, hue: 295, colors: ["#16121a", "#050308", "#e879f9"] },
-  { id: "ghost_shark", name: "Ghost Shark", rarity: "rare", size: "large", morph: "skullfish", speed: 1.2, hue: 248, colors: ["#0e1216", "#020306", "#fca5a5"] },
-  { id: "abyss_lantern", name: "Abyss Lantern", rarity: "epic", size: "medium", morph: "skullfish", speed: 0.92, hue: 12, colors: ["#180c0c", "#040202", "#ff3333"] },
-  { id: "leviathan_skull", name: "Leviathan Skull", rarity: "legendary", size: "large", morph: "skullfish", speed: 0.62, hue: 200, colors: ["#0c1418", "#020406", "#67e8f9"] },
+  { id: "bonefish", name: "Bonefish", rarity: "common", size: "medium", morph: "skullfish", speed: 1.38, hue: 280, colors: ["#1c1618", "#0a0608", "#ff4040"] },
+  { id: "grave_eel", name: "Grave Eel", rarity: "common", size: "large", morph: "skullfish", speed: 1.18, hue: 265, colors: ["#141018", "#050308", "#f87171"] },
+  { id: "specter_ray", name: "Specter Ray", rarity: "uncommon", size: "large", morph: "skullfish", speed: 1.05, hue: 255, colors: ["#121018", "#040208", "#ef4444"] },
+  { id: "dread_fangtooth", name: "Dread Fangtooth", rarity: "uncommon", size: "medium", morph: "skullfish", speed: 1.48, hue: 8, colors: ["#1a100e", "#060302", "#ff6b6b"] },
+  { id: "skeletal_marlin", name: "Skeletal Marlin", rarity: "rare", size: "large", morph: "skullfish", speed: 1.68, hue: 295, colors: ["#16121a", "#050308", "#e879f9"] },
+  { id: "ghost_shark", name: "Ghost Shark", rarity: "rare", size: "large", morph: "skullfish", speed: 1.55, hue: 248, colors: ["#0e1216", "#020306", "#fca5a5"] },
+  { id: "abyss_lantern", name: "Abyss Lantern", rarity: "epic", size: "medium", morph: "skullfish", speed: 1.28, hue: 12, colors: ["#180c0c", "#040202", "#ff3333"] },
+  { id: "leviathan_skull", name: "Leviathan Skull", rarity: "legendary", size: "large", morph: "skullfish", speed: 1.02, hue: 200, colors: ["#0c1418", "#020406", "#67e8f9"] },
 ];
 
 const SKULL_SHOALS_FISH_IDS = [
@@ -2013,7 +2013,7 @@ function drawSkullShoalsGraveyardBed() {
     ctx.fill();
   }
 
-  drawSkullShoalsGraveyardMidwater();
+  if (!PERF_CHROMEBOOK) drawSkullShoalsGraveyardMidwater();
   drawSkullShoalsSandSkeletons();
 }
 
@@ -2052,7 +2052,7 @@ function drawSkullShoalsSandSkeletons() {
     { x: 0.28, y: 30, s: 1.12, v: 4 },
     { x: 0.68, y: 28, s: 1.05, v: 5 },
   ];
-  const count = PERF_CHROMEBOOK ? 4 : placements.length;
+  const count = PERF_CHROMEBOOK ? 3 : Math.min(5, placements.length);
   for (let i = 0; i < count; i++) {
     const p = placements[i];
     drawUnderwaterSkeletonRemain(p.x * w, sandTop + dpr * p.y, p.s, p.v);
@@ -2061,19 +2061,20 @@ function drawSkullShoalsSandSkeletons() {
 
 function drawAdventureSkullShoalsEffect(now) {
   const t = now * 0.001;
-  ctx.fillStyle = "rgba(40, 10, 20, 0.08)";
-  for (let i = 0; i < 6; i++) {
+  ctx.fillStyle = "rgba(40, 10, 20, 0.05)";
+  ctx.fillRect(0, waterTop, w, h - waterTop);
+  const blobCount = PERF_CHROMEBOOK ? 2 : 3;
+  for (let i = 0; i < blobCount; i++) {
     const x = ((i * 137 + Math.floor(t * 12)) % 1000) / 1000 * w;
     const y = waterTop + ((i * 89) % 1000) / 1000 * (h - waterTop) * 0.7;
-    const r = dpr * (30 + i * 12);
-    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-    g.addColorStop(0, "rgba(80, 20, 30, 0.12)");
-    g.addColorStop(1, "rgba(80, 20, 30, 0)");
-    ctx.fillStyle = g;
-    ctx.fillRect(x - r, y - r, r * 2, r * 2);
+    const r = dpr * (22 + i * 10);
+    ctx.fillStyle = `rgba(80, 20, 30, ${0.05 + i * 0.012})`;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
   }
   if (Math.sin(now * 0.0025) > 0.88) {
-    ctx.fillStyle = "rgba(120, 20, 30, 0.06)";
+    ctx.fillStyle = "rgba(120, 20, 30, 0.04)";
     ctx.fillRect(0, waterTop, w, h - waterTop);
   }
 }
@@ -4170,7 +4171,10 @@ function drawAdventureThemeOverlayInner(now) {
   ctx.fillRect(0, waterTop, w, h - waterTop);
 
   const drawEffect = ADVENTURE_THEME_EFFECT_DRAW[atm.effect];
-  if (drawEffect) drawEffect(now);
+  if (drawEffect) {
+    const skipSkullFx = atm.effect === "skull" && PERF_CHROMEBOOK && gameLoopTick % 2 !== 0;
+    if (!skipSkullFx) drawEffect(now);
+  }
 }
 
 function drawAdventureThemeOverlay(now) {
@@ -4750,6 +4754,7 @@ function getReef() {
   }
   if (themeId === "skull-shoals") {
     merged.weights = { common: 48, uncommon: 28, rare: 14, epic: 7, legendary: 3 };
+    merged.fishSpeed = Math.max(lvl.fishSpeed * 1.42, 1.12);
   }
   if (themeId === "lava-falls") {
     merged.subtitle = "Volcanic shallows";
@@ -11180,12 +11185,9 @@ function drawFishMorph(morph, L, body, shade, accent, speciesId) {
       ctx.quadraticCurveTo(L * 0.3, -L * 0.55, L * 0.5, -L * 0.38);
       ctx.stroke();
       ctx.fillStyle = accent;
-      ctx.shadowColor = accent;
-      ctx.shadowBlur = L * 0.22;
       ctx.beginPath();
       ctx.arc(L * 0.52, -L * 0.36, L * 0.06, 0, Math.PI * 2);
       ctx.fill();
-      ctx.shadowBlur = 0;
     }
     ctx.fillStyle = accent;
     for (let i = 0; i < 7; i++) {
@@ -11199,13 +11201,10 @@ function drawFishMorph(morph, L, body, shade, accent, speciesId) {
       ctx.fill();
     }
     ctx.fillStyle = "rgba(255, 60, 60, 0.9)";
-    ctx.shadowColor = "rgba(255, 40, 40, 0.8)";
-    ctx.shadowBlur = L * 0.12;
     ctx.beginPath();
     ctx.arc(L * 0.34, -L * 0.05, L * 0.075, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = "#0a0202";
-    ctx.shadowBlur = 0;
     ctx.beginPath();
     ctx.arc(L * 0.36, -L * 0.05, L * 0.028, 0, Math.PI * 2);
     ctx.fill();
@@ -11317,18 +11316,7 @@ function drawFish(f) {
   ctx.rotate(Math.sin(f.phase) * (scary ? 0.12 : 0.08));
   ctx.scale(facing, 1);
 
-  if (scary) {
-    ctx.shadowColor = "rgba(255, 35, 35, 0.45)";
-    ctx.shadowBlur = L * 0.2;
-    ctx.filter = "brightness(0.78) contrast(1.2) saturate(0.85)";
-  }
-
   drawFishMorph(spec.morph || "silverside", L, body, shade, accent, spec.id);
-
-  if (scary) {
-    ctx.filter = "none";
-    ctx.shadowBlur = 0;
-  }
 
   ctx.restore();
   f.phase += scary ? 0.09 : 0.06;
