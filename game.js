@@ -5442,8 +5442,10 @@ const DUEL_MATCH_START_DELAY_MS = 4000;
 const DUEL_LOBBY_MAX_AGE_MS = 120_000;
 /** null during classic/adventure play; set for split-screen duel fishing. */
 let duelSession = null;
-/** Random reef picked on the Events page before starting a duel. */
+/** Reef shown on the Events card / used for the active duel plan. */
 let duelPendingReefId = null;
+/** Last reef played in duel fishing — avoid picking the same one twice in a row. */
+let duelLastReefId = null;
 /** Rival score target rolled for the next duel (4000 … player best). */
 let duelPendingTargetScore = DUEL_RIVAL_MIN_TARGET;
 let duelMatchmakingActive = false;
@@ -5698,7 +5700,7 @@ function setDuelMatchmakingUi(active, message = "") {
   }
 }
 
-async function findDuelMatchOnline(reefId, roundMs) {
+async function findDuelMatchOnline(roundMs) {
   for (let attempt = 0; attempt < 4; attempt++) {
     const lobby = await fetchOldestOpenDuelLobby();
     if (!lobby) break;
@@ -5706,11 +5708,16 @@ async function findDuelMatchOnline(reefId, roundMs) {
     const joined = await tryJoinDuelLobby(lobby.matchId);
     if (joined) {
       const role = duelRoleFromMatch(joined);
-      if (role) return duelPlanFromMatch(joined, role);
+      if (role) {
+        duelPendingReefId = joined.reefId;
+        return duelPlanFromMatch(joined, role);
+      }
     }
     await duelSleep(350);
   }
 
+  const reefId = pickRandomDuelReefId(duelLastReefId);
+  duelPendingReefId = reefId;
   setDuelMatchmakingUi(true, "Waiting in the duel lobby for a rival…");
   const created = await createDuelLobby(reefId, roundMs);
   if (!created?.matchId) throw new Error("Duel lobby missing id");
@@ -5760,10 +5767,8 @@ function buildLocalComDuelPlan(reefId) {
 }
 
 async function resolveDuelMatchPlan() {
-  const reefId = duelPendingReefId || pickRandomDuelReefId();
-  const reef = REEFS.find((r) => r.id === reefId) || REEFS[0];
   try {
-    return await findDuelMatchOnline(reef.id, DUEL_ROUND_MS);
+    return await findDuelMatchOnline(DUEL_ROUND_MS);
   } catch (err) {
     console.warn(err);
     if (duelLobbyMatchId) {
@@ -5771,7 +5776,9 @@ async function resolveDuelMatchPlan() {
       duelLobbyMatchId = null;
     }
     showToast("Lobby offline — duel vs COM instead.", 2600);
-    return buildLocalComDuelPlan(reef.id);
+    const reefId = pickRandomDuelReefId(duelLastReefId);
+    duelPendingReefId = reefId;
+    return buildLocalComDuelPlan(reefId);
   }
 }
 
@@ -5843,8 +5850,10 @@ function duelSideCenter(side) {
   return side === "player" ? duelHalfW() * 0.5 : duelHalfW() * 1.5;
 }
 
-function pickRandomDuelReefId() {
-  return REEFS[Math.floor(Math.random() * REEFS.length)].id;
+function pickRandomDuelReefId(avoidId = null) {
+  const pool =
+    avoidId && REEFS.length > 1 ? REEFS.filter((r) => r.id !== avoidId) : REEFS;
+  return pool[Math.floor(Math.random() * pool.length)].id;
 }
 
 function getPlayerPersonalBestScoreRaw() {
@@ -5920,11 +5929,10 @@ function refreshDuelEventCard() {
       : "Tickets can't be used on phones";
   }
 
-  duelPendingReefId = pickRandomDuelReefId();
-  const reef = REEFS.find((r) => r.id === duelPendingReefId) || REEFS[0];
   duelPendingTargetScore = rollDuelRivalTargetScore();
   duelEventMatchup.textContent = formatDuelEventMatchupLine();
-  duelEventReef.textContent = `Random reef: ${reef.name} (${reef.difficulty}) · 1:00 round · COM fallback ${duelPendingTargetScore.toLocaleString()} pts`;
+  const previewReef = REEFS[Math.floor(Math.random() * REEFS.length)] || REEFS[0];
+  duelEventReef.textContent = `Random reef each duel (e.g. ${previewReef.name}) · 1:00 round · COM fallback ${duelPendingTargetScore.toLocaleString()} pts`;
 
   if (btnStartDuel) {
     btnStartDuel.disabled = !available || tickets <= 0;
@@ -6280,6 +6288,8 @@ function drawTrenchRodLightForHook(hx) {
 function beginDuelSession(plan) {
   if (playing) return;
   const reef = REEFS.find((r) => r.id === plan.reefId) || REEFS[0];
+  duelLastReefId = reef.id;
+  duelPendingReefId = reef.id;
   duelSession = {
     reefId: plan.reefId,
     targetScore: plan.targetScore || 0,
