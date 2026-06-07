@@ -7865,7 +7865,9 @@ function syncMusicMasterGain() {
     musicMaster.gain.value = 0;
     return;
   }
-  if (!playing && isChromebookOrIPad()) {
+  if (!playing && isEventsMusicActive()) {
+    musicMaster.gain.value = EVENTS_MUSIC_MASTER_GAIN;
+  } else if (!playing && isChromebookOrIPad()) {
     musicMaster.gain.value = HOME_MUSIC_MASTER_GAIN;
   } else {
     musicMaster.gain.value = DEFAULT_MUSIC_MASTER_GAIN;
@@ -7982,7 +7984,8 @@ function reefMusicSpec(reefId) {
 
 const ADVENTURE_PIRATE_TEMPO_MS = 700;
 const EVENTS_MUSIC_TEMPO_MS = 2600;
-const EVENTS_MUSIC_VOLUME_BOOST = isChromebookOrIPad() ? 4.5 : 1.6;
+const EVENTS_MUSIC_VOLUME_BOOST = isChromebookOrIPad() ? 7 : 3.2;
+const EVENTS_MUSIC_MASTER_GAIN = isChromebookOrIPad() ? 0.5 : 0.34;
 
 function scheduleEventsLaidbackMusicBar() {
   if (!musicCtx || !musicEnabled || !isEventsMusicActive()) return;
