@@ -6313,6 +6313,7 @@ function beginDuelSession(plan) {
   playing = true;
   normalizeSelectedRod();
   stopHomeMusic();
+  stopEventsMusic();
   syncMusicMasterGain();
   startHomeWaves();
   roundBait = { catchRadiusMult: 1, rareAssistAdd: 0, lightRadiusMult: 1 };
@@ -6753,6 +6754,8 @@ let gameMusicTimer = null;
 let gameMusicStep = 0;
 let adventureMusicTimer = null;
 let adventureMusicStep = 0;
+let eventsMusicTimer = null;
+let eventsMusicStep = 0;
 let homeAudioUnlocked = false;
 
 function formatTime(ms) {
@@ -7555,6 +7558,11 @@ function isAdventureMusicActive() {
   return false;
 }
 
+function isEventsMusicActive() {
+  if (playing) return false;
+  return Boolean(panelEvents && !panelEvents.hidden);
+}
+
 function updateMusicButton() {
   if (!btnToggleMusic) return;
   btnToggleMusic.setAttribute("aria-pressed", musicEnabled ? "true" : "false");
@@ -7865,7 +7873,7 @@ function syncMusicMasterGain() {
 }
 
 function scheduleSailingMusicBar() {
-  if (!musicCtx || !musicEnabled || playing) return;
+  if (!musicCtx || !musicEnabled || playing || isEventsMusicActive()) return;
   const now = musicCtx.currentTime + 0.04;
   const v = HOME_MUSIC_VOLUME_BOOST;
   // Original soft yacht-rock radio bed: smooth major-7/add-9 colors, not a cover melody.
@@ -7973,6 +7981,40 @@ function reefMusicSpec(reefId) {
 }
 
 const ADVENTURE_PIRATE_TEMPO_MS = 700;
+const EVENTS_MUSIC_TEMPO_MS = 2600;
+const EVENTS_MUSIC_VOLUME_BOOST = isChromebookOrIPad() ? 4.5 : 1.6;
+
+function scheduleEventsLaidbackMusicBar() {
+  if (!musicCtx || !musicEnabled || !isEventsMusicActive()) return;
+  const now = musicCtx.currentTime + 0.04;
+  const v = EVENTS_MUSIC_VOLUME_BOOST;
+  const chords = [
+    [174.61, 220.0, 261.63, 329.63, 392.0],
+    [164.81, 196.0, 246.94, 293.66, 349.23],
+    [146.83, 185.0, 220.0, 277.18, 329.63],
+    [196.0, 246.94, 293.66, 369.99, 440.0],
+  ];
+  const chord = chords[eventsMusicStep % chords.length];
+  const bass = chord[0] / 2;
+  const sway = eventsMusicStep % 4;
+
+  playMusicNote(bass, now, 1.12, 0.036 * v, "sine");
+  playMusicNote(bass * 1.5, now + 1.18, 0.58, 0.017 * v, "sine");
+  for (let i = 0; i < 4; i++) {
+    playMusicNote(chord[i], now + i * 0.055, 2.05, 0.01 * v, "sine");
+    playMusicNote(chord[i] * 1.002, now + i * 0.055, 2.05, 0.0045 * v, "triangle");
+  }
+  if (sway % 2 === 0) {
+    playMusicNote(chord[3], now + 0.68, 0.48, 0.013 * v, "triangle");
+    playMusicNote((chord[4] || chord[3] * 1.25), now + 1.08, 0.4, 0.011 * v, "sine");
+  }
+  if (eventsMusicStep % 3 === 1) {
+    playMusicNote(chord[2] * 2, now + 0.44, 0.3, 0.0085 * v, "sine");
+  }
+  playNoiseHit(now + 0.76, 0.12, 0.0035 * v);
+  playNoiseHit(now + 1.72, 0.15, 0.0045 * v);
+  eventsMusicStep++;
+}
 
 function scheduleAdventurePirateMusicBar() {
   if (!musicCtx || !musicEnabled || !isAdventureMusicActive()) return;
@@ -8015,12 +8057,39 @@ function scheduleAdventurePirateMusicBar() {
   adventureMusicStep++;
 }
 
+function startEventsMusic() {
+  if (!musicEnabled || !isEventsMusicActive()) return;
+  void resumeMusicContext().then((ac) => {
+    if (!ac || !musicEnabled || !isEventsMusicActive()) return;
+    homeAudioUnlocked = true;
+    stopHomeMusic();
+    stopAdventureMusic();
+    stopReefMusic();
+    syncMusicMasterGain();
+    if (eventsMusicTimer) {
+      clearInterval(eventsMusicTimer);
+      eventsMusicTimer = null;
+    }
+    eventsMusicStep = 0;
+    scheduleEventsLaidbackMusicBar();
+    eventsMusicTimer = setInterval(scheduleEventsLaidbackMusicBar, EVENTS_MUSIC_TEMPO_MS);
+  });
+}
+
+function stopEventsMusic() {
+  if (eventsMusicTimer) {
+    clearInterval(eventsMusicTimer);
+    eventsMusicTimer = null;
+  }
+}
+
 function startAdventureMusic() {
   if (!musicEnabled || !isAdventureMusicActive()) return;
   void resumeMusicContext().then((ac) => {
     if (!ac || !musicEnabled || !isAdventureMusicActive()) return;
     homeAudioUnlocked = true;
     stopHomeMusic();
+    stopEventsMusic();
     stopReefMusic();
     syncMusicMasterGain();
     if (adventureMusicTimer) {
@@ -8095,10 +8164,11 @@ function startHomeWaves() {
 }
 
 function startHomeMusic() {
-  if (!musicEnabled || playing || isAdventureMusicActive()) return;
+  if (!musicEnabled || playing || isAdventureMusicActive() || isEventsMusicActive()) return;
   void resumeMusicContext().then((ac) => {
-    if (!ac || !musicEnabled || playing || isAdventureMusicActive()) return;
+    if (!ac || !musicEnabled || playing || isAdventureMusicActive() || isEventsMusicActive()) return;
     homeAudioUnlocked = true;
+    stopEventsMusic();
     syncMusicMasterGain();
     if (musicTimer) {
       clearInterval(musicTimer);
@@ -8119,6 +8189,7 @@ function stopHomeMusic() {
 
 function stopHomeAudio() {
   stopHomeMusic();
+  stopEventsMusic();
   stopReefMusic();
   stopAdventureMusic();
 }
@@ -8129,6 +8200,7 @@ async function toggleHomeMusic() {
   if (!musicEnabled) {
     syncMusicMasterGain();
     stopHomeMusic();
+    stopEventsMusic();
     stopAdventureMusic();
     stopReefMusic();
     return;
@@ -8148,6 +8220,8 @@ async function toggleHomeMusic() {
     else startReefMusic();
   } else if (isAdventureMusicActive()) {
     startAdventureMusic();
+  } else if (isEventsMusicActive()) {
+    startEventsMusic();
   } else {
     startHomeMusic();
   }
@@ -8157,7 +8231,10 @@ function unlockHomeAudio() {
   void resumeMusicContext().then((ac) => {
     if (!ac) return;
     homeAudioUnlocked = true;
-    if (!playing && musicEnabled) startHomeMusic();
+    if (!playing && musicEnabled) {
+      if (isEventsMusicActive()) startEventsMusic();
+      else if (!isAdventureMusicActive()) startHomeMusic();
+    }
   });
 }
 
@@ -8397,6 +8474,7 @@ function openEvents() {
   syncHomeLaunchButtons();
   void processDailyPrizePayouts().then(() => refreshEventsPanel());
   startDailyEventCountdown();
+  if (musicEnabled) startEventsMusic();
 }
 
 function closeEvents() {
@@ -8413,6 +8491,8 @@ function closeEvents() {
   appRoot?.classList.remove("app--events-mode");
   stopDailyEventCountdown();
   syncHomeLaunchButtons();
+  stopEventsMusic();
+  if (musicEnabled) startHomeMusic();
   window.setTimeout(tryStartDailyPrizeCelebration, 300);
 }
 
@@ -8602,6 +8682,7 @@ function startRound() {
   playing = true;
   normalizeSelectedRod();
   stopHomeMusic();
+  stopEventsMusic();
   syncMusicMasterGain();
   startHomeWaves();
   normalizeSelectedBaitId();
