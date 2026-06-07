@@ -2654,6 +2654,49 @@ body {
   color: var(--text);
 }
 
+.duel-lobby-countdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin: 0 0 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(6, 20, 36, 0.55);
+  border: 1px solid rgba(94, 234, 212, 0.35);
+  box-shadow: 0 0 24px rgba(45, 212, 191, 0.12);
+}
+
+.duel-lobby-countdown[hidden] {
+  display: none;
+}
+
+.duel-lobby-countdown__label {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.duel-lobby-countdown__time {
+  margin: 0;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(2.4rem, 10vw, 3.2rem);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 18px rgba(45, 212, 191, 0.45);
+}
+
+.duel-lobby-countdown__unit {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
 .event-card__status {
   color: var(--neon-cyan);
   animation: eventCardStatusPulse 1.4s ease-in-out infinite;

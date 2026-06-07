@@ -5434,7 +5434,7 @@ const DUEL_ROUND_MS = 60_000;
 const DUEL_RIVAL_MIN_TARGET = 4000;
 const DUEL_MATCH_TABLE_URL = `${SUPABASE_REST_URL}/duel_matches`;
 const DUEL_CLIENT_ID_KEY = "reefRushDuelClientId_v1";
-const DUEL_LOBBY_TIMEOUT_MS = 22_000;
+const DUEL_LOBBY_TIMEOUT_MS = 15_000;
 const DUEL_LOBBY_POLL_MS = 1200;
 const DUEL_SCORE_SYNC_MS = 650;
 const DUEL_OPPONENT_POLL_MS = 750;
@@ -5687,8 +5687,45 @@ async function finishDuelMatchOnServer() {
   }
 }
 
+let duelLobbyCountdownTimer = null;
+
+function updateDuelLobbyCountdown(secondsLeft, label = "Rival joins in") {
+  if (!duelLobbyCountdown) return;
+  duelLobbyCountdown.hidden = false;
+  duelLobbyCountdown.setAttribute("aria-hidden", "false");
+  if (duelLobbyCountdownLabel) duelLobbyCountdownLabel.textContent = label;
+  if (duelLobbyCountdownValue) {
+    duelLobbyCountdownValue.textContent = String(Math.max(0, Math.ceil(secondsLeft)));
+  }
+}
+
+function hideDuelLobbyCountdown() {
+  if (duelLobbyCountdownTimer) {
+    clearInterval(duelLobbyCountdownTimer);
+    duelLobbyCountdownTimer = null;
+  }
+  if (!duelLobbyCountdown) return;
+  duelLobbyCountdown.hidden = true;
+  duelLobbyCountdown.setAttribute("aria-hidden", "true");
+}
+
+function startDuelLobbyCountdown(deadlineMs, label = "Rival joins in") {
+  hideDuelLobbyCountdown();
+  const tick = () => {
+    const secsLeft = Math.max(0, (deadlineMs - Date.now()) / 1000);
+    updateDuelLobbyCountdown(secsLeft, label);
+    if (secsLeft <= 0 && duelLobbyCountdownTimer) {
+      clearInterval(duelLobbyCountdownTimer);
+      duelLobbyCountdownTimer = null;
+    }
+  };
+  tick();
+  duelLobbyCountdownTimer = setInterval(tick, 250);
+}
+
 function setDuelMatchmakingUi(active, message = "") {
   duelMatchmakingActive = active;
+  if (!active) hideDuelLobbyCountdown();
   if (duelEventStatus) {
     duelEventStatus.hidden = !active || !message;
     duelEventStatus.textContent = message;
@@ -5718,23 +5755,26 @@ async function findDuelMatchOnline(roundMs) {
 
   const reefId = pickRandomDuelReefId(duelLastReefId);
   duelPendingReefId = reefId;
-  setDuelMatchmakingUi(true, "Waiting in the duel lobby for a rival…");
+  const deadline = Date.now() + DUEL_LOBBY_TIMEOUT_MS;
+  setDuelMatchmakingUi(true, "Your lobby is open — waiting for a real rival…");
+  startDuelLobbyCountdown(deadline, "Rival joins in");
   const created = await createDuelLobby(reefId, roundMs);
   if (!created?.matchId) throw new Error("Duel lobby missing id");
   duelLobbyMatchId = created.matchId;
 
-  const deadline = Date.now() + DUEL_LOBBY_TIMEOUT_MS;
   while (Date.now() < deadline) {
     if (!duelMatchmakingActive) throw new Error("Duel matchmaking cancelled");
     await duelSleep(DUEL_LOBBY_POLL_MS);
     const row = await fetchDuelMatchById(created.matchId);
     if (!row || row.status === "cancelled") throw new Error("Duel lobby cancelled");
     if (row.guestClientId || row.isComGuest) {
+      hideDuelLobbyCountdown();
       duelLobbyMatchId = null;
       return duelPlanFromMatch(row, "host");
     }
   }
 
+  hideDuelLobbyCountdown();
   setDuelMatchmakingUi(true, "No rival found — facing COM…");
   const comRow = await activateComDuelGuest(created.matchId);
   duelLobbyMatchId = null;
@@ -6624,6 +6664,9 @@ const dailyEventReset = document.getElementById("dailyEventReset");
 const dailyEventPlayerHint = document.getElementById("dailyEventPlayerHint");
 const duelEventMatchup = document.getElementById("duelEventMatchup");
 const duelEventStatus = document.getElementById("duelEventStatus");
+const duelLobbyCountdown = document.getElementById("duelLobbyCountdown");
+const duelLobbyCountdownLabel = document.getElementById("duelLobbyCountdownLabel");
+const duelLobbyCountdownValue = document.getElementById("duelLobbyCountdownValue");
 const duelEventReef = document.getElementById("duelEventReef");
 const duelEventTickets = document.getElementById("duelEventTickets");
 const eventsTicketCount = document.getElementById("eventsTicketCount");
