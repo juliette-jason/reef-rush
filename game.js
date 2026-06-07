@@ -6312,7 +6312,8 @@ function beginDuelSession(plan) {
   spawnAcc = 0;
   nextSpawnIn = rollNextSpawnDelay(reef, true);
   seedStarterFish(reef);
-  const roundStart = Math.max(performance.now(), plan.roundStartMs || performance.now());
+  // plan.roundStartMs is wall-clock (Date.now); game loop uses performance.now().
+  const roundStart = performance.now();
   duelSession.roundStart = roundStart;
   roundEndAt = roundStart + DUEL_ROUND_MS;
   kraken = null;
