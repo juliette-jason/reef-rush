@@ -5808,10 +5808,11 @@ async function pollDuelOpponentFromMatch() {
   }
 }
 
-async function finishDuelMatchOnServer() {
-  if (!duelSession?.matchId) return;
+async function finishDuelMatchOnServer(session, finalScore) {
+  if (!session?.matchId || session.mode !== "pvp" || !session.role) return;
+  const scoreField = session.role === "host" ? "host_score" : "guest_score";
   try {
-    await fetch(`${DUEL_MATCH_TABLE_URL}?id=eq.${encodeURIComponent(duelSession.matchId)}`, {
+    await fetch(`${DUEL_MATCH_TABLE_URL}?id=eq.${encodeURIComponent(session.matchId)}`, {
       method: "PATCH",
       headers: leaderboardHeaders({
         "Content-Type": "application/json",
@@ -5819,13 +5820,34 @@ async function finishDuelMatchOnServer() {
       }),
       body: JSON.stringify({
         status: "finished",
-        host_score: duelSession.role === "host" ? score : duelSession.opponentScore,
-        guest_score: duelSession.role === "guest" ? score : duelSession.opponentScore,
+        [scoreField]: finalScore,
       }),
     });
   } catch (err) {
     console.warn(err);
   }
+}
+
+async function pushDuelMatchStateNow() {
+  if (duelSession) duelSession.lastStatePush = 0;
+  await pushDuelMatchState();
+}
+
+async function resolveDuelFinalScores(localPlayerScore, session) {
+  if (!session?.matchId || session.mode !== "pvp" || !session.role) {
+    return { playerScore: localPlayerScore, opponentScore: session?.opponentScore || 0 };
+  }
+  await pushDuelMatchStateNow();
+  await finishDuelMatchOnServer(session, localPlayerScore);
+
+  let opponentScore = session.opponentScore || 0;
+  for (let i = 0; i < 5; i++) {
+    if (i > 0) await duelSleep(250);
+    const row = await fetchDuelMatchById(session.matchId);
+    if (!row) continue;
+    opponentScore = session.role === "host" ? row.guestScore : row.hostScore;
+  }
+  return { playerScore: localPlayerScore, opponentScore };
 }
 
 let duelLobbyCountdownTimer = null;
@@ -6656,36 +6678,61 @@ function startDuelRound() {
   void startDuelFromEvents();
 }
 
+let duelResultSettling = false;
+
 function endDuelRound() {
-  const playerScore = score;
-  const opponentScore = duelSession?.opponentScore || 0;
-  const targetScore = duelSession?.targetScore || 0;
+  void endDuelRoundAsync();
+}
+
+async function endDuelRoundAsync() {
+  const session = duelSession;
+  if (!session || duelResultSettling) return;
+  duelResultSettling = true;
+
+  const localPlayerScore = score;
+  const targetScore = session.targetScore || 0;
   const reefName = getReef().name;
   const rivalName = getDuelOpponentDisplayName();
-  const won = playerScore > opponentScore;
-  const isPvp = isDuelPvpSession();
-  const matchId = duelSession?.matchId;
-
-  if (isPvp && matchId) {
-    void pushDuelMatchState();
-    void finishDuelMatchOnServer();
-  }
+  const isPvp = session.mode === "pvp";
 
   playing = false;
   stopReefMusic();
   appRoot.classList.remove("app--playing", "app--duel");
   hideDuelHud();
-  duelSession = null;
   hook.castState = "idle";
   touchAim = null;
 
   if (panelDuelOver) panelDuelOver.hidden = false;
+  if (duelOverHeadline) duelOverHeadline.textContent = "Duel complete";
+  if (duelOverScores) duelOverScores.textContent = isPvp ? "Tallying final scores…" : `You ${localPlayerScore} · Rival ${session.opponentScore || 0}`;
+  if (duelOverDetail) {
+    duelOverDetail.textContent = isPvp ? "Syncing scores with your rival…" : `${reefName} · rival target ${targetScore.toLocaleString()} pts`;
+  }
+  if (duelOverPrize) {
+    duelOverPrize.hidden = true;
+    duelOverPrize.textContent = "";
+  }
+
+  let playerScore = localPlayerScore;
+  let opponentScore = session.opponentScore || 0;
+  if (isPvp && session.matchId) {
+    const resolved = await resolveDuelFinalScores(localPlayerScore, session);
+    playerScore = resolved.playerScore;
+    opponentScore = resolved.opponentScore;
+  }
+
+  duelSession = null;
+  duelResultSettling = false;
+
+  const won = playerScore > opponentScore;
+  const tie = playerScore === opponentScore;
+
   if (duelOverHeadline) {
     duelOverHeadline.textContent = won
       ? isPvp
         ? `You beat ${rivalName}!`
         : "You win the duel!"
-      : playerScore === opponentScore
+      : tie
         ? "It's a tie!"
         : isPvp
           ? `${rivalName} wins`
