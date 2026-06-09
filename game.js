@@ -5468,8 +5468,9 @@ const DUEL_CLIENT_ID_KEY = "reefRushDuelClientId_v1";
 const DUEL_LOBBY_TIMEOUT_MS = 20_000;
 const DUEL_LOBBY_POLL_MS = 900;
 const DUEL_LOBBY_CREATE_GRACE_MS = 1_200;
-const DUEL_SCORE_SYNC_MS = 650;
-const DUEL_OPPONENT_POLL_MS = 750;
+const DUEL_SCORE_SYNC_MS = 400;
+const DUEL_STATE_SYNC_MS = 220;
+const DUEL_OPPONENT_POLL_MS = 350;
 const DUEL_MATCH_START_DELAY_MS = 4000;
 const DUEL_LOBBY_MAX_AGE_MS = 120_000;
 /** null during classic/adventure play; set for split-screen duel fishing. */
@@ -5480,8 +5481,47 @@ let duelPendingReefId = null;
 let duelLastReefId = null;
 /** Rival score target rolled for the next duel (4000 … player best). */
 let duelPendingTargetScore = DUEL_RIVAL_MIN_TARGET;
-let duelMatchmakingActive = false;
+let duelHookSyncEnabled = true;
+
+function duelHookCastCode(castState) {
+  if (castState === "down") return 1;
+  if (castState === "up") return 2;
+  return 0;
+}
+
+function duelHookCastFromCode(code) {
+  if (code === 1) return "down";
+  if (code === 2) return "up";
+  return "idle";
+}
+
+function duelLocalHookXPct(localX) {
+  const half = duelHalfW();
+  return half > 0 ? Math.max(0, Math.min(1, localX / half)) : 0.5;
+}
+
+function duelLocalHookYPct(tipY) {
+  const span = Math.max(1, waterH - dpr * 80);
+  return Math.max(0, Math.min(1, (tipY - waterTop) / span));
+}
+
+function duelHookYFromPct(yPct) {
+  const span = Math.max(1, waterH - dpr * 80);
+  return waterTop + Math.max(0, Math.min(1, yPct)) * span;
+}
+
+function duelHookFieldsFromRow(row) {
+  return {
+    hostHookX: Number(row.host_hook_x_pct ?? row.hostHookX ?? 0.5),
+    hostHookY: Number(row.host_hook_y_pct ?? row.hostHookY ?? 0.08),
+    hostHookCast: Number(row.host_hook_cast ?? row.hostHookCast ?? 0),
+    guestHookX: Number(row.guest_hook_x_pct ?? row.guestHookX ?? 0.5),
+    guestHookY: Number(row.guest_hook_y_pct ?? row.guestHookY ?? 0.08),
+    guestHookCast: Number(row.guest_hook_cast ?? row.guestHookCast ?? 0),
+  };
+}
 let duelLobbyMatchId = null;
+let duelMatchmakingActive = false;
 
 function duelSleep(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
@@ -5549,6 +5589,7 @@ function normalizeDuelMatchRow(row) {
     roundMs: DUEL_ROUND_MS,
     isComGuest: Boolean(row.is_com_guest ?? row.isComGuest),
     status: row.status || "lobby",
+    ...duelHookFieldsFromRow(row),
   };
 }
 
@@ -5697,24 +5738,47 @@ async function cancelDuelLobbyIfHost(matchId) {
   }
 }
 
-async function pushDuelMatchScore() {
+async function pushDuelMatchState() {
   if (!duelSession?.matchId || duelSession.mode !== "pvp" || !duelSession.role) return;
-  const field = duelSession.role === "host" ? "host_score" : "guest_score";
+  const scoreField = duelSession.role === "host" ? "host_score" : "guest_score";
+  const payload = { [scoreField]: score };
+  if (duelHookSyncEnabled) {
+    const xField = duelSession.role === "host" ? "host_hook_x_pct" : "guest_hook_x_pct";
+    const yField = duelSession.role === "host" ? "host_hook_y_pct" : "guest_hook_y_pct";
+    const castField = duelSession.role === "host" ? "host_hook_cast" : "guest_hook_cast";
+    payload[xField] = duelLocalHookXPct(hook.x);
+    payload[yField] = duelLocalHookYPct(hook.tipY);
+    payload[castField] = duelHookCastCode(hook.castState);
+  }
   try {
-    await fetch(`${DUEL_MATCH_TABLE_URL}?id=eq.${encodeURIComponent(duelSession.matchId)}`, {
+    const res = await fetch(`${DUEL_MATCH_TABLE_URL}?id=eq.${encodeURIComponent(duelSession.matchId)}`, {
       method: "PATCH",
       headers: leaderboardHeaders({
         "Content-Type": "application/json",
         Prefer: "return=minimal",
       }),
-      body: JSON.stringify({ [field]: score }),
+      body: JSON.stringify(payload),
     });
+    if (!res.ok && duelHookSyncEnabled && Object.keys(payload).length > 1) {
+      const errText = await res.text();
+      if (errText.includes("hook") || errText.includes("PGRST204")) {
+        duelHookSyncEnabled = false;
+        await fetch(`${DUEL_MATCH_TABLE_URL}?id=eq.${encodeURIComponent(duelSession.matchId)}`, {
+          method: "PATCH",
+          headers: leaderboardHeaders({
+            "Content-Type": "application/json",
+            Prefer: "return=minimal",
+          }),
+          body: JSON.stringify({ [scoreField]: score }),
+        });
+      }
+    }
   } catch (err) {
     console.warn(err);
   }
 }
 
-async function pollDuelOpponentScoreFromMatch() {
+async function pollDuelOpponentFromMatch() {
   if (!duelSession?.matchId || duelSession.mode !== "pvp" || !duelSession.role) return;
   try {
     const row = await fetchDuelMatchById(duelSession.matchId);
@@ -5722,6 +5786,9 @@ async function pollDuelOpponentScoreFromMatch() {
     const opp = duelSession.role === "host" ? row.guestScore : row.hostScore;
     const oppIni = duelOpponentInitialsFromRow(row, duelSession.role);
     let hudDirty = false;
+    if (opp > duelSession.opponentScore) {
+      duelSession.opponentHook.snagPulse = Math.max(duelSession.opponentHook.snagPulse, 300);
+    }
     if (opp !== duelSession.opponentScore) {
       duelSession.opponentScore = opp;
       hudDirty = true;
@@ -5730,7 +5797,12 @@ async function pollDuelOpponentScoreFromMatch() {
       duelSession.opponentInitials = oppIni;
       hudDirty = true;
     }
-    if (hudDirty) updateDuelHudScores();
+    const remote =
+      duelSession.role === "host"
+        ? { xPct: row.guestHookX, yPct: row.guestHookY, cast: row.guestHookCast }
+        : { xPct: row.hostHookX, yPct: row.hostHookY, cast: row.hostHookCast };
+    duelSession.remoteHook = remote;
+    if (hudDirty) updateDuelHudScores(false);
   } catch (err) {
     console.warn(err);
   }
@@ -5910,12 +5982,16 @@ async function resolveDuelMatchPlan(deadlineMs) {
   }
 }
 
-function scheduleDuelScoreSync() {
+function scheduleDuelStateSync(force = false) {
   if (!isDuelPvpSession() || !duelSession) return;
   const now = performance.now();
-  if (now - (duelSession.lastScorePush || 0) < DUEL_SCORE_SYNC_MS) return;
-  duelSession.lastScorePush = now;
-  void pushDuelMatchScore();
+  if (!force && now - (duelSession.lastStatePush || 0) < DUEL_STATE_SYNC_MS) return;
+  duelSession.lastStatePush = now;
+  void pushDuelMatchState();
+}
+
+function scheduleDuelScoreSync() {
+  scheduleDuelStateSync(true);
 }
 
 function updateDuelHudLabels() {
@@ -6073,12 +6149,13 @@ function refreshDuelEventCard() {
   }
 }
 
-function updateDuelHudScores() {
+function updateDuelHudScores(syncState = true) {
   if (!duelHud || !duelHudPlayerScore || !duelHudOpponentScore) return;
   duelHudPlayerScore.textContent = String(score);
   duelHudOpponentScore.textContent = String(duelSession?.opponentScore || 0);
+  if (scoreDisplay && isDuelActive()) scoreDisplay.textContent = String(score);
   updateDuelHudLabels();
-  scheduleDuelScoreSync();
+  if (syncState) scheduleDuelScoreSync();
 }
 
 function showDuelHud() {
@@ -6266,30 +6343,50 @@ function updateOpponentHook(dt) {
   if (oh.snagPulse > 0) oh.snagPulse -= dt;
 }
 
+function lerpRemoteOpponentHook(dt) {
+  if (!duelSession?.remoteHook) return;
+  const oh = duelSession.opponentHook;
+  const half = duelHalfW();
+  const tx = duelSession.remoteHook.xPct * half;
+  const ty = duelHookYFromPct(duelSession.remoteHook.yPct);
+  const k = Math.min(1, dt / 110);
+  oh.x += (tx - oh.x) * k;
+  oh.targetX = tx;
+  oh.tipY += (ty - oh.tipY) * k;
+  oh.castState = duelHookCastFromCode(duelSession.remoteHook.cast);
+}
+
 function updateDuelOpponentVisuals(dt) {
   if (!duelSession) return;
-  duelSession.opponentSpawnAcc += dt;
   const reef = getReef();
   const maxFish = Math.max(5, Math.floor(reef.maxFish * 0.55));
+
+  if (isDuelPvpSession()) {
+    const t = performance.now();
+    if (t - (duelSession.lastOpponentPoll || 0) >= DUEL_OPPONENT_POLL_MS) {
+      duelSession.lastOpponentPoll = t;
+      void pollDuelOpponentFromMatch();
+    }
+    duelSession.opponentSpawnAcc += dt;
+    if (duelSession.opponentSpawnAcc >= duelSession.opponentNextSpawn && countUncaughtOpponentFish() < maxFish) {
+      spawnFishInDuelHalf("opponent");
+      duelSession.opponentSpawnAcc = 0;
+      duelSession.opponentNextSpawn = rollNextSpawnDelay(reef);
+    }
+    updateOpponentFish(dt);
+    lerpRemoteOpponentHook(dt);
+    const oh = duelSession.opponentHook;
+    if (oh.snagPulse > 0) oh.snagPulse -= dt;
+    return;
+  }
+
+  duelSession.opponentSpawnAcc += dt;
   if (duelSession.opponentSpawnAcc >= duelSession.opponentNextSpawn && countUncaughtOpponentFish() < maxFish) {
     spawnFishInDuelHalf("opponent");
     duelSession.opponentSpawnAcc = 0;
     duelSession.opponentNextSpawn = rollNextSpawnDelay(reef);
   }
   updateOpponentFish(dt);
-
-  if (isDuelPvpSession()) {
-    const t = performance.now();
-    if (t - (duelSession.lastOpponentPoll || 0) >= DUEL_OPPONENT_POLL_MS) {
-      duelSession.lastOpponentPoll = t;
-      void pollDuelOpponentScoreFromMatch();
-    }
-    const oh = duelSession.opponentHook;
-    oh.tipY = surfaceTipY() + Math.sin(t / 900) * dpr * 4;
-    oh.x += Math.sin(t / 1400) * dpr * 0.08;
-    return;
-  }
-
   updateOpponentHook(dt);
   boostOpponentIfBehind(performance.now());
 }
@@ -6438,8 +6535,9 @@ function beginDuelSession(plan) {
     opponentNextSpawn: rollNextSpawnDelay(reef, true),
     roundStart: 0,
     pacingBias: 0.93 + Math.random() * 0.1,
-    lastScorePush: 0,
+    lastStatePush: 0,
     lastOpponentPoll: 0,
+    remoteHook: { xPct: 0.5, yPct: 0.08, cast: 0 },
   };
 
   playing = true;
@@ -6496,7 +6594,10 @@ function beginDuelSession(plan) {
   updateDuelHudScores();
   startReefMusic();
   refreshDuelEventCard();
-  if (duelSession.mode === "pvp") void pushDuelMatchScore();
+  if (duelSession.mode === "pvp") {
+    void pollDuelOpponentFromMatch();
+    void pushDuelMatchState();
+  }
 }
 
 async function startDuelFromEvents() {
@@ -6566,7 +6667,7 @@ function endDuelRound() {
   const matchId = duelSession?.matchId;
 
   if (isPvp && matchId) {
-    void pushDuelMatchScore();
+    void pushDuelMatchState();
     void finishDuelMatchOnServer();
   }
 
@@ -12438,7 +12539,10 @@ function gameLoop(now) {
         }
         updateFish(dt);
         updateHook(dt);
-        if (isDuelActive()) updateDuelOpponent(dt, now);
+        if (isDuelActive()) {
+          updateDuelOpponent(dt, now);
+          if (isDuelPvpSession()) scheduleDuelStateSync();
+        }
       }
       if (isDuelActive()) {
         drawDuelPlayfield();

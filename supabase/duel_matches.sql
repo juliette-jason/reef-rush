@@ -14,6 +14,12 @@ create table if not exists public.duel_matches (
   round_ms integer not null default 60000,
   is_com_guest boolean not null default false,
   status text not null default 'lobby',
+  host_hook_x_pct real not null default 0.5,
+  host_hook_y_pct real not null default 0.08,
+  host_hook_cast smallint not null default 0,
+  guest_hook_x_pct real not null default 0.5,
+  guest_hook_y_pct real not null default 0.08,
+  guest_hook_cast smallint not null default 0,
   created_at timestamptz not null default now()
 );
 
