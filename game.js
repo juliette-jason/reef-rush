@@ -5125,7 +5125,8 @@ async function submitDailyScore(initials, score, reefId) {
 
   const dayKey = getDailyDayKey();
   const localRows = normalizeDailyLeaderboardRows(loadLocalDailyLeaderboard(dayKey));
-  const existing = localRows.find((r) => r.initials === ini);
+  const existing =
+    getPlayerDailyEntryToday(ini, dailyLeaderboardRows) || localRows.find((r) => r.initials === ini);
   if (existing && existing.score >= pts) return false;
 
   const entry = { initials: ini, score: pts, reefId: reefId || "", at: Date.now(), dayKey };
@@ -5135,21 +5136,49 @@ async function submitDailyScore(initials, score, reefId) {
   renderAllDailyLeaderboards(merged);
   updateDailyEventPlayerHint(merged);
 
+  const payload = {
+    initials: entry.initials,
+    score: entry.score,
+    reef_id: entry.reefId,
+    day_key: dayKey,
+  };
+
   try {
-    const res = await fetch(DAILY_LEADERBOARD_TABLE_URL, {
+    const patchUrl = `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&initials=eq.${encodeURIComponent(ini)}&score=lt.${pts}`;
+    const patchRes = await fetch(patchUrl, {
+      method: "PATCH",
+      headers: leaderboardHeaders({
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      }),
+      body: JSON.stringify({
+        score: entry.score,
+        reef_id: entry.reefId,
+      }),
+    });
+    if (patchRes.ok) {
+      const updated = await patchRes.json();
+      if (Array.isArray(updated) && updated.length > 0) {
+        await fetchTodayDailyLeaderboard();
+        return true;
+      }
+    } else if (!patchRes.ok && patchRes.status !== 404) {
+      throw new Error(`Daily leaderboard update failed: ${patchRes.status}`);
+    }
+
+    const postRes = await fetch(DAILY_LEADERBOARD_TABLE_URL, {
       method: "POST",
       headers: leaderboardHeaders({
         "Content-Type": "application/json",
         Prefer: "return=minimal",
       }),
-      body: JSON.stringify({
-        initials: entry.initials,
-        score: entry.score,
-        reef_id: entry.reefId,
-        day_key: dayKey,
-      }),
+      body: JSON.stringify(payload),
     });
-    if (!res.ok) throw new Error(`Daily leaderboard save failed: ${res.status}`);
+    if (postRes.status === 409) {
+      await fetchTodayDailyLeaderboard();
+      return false;
+    }
+    if (!postRes.ok) throw new Error(`Daily leaderboard save failed: ${postRes.status}`);
     await fetchTodayDailyLeaderboard();
     return true;
   } catch (err) {
@@ -5277,7 +5306,12 @@ function stopDailyEventCountdown() {
 function startDailyEventCountdown() {
   stopDailyEventCountdown();
   updateDailyEventResetLine();
-  dailyEventCountdownTimer = window.setInterval(updateDailyEventResetLine, 30000);
+  dailyEventCountdownTimer = window.setInterval(() => {
+    updateDailyEventResetLine();
+    if (panelEvents && !panelEvents.hidden) {
+      void fetchTodayDailyLeaderboard().then((rows) => updateDailyEventPlayerHint(rows));
+    }
+  }, 30000);
 }
 
 async function processDailyPrizePayouts() {
