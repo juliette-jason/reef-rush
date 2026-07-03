@@ -2150,6 +2150,7 @@ body {
   pointer-events: none;
 }
 
+.home-launch-stack > .shop-launch,
 .home-launch-stack > .adventure-launch,
 .home-launch-stack > .events-launch {
   position: relative;
@@ -2157,6 +2158,33 @@ body {
   bottom: auto;
   width: 100%;
   pointer-events: auto;
+}
+
+.shop-launch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(94, 234, 212, 0.5);
+  background: linear-gradient(180deg, rgba(15, 94, 78, 0.96), rgba(6, 44, 40, 0.98));
+  color: #eafff8;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.42), 0 0 16px rgba(45, 212, 191, 0.18);
+}
+
+.shop-launch:hover {
+  filter: brightness(1.08);
+}
+
+.shop-launch__icon {
+  font-size: 1rem;
+  color: #ffd54a;
+  text-shadow: 0 0 8px rgba(255, 213, 74, 0.55);
 }
 
 .events-launch {
@@ -2822,7 +2850,8 @@ body {
   }
 
   .home-launch-stack .events-launch,
-  .home-launch-stack .adventure-launch {
+  .home-launch-stack .adventure-launch,
+  .home-launch-stack .shop-launch {
     padding: 10px 14px;
     font-size: 1.05rem;
   }

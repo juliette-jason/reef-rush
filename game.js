@@ -6938,6 +6938,7 @@ const shopList = document.getElementById("shopList");
 const shopGuide = document.getElementById("shopGuide");
 const btnOpenShopGuide = document.getElementById("btnOpenShopGuide");
 const btnOpenShop = document.getElementById("btnOpenShop");
+const btnShopLaunch = document.getElementById("btnShopLaunch");
 const btnEvents = document.getElementById("btnEvents");
 const homeLaunchStack = document.getElementById("homeLaunchStack");
 const panelEvents = document.getElementById("panelEvents");
@@ -13675,6 +13676,7 @@ window.addEventListener("keydown", (e) => {
 btnStart.addEventListener("click", startRound);
 
 btnOpenShop?.addEventListener("click", openShop);
+btnShopLaunch?.addEventListener("click", openShop);
 btnEvents?.addEventListener("click", openEvents);
 btnCloseEvents?.addEventListener("click", closeEvents);
 btnStartDuel?.addEventListener("click", () => {
