@@ -3285,9 +3285,12 @@ body {
 
 .adventure-map-art .adv-map-lost-city {
   pointer-events: none;
+  /* Keep the sunken-city ruins art hidden until The Lost City is unlocked. */
+  display: none;
 }
 
 .adventure-map-board--lost-city-revealed .adv-map-lost-city {
+  display: inline;
   filter: drop-shadow(0 1px 0 rgba(46, 36, 24, 0.08));
 }
 
