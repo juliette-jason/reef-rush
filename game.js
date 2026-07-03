@@ -8919,10 +8919,12 @@ function closeEvents() {
    Self-contained minigame with its own canvas + animation loop.
    ========================================================================= */
 const CRAB_TRAP_DURATION_MS = 60_000;
+/** A low score (~20 crabs) yields common chests. */
+const CRAB_TRAP_LOW_SCORE = 20;
 /** Score >= this counts as a medium haul (better chests). */
-const CRAB_TRAP_MEDIUM_MIN = 6;
+const CRAB_TRAP_MEDIUM_MIN = 35;
 /** Score >= this counts as a great haul (rich chests with rods). */
-const CRAB_TRAP_GREAT_MIN = 13;
+const CRAB_TRAP_GREAT_MIN = 55;
 const CRAB_TRAP_MED_BAIT = ["nightcrawler", "shrimp", "glow_jelly", "squid_ink"];
 const CRAB_TRAP_GREAT_BAIT = ["squid_ink", "golden_chum", "glow_jelly"];
 
@@ -9568,12 +9570,12 @@ function crabTierForScore(scorePts) {
 
 function crabTierMessage(tier) {
   if (tier === "great") {
-    return "Incredible haul! These rich chests are stuffed with coins, bait, and maybe a new fishing rod.";
+    return `Incredible haul (${CRAB_TRAP_GREAT_MIN}+)! These rich chests are stuffed with coins, bait, and maybe a new fishing rod.`;
   }
   if (tier === "medium") {
-    return "Nice work! You earned better chests packed with more coins and bait.";
+    return `Nice work (${CRAB_TRAP_MEDIUM_MIN}+)! You earned better chests packed with more coins and bait. Trap ${CRAB_TRAP_GREAT_MIN}+ for the richest loot.`;
   }
-  return "A modest catch — just some common chests this time. Trap more crabs next round for richer loot!";
+  return `A modest catch (around ${CRAB_TRAP_LOW_SCORE}) — just some common chests this time. Trap ${CRAB_TRAP_MEDIUM_MIN}+ crabs next round for richer loot!`;
 }
 
 function crabPurchasableRods() {
