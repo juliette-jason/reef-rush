@@ -9070,7 +9070,7 @@ function updateCrabTrapHud() {
 function crabTrapAddCrab() {
   const s = crabTrapSession;
   if (!s) return;
-  const sc = (0.5 + Math.random() * 0.18) * crabTrapDpr;
+  const sc = (0.74 + Math.random() * 0.24) * crabTrapDpr;
   const fromLeft = Math.random() < 0.5;
   const bandTop = crabTrapH * 0.66;
   const bandBottom = crabTrapH * 0.85;
