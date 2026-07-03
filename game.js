@@ -7537,10 +7537,11 @@ function runAdventureMapSectionReveal(kind) {
     ?.querySelector(`.adventure-map-section[data-section="${kind}"]`)
     ?.classList.add("adventure-map-section--revealing");
   const nodes = adventureLevelList.querySelectorAll(".adventure-map-node");
-  nodes.forEach((node, i) => {
-    if (i < startIdx || i >= endIdx) return;
+  nodes.forEach((node) => {
+    const idx = Number(node.dataset.levelIndex);
+    if (idx < startIdx || idx >= endIdx) return;
     node.classList.add("adventure-map-node--section-reveal");
-    node.style.animationDelay = `${(i - startIdx) * 130}ms`;
+    node.style.animationDelay = `${(idx - startIdx) * 130}ms`;
   });
   window.setTimeout(() => scrollAdventureMapToSection(kind, false), 500);
   window.setTimeout(() => {
@@ -7560,10 +7561,8 @@ function runAdventureMapSectionReveal(kind) {
 }
 
 function adventureMapVisibleLevelCount() {
-  if (!isAdventureBonusUnlocked()) return ADVENTURE_MAIN_LEVEL_COUNT;
-  if (!isAdventureIceUnlocked()) return ADVENTURE_ICE_START_INDEX;
-  if (!isAdventureLostCityUnlocked()) return ADVENTURE_LOST_CITY_START_INDEX;
-  return ADVENTURE_LEVEL_COUNT;
+  const highest = gameMeta.adventureHighestLevel || 0;
+  return Math.min(ADVENTURE_LEVEL_COUNT, highest + 1);
 }
 
 function buildAdventureTrailPath() {
@@ -7603,7 +7602,8 @@ function syncAdventureMapNodeStates() {
   const highest = gameMeta.adventureHighestLevel || 0;
   const nextPlayable = Math.min(ADVENTURE_LEVEL_COUNT, highest + 1);
   const nodes = adventureLevelList.querySelectorAll(".adventure-map-node");
-  nodes.forEach((b, i) => {
+  nodes.forEach((b) => {
+    const i = Number(b.dataset.levelIndex);
     const lvl = ADVENTURE_LEVELS[i];
     if (!lvl) return;
     const playable = isAdventureLevelPlayable(lvl.level);
@@ -7647,10 +7647,10 @@ function buildAdventureLevelUI(force = false) {
 
   const frag = document.createDocumentFragment();
   for (let i = 0; i < ADVENTURE_LEVELS.length; i++) {
-    if (i >= ADVENTURE_LOST_CITY_START_INDEX && !lostCityRevealed) continue;
-    if (i >= ADVENTURE_ICE_START_INDEX && i < ADVENTURE_LOST_CITY_START_INDEX && !iceRevealed) continue;
-    if (i >= ADVENTURE_MAIN_LEVEL_COUNT && i < ADVENTURE_ICE_START_INDEX && !bonusRevealed) continue;
     const lvl = ADVENTURE_LEVELS[i];
+    // Hide voyages (and their lands) until the player has unlocked them —
+    // only cleared levels and the single next playable voyage appear.
+    if (!isAdventureLevelPlayable(lvl.level)) continue;
     const layout = ADVENTURE_MAP_NODE_LAYOUT[i] || { x: 50, y: 50 };
     const playable = isAdventureLevelPlayable(lvl.level);
     const cleared = lvl.level <= highest;
