@@ -9631,30 +9631,74 @@ function crabBundleRewardLines(bundle) {
   return lines;
 }
 
+let crabChestSvgSeq = 0;
+// Classic wooden pirate chest: domed barrel-top lid with plank lines, metal
+// reinforcement straps + rivets, a lock plate, and (when opened) gold coins
+// spilling over the rim. Metal + coin richness scale with the reward tier.
 function crabChestArtSvg(tier, opened) {
-  const palette =
+  const p =
     tier === "great"
-      ? { body: "#b45309", lid: "#92400e", band: "#fcd34d", lock: "#fde047" }
+      ? { woodHi: "#a9702f", plank: "#7c4a1e", woodLo: "#4f2c10", metalHi: "#fde68a", metalLo: "#c8901f", stud: "#7a4d10" }
       : tier === "medium"
-        ? { body: "#94a3b8", lid: "#64748b", band: "#e2e8f0", lock: "#f8fafc" }
-        : { body: "#6b7280", lid: "#4b5563", band: "#9ca3af", lock: "#cbd5e1" };
+        ? { woodHi: "#8a5a2b", plank: "#6b3f1c", woodLo: "#432711", metalHi: "#e6c58c", metalLo: "#9a6b2f", stud: "#5c3d18" }
+        : { woodHi: "#7a5a37", plank: "#5b4327", woodLo: "#362818", metalHi: "#b6bcc6", metalLo: "#4b5563", stud: "#2f363f" };
+  const uid = `cc${crabChestSvgSeq++}`;
+  const defs =
+    `<defs>` +
+    `<linearGradient id="${uid}w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${p.woodHi}"/><stop offset="1" stop-color="${p.woodLo}"/></linearGradient>` +
+    `<linearGradient id="${uid}l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${p.woodHi}"/><stop offset="0.55" stop-color="${p.plank}"/><stop offset="1" stop-color="${p.woodLo}"/></linearGradient>` +
+    `<linearGradient id="${uid}m" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${p.metalHi}"/><stop offset="1" stop-color="${p.metalLo}"/></linearGradient>` +
+    `<radialGradient id="${uid}g" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#fff6c8"/><stop offset="0.55" stop-color="#ffd34d" stop-opacity="0.9"/><stop offset="1" stop-color="#ffd34d" stop-opacity="0"/></radialGradient>` +
+    `</defs>`;
+  const strap = (sx, y0, y1) =>
+    `<rect x="${sx - 3}" y="${y0}" width="6" height="${y1 - y0}" rx="1.5" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.6"/>` +
+    `<circle cx="${sx}" cy="${y0 + 3}" r="1.05" fill="${p.stud}"/>` +
+    `<circle cx="${sx}" cy="${y1 - 3}" r="1.05" fill="${p.stud}"/>`;
+  const coin = (cx, cy, r) =>
+    `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#ffd94d" stroke="#c8901f" stroke-width="0.6"/>` +
+    `<circle cx="${cx - r * 0.32}" cy="${cy - r * 0.32}" r="${r * 0.34}" fill="#fff2b0"/>`;
+
   if (opened) {
-    return `<svg viewBox="0 0 64 56" width="56" height="49" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path d="M5 16 Q32 -2 59 16 L59 24 L5 24 Z" fill="${palette.lid}" transform="rotate(-14 32 20)" />
-      <rect x="6" y="26" width="52" height="24" rx="4" fill="${palette.body}" />
-      <rect x="6" y="26" width="52" height="5" fill="${palette.band}" />
-      <circle cx="20" cy="38" r="4" fill="#ffe27a" />
-      <circle cx="32" cy="34" r="5" fill="#fff2b0" />
-      <circle cx="44" cy="39" r="4" fill="#ffe27a" />
-      <path d="M32 20 l3 6 l-6 0 z" fill="#8ff0ff" />
+    const coins =
+      tier === "great"
+        ? [[20, 29, 4], [28, 26.5, 4.6], [36, 25.5, 5], [44, 26.5, 4.6], [52, 29, 4], [24, 33, 3.6], [33, 32, 4], [42, 32, 4], [49, 33.5, 3.4], [18, 36, 3], [55, 36, 3]]
+        : tier === "medium"
+          ? [[24, 29.5, 4], [32, 27.5, 4.5], [40, 28, 4.5], [48, 30, 4], [30, 33.5, 3.5], [43, 33.5, 3.5]]
+          : [[30, 30.5, 4], [38, 29.5, 4], [34, 34.5, 3.5]];
+    const gem = tier === "great" ? `<path d="M36 26 l3 4 -3 4 -3 -4 z" fill="#8ff0ff" stroke="#3bb4c9" stroke-width="0.5"/>` : "";
+    return `<svg viewBox="0 0 72 64" width="60" height="53" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      ${defs}
+      <ellipse cx="36" cy="60" rx="27" ry="3" fill="rgba(0,0,0,0.28)"/>
+      <g transform="rotate(-15 36 22) translate(0 -13)">
+        <path d="M6 29 C6 12 20 7 36 7 C52 7 66 12 66 29 Z" fill="url(#${uid}l)" stroke="${p.woodLo}" stroke-width="1"/>
+        <path d="M9 21 C18 14 54 14 63 21" stroke="${p.plank}" stroke-width="1" fill="none" opacity="0.5"/>
+        <rect x="5" y="25.5" width="62" height="4.5" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.4"/>
+        <rect x="18" y="8" width="6" height="21" fill="url(#${uid}m)"/>
+        <rect x="48" y="8" width="6" height="21" fill="url(#${uid}m)"/>
+      </g>
+      <ellipse cx="36" cy="31" rx="27" ry="12" fill="url(#${uid}g)"/>
+      <path d="M8 30 L64 30 L64 52 Q64 56 60 56 L12 56 Q8 56 8 52 Z" fill="url(#${uid}w)" stroke="${p.woodLo}" stroke-width="1"/>
+      <path d="M8 44 L64 44" stroke="${p.plank}" stroke-width="1" opacity="0.45"/>
+      <rect x="6" y="28" width="60" height="4.5" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.4"/>
+      ${strap(21, 32, 56)}${strap(51, 32, 56)}
+      ${coins.map((c) => coin(c[0], c[1], c[2])).join("")}
+      ${gem}
     </svg>`;
   }
-  return `<svg viewBox="0 0 64 56" width="56" height="49" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <path d="M6 24 Q32 6 58 24 L58 32 L6 32 Z" fill="${palette.lid}" />
-    <rect x="6" y="30" width="52" height="22" rx="4" fill="${palette.body}" />
-    <rect x="6" y="30" width="52" height="5" fill="${palette.band}" />
-    <rect x="29" y="24" width="6" height="28" fill="${palette.band}" />
-    <rect x="27" y="34" width="10" height="9" rx="2" fill="${palette.lock}" />
+
+  return `<svg viewBox="0 0 72 64" width="60" height="53" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    ${defs}
+    <ellipse cx="36" cy="60" rx="27" ry="3" fill="rgba(0,0,0,0.28)"/>
+    <path d="M8 28 L64 28 L64 52 Q64 56 60 56 L12 56 Q8 56 8 52 Z" fill="url(#${uid}w)" stroke="${p.woodLo}" stroke-width="1"/>
+    <path d="M8 40 L64 40" stroke="${p.plank}" stroke-width="1" opacity="0.55"/>
+    <path d="M8 48 L64 48" stroke="${p.plank}" stroke-width="1" opacity="0.4"/>
+    <path d="M6 29 C6 12 20 7 36 7 C52 7 66 12 66 29 Z" fill="url(#${uid}l)" stroke="${p.woodLo}" stroke-width="1"/>
+    <path d="M9 21 C18 14 54 14 63 21" stroke="${p.plank}" stroke-width="1" fill="none" opacity="0.5"/>
+    <rect x="6" y="26" width="60" height="4.5" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.4"/>
+    ${strap(21, 9, 56)}${strap(51, 9, 56)}
+    <rect x="31" y="31" width="10" height="13" rx="2" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.6"/>
+    <circle cx="36" cy="36" r="1.7" fill="${p.stud}"/>
+    <rect x="35.2" y="36.5" width="1.6" height="4" fill="${p.stud}"/>
   </svg>`;
 }
 
