@@ -8920,12 +8920,11 @@ function closeEvents() {
    ========================================================================= */
 const CRAB_TRAP_DURATION_MS = 60_000;
 /** Score >= this counts as a medium haul (better chests). */
-const CRAB_TRAP_MEDIUM_MIN = 9;
+const CRAB_TRAP_MEDIUM_MIN = 6;
 /** Score >= this counts as a great haul (rich chests with rods). */
-const CRAB_TRAP_GREAT_MIN = 20;
+const CRAB_TRAP_GREAT_MIN = 13;
 const CRAB_TRAP_MED_BAIT = ["nightcrawler", "shrimp", "glow_jelly", "squid_ink"];
 const CRAB_TRAP_GREAT_BAIT = ["squid_ink", "golden_chum", "glow_jelly"];
-const CRAB_TRAP_CRAB_HUES = [16, 28, 344, 46];
 
 let crabTrapSession = null;
 let crabTrapDpr = 1;
@@ -9071,20 +9070,22 @@ function updateCrabTrapHud() {
 function crabTrapAddCrab() {
   const s = crabTrapSession;
   if (!s) return;
-  const size = (22 + Math.random() * 12) * crabTrapDpr;
+  const sc = (0.5 + Math.random() * 0.18) * crabTrapDpr;
   const fromLeft = Math.random() < 0.5;
-  const bandTop = crabTrapH * 0.68;
-  const bandBottom = crabTrapH * 0.9;
+  const bandTop = crabTrapH * 0.66;
+  const bandBottom = crabTrapH * 0.85;
   const y = bandTop + Math.random() * Math.max(1, bandBottom - bandTop);
-  const speed = (56 + Math.random() * 82) * crabTrapDpr;
+  // Treasure crabs bolt across the sand — really fast.
+  const speed = (240 + Math.random() * 170) * crabTrapDpr;
+  const margin = sc * 60;
   s.crabs.push({
-    x: fromLeft ? -size : crabTrapW + size,
+    x: fromLeft ? -margin : crabTrapW + margin,
     y,
     baseY: y,
     vx: fromLeft ? speed : -speed,
-    size,
-    phase: Math.random() * Math.PI * 2,
-    hue: crabPick(CRAB_TRAP_CRAB_HUES),
+    facing: fromLeft ? 1 : -1,
+    sc,
+    legT: Math.random() * Math.PI * 2,
     trapped: false,
   });
 }
@@ -9095,10 +9096,10 @@ function crabTrapSpawn(now) {
   if (now - s.lastSpawnAt < s.nextSpawnIn) return;
   s.lastSpawnAt = now;
   const progress = Math.min(1, (now - s.startAt) / CRAB_TRAP_DURATION_MS);
-  const base = 430 - progress * 220;
-  s.nextSpawnIn = base * (0.7 + Math.random() * 0.6);
-  const count = Math.random() < 0.24 + progress * 0.3 ? 2 : 1;
-  for (let i = 0; i < count; i++) crabTrapAddCrab();
+  // Fewer crabs: spread the spawns further apart, one at a time.
+  const base = 900 - progress * 260;
+  s.nextSpawnIn = base * (0.8 + Math.random() * 0.5);
+  crabTrapAddCrab();
 }
 
 function crabTrapDropCage(canvasX) {
@@ -9134,9 +9135,9 @@ function crabTrapLandCage(cage) {
       c.trapped = true;
       cage.trapped.push({
         dx: Math.max(-half * 0.7, Math.min(half * 0.7, c.x - cage.x)),
-        size: c.size * 0.8,
-        hue: c.hue,
-        phase: c.phase,
+        sc: c.sc * 0.62,
+        legT: c.legT,
+        facing: c.facing,
       });
       s.crabs.splice(i, 1);
       s.score += 1;
@@ -9168,9 +9169,10 @@ function crabTrapLoop(now) {
   for (let i = s.crabs.length - 1; i >= 0; i--) {
     const c = s.crabs[i];
     c.x += c.vx * dtSec;
-    c.phase += dtSec * 7;
-    c.y = c.baseY + Math.sin(c.phase * 0.6) * 1.4 * crabTrapDpr;
-    if (c.x < -c.size * 2.2 || c.x > crabTrapW + c.size * 2.2) s.crabs.splice(i, 1);
+    c.legT += dtSec * 18;
+    c.y = c.baseY + Math.sin(c.legT * 0.12) * 1.2 * crabTrapDpr;
+    const margin = c.sc * 60;
+    if (c.x < -margin || c.x > crabTrapW + margin) s.crabs.splice(i, 1);
   }
   for (let i = s.cages.length - 1; i >= 0; i--) {
     const cage = s.cages[i];
@@ -9200,89 +9202,218 @@ function crabTrapLoop(now) {
   s.rafId = requestAnimationFrame(crabTrapLoop);
 }
 
-function drawCrabTrapCrab(ctx, x, y, size, phase, hue) {
-  const legSwing = Math.sin(phase) * 0.4;
-  const clawOpen = 0.5 + Math.sin(phase * 1.3) * 0.5;
+// Matches the "treasure crab" from the main fishing game: a red crab with
+// jointed legs and eye stalks, hoisting a gold treasure chest overhead.
+function drawCrabTrapCrab(ctx, x, y, sc, legT, facing) {
+  const leg = legT;
+  const face = facing >= 0 ? 1 : -1;
   ctx.save();
   ctx.translate(x, y);
-  // legs
-  ctx.strokeStyle = `hsl(${hue}, 62%, 34%)`;
-  ctx.lineWidth = Math.max(1, size * 0.09);
-  ctx.lineCap = "round";
-  for (let side = -1; side <= 1; side += 2) {
-    for (let i = 0; i < 3; i++) {
-      const ly = -size * 0.16 + i * size * 0.24;
-      const bend = legSwing * (i % 2 === 0 ? 1 : -1);
-      ctx.beginPath();
-      ctx.moveTo(side * size * 0.42, ly);
-      ctx.lineTo(side * size * (0.9 + bend * 0.1), ly + size * (0.18 + bend * 0.2));
-      ctx.stroke();
-    }
-  }
-  // claws
-  ctx.fillStyle = `hsl(${hue}, 70%, 46%)`;
-  for (let side = -1; side <= 1; side += 2) {
-    const cx = side * size * 0.72;
-    const cy = -size * 0.44;
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.beginPath();
-    ctx.ellipse(0, 0, size * 0.3, size * 0.2, side * 0.5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = `hsl(${hue}, 66%, 32%)`;
-    ctx.lineWidth = Math.max(1, size * 0.08);
-    ctx.beginPath();
-    ctx.moveTo(-side * size * 0.16, -size * 0.02);
-    ctx.lineTo(-side * size * 0.34, -size * (0.16 + clawOpen * 0.12));
-    ctx.stroke();
-    ctx.restore();
-  }
-  // body
-  const bodyGrad = ctx.createLinearGradient(0, -size * 0.5, 0, size * 0.5);
-  bodyGrad.addColorStop(0, `hsl(${hue}, 78%, 56%)`);
-  bodyGrad.addColorStop(1, `hsl(${hue}, 70%, 42%)`);
-  ctx.fillStyle = bodyGrad;
+  ctx.scale(face, 1);
+
+  const swing = (i, m) => Math.sin(leg * m + i * 1.1) * 0.2;
+
+  ctx.fillStyle = "rgba(8, 12, 18, 0.2)";
   ctx.beginPath();
-  ctx.ellipse(0, 0, size * 0.6, size * 0.46, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 7 * sc, 42 * sc, 10 * sc, 0.03, 0, Math.PI * 2);
   ctx.fill();
-  // treasure gem on back
-  const gemHue = 46;
-  ctx.fillStyle = `hsl(${gemHue}, 90%, 60%)`;
+
+  const drawWalkingLeg = (side, idx) => {
+    const sx = side;
+    const bx = sx * (15 + idx * 5.5) * sc;
+    const by = idx * 2.6 * sc;
+    const s1 = swing(idx + side * 2, 1.12);
+    const s2 = swing(idx + side * 2 + 0.5, 0.92);
+    const a1 = (side > 0 ? 0.38 : Math.PI - 0.38) + s1;
+    const a2 = a1 + (side > 0 ? 0.52 : -0.52) + s2;
+    const l1 = 13 * sc;
+    const l2 = 15 * sc;
+    const j1x = bx + Math.cos(a1) * l1;
+    const j1y = by + Math.sin(a1) * l1;
+    ctx.strokeStyle = idx < 2 ? "#7f1d1d" : "#991b1b";
+    ctx.lineWidth = (2.05 - idx * 0.12) * sc;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(bx, by);
+    ctx.lineTo(j1x, j1y);
+    ctx.lineTo(j1x + Math.cos(a2) * l2, j1y + Math.sin(a2) * l2);
+    ctx.stroke();
+  };
+  for (const side of [-1, 1]) {
+    for (let i = 0; i < 4; i++) drawWalkingLeg(side, i);
+  }
+
+  const capGrad = ctx.createRadialGradient(-6 * sc, -12 * sc, 2 * sc, 8 * sc, 4 * sc, 36 * sc);
+  capGrad.addColorStop(0, "#f87171");
+  capGrad.addColorStop(0.35, "#ef4444");
+  capGrad.addColorStop(0.65, "#dc2626");
+  capGrad.addColorStop(1, "#991b1b");
+  ctx.fillStyle = capGrad;
   ctx.beginPath();
-  ctx.moveTo(0, -size * 0.24);
-  ctx.lineTo(size * 0.16, 0);
-  ctx.lineTo(0, size * 0.2);
-  ctx.lineTo(-size * 0.16, 0);
+  ctx.moveTo(0, -20 * sc);
+  ctx.quadraticCurveTo(14 * sc, -22 * sc, 24 * sc, -14 * sc);
+  ctx.quadraticCurveTo(30 * sc, 0, 26 * sc, 9 * sc);
+  ctx.quadraticCurveTo(14 * sc, 11 * sc, 0, 10 * sc);
+  ctx.quadraticCurveTo(-14 * sc, 11 * sc, -26 * sc, 9 * sc);
+  ctx.quadraticCurveTo(-30 * sc, 0, -24 * sc, -14 * sc);
+  ctx.quadraticCurveTo(-14 * sc, -22 * sc, 0, -20 * sc);
   ctx.closePath();
   ctx.fill();
-  ctx.fillStyle = "rgba(255,255,255,0.7)";
-  ctx.beginPath();
-  ctx.moveTo(0, -size * 0.24);
-  ctx.lineTo(size * 0.08, -size * 0.06);
-  ctx.lineTo(0, 0);
-  ctx.lineTo(-size * 0.08, -size * 0.06);
-  ctx.closePath();
-  ctx.fill();
-  // eyes
-  ctx.strokeStyle = `hsl(${hue}, 60%, 34%)`;
-  ctx.lineWidth = Math.max(1, size * 0.07);
-  for (let side = -1; side <= 1; side += 2) {
-    const ex = side * size * 0.22;
-    const ey = -size * 0.42;
+  ctx.strokeStyle = "#7f1d1d";
+  ctx.lineWidth = 1.35 * sc;
+  ctx.stroke();
+
+  const eyeStalk = (ex) => {
+    ctx.strokeStyle = "#7f1d1d";
+    ctx.lineWidth = 2 * sc;
     ctx.beginPath();
-    ctx.moveTo(side * size * 0.16, -size * 0.3);
-    ctx.lineTo(ex, ey);
+    ctx.moveTo(ex * 0.45, -14 * sc);
+    ctx.lineTo(ex, -22 * sc);
     ctx.stroke();
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = "#0f172a";
     ctx.beginPath();
-    ctx.arc(ex, ey, size * 0.11, 0, Math.PI * 2);
+    ctx.arc(ex, -23 * sc, 2.5 * sc, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = "#101820";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
     ctx.beginPath();
-    ctx.arc(ex, ey, size * 0.055, 0, Math.PI * 2);
+    ctx.arc(ex - 0.7 * sc, -23.4 * sc, 0.85 * sc, 0, Math.PI * 2);
     ctx.fill();
-  }
+  };
+  eyeStalk(-7 * sc);
+  eyeStalk(7 * sc);
+
+  drawCrabTrapChest(ctx, sc);
+  drawCrabTrapCrabArms(ctx, sc);
+
   ctx.restore();
+}
+
+// Closed treasure chest carried on the crab's back (ported from the main game).
+function drawCrabTrapChest(ctx, sc) {
+  const chestCx = 0;
+  const chestTop = -56 * sc;
+  const cw = 40 * sc;
+  const ch = 26 * sc;
+  const x0 = chestCx - cw * 0.5;
+  const y0 = chestTop;
+  const rr = Math.min(3 * sc, cw * 0.18, ch * 0.22);
+  const goldTop = ctx.createLinearGradient(x0, y0, x0 + cw, y0 + ch);
+  goldTop.addColorStop(0, "#fde68a");
+  goldTop.addColorStop(0.25, "#fbbf24");
+  goldTop.addColorStop(0.5, "#f59e0b");
+  goldTop.addColorStop(0.78, "#d97706");
+  goldTop.addColorStop(1, "#b45309");
+  ctx.fillStyle = goldTop;
+  ctx.strokeStyle = "#78350f";
+  ctx.lineWidth = 1.5 * sc;
+  ctx.beginPath();
+  ctx.moveTo(x0 + rr, y0);
+  ctx.lineTo(x0 + cw - rr, y0);
+  ctx.quadraticCurveTo(x0 + cw, y0, x0 + cw, y0 + rr);
+  ctx.lineTo(x0 + cw, y0 + ch - rr);
+  ctx.quadraticCurveTo(x0 + cw, y0 + ch, x0 + cw - rr, y0 + ch);
+  ctx.lineTo(x0 + rr, y0 + ch);
+  ctx.quadraticCurveTo(x0, y0 + ch, x0, y0 + ch - rr);
+  ctx.lineTo(x0, y0 + rr);
+  ctx.quadraticCurveTo(x0, y0, x0 + rr, y0);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  const lidH = 9 * sc;
+  ctx.fillStyle = "#451a03";
+  ctx.beginPath();
+  ctx.arc(chestCx, y0 + ch * 0.42, 3.2 * sc, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255, 250, 220, 0.9)";
+  ctx.beginPath();
+  ctx.arc(chestCx - 0.9 * sc, y0 + ch * 0.4, 1 * sc, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#fcd34d";
+  ctx.beginPath();
+  ctx.moveTo(x0 - 1.5 * sc, y0 + lidH);
+  ctx.lineTo(chestCx - cw * 0.42, y0 - 2 * sc);
+  ctx.quadraticCurveTo(chestCx, y0 - 5 * sc, chestCx + cw * 0.42, y0 - 2 * sc);
+  ctx.lineTo(x0 + cw + 1.5 * sc, y0 + lidH);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = "#92400e";
+  ctx.lineWidth = 1.2 * sc;
+  ctx.stroke();
+
+  ctx.strokeStyle = "rgba(120, 53, 15, 0.55)";
+  ctx.lineWidth = 1.1 * sc;
+  ctx.beginPath();
+  ctx.moveTo(x0 + 4 * sc, y0 + lidH + 2 * sc);
+  ctx.lineTo(x0 + cw - 4 * sc, y0 + lidH + 2 * sc);
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
+  ctx.beginPath();
+  ctx.ellipse(chestCx - 8 * sc, y0 + ch * 0.35, 8 * sc, 4 * sc, -0.25, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = "rgba(185, 120, 20, 0.65)";
+  ctx.lineWidth = 1 * sc;
+  ctx.beginPath();
+  ctx.moveTo(x0 + 3 * sc, y0 + ch * 0.55);
+  ctx.lineTo(x0 + cw - 3 * sc, y0 + ch * 0.55);
+  ctx.stroke();
+}
+
+// Raised claw-arms hoisting the chest (ported from the main game).
+function drawCrabTrapCrabArms(ctx, sc) {
+  const chestTop = -56 * sc;
+  const ch = 26 * sc;
+  const cw = 40 * sc;
+  const gripY = chestTop + ch * 0.72;
+  const gripLX = -cw * 0.5;
+  const gripRX = cw * 0.5;
+
+  const drawRaisedArm = (side) => {
+    const sx = side;
+    const shx = sx * 18 * sc;
+    const shy = -6 * sc;
+    const midX = sx * 36 * sc;
+    const midY = -40 * sc;
+    const gx = sx > 0 ? gripRX : gripLX;
+    const gy = gripY;
+    ctx.strokeStyle = "#b91c1c";
+    ctx.lineWidth = 5.2 * sc;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(shx, shy);
+    ctx.quadraticCurveTo(midX, midY, gx, gy);
+    ctx.stroke();
+    ctx.strokeStyle = "#7f1d1d";
+    ctx.lineWidth = 2.8 * sc;
+    ctx.beginPath();
+    ctx.moveTo(shx, shy);
+    ctx.quadraticCurveTo(midX, midY, gx, gy);
+    ctx.stroke();
+
+    const ang = Math.atan2(gy - midY, gx - midX);
+    const cx = gx + Math.cos(ang + sx * 0.5) * 5 * sc;
+    const cy = gy + Math.sin(ang + sx * 0.5) * 5 * sc;
+    ctx.fillStyle = "#dc2626";
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, 9 * sc, 6.5 * sc, ang, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#ef4444";
+    ctx.beginPath();
+    ctx.ellipse(cx + Math.cos(ang + sx * 0.9) * 4 * sc, cy + Math.sin(ang + sx * 0.9) * 4 * sc, 5 * sc, 3.8 * sc, ang + sx * 0.25, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#7f1d1d";
+    ctx.lineWidth = 0.95 * sc;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, 9 * sc, 6.5 * sc, ang, 0, Math.PI * 2);
+    ctx.stroke();
+  };
+
+  drawRaisedArm(-1);
+  drawRaisedArm(1);
 }
 
 function drawCrabTrapCage(ctx, cage) {
@@ -9305,7 +9436,7 @@ function drawCrabTrapCage(ctx, cage) {
   const top = cy - ch * 0.5;
   // trapped crabs inside
   for (const t of cage.trapped) {
-    drawCrabTrapCrab(ctx, cx + t.dx, cy + ch * 0.16, t.size, t.phase, t.hue);
+    drawCrabTrapCrab(ctx, cx + t.dx, cy + ch * 0.34, t.sc, t.legT, t.facing);
   }
   // cage interior tint
   ctx.fillStyle = "rgba(40, 60, 78, 0.18)";
@@ -9409,7 +9540,7 @@ function drawCrabTrap() {
   }
   // crabs
   for (const c of s.crabs) {
-    drawCrabTrapCrab(ctx, c.x, c.y, c.size, c.phase, c.hue);
+    drawCrabTrapCrab(ctx, c.x, c.y, c.sc, c.legT, c.facing);
   }
   // cages
   for (const cage of s.cages) {
