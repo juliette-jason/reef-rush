@@ -221,6 +221,21 @@
             <button type="button" id="btnDailyPrizeRevealDone" class="btn btn--primary treasure-map-reveal__btn">Collect prizes</button>
           </div>
         </div>
+        <div id="crabTrapStage" class="crab-trap-stage" hidden aria-hidden="true">
+          <canvas id="crabTrapCanvas" class="crab-trap-stage__canvas" aria-label="Crab Trap minigame playfield"></canvas>
+          <div class="crab-trap-stage__hud">
+            <div class="crab-trap-stage__stat">
+              <span class="crab-trap-stage__stat-label">Crabs</span>
+              <span id="crabTrapScore" class="crab-trap-stage__stat-value">0</span>
+            </div>
+            <p class="crab-trap-stage__instruct">Tap to drop lobster cages on the crabs!</p>
+            <div class="crab-trap-stage__stat crab-trap-stage__stat--time">
+              <span class="crab-trap-stage__stat-label">Time</span>
+              <span id="crabTrapTime" class="crab-trap-stage__stat-value">1:00</span>
+            </div>
+            <button type="button" id="btnCrabQuit" class="crab-trap-stage__quit" aria-label="Quit Crab Trap">✕</button>
+          </div>
+        </div>
       </div>
 
       <p class="hint" id="controlHint">Laptop: aim left/right, Enter casts · Phone: drag left/right, tap to cast</p>
@@ -827,6 +842,23 @@
           <p id="duelEventReef" class="event-card__reef-pick">Reef: —</p>
           <button type="button" id="btnStartDuel" class="btn btn--secondary event-card__play">Find duel rival</button>
         </article>
+        <article class="event-card event-card--crab" id="eventCardCrab">
+          <header class="event-card__head">
+            <h3 class="event-card__title">Crab Trap</h3>
+            <p class="event-card__reset">60 seconds</p>
+          </header>
+          <p class="event-card__desc">
+            Drop lobster cages on the scuttling treasure crabs. Every crab you trap is worth 1 point — they never stop coming, so trap as many as you can before time runs out.
+          </p>
+          <ul class="event-card__prizes" aria-label="Crab Trap rewards">
+            <li><span class="event-card__medal event-card__medal--3">Low</span> Common chests — a little coin</li>
+            <li><span class="event-card__medal event-card__medal--2">Good</span> Better chests — more coins + bait</li>
+            <li><span class="event-card__medal event-card__medal--1">Great</span> Rich chests — coins, bait &amp; rods</li>
+          </ul>
+          <p class="event-card__desc event-card__desc--tickets">1 ticket per game · pick 1 of 3 treasure chests for your reward</p>
+          <p id="crabEventTickets" class="event-card__tickets">Tickets: 5</p>
+          <button type="button" id="btnStartCrab" class="btn btn--secondary event-card__play">Play Crab Trap</button>
+        </article>
         <button type="button" id="btnCloseEvents" class="btn btn--primary">Back</button>
         </div>
       </section>
@@ -838,6 +870,19 @@
         <p id="duelOverPrize" class="panel__coinline" hidden></p>
         <button type="button" id="btnDuelPlayAgain" class="btn btn--primary">Duel again</button>
         <button type="button" id="btnDuelBackEvents" class="btn btn--secondary">Back to Events</button>
+      </section>
+
+      <section id="panelCrabReward" class="panel panel--crab-reward" hidden>
+        <h2 class="panel__headline">Crab Trap!</h2>
+        <p id="crabRewardSummary" class="panel__scoreline">You trapped <strong>0</strong> treasure crabs</p>
+        <p id="crabRewardTier" class="panel__lede"></p>
+        <p id="crabRewardPrompt" class="crab-reward__prompt">Choose one chest to claim your reward.</p>
+        <div id="crabRewardChests" class="crab-reward__chests" role="group" aria-label="Reward chests"></div>
+        <p id="crabRewardResult" class="crab-reward__result" hidden></p>
+        <div class="crab-reward__actions">
+          <button type="button" id="btnCrabPlayAgain" class="btn btn--primary" hidden>Play again (1 ticket)</button>
+          <button type="button" id="btnCrabRewardBack" class="btn btn--secondary">Back to Events</button>
+        </div>
       </section>
 
       <section id="panelShop" class="panel panel--shop" hidden>

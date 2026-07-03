@@ -5488,6 +5488,7 @@ async function refreshEventsPanel() {
   const rows = await fetchTodayDailyLeaderboard();
   updateDailyEventPlayerHint(rows);
   refreshDuelEventCard();
+  refreshCrabTrapEventCard();
 }
 
 const DUEL_WIN_COINS = 800;
@@ -6969,6 +6970,23 @@ const duelOverDetail = document.getElementById("duelOverDetail");
 const duelOverPrize = document.getElementById("duelOverPrize");
 const btnDuelPlayAgain = document.getElementById("btnDuelPlayAgain");
 const btnDuelBackEvents = document.getElementById("btnDuelBackEvents");
+const eventCardCrab = document.getElementById("eventCardCrab");
+const crabEventTickets = document.getElementById("crabEventTickets");
+const btnStartCrab = document.getElementById("btnStartCrab");
+const crabTrapStage = document.getElementById("crabTrapStage");
+const crabTrapCanvas = document.getElementById("crabTrapCanvas");
+const crabTrapScoreEl = document.getElementById("crabTrapScore");
+const crabTrapTimeEl = document.getElementById("crabTrapTime");
+const btnCrabQuit = document.getElementById("btnCrabQuit");
+const panelCrabReward = document.getElementById("panelCrabReward");
+const crabRewardSummary = document.getElementById("crabRewardSummary");
+const crabRewardTier = document.getElementById("crabRewardTier");
+const crabRewardPrompt = document.getElementById("crabRewardPrompt");
+const crabRewardChests = document.getElementById("crabRewardChests");
+const crabRewardResult = document.getElementById("crabRewardResult");
+const btnCrabPlayAgain = document.getElementById("btnCrabPlayAgain");
+const btnCrabRewardBack = document.getElementById("btnCrabRewardBack");
+const crabTrapCtx = crabTrapCanvas ? crabTrapCanvas.getContext("2d") : null;
 const btnCloseShop = document.getElementById("btnCloseShop");
 const btnShopGuideDone = document.getElementById("btnShopGuideDone");
 const btnToggleMusic = document.getElementById("btnToggleMusic");
@@ -8893,6 +8911,785 @@ function closeEvents() {
   stopEventsMusic();
   if (musicEnabled) startHomeMusic();
   window.setTimeout(tryStartDailyPrizeCelebration, 300);
+}
+
+/* =========================================================================
+   Crab Trap — drop lobster cages on scuttling treasure crabs.
+   Self-contained minigame with its own canvas + animation loop.
+   ========================================================================= */
+const CRAB_TRAP_DURATION_MS = 60_000;
+/** Score >= this counts as a medium haul (better chests). */
+const CRAB_TRAP_MEDIUM_MIN = 9;
+/** Score >= this counts as a great haul (rich chests with rods). */
+const CRAB_TRAP_GREAT_MIN = 20;
+const CRAB_TRAP_MED_BAIT = ["nightcrawler", "shrimp", "glow_jelly", "squid_ink"];
+const CRAB_TRAP_GREAT_BAIT = ["squid_ink", "golden_chum", "glow_jelly"];
+const CRAB_TRAP_CRAB_HUES = [16, 28, 344, 46];
+
+let crabTrapSession = null;
+let crabTrapDpr = 1;
+let crabTrapW = 0;
+let crabTrapH = 0;
+let crabRewardBundles = [];
+let crabRewardClaimed = false;
+
+function crabRandInt(min, max) {
+  return min + Math.floor(Math.random() * (max - min + 1));
+}
+
+function crabPick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function crabShuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function crabSandTopY() {
+  return crabTrapH * 0.64;
+}
+
+function resizeCrabTrapCanvas() {
+  if (!crabTrapCanvas) return;
+  const rect = crabTrapCanvas.getBoundingClientRect();
+  crabTrapDpr = Math.min(window.devicePixelRatio || 1, PERF_CHROMEBOOK ? 1 : 2);
+  crabTrapW = Math.max(1, Math.floor(rect.width * crabTrapDpr));
+  crabTrapH = Math.max(1, Math.floor(rect.height * crabTrapDpr));
+  crabTrapCanvas.width = crabTrapW;
+  crabTrapCanvas.height = crabTrapH;
+}
+
+function buildCrabTrapDecor() {
+  const decor = [];
+  const count = 22;
+  for (let i = 0; i < count; i++) {
+    decor.push({
+      fx: Math.random(),
+      fy: 0.66 + Math.random() * 0.32,
+      r: 2 + Math.random() * 4,
+      tone: Math.random() < 0.5 ? "rgba(120, 90, 52, 0.5)" : "rgba(255, 246, 224, 0.4)",
+    });
+  }
+  return decor;
+}
+
+function startCrabTrap() {
+  if (!crabTrapCanvas || !crabTrapCtx) return;
+  if (getDuelTicketCount() <= 0) {
+    showToast("No tickets — visit the shop", 2200);
+    return;
+  }
+  if (!spendDuelTicket()) {
+    showToast("No tickets — visit the shop", 2200);
+    return;
+  }
+  refreshCrabTrapEventCard();
+  hideAllPanels();
+  if (panelCrabReward) panelCrabReward.hidden = true;
+  stopEventsMusic();
+  if (crabTrapStage) {
+    crabTrapStage.hidden = false;
+    crabTrapStage.setAttribute("aria-hidden", "false");
+  }
+  resizeCrabTrapCanvas();
+  const now = performance.now();
+  crabTrapSession = {
+    score: 0,
+    startAt: now,
+    endAt: now + CRAB_TRAP_DURATION_MS,
+    prev: now,
+    lastSpawnAt: now,
+    nextSpawnIn: 300,
+    lastDropAt: -9999,
+    crabs: [],
+    cages: [],
+    sparkles: [],
+    decor: buildCrabTrapDecor(),
+    rafId: 0,
+    running: true,
+  };
+  updateCrabTrapHud();
+  crabTrapSession.rafId = requestAnimationFrame(crabTrapLoop);
+}
+
+function stopCrabTrapLoop() {
+  if (crabTrapSession) {
+    crabTrapSession.running = false;
+    if (crabTrapSession.rafId) cancelAnimationFrame(crabTrapSession.rafId);
+  }
+}
+
+function quitCrabTrap() {
+  if (!crabTrapSession) return;
+  const ok = window.confirm("Quit Crab Trap? Your ticket won't be refunded.");
+  if (!ok || !crabTrapSession) return;
+  stopCrabTrapLoop();
+  crabTrapSession = null;
+  if (crabTrapStage) {
+    crabTrapStage.hidden = true;
+    crabTrapStage.setAttribute("aria-hidden", "true");
+  }
+  returnToEventsFromCrab();
+}
+
+function finishCrabTrap() {
+  const session = crabTrapSession;
+  if (!session) return;
+  stopCrabTrapLoop();
+  crabTrapSession = null;
+  const finalScore = session.score;
+  if (crabTrapStage) {
+    crabTrapStage.hidden = true;
+    crabTrapStage.setAttribute("aria-hidden", "true");
+  }
+  playCrabRoundEndSound();
+  showCrabReward(finalScore);
+}
+
+function returnToEventsFromCrab() {
+  if (panelCrabReward) panelCrabReward.hidden = true;
+  openEvents();
+}
+
+function updateCrabTrapHud() {
+  if (!crabTrapSession) return;
+  if (crabTrapScoreEl) crabTrapScoreEl.textContent = String(crabTrapSession.score);
+  const left = Math.max(0, crabTrapSession.endAt - performance.now());
+  if (crabTrapTimeEl) {
+    crabTrapTimeEl.textContent = formatTime(left);
+    const stat = crabTrapTimeEl.closest(".crab-trap-stage__stat");
+    if (stat) stat.classList.toggle("crab-trap-stage__stat--urgent", left <= 10_000);
+  }
+}
+
+function crabTrapAddCrab() {
+  const s = crabTrapSession;
+  if (!s) return;
+  const size = (22 + Math.random() * 12) * crabTrapDpr;
+  const fromLeft = Math.random() < 0.5;
+  const bandTop = crabTrapH * 0.68;
+  const bandBottom = crabTrapH * 0.9;
+  const y = bandTop + Math.random() * Math.max(1, bandBottom - bandTop);
+  const speed = (56 + Math.random() * 82) * crabTrapDpr;
+  s.crabs.push({
+    x: fromLeft ? -size : crabTrapW + size,
+    y,
+    baseY: y,
+    vx: fromLeft ? speed : -speed,
+    size,
+    phase: Math.random() * Math.PI * 2,
+    hue: crabPick(CRAB_TRAP_CRAB_HUES),
+    trapped: false,
+  });
+}
+
+function crabTrapSpawn(now) {
+  const s = crabTrapSession;
+  if (!s) return;
+  if (now - s.lastSpawnAt < s.nextSpawnIn) return;
+  s.lastSpawnAt = now;
+  const progress = Math.min(1, (now - s.startAt) / CRAB_TRAP_DURATION_MS);
+  const base = 430 - progress * 220;
+  s.nextSpawnIn = base * (0.7 + Math.random() * 0.6);
+  const count = Math.random() < 0.24 + progress * 0.3 ? 2 : 1;
+  for (let i = 0; i < count; i++) crabTrapAddCrab();
+}
+
+function crabTrapDropCage(canvasX) {
+  const s = crabTrapSession;
+  if (!s || !s.running) return;
+  const now = performance.now();
+  if (now - s.lastDropAt < 90) return;
+  s.lastDropAt = now;
+  const cageW = 72 * crabTrapDpr;
+  const x = Math.max(cageW * 0.5, Math.min(crabTrapW - cageW * 0.5, canvasX));
+  s.cages.push({
+    x,
+    y: crabTrapH * 0.03,
+    vy: 0,
+    w: cageW,
+    landingY: crabTrapH * 0.8,
+    state: "falling",
+    landTimer: 0,
+    alpha: 1,
+    trapped: [],
+  });
+  playCrabDropSound();
+}
+
+function crabTrapLandCage(cage) {
+  const s = crabTrapSession;
+  if (!s) return;
+  const half = cage.w * 0.5;
+  for (let i = s.crabs.length - 1; i >= 0; i--) {
+    const c = s.crabs[i];
+    if (c.trapped) continue;
+    if (Math.abs(c.x - cage.x) <= half) {
+      c.trapped = true;
+      cage.trapped.push({
+        dx: Math.max(-half * 0.7, Math.min(half * 0.7, c.x - cage.x)),
+        size: c.size * 0.8,
+        hue: c.hue,
+        phase: c.phase,
+      });
+      s.crabs.splice(i, 1);
+      s.score += 1;
+      crabTrapAddSparkle(c.x, cage.landingY - cage.w * 0.4);
+    }
+  }
+  if (cage.trapped.length) playCrabTrapSound(cage.trapped.length);
+  else playCrabThudSound();
+  updateCrabTrapHud();
+}
+
+function crabTrapAddSparkle(x, y) {
+  const s = crabTrapSession;
+  if (!s) return;
+  s.sparkles.push({ x, y, vy: -46 * crabTrapDpr, life: 760, maxLife: 760 });
+}
+
+function crabTrapLoop(now) {
+  const s = crabTrapSession;
+  if (!s || !s.running) return;
+  const dtMs = Math.min(60, now - s.prev);
+  s.prev = now;
+  const dtSec = dtMs / 1000;
+  if (now >= s.endAt) {
+    finishCrabTrap();
+    return;
+  }
+  crabTrapSpawn(now);
+  for (let i = s.crabs.length - 1; i >= 0; i--) {
+    const c = s.crabs[i];
+    c.x += c.vx * dtSec;
+    c.phase += dtSec * 7;
+    c.y = c.baseY + Math.sin(c.phase * 0.6) * 1.4 * crabTrapDpr;
+    if (c.x < -c.size * 2.2 || c.x > crabTrapW + c.size * 2.2) s.crabs.splice(i, 1);
+  }
+  for (let i = s.cages.length - 1; i >= 0; i--) {
+    const cage = s.cages[i];
+    if (cage.state === "falling") {
+      cage.vy += 3800 * crabTrapDpr * dtSec;
+      cage.y += cage.vy * dtSec;
+      if (cage.y >= cage.landingY) {
+        cage.y = cage.landingY;
+        cage.state = "landed";
+        cage.landTimer = 640;
+        crabTrapLandCage(cage);
+      }
+    } else {
+      cage.landTimer -= dtMs;
+      if (cage.landTimer < 260) cage.alpha = Math.max(0, cage.landTimer / 260);
+      if (cage.landTimer <= 0) s.cages.splice(i, 1);
+    }
+  }
+  for (let i = s.sparkles.length - 1; i >= 0; i--) {
+    const p = s.sparkles[i];
+    p.y += p.vy * dtSec;
+    p.life -= dtMs;
+    if (p.life <= 0) s.sparkles.splice(i, 1);
+  }
+  drawCrabTrap();
+  updateCrabTrapHud();
+  s.rafId = requestAnimationFrame(crabTrapLoop);
+}
+
+function drawCrabTrapCrab(ctx, x, y, size, phase, hue) {
+  const legSwing = Math.sin(phase) * 0.4;
+  const clawOpen = 0.5 + Math.sin(phase * 1.3) * 0.5;
+  ctx.save();
+  ctx.translate(x, y);
+  // legs
+  ctx.strokeStyle = `hsl(${hue}, 62%, 34%)`;
+  ctx.lineWidth = Math.max(1, size * 0.09);
+  ctx.lineCap = "round";
+  for (let side = -1; side <= 1; side += 2) {
+    for (let i = 0; i < 3; i++) {
+      const ly = -size * 0.16 + i * size * 0.24;
+      const bend = legSwing * (i % 2 === 0 ? 1 : -1);
+      ctx.beginPath();
+      ctx.moveTo(side * size * 0.42, ly);
+      ctx.lineTo(side * size * (0.9 + bend * 0.1), ly + size * (0.18 + bend * 0.2));
+      ctx.stroke();
+    }
+  }
+  // claws
+  ctx.fillStyle = `hsl(${hue}, 70%, 46%)`;
+  for (let side = -1; side <= 1; side += 2) {
+    const cx = side * size * 0.72;
+    const cy = -size * 0.44;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, size * 0.3, size * 0.2, side * 0.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = `hsl(${hue}, 66%, 32%)`;
+    ctx.lineWidth = Math.max(1, size * 0.08);
+    ctx.beginPath();
+    ctx.moveTo(-side * size * 0.16, -size * 0.02);
+    ctx.lineTo(-side * size * 0.34, -size * (0.16 + clawOpen * 0.12));
+    ctx.stroke();
+    ctx.restore();
+  }
+  // body
+  const bodyGrad = ctx.createLinearGradient(0, -size * 0.5, 0, size * 0.5);
+  bodyGrad.addColorStop(0, `hsl(${hue}, 78%, 56%)`);
+  bodyGrad.addColorStop(1, `hsl(${hue}, 70%, 42%)`);
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, size * 0.6, size * 0.46, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // treasure gem on back
+  const gemHue = 46;
+  ctx.fillStyle = `hsl(${gemHue}, 90%, 60%)`;
+  ctx.beginPath();
+  ctx.moveTo(0, -size * 0.24);
+  ctx.lineTo(size * 0.16, 0);
+  ctx.lineTo(0, size * 0.2);
+  ctx.lineTo(-size * 0.16, 0);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,0.7)";
+  ctx.beginPath();
+  ctx.moveTo(0, -size * 0.24);
+  ctx.lineTo(size * 0.08, -size * 0.06);
+  ctx.lineTo(0, 0);
+  ctx.lineTo(-size * 0.08, -size * 0.06);
+  ctx.closePath();
+  ctx.fill();
+  // eyes
+  ctx.strokeStyle = `hsl(${hue}, 60%, 34%)`;
+  ctx.lineWidth = Math.max(1, size * 0.07);
+  for (let side = -1; side <= 1; side += 2) {
+    const ex = side * size * 0.22;
+    const ey = -size * 0.42;
+    ctx.beginPath();
+    ctx.moveTo(side * size * 0.16, -size * 0.3);
+    ctx.lineTo(ex, ey);
+    ctx.stroke();
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.arc(ex, ey, size * 0.11, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#101820";
+    ctx.beginPath();
+    ctx.arc(ex, ey, size * 0.055, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawCrabTrapCage(ctx, cage) {
+  const cw = cage.w;
+  const ch = cage.w * 0.72;
+  const cx = cage.x;
+  const cy = cage.y;
+  ctx.save();
+  ctx.globalAlpha = cage.alpha;
+  // rope while falling
+  if (cage.state === "falling") {
+    ctx.strokeStyle = "rgba(230, 210, 170, 0.6)";
+    ctx.lineWidth = 2 * crabTrapDpr;
+    ctx.beginPath();
+    ctx.moveTo(cx, 0);
+    ctx.lineTo(cx, cy - ch * 0.5);
+    ctx.stroke();
+  }
+  const left = cx - cw * 0.5;
+  const top = cy - ch * 0.5;
+  // trapped crabs inside
+  for (const t of cage.trapped) {
+    drawCrabTrapCrab(ctx, cx + t.dx, cy + ch * 0.16, t.size, t.phase, t.hue);
+  }
+  // cage interior tint
+  ctx.fillStyle = "rgba(40, 60, 78, 0.18)";
+  crabRoundRect(ctx, left, top, cw, ch, 8 * crabTrapDpr);
+  ctx.fill();
+  // wire bars
+  ctx.strokeStyle = "rgba(214, 226, 236, 0.75)";
+  ctx.lineWidth = 1.3 * crabTrapDpr;
+  for (let i = 1; i < 5; i++) {
+    const gx = left + (cw * i) / 5;
+    ctx.beginPath();
+    ctx.moveTo(gx, top + 3 * crabTrapDpr);
+    ctx.lineTo(gx, top + ch - 3 * crabTrapDpr);
+    ctx.stroke();
+  }
+  for (let i = 1; i < 3; i++) {
+    const gy = top + (ch * i) / 3;
+    ctx.beginPath();
+    ctx.moveTo(left + 3 * crabTrapDpr, gy);
+    ctx.lineTo(left + cw - 3 * crabTrapDpr, gy);
+    ctx.stroke();
+  }
+  // wooden frame
+  ctx.strokeStyle = "#6b4423";
+  ctx.lineWidth = 4 * crabTrapDpr;
+  crabRoundRect(ctx, left, top, cw, ch, 8 * crabTrapDpr);
+  ctx.stroke();
+  ctx.strokeStyle = "#3f2814";
+  ctx.lineWidth = 2 * crabTrapDpr;
+  crabRoundRect(ctx, left, top, cw, ch, 8 * crabTrapDpr);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function crabRoundRect(ctx, x, y, w2, h2, r) {
+  const rr = Math.min(r, w2 * 0.5, h2 * 0.5);
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.arcTo(x + w2, y, x + w2, y + h2, rr);
+  ctx.arcTo(x + w2, y + h2, x, y + h2, rr);
+  ctx.arcTo(x, y + h2, x, y, rr);
+  ctx.arcTo(x, y, x + w2, y, rr);
+  ctx.closePath();
+}
+
+function drawCrabTrap() {
+  const ctx = crabTrapCtx;
+  const s = crabTrapSession;
+  if (!ctx || !s) return;
+  ctx.clearRect(0, 0, crabTrapW, crabTrapH);
+  const sandTop = crabSandTopY();
+  // water
+  const wg = ctx.createLinearGradient(0, 0, 0, sandTop);
+  wg.addColorStop(0, "#0a2038");
+  wg.addColorStop(0.55, "#0f5064");
+  wg.addColorStop(1, "#1c7f88");
+  ctx.fillStyle = wg;
+  ctx.fillRect(0, 0, crabTrapW, sandTop + 2);
+  // sun shimmer near surface
+  const glow = ctx.createRadialGradient(crabTrapW * 0.5, 0, 0, crabTrapW * 0.5, 0, crabTrapH * 0.5);
+  glow.addColorStop(0, "rgba(255, 220, 150, 0.28)");
+  glow.addColorStop(1, "rgba(255, 220, 150, 0)");
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, crabTrapW, sandTop);
+  // light rays
+  ctx.save();
+  ctx.globalAlpha = 0.08;
+  ctx.fillStyle = "#fff7dc";
+  for (let i = 0; i < 4; i++) {
+    const rx = crabTrapW * (0.2 + i * 0.2);
+    ctx.beginPath();
+    ctx.moveTo(rx, 0);
+    ctx.lineTo(rx + crabTrapW * 0.06, 0);
+    ctx.lineTo(rx + crabTrapW * 0.14, sandTop);
+    ctx.lineTo(rx - crabTrapW * 0.02, sandTop);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+  // sand
+  const sg = ctx.createLinearGradient(0, sandTop, 0, crabTrapH);
+  sg.addColorStop(0, "#e0bd7c");
+  sg.addColorStop(1, "#b48d54");
+  ctx.fillStyle = sg;
+  ctx.beginPath();
+  ctx.moveTo(0, sandTop + Math.sin(0) * 6 * crabTrapDpr);
+  const step = Math.max(20, crabTrapW / 24);
+  for (let x = 0; x <= crabTrapW; x += step) {
+    ctx.lineTo(x, sandTop + Math.sin(x / crabTrapW * Math.PI * 5) * 6 * crabTrapDpr);
+  }
+  ctx.lineTo(crabTrapW, crabTrapH);
+  ctx.lineTo(0, crabTrapH);
+  ctx.closePath();
+  ctx.fill();
+  // pebbles/shells
+  for (const d of s.decor) {
+    ctx.fillStyle = d.tone;
+    ctx.beginPath();
+    ctx.arc(d.fx * crabTrapW, d.fy * crabTrapH, d.r * crabTrapDpr, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // crabs
+  for (const c of s.crabs) {
+    drawCrabTrapCrab(ctx, c.x, c.y, c.size, c.phase, c.hue);
+  }
+  // cages
+  for (const cage of s.cages) {
+    drawCrabTrapCage(ctx, cage);
+  }
+  // sparkles (+1)
+  ctx.font = `800 ${Math.round(16 * crabTrapDpr)}px "Bebas Neue", sans-serif`;
+  ctx.textAlign = "center";
+  for (const p of s.sparkles) {
+    const a = Math.max(0, p.life / p.maxLife);
+    ctx.globalAlpha = a;
+    ctx.fillStyle = "#ffe27a";
+    ctx.fillText("+1", p.x, p.y);
+  }
+  ctx.globalAlpha = 1;
+  ctx.textAlign = "start";
+}
+
+/* --- Crab Trap rewards --- */
+function crabTierForScore(scorePts) {
+  if (scorePts >= CRAB_TRAP_GREAT_MIN) return "great";
+  if (scorePts >= CRAB_TRAP_MEDIUM_MIN) return "medium";
+  return "common";
+}
+
+function crabTierMessage(tier) {
+  if (tier === "great") {
+    return "Incredible haul! These rich chests are stuffed with coins, bait, and maybe a new fishing rod.";
+  }
+  if (tier === "medium") {
+    return "Nice work! You earned better chests packed with more coins and bait.";
+  }
+  return "A modest catch — just some common chests this time. Trap more crabs next round for richer loot!";
+}
+
+function crabPurchasableRods() {
+  return RODS.filter((r) => r.id !== FREE_ROD_ID && r.id !== MAGNET_ROD_ID);
+}
+
+function crabUnownedRods() {
+  return crabPurchasableRods().filter((r) => !isRodOwned(r.id));
+}
+
+function rollCrabBundles(tier) {
+  const bundles = [];
+  for (let i = 0; i < 3; i++) bundles.push({ coins: 0, bait: null, rodId: null, rodName: null });
+  if (tier === "common") {
+    bundles.forEach((b) => {
+      b.coins = crabRandInt(25, 75);
+    });
+  } else if (tier === "medium") {
+    bundles.forEach((b) => {
+      b.coins = crabRandInt(120, 280);
+      const id = crabPick(CRAB_TRAP_MED_BAIT);
+      b.bait = { id, name: baitSpecById(id).name, qty: crabRandInt(2, 4) };
+    });
+  } else {
+    bundles.forEach((b) => {
+      b.coins = crabRandInt(400, 850);
+      const id = crabPick(CRAB_TRAP_GREAT_BAIT);
+      b.bait = { id, name: baitSpecById(id).name, qty: crabRandInt(3, 6) };
+    });
+    const unowned = crabShuffle(crabUnownedRods());
+    if (unowned.length > 0) {
+      const rodChestCount = Math.min(unowned.length, crabRandInt(1, 2));
+      const chestIdx = crabShuffle([0, 1, 2]).slice(0, rodChestCount);
+      chestIdx.forEach((ci, k) => {
+        const rod = unowned[k];
+        if (!rod) return;
+        bundles[ci].rodId = rod.id;
+        bundles[ci].rodName = rod.name;
+      });
+    } else {
+      bundles.forEach((b) => {
+        b.coins += 300;
+      });
+    }
+  }
+  return bundles;
+}
+
+function crabBundleRewardLines(bundle) {
+  const lines = [];
+  if (bundle.coins) lines.push(`+${bundle.coins} coins`);
+  if (bundle.bait) lines.push(`${bundle.bait.qty}× ${bundle.bait.name}`);
+  if (bundle.rodName) lines.push(`${bundle.rodName}`);
+  if (!lines.length) lines.push("A pinch of sand");
+  return lines;
+}
+
+function crabChestArtSvg(tier, opened) {
+  const palette =
+    tier === "great"
+      ? { body: "#b45309", lid: "#92400e", band: "#fcd34d", lock: "#fde047" }
+      : tier === "medium"
+        ? { body: "#94a3b8", lid: "#64748b", band: "#e2e8f0", lock: "#f8fafc" }
+        : { body: "#6b7280", lid: "#4b5563", band: "#9ca3af", lock: "#cbd5e1" };
+  if (opened) {
+    return `<svg viewBox="0 0 64 56" width="56" height="49" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M5 16 Q32 -2 59 16 L59 24 L5 24 Z" fill="${palette.lid}" transform="rotate(-14 32 20)" />
+      <rect x="6" y="26" width="52" height="24" rx="4" fill="${palette.body}" />
+      <rect x="6" y="26" width="52" height="5" fill="${palette.band}" />
+      <circle cx="20" cy="38" r="4" fill="#ffe27a" />
+      <circle cx="32" cy="34" r="5" fill="#fff2b0" />
+      <circle cx="44" cy="39" r="4" fill="#ffe27a" />
+      <path d="M32 20 l3 6 l-6 0 z" fill="#8ff0ff" />
+    </svg>`;
+  }
+  return `<svg viewBox="0 0 64 56" width="56" height="49" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M6 24 Q32 6 58 24 L58 32 L6 32 Z" fill="${palette.lid}" />
+    <rect x="6" y="30" width="52" height="22" rx="4" fill="${palette.body}" />
+    <rect x="6" y="30" width="52" height="5" fill="${palette.band}" />
+    <rect x="29" y="24" width="6" height="28" fill="${palette.band}" />
+    <rect x="27" y="34" width="10" height="9" rx="2" fill="${palette.lock}" />
+  </svg>`;
+}
+
+function renderCrabRewardChests(tier) {
+  if (!crabRewardChests) return;
+  crabRewardChests.innerHTML = "";
+  const tierLabel = tier === "great" ? "Rich" : tier === "medium" ? "Good" : "Common";
+  for (let i = 0; i < crabRewardBundles.length; i++) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = `crab-chest crab-chest--${tier}`;
+    btn.dataset.idx = String(i);
+    btn.innerHTML =
+      `<span class="crab-chest__art">${crabChestArtSvg(tier, false)}</span>` +
+      `<span class="crab-chest__label">${tierLabel} chest</span>` +
+      `<ul class="crab-chest__contents"></ul>`;
+    crabRewardChests.appendChild(btn);
+  }
+}
+
+function grantCrabReward(bundle) {
+  if (bundle.coins) gameMeta.coins += bundle.coins;
+  if (bundle.bait) {
+    gameMeta.baitCounts[bundle.bait.id] = getBaitCount(bundle.bait.id) + bundle.bait.qty;
+  }
+  if (bundle.rodId && !isRodOwned(bundle.rodId)) {
+    if (!Array.isArray(gameMeta.ownedRodIds)) gameMeta.ownedRodIds = [FREE_ROD_ID];
+    gameMeta.ownedRodIds.push(bundle.rodId);
+  }
+  saveMeta();
+  refreshCoinDisplays();
+  buildBaitUI();
+  buildRodUI();
+  buildShopUI();
+}
+
+function onCrabChestPick(idx) {
+  if (crabRewardClaimed) return;
+  const bundle = crabRewardBundles[idx];
+  if (!bundle) return;
+  crabRewardClaimed = true;
+  grantCrabReward(bundle);
+  playCrabChestSound();
+  const chests = crabRewardChests ? crabRewardChests.querySelectorAll(".crab-chest") : [];
+  chests.forEach((chest) => {
+    const ci = Number(chest.dataset.idx);
+    chest.disabled = true;
+    if (ci === idx) {
+      chest.classList.add("crab-chest--opened");
+      const art = chest.querySelector(".crab-chest__art");
+      const openTier = chest.classList.contains("crab-chest--great")
+        ? "great"
+        : chest.classList.contains("crab-chest--medium")
+          ? "medium"
+          : "common";
+      if (art) art.innerHTML = crabChestArtSvg(openTier, true);
+      const list = chest.querySelector(".crab-chest__contents");
+      if (list) {
+        list.innerHTML = "";
+        for (const line of crabBundleRewardLines(bundle)) {
+          const li = document.createElement("li");
+          li.textContent = line;
+          list.appendChild(li);
+        }
+      }
+    } else {
+      chest.classList.add("crab-chest--dimmed");
+    }
+  });
+  if (crabRewardPrompt) crabRewardPrompt.textContent = "Reward claimed!";
+  if (crabRewardResult) {
+    crabRewardResult.hidden = false;
+    crabRewardResult.textContent = `You collected ${crabBundleRewardLines(bundle).join(" · ")}.`;
+  }
+  const tickets = getDuelTicketCount();
+  if (btnCrabPlayAgain) {
+    btnCrabPlayAgain.hidden = false;
+    btnCrabPlayAgain.disabled = tickets <= 0;
+    btnCrabPlayAgain.textContent = tickets > 0 ? "Play again (1 ticket)" : "No tickets left";
+  }
+}
+
+function showCrabReward(finalScore) {
+  const tier = crabTierForScore(finalScore);
+  crabRewardBundles = rollCrabBundles(tier);
+  crabRewardClaimed = false;
+  if (crabRewardSummary) {
+    crabRewardSummary.innerHTML = `You trapped <strong>${finalScore}</strong> treasure crab${finalScore === 1 ? "" : "s"}`;
+  }
+  if (crabRewardTier) crabRewardTier.textContent = crabTierMessage(tier);
+  if (crabRewardPrompt) crabRewardPrompt.textContent = "Choose one chest to claim your reward.";
+  if (crabRewardResult) {
+    crabRewardResult.hidden = true;
+    crabRewardResult.textContent = "";
+  }
+  if (btnCrabPlayAgain) btnCrabPlayAgain.hidden = true;
+  renderCrabRewardChests(tier);
+  if (panelCrabReward) panelCrabReward.hidden = false;
+}
+
+function crabPlayAgain() {
+  if (getDuelTicketCount() <= 0) {
+    showToast("No tickets — visit the shop", 2000);
+    return;
+  }
+  if (panelCrabReward) panelCrabReward.hidden = true;
+  startCrabTrap();
+}
+
+function refreshCrabTrapEventCard() {
+  const tickets = getDuelTicketCount();
+  if (eventsTicketCount) eventsTicketCount.textContent = String(tickets);
+  if (crabEventTickets) crabEventTickets.textContent = `Tickets: ${tickets}`;
+  if (btnStartCrab) {
+    btnStartCrab.disabled = tickets <= 0;
+    btnStartCrab.textContent = tickets <= 0 ? "No tickets — visit shop" : "Play Crab Trap";
+  }
+}
+
+/* --- Crab Trap sound effects --- */
+function playCrabDropSound() {
+  const ac = ensureMusicContext();
+  if (!ac || !musicMaster) return;
+  if (ac.state === "suspended") ac.resume();
+  const now = ac.currentTime + 0.01;
+  playMusicNote(340, now, 0.14, 0.03, "sine");
+  playMusicNote(180, now + 0.05, 0.18, 0.03, "triangle");
+}
+
+function playCrabTrapSound(count = 1) {
+  const ac = ensureMusicContext();
+  if (!ac || !musicMaster) return;
+  if (ac.state === "suspended") ac.resume();
+  const now = ac.currentTime + 0.01;
+  const notes = count > 1 ? [523.25, 659.25, 783.99, 1046.5] : [523.25, 783.99];
+  for (let i = 0; i < notes.length; i++) {
+    playMusicNote(notes[i], now + i * 0.06, 0.2, 0.032, i % 2 === 0 ? "triangle" : "sine");
+  }
+  playNoiseHit(now, 0.08, 0.014);
+}
+
+function playCrabThudSound() {
+  const ac = ensureMusicContext();
+  if (!ac || !musicMaster) return;
+  if (ac.state === "suspended") ac.resume();
+  playNoiseHit(ac.currentTime + 0.01, 0.1, 0.016);
+}
+
+function playCrabRoundEndSound() {
+  const ac = ensureMusicContext();
+  if (!ac || !musicMaster) return;
+  if (ac.state === "suspended") ac.resume();
+  const now = ac.currentTime + 0.02;
+  const notes = [523.25, 659.25, 783.99, 1046.5];
+  for (let i = 0; i < notes.length; i++) {
+    playMusicNote(notes[i], now + i * 0.1, 0.4, 0.036, i % 2 === 0 ? "triangle" : "sine");
+  }
+}
+
+function playCrabChestSound() {
+  const ac = ensureMusicContext();
+  if (!ac || !musicMaster) return;
+  if (ac.state === "suspended") ac.resume();
+  const now = ac.currentTime + 0.02;
+  playMusicNote(392, now, 0.3, 0.034, "triangle");
+  playMusicNote(587.33, now + 0.12, 0.34, 0.034, "sine");
+  playMusicNote(880, now + 0.26, 0.5, 0.03, "triangle");
 }
 
 function updateStartButtonSubtext() {
@@ -12886,6 +13683,25 @@ btnStartDuel?.addEventListener("click", () => {
 btnDuelPlayAgain?.addEventListener("click", () => openDuelFromResult(true));
 btnDuelBackEvents?.addEventListener("click", () => openDuelFromResult(false));
 
+btnStartCrab?.addEventListener("click", () => startCrabTrap());
+btnCrabQuit?.addEventListener("click", () => quitCrabTrap());
+btnCrabRewardBack?.addEventListener("click", () => returnToEventsFromCrab());
+btnCrabPlayAgain?.addEventListener("click", () => crabPlayAgain());
+crabRewardChests?.addEventListener("click", (e) => {
+  const chest = e.target.closest(".crab-chest");
+  if (!chest || chest.disabled) return;
+  const idx = Number(chest.dataset.idx);
+  if (!Number.isNaN(idx)) onCrabChestPick(idx);
+});
+crabTrapCanvas?.addEventListener("pointerdown", (e) => {
+  if (!crabTrapSession || !crabTrapSession.running) return;
+  e.preventDefault();
+  const rect = crabTrapCanvas.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  const x = ((e.clientX - rect.left) / rect.width) * crabTrapW;
+  crabTrapDropCage(x);
+});
+
 window.addEventListener("resize", () => {
   if (panelEvents && !panelEvents.hidden) refreshDuelEventCard();
 });
@@ -13068,6 +13884,7 @@ btnAdventureWinBack?.addEventListener("click", () => {
 window.addEventListener("resize", () => {
   resize();
   initBubbles();
+  if (crabTrapSession) resizeCrabTrapCanvas();
 });
 
 gameMeta = loadMeta();
