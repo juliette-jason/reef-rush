@@ -6977,6 +6977,8 @@ const btnStartCrab = document.getElementById("btnStartCrab");
 const crabTrapStage = document.getElementById("crabTrapStage");
 const crabTrapCanvas = document.getElementById("crabTrapCanvas");
 const crabTrapScoreEl = document.getElementById("crabTrapScore");
+const crabTrapCagesEl = document.getElementById("crabTrapCages");
+const crabTrapInstructEl = document.getElementById("crabTrapInstruct");
 const crabTrapTimeEl = document.getElementById("crabTrapTime");
 const btnCrabQuit = document.getElementById("btnCrabQuit");
 const panelCrabReward = document.getElementById("panelCrabReward");
@@ -8927,6 +8929,10 @@ const CRAB_TRAP_MEDIUM_MIN = 35;
 const CRAB_TRAP_GREAT_MIN = 55;
 const CRAB_TRAP_MED_BAIT = ["nightcrawler", "shrimp", "glow_jelly", "squid_ink"];
 const CRAB_TRAP_GREAT_BAIT = ["squid_ink", "golden_chum", "glow_jelly"];
+/** Cages you can drop before a reload. */
+const CRAB_TRAP_CLIP_SIZE = 3;
+/** Forced wait after emptying the clip. */
+const CRAB_TRAP_RELOAD_MS = 1000;
 
 let crabTrapSession = null;
 let crabTrapDpr = 1;
@@ -8953,7 +8959,8 @@ function crabShuffle(arr) {
 }
 
 function crabSandTopY() {
-  return crabTrapH * 0.64;
+  // Solid beach occupying the whole bottom third of the playfield.
+  return Math.floor(crabTrapH * 0.58);
 }
 
 function resizeCrabTrapCanvas() {
@@ -8968,11 +8975,12 @@ function resizeCrabTrapCanvas() {
 
 function buildCrabTrapDecor() {
   const decor = [];
-  const count = 22;
+  const count = 28;
   for (let i = 0; i < count; i++) {
     decor.push({
       fx: Math.random(),
-      fy: 0.66 + Math.random() * 0.32,
+      // Keep pebbles/shells on the sand band (relative to full canvas height).
+      fy: 0.6 + Math.random() * 0.38,
       r: 2 + Math.random() * 4,
       tone: Math.random() < 0.5 ? "rgba(120, 90, 52, 0.5)" : "rgba(255, 246, 224, 0.4)",
     });
@@ -9008,6 +9016,8 @@ function startCrabTrap() {
     lastSpawnAt: now,
     nextSpawnIn: 300,
     lastDropAt: -9999,
+    cagesLeft: CRAB_TRAP_CLIP_SIZE,
+    reloadUntil: 0,
     crabs: [],
     cages: [],
     sparkles: [],
@@ -9060,12 +9070,34 @@ function returnToEventsFromCrab() {
 
 function updateCrabTrapHud() {
   if (!crabTrapSession) return;
-  if (crabTrapScoreEl) crabTrapScoreEl.textContent = String(crabTrapSession.score);
-  const left = Math.max(0, crabTrapSession.endAt - performance.now());
+  const s = crabTrapSession;
+  const now = performance.now();
+  if (s.reloadUntil && now >= s.reloadUntil) {
+    s.reloadUntil = 0;
+    s.cagesLeft = CRAB_TRAP_CLIP_SIZE;
+  }
+  if (crabTrapScoreEl) crabTrapScoreEl.textContent = String(s.score);
+  const left = Math.max(0, s.endAt - now);
   if (crabTrapTimeEl) {
     crabTrapTimeEl.textContent = formatTime(left);
     const stat = crabTrapTimeEl.closest(".crab-trap-stage__stat");
     if (stat) stat.classList.toggle("crab-trap-stage__stat--urgent", left <= 10_000);
+  }
+  if (crabTrapCagesEl) {
+    if (s.reloadUntil > now) {
+      crabTrapCagesEl.textContent = "…";
+      crabTrapCagesEl.classList.add("crab-trap-stage__stat-value--reloading");
+    } else {
+      crabTrapCagesEl.textContent = String(s.cagesLeft);
+      crabTrapCagesEl.classList.remove("crab-trap-stage__stat-value--reloading");
+    }
+  }
+  if (crabTrapInstructEl) {
+    crabTrapInstructEl.textContent =
+      s.reloadUntil > now ? "Reloading cages…" : "Tap to drop lobster cages on the crabs!";
+  }
+  if (crabTrapCanvas) {
+    crabTrapCanvas.classList.toggle("crab-trap-stage__canvas--reloading", s.reloadUntil > now);
   }
 }
 
@@ -9074,8 +9106,8 @@ function crabTrapAddCrab() {
   if (!s) return;
   const sc = (0.74 + Math.random() * 0.24) * crabTrapDpr;
   const fromLeft = Math.random() < 0.5;
-  const bandTop = crabTrapH * 0.66;
-  const bandBottom = crabTrapH * 0.85;
+  const bandTop = crabSandTopY() + 18 * crabTrapDpr;
+  const bandBottom = crabTrapH - 28 * crabTrapDpr;
   const y = bandTop + Math.random() * Math.max(1, bandBottom - bandTop);
   // Treasure crabs bolt across the sand — really fast.
   const speed = (240 + Math.random() * 170) * crabTrapDpr;
@@ -9108,8 +9140,15 @@ function crabTrapDropCage(canvasX) {
   const s = crabTrapSession;
   if (!s || !s.running) return;
   const now = performance.now();
+  if (s.reloadUntil && now < s.reloadUntil) return;
+  if (s.reloadUntil && now >= s.reloadUntil) {
+    s.reloadUntil = 0;
+    s.cagesLeft = CRAB_TRAP_CLIP_SIZE;
+  }
+  if (s.cagesLeft <= 0) return;
   if (now - s.lastDropAt < 90) return;
   s.lastDropAt = now;
+  s.cagesLeft -= 1;
   const cageW = 72 * crabTrapDpr;
   const x = Math.max(cageW * 0.5, Math.min(crabTrapW - cageW * 0.5, canvasX));
   s.cages.push({
@@ -9117,13 +9156,17 @@ function crabTrapDropCage(canvasX) {
     y: crabTrapH * 0.03,
     vy: 0,
     w: cageW,
-    landingY: crabTrapH * 0.8,
+    landingY: crabSandTopY() + 52 * crabTrapDpr,
     state: "falling",
     landTimer: 0,
     alpha: 1,
     trapped: [],
   });
   playCrabDropSound();
+  if (s.cagesLeft <= 0) {
+    s.reloadUntil = now + CRAB_TRAP_RELOAD_MS;
+  }
+  updateCrabTrapHud();
 }
 
 function crabTrapLandCage(cage) {
@@ -9518,26 +9561,35 @@ function drawCrabTrap() {
     ctx.fill();
   }
   ctx.restore();
-  // sand
+  // sand — solid full-width fill to the bottom edge of the canvas
+  const sandH = crabTrapH - sandTop;
   const sg = ctx.createLinearGradient(0, sandTop, 0, crabTrapH);
-  sg.addColorStop(0, "#e0bd7c");
-  sg.addColorStop(1, "#b48d54");
+  sg.addColorStop(0, "#e8c684");
+  sg.addColorStop(0.35, "#d4a85e");
+  sg.addColorStop(1, "#a87a3e");
   ctx.fillStyle = sg;
+  ctx.fillRect(0, sandTop, crabTrapW, sandH);
+  // wavy shoreline rim across the full width
+  ctx.fillStyle = "#c99a4e";
   ctx.beginPath();
-  ctx.moveTo(0, sandTop + Math.sin(0) * 6 * crabTrapDpr);
-  const step = Math.max(20, crabTrapW / 24);
-  for (let x = 0; x <= crabTrapW; x += step) {
-    ctx.lineTo(x, sandTop + Math.sin(x / crabTrapW * Math.PI * 5) * 6 * crabTrapDpr);
+  ctx.moveTo(0, sandTop);
+  const step = Math.max(12, crabTrapW / 40);
+  for (let x = 0; x <= crabTrapW + step; x += step) {
+    ctx.lineTo(x, sandTop + Math.sin((x / crabTrapW) * Math.PI * 5) * 5 * crabTrapDpr);
   }
-  ctx.lineTo(crabTrapW, crabTrapH);
-  ctx.lineTo(0, crabTrapH);
+  ctx.lineTo(crabTrapW, sandTop - 2 * crabTrapDpr);
+  ctx.lineTo(0, sandTop - 2 * crabTrapDpr);
   ctx.closePath();
   ctx.fill();
+  // darker wet sand stripe at the waterline
+  ctx.fillStyle = "rgba(140, 100, 50, 0.28)";
+  ctx.fillRect(0, sandTop, crabTrapW, 10 * crabTrapDpr);
   // pebbles/shells
   for (const d of s.decor) {
+    const dy = Math.max(sandTop + 8 * crabTrapDpr, d.fy * crabTrapH);
     ctx.fillStyle = d.tone;
     ctx.beginPath();
-    ctx.arc(d.fx * crabTrapW, d.fy * crabTrapH, d.r * crabTrapDpr, 0, Math.PI * 2);
+    ctx.arc(d.fx * crabTrapW, dy, d.r * crabTrapDpr, 0, Math.PI * 2);
     ctx.fill();
   }
   // crabs

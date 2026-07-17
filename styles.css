@@ -4836,6 +4836,11 @@ body {
   height: 100%;
   touch-action: none;
   cursor: pointer;
+  background: #b48d54;
+}
+
+.crab-trap-stage__canvas--reloading {
+  cursor: wait;
 }
 
 .crab-trap-stage__hud {
@@ -4877,6 +4882,21 @@ body {
   line-height: 1;
   letter-spacing: 0.04em;
   color: #fff;
+}
+
+.crab-trap-stage__stat-value--reloading {
+  color: #ffb454;
+  animation: crabReloadPulse 0.55s ease-in-out infinite;
+}
+
+@keyframes crabReloadPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .crab-trap-stage__stat--time .crab-trap-stage__stat-value {
