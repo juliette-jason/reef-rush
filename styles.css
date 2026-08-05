@@ -784,6 +784,13 @@ body {
 
 .shop-item__icon--bait {
   background: linear-gradient(180deg, #115e59, #134e4a);
+  padding: 4px;
+}
+
+.shop-item__icon--bait .bait-bucket {
+  width: 40px;
+  height: 46px;
+  display: block;
 }
 
 .shop-item__icon--glow_jelly {
@@ -2761,8 +2768,22 @@ body {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
 }
 
-.rod-option__art .rod-art {
+.rod-option__art--bait {
+  width: 48px;
+  height: 56px;
+}
+
+.rod-option__art .rod-art,
+.rod-option__art .bait-bucket {
   display: block;
+}
+
+.rod-option__art .bait-bucket {
+  width: 44px;
+  height: 52px;
+}
+
+.rod-option__art .rod-art {
   width: 44px;
   height: 72px;
 }
