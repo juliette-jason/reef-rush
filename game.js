@@ -4684,6 +4684,7 @@ function secretSkipAdventureLevel() {
   }
   gameMeta.adventureHighestLevel = prev + 1;
   adventureMapUiProgress = -1;
+  pendingAdventureTrailReveal = true;
   saveMeta();
   refreshCoinDisplays();
   updateAdventureLaunchUI();
@@ -7005,6 +7006,7 @@ const adventureLevelList = document.getElementById("adventureLevelList");
 const adventureMapScroll = document.getElementById("adventureMapScroll");
 const adventureMapSections = document.getElementById("adventureMapSections");
 const adventureMapTrail = document.getElementById("adventureMapTrail");
+const adventureMapTrailReveal = document.getElementById("adventureMapTrailReveal");
 const adventureMapBanner = document.getElementById("adventureMapBanner");
 const btnAdventureBack = document.getElementById("btnAdventureBack");
 const panelAdventureFail = document.getElementById("panelAdventureFail");
@@ -7200,6 +7202,9 @@ function resetProgress() {
   buildShopUI();
   updateAdventureLaunchUI();
   adventureMapUiProgress = -1;
+  adventureTrailDrawnCount = 0;
+  pendingAdventureTrailReveal = false;
+  cancelAdventureTrailReveal();
   buildAdventureLevelUI(true);
   showToast("Progress reset", 1500);
 }
@@ -7586,16 +7591,146 @@ function adventureMapVisibleLevelCount() {
   return Math.min(ADVENTURE_LEVEL_COUNT, highest + 1);
 }
 
-function buildAdventureTrailPath() {
-  const pts = ADVENTURE_MAP_NODE_LAYOUT.slice(0, adventureMapVisibleLevelCount()).map((_, i) =>
-    adventureMapCoords(i)
-  );
+/** How many map nodes the settled red trail currently includes. */
+let adventureTrailDrawnCount = 0;
+/** After clearing a voyage, draw the new dotted segment(s) when the map opens. */
+let pendingAdventureTrailReveal = false;
+let adventureTrailRevealRaf = 0;
+
+function adventureTrailPoints(count) {
+  const n = Math.max(0, Math.min(ADVENTURE_MAP_NODE_LAYOUT.length, count));
+  return ADVENTURE_MAP_NODE_LAYOUT.slice(0, n).map((_, i) => adventureMapCoords(i));
+}
+
+function buildAdventureTrailPathForCount(count) {
+  const pts = adventureTrailPoints(count);
   if (!pts.length) return "";
   let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
   for (let i = 1; i < pts.length; i++) {
     d += ` L ${pts[i].x.toFixed(1)} ${pts[i].y.toFixed(1)}`;
   }
   return d;
+}
+
+function buildAdventureTrailPath() {
+  return buildAdventureTrailPathForCount(adventureMapVisibleLevelCount());
+}
+
+function cancelAdventureTrailReveal() {
+  if (adventureTrailRevealRaf) {
+    cancelAnimationFrame(adventureTrailRevealRaf);
+    adventureTrailRevealRaf = 0;
+  }
+  if (adventureMapTrailReveal) adventureMapTrailReveal.setAttribute("d", "");
+}
+
+function polylineLength(pts) {
+  let len = 0;
+  for (let i = 1; i < pts.length; i++) {
+    len += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+  }
+  return len;
+}
+
+function pathFromPolylinePrefix(pts, distance) {
+  if (!pts.length) return "";
+  if (pts.length === 1 || distance <= 0) {
+    return `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  }
+  let remaining = distance;
+  let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  for (let i = 1; i < pts.length; i++) {
+    const dx = pts[i].x - pts[i - 1].x;
+    const dy = pts[i].y - pts[i - 1].y;
+    const segLen = Math.hypot(dx, dy);
+    if (remaining >= segLen) {
+      d += ` L ${pts[i].x.toFixed(1)} ${pts[i].y.toFixed(1)}`;
+      remaining -= segLen;
+      continue;
+    }
+    const t = segLen > 0 ? remaining / segLen : 1;
+    d += ` L ${(pts[i - 1].x + dx * t).toFixed(1)} ${(pts[i - 1].y + dy * t).toFixed(1)}`;
+    break;
+  }
+  return d;
+}
+
+function finishAdventureTrailReveal(toCount) {
+  cancelAdventureTrailReveal();
+  adventureTrailDrawnCount = toCount;
+  pendingAdventureTrailReveal = false;
+  if (adventureMapTrail) {
+    adventureMapTrail.setAttribute("d", buildAdventureTrailPathForCount(toCount));
+  }
+}
+
+function animateAdventureTrailReveal(fromCount, toCount) {
+  cancelAdventureTrailReveal();
+  const prefersReducedMotion =
+    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (prefersReducedMotion || toCount <= fromCount || !adventureMapTrailReveal) {
+    finishAdventureTrailReveal(toCount);
+    return;
+  }
+
+  const allPts = adventureTrailPoints(toCount);
+  const startIdx = Math.max(0, fromCount - 1);
+  const animPts = allPts.slice(startIdx);
+  if (animPts.length < 2) {
+    finishAdventureTrailReveal(toCount);
+    return;
+  }
+
+  if (adventureMapTrail) {
+    adventureMapTrail.setAttribute("d", buildAdventureTrailPathForCount(Math.max(fromCount, 1)));
+  }
+
+  const totalLen = polylineLength(animPts);
+  const newSegs = Math.max(1, toCount - Math.max(fromCount, 1));
+  const duration = Math.min(2200, 700 + newSegs * 420);
+  const start = performance.now();
+
+  const tick = (now) => {
+    const t = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - t, 3);
+    const dist = totalLen * eased;
+    adventureMapTrailReveal.setAttribute("d", pathFromPolylinePrefix(animPts, dist));
+    if (t < 1) {
+      adventureTrailRevealRaf = requestAnimationFrame(tick);
+      return;
+    }
+    finishAdventureTrailReveal(toCount);
+  };
+  adventureTrailRevealRaf = requestAnimationFrame(tick);
+}
+
+function syncAdventureMapTrail(animateIfPending = true) {
+  const visibleCount = adventureMapVisibleLevelCount();
+  const shouldAnimate =
+    animateIfPending &&
+    pendingAdventureTrailReveal &&
+    visibleCount > adventureTrailDrawnCount;
+
+  if (shouldAnimate) {
+    const fromCount = adventureTrailDrawnCount;
+    cancelAdventureTrailReveal();
+    if (adventureMapTrail) {
+      adventureMapTrail.setAttribute("d", buildAdventureTrailPathForCount(Math.max(fromCount, 1)));
+    }
+    // Brief delay so the map can settle/scroll before the new dotted path draws in.
+    window.setTimeout(() => {
+      if (!pendingAdventureTrailReveal) return;
+      animateAdventureTrailReveal(fromCount, adventureMapVisibleLevelCount());
+    }, 220);
+    return;
+  }
+
+  cancelAdventureTrailReveal();
+  pendingAdventureTrailReveal = false;
+  adventureTrailDrawnCount = visibleCount;
+  if (adventureMapTrail) {
+    adventureMapTrail.setAttribute("d", buildAdventureTrailPathForCount(visibleCount));
+  }
 }
 
 function scrollAdventureMapToProgress(instant = true) {
@@ -7662,9 +7797,7 @@ function buildAdventureLevelUI(force = false) {
   adventureLevelList.innerHTML = "";
   const nextPlayable = Math.min(ADVENTURE_LEVEL_COUNT, highest + 1);
 
-  if (adventureMapTrail) {
-    adventureMapTrail.setAttribute("d", buildAdventureTrailPath());
-  }
+  syncAdventureMapTrail(true);
 
   const frag = document.createDocumentFragment();
   for (let i = 0; i < ADVENTURE_LEVELS.length; i++) {
@@ -7875,6 +8008,7 @@ function endAdventureRound() {
     if (clearedAuroraReach) gameMeta.pendingLostCityCelebration = true;
     saveMeta();
     adventureMapUiProgress = -1;
+    pendingAdventureTrailReveal = true;
   }
   const earned = coinsAwardedForScore(score);
   if (earned > 0) {

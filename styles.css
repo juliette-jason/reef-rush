@@ -3830,6 +3830,26 @@ body {
   filter: drop-shadow(0 0.5px 1px rgba(80, 20, 20, 0.35));
 }
 
+.adventure-map-trail--reveal {
+  stroke: #ff3b3b;
+  stroke-width: 3.6;
+  opacity: 1;
+  filter: drop-shadow(0 0 4px rgba(255, 60, 60, 0.55));
+  animation: adventureTrailDashMarch 0.55s linear infinite;
+}
+
+@keyframes adventureTrailDashMarch {
+  to {
+    stroke-dashoffset: -14;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adventure-map-trail--reveal {
+    animation: none;
+  }
+}
+
 .adventure-map-header {
   position: fixed;
   top: max(10px, env(safe-area-inset-top, 0px));
