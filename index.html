@@ -1239,9 +1239,40 @@
       </section>
 
       <section id="panelShop" class="panel panel--shop" hidden>
-        <h2 class="panel__headline">Fishing shop</h2>
-        <p class="panel__lede panel__lede--shop">Earn coins from your score each round. Spend coins on bait, rods, and duel tickets.</p>
-        <p class="shop-balance">Balance: <strong id="coinDisplayShop">0</strong> coins</p>
+        <div class="shop-decor" aria-hidden="true">
+          <span class="shop-decor__coin shop-decor__coin--a"></span>
+          <span class="shop-decor__coin shop-decor__coin--b"></span>
+          <span class="shop-decor__coin shop-decor__coin--c"></span>
+          <span class="shop-decor__coin shop-decor__coin--d"></span>
+          <span class="shop-decor__coin shop-decor__coin--e"></span>
+          <span class="shop-decor__sparkle shop-decor__sparkle--1"></span>
+          <span class="shop-decor__sparkle shop-decor__sparkle--2"></span>
+          <span class="shop-decor__sparkle shop-decor__sparkle--3"></span>
+          <div class="shop-decor__pile shop-decor__pile--left">
+            <span class="shop-coin shop-coin--pile"></span>
+            <span class="shop-coin shop-coin--pile shop-coin--pile-2"></span>
+            <span class="shop-coin shop-coin--pile shop-coin--pile-3"></span>
+          </div>
+          <div class="shop-decor__pile shop-decor__pile--right">
+            <span class="shop-coin shop-coin--pile"></span>
+            <span class="shop-coin shop-coin--pile shop-coin--pile-2"></span>
+            <span class="shop-coin shop-coin--pile shop-coin--pile-3"></span>
+          </div>
+        </div>
+        <header class="shop-topbar">
+          <div class="shop-topbar__titles">
+            <p class="shop-topbar__eyebrow">Gear &amp; supplies</p>
+            <h2 class="shop-topbar__title">Fishing Shop</h2>
+          </div>
+          <div class="shop-wallet" title="Your coin balance">
+            <span class="shop-coin shop-coin--lg" aria-hidden="true"></span>
+            <div class="shop-wallet__text">
+              <span class="shop-wallet__label">Coins</span>
+              <strong id="coinDisplayShop" class="shop-wallet__amount">0</strong>
+            </div>
+          </div>
+        </header>
+        <p class="shop-tagline">Score big on the reef, cash in here — bait, rods, and duel tickets.</p>
         <div id="shopGuide" class="shop-guide" hidden>
           <div class="shop-guide__sailor" aria-hidden="true">
             <span class="shop-guide__hat"></span>
@@ -1267,12 +1298,14 @@
             <button type="button" id="btnShopGuideDone" class="btn btn--secondary shop-guide__btn">Thanks, sailor</button>
           </div>
         </div>
-        <ul id="shopList" class="shop-list" aria-label="Fishing shop items for sale"></ul>
-        <button type="button" id="btnOpenShopGuide" class="shop-guide-launch" aria-label="Ask the sailor about the shop">
-          <span class="shop-guide-launch__face" aria-hidden="true"></span>
-          <span class="shop-guide-launch__text">About shop</span>
-        </button>
-        <button type="button" id="btnCloseShop" class="btn btn--primary">Back</button>
+        <div id="shopList" class="shop-shelf" aria-label="Fishing shop items for sale"></div>
+        <div class="shop-footer">
+          <button type="button" id="btnOpenShopGuide" class="shop-guide-launch" aria-label="Ask the sailor about the shop">
+            <span class="shop-guide-launch__face" aria-hidden="true"></span>
+            <span class="shop-guide-launch__text">About shop</span>
+          </button>
+          <button type="button" id="btnCloseShop" class="btn btn--primary shop-back-btn">Back</button>
+        </div>
       </section>
 
       <section id="panelGameOver" class="panel panel--over" hidden>

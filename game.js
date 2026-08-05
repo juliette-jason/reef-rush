@@ -9108,13 +9108,97 @@ function buildBaitUI() {
   }
 }
 
+function shopCoinEl(sizeClass = "") {
+  const coin = document.createElement("span");
+  coin.className = sizeClass ? `shop-coin ${sizeClass}` : "shop-coin";
+  coin.setAttribute("aria-hidden", "true");
+  return coin;
+}
+
+function shopSection(title, badgeText) {
+  const section = document.createElement("section");
+  section.className = "shop-section";
+  const head = document.createElement("div");
+  head.className = "shop-section__head";
+  const h = document.createElement("h3");
+  h.className = "shop-section__title";
+  h.textContent = title;
+  head.appendChild(h);
+  if (badgeText) {
+    const badge = document.createElement("span");
+    badge.className = "shop-section__badge";
+    badge.textContent = badgeText;
+    head.appendChild(badge);
+  }
+  const list = document.createElement("ul");
+  list.className = "shop-list";
+  section.append(head, list);
+  return { section, list };
+}
+
+function shopBuyButton({ owned = false, price, disabled, label }) {
+  const buy = document.createElement("button");
+  buy.type = "button";
+  buy.className = owned ? "shop-buy shop-buy--owned" : "shop-buy";
+  buy.disabled = disabled;
+  if (owned) {
+    buy.textContent = label || "Owned";
+    return buy;
+  }
+  const priceWrap = document.createElement("span");
+  priceWrap.className = "shop-buy__price";
+  priceWrap.append(shopCoinEl(), document.createTextNode(String(price)));
+  const action = document.createElement("span");
+  action.className = "shop-buy__label";
+  action.textContent = label || "Buy";
+  buy.append(action, priceWrap);
+  return buy;
+}
+
+function shopBaitIcon(baitId) {
+  const art = document.createElement("div");
+  art.className = `shop-item__icon shop-item__icon--bait shop-item__icon--${baitId}`;
+  art.setAttribute("aria-hidden", "true");
+  const glyph = document.createElement("span");
+  glyph.className = "shop-item__glyph";
+  if (baitId === "nightcrawler") glyph.textContent = "🪱";
+  else if (baitId === "shrimp") glyph.textContent = "🦐";
+  else if (baitId === "glow_jelly") glyph.textContent = "🪼";
+  else if (baitId === "squid_ink") glyph.textContent = "🦑";
+  else if (baitId === KRAKEN_SPRAY_BAIT_ID) glyph.textContent = "🐙";
+  else glyph.textContent = "🎣";
+  art.appendChild(glyph);
+  return art;
+}
+
+function shopTicketIcon() {
+  const art = document.createElement("div");
+  art.className = "shop-item__icon shop-item__icon--ticket";
+  art.setAttribute("aria-hidden", "true");
+  art.innerHTML =
+    '<svg viewBox="0 0 48 48" width="40" height="40" xmlns="http://www.w3.org/2000/svg">' +
+    '<rect x="6" y="14" width="36" height="20" rx="4" fill="#f87171"/>' +
+    '<rect x="6" y="14" width="36" height="20" rx="4" fill="none" stroke="#7f1d1d" stroke-width="2"/>' +
+    '<circle cx="6" cy="24" r="4" fill="#0b3a4a"/>' +
+    '<circle cx="42" cy="24" r="4" fill="#0b3a4a"/>' +
+    '<path d="M18 18 v12 M30 18 v12" stroke="#fee2e2" stroke-width="2" stroke-dasharray="2 3"/>' +
+    '<text x="24" y="28" text-anchor="middle" font-size="11" font-weight="800" fill="#7f1d1d">VS</text>' +
+    "</svg>";
+  return art;
+}
+
 function buildShopUI() {
   if (!shopList) return;
   shopList.innerHTML = "";
   refreshDuelTicketsForToday();
 
+  const tickets = shopSection("Event tickets", "HOT");
   const duelTicketLi = document.createElement("li");
-  duelTicketLi.className = "shop-item shop-item--duel-ticket";
+  duelTicketLi.className = "shop-item shop-item--duel-ticket shop-item--featured";
+  const duelRibbon = document.createElement("span");
+  duelRibbon.className = "shop-item__ribbon";
+  duelRibbon.textContent = "Best value";
+  duelTicketLi.append(duelRibbon, shopTicketIcon());
   const duelBody = document.createElement("div");
   duelBody.className = "shop-item__body";
   const duelTitle = document.createElement("h3");
@@ -9125,13 +9209,13 @@ function buildShopUI() {
   duelDesc.textContent = "One split-screen Duel Fishing run on Events. You get 5 free tickets each day.";
   const duelMeta = document.createElement("div");
   duelMeta.className = "shop-item__meta";
-  duelMeta.textContent = `You have ${getDuelTicketCount()} · ${DUEL_TICKET_PRICE} coins each`;
+  duelMeta.innerHTML = `<span class="shop-item__stock">You have ${getDuelTicketCount()}</span>`;
   duelBody.append(duelTitle, duelDesc, duelMeta);
-  const duelBuy = document.createElement("button");
-  duelBuy.type = "button";
-  duelBuy.className = "btn btn--secondary";
-  duelBuy.textContent = "Buy 1 ticket";
-  duelBuy.disabled = gameMeta.coins < DUEL_TICKET_PRICE;
+  const duelBuy = shopBuyButton({
+    price: DUEL_TICKET_PRICE,
+    disabled: gameMeta.coins < DUEL_TICKET_PRICE,
+    label: "Buy 1",
+  });
   duelBuy.addEventListener("click", () => {
     if (gameMeta.coins < DUEL_TICKET_PRICE) return;
     gameMeta.coins -= DUEL_TICKET_PRICE;
@@ -9143,12 +9227,15 @@ function buildShopUI() {
     showToast("Duel ticket +1", 1600);
   });
   duelTicketLi.append(duelBody, duelBuy);
-  shopList.appendChild(duelTicketLi);
+  tickets.list.appendChild(duelTicketLi);
+  shopList.appendChild(tickets.section);
 
+  const baitSec = shopSection("Bait packs", "BOOST");
   for (const b of BAITS) {
     if (!b.consumesOnRound || b.shopHidden) continue;
     const li = document.createElement("li");
-    li.className = "shop-item";
+    li.className = "shop-item shop-item--bait";
+    li.appendChild(shopBaitIcon(b.id));
     const body = document.createElement("div");
     body.className = "shop-item__body";
     const title = document.createElement("h3");
@@ -9159,13 +9246,12 @@ function buildShopUI() {
     desc.textContent = b.desc;
     const meta = document.createElement("div");
     meta.className = "shop-item__meta";
-    meta.textContent = `+${b.packSize} uses · ${b.price} coins`;
+    meta.innerHTML = `<span class="shop-item__stock">+${b.packSize} use${b.packSize === 1 ? "" : "s"}</span>`;
     body.append(title, desc, meta);
-    const buy = document.createElement("button");
-    buy.type = "button";
-    buy.className = "btn btn--secondary";
-    buy.textContent = "Buy";
-    buy.disabled = gameMeta.coins < b.price;
+    const buy = shopBuyButton({
+      price: b.price,
+      disabled: gameMeta.coins < b.price,
+    });
     buy.addEventListener("click", () => {
       if (gameMeta.coins < b.price) return;
       gameMeta.coins -= b.price;
@@ -9178,13 +9264,16 @@ function buildShopUI() {
       showToast(`${b.name} +${b.packSize}`, 1600);
     });
     li.append(body, buy);
-    shopList.appendChild(li);
+    baitSec.list.appendChild(li);
   }
+  shopList.appendChild(baitSec.section);
+
+  const rodSec = shopSection("Pro rods", "GEAR");
   for (const rod of RODS) {
     if (rod.id === FREE_ROD_ID || rod.id === MAGNET_ROD_ID) continue;
     const owned = isRodOwned(rod.id);
     const li = document.createElement("li");
-    li.className = `shop-item shop-item--rod shop-item--rod-${rod.id}`;
+    li.className = `shop-item shop-item--rod shop-item--rod-${rod.id}${owned ? " shop-item--owned" : ""}`;
     const art = document.createElement("div");
     art.className = "shop-item__art";
     art.innerHTML = rodArtSvg(rod);
@@ -9198,13 +9287,15 @@ function buildShopUI() {
     desc.textContent = rod.desc;
     const meta = document.createElement("div");
     meta.className = "shop-item__meta";
-    meta.textContent = owned ? "Rod · owned" : `Rod · ${ROD_PRICE} coins`;
+    meta.innerHTML = owned
+      ? `<span class="shop-item__stock shop-item__stock--owned">Unlocked</span>`
+      : `<span class="shop-item__stock">Permanent unlock</span>`;
     body.append(title, desc, meta);
-    const buy = document.createElement("button");
-    buy.type = "button";
-    buy.className = "btn btn--secondary";
-    buy.textContent = owned ? "Owned" : "Buy";
-    buy.disabled = owned || gameMeta.coins < ROD_PRICE;
+    const buy = shopBuyButton({
+      owned,
+      price: ROD_PRICE,
+      disabled: owned || gameMeta.coins < ROD_PRICE,
+    });
     buy.addEventListener("click", () => {
       if (owned || gameMeta.coins < ROD_PRICE) return;
       gameMeta.coins -= ROD_PRICE;
@@ -9218,8 +9309,9 @@ function buildShopUI() {
       showToast(`${rod.name} unlocked!`, 1700);
     });
     li.append(art, body, buy);
-    shopList.appendChild(li);
+    rodSec.list.appendChild(li);
   }
+  shopList.appendChild(rodSec.section);
 }
 
 function openShop() {
