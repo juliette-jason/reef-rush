@@ -1629,13 +1629,14 @@ body {
 }
 
 .rods--with-map {
-  max-width: min(560px, 94vw);
+  max-width: min(520px, 94vw);
 }
 
-.reef-picker {
+.reef-picker,
+.reef-picker--map-first {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
   align-items: stretch;
   width: 100%;
 }
@@ -1669,6 +1670,94 @@ body {
   height: 100%;
 }
 
+.reef-map__pins {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.reef-map__pin {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  pointer-events: auto;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  z-index: 2;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.55));
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.reef-map__pin:hover,
+.reef-map__pin:focus-visible {
+  transform: translate(-50%, -108%) scale(1.08);
+  outline: none;
+  filter: drop-shadow(0 0 8px rgba(94, 234, 212, 0.7));
+  z-index: 4;
+}
+
+.reef-map__pin--selected {
+  z-index: 3;
+  filter: drop-shadow(0 0 10px rgba(255, 213, 74, 0.85));
+}
+
+.reef-map__pin-dot {
+  display: block;
+  width: 14px;
+  height: 14px;
+  margin: 0 auto;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: linear-gradient(135deg, #ffe082, #f59e0b);
+  border: 2px solid #fff8e7;
+  box-shadow: inset 0 0 0 2px rgba(120, 53, 15, 0.35);
+}
+
+.reef-map__pin--selected .reef-map__pin-dot {
+  background: linear-gradient(135deg, #5eead4, #14b8a6);
+  border-color: #ecfeff;
+}
+
+.reef-map__pin-label {
+  display: block;
+  margin-top: 4px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(6, 20, 34, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #fff8e7;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  max-width: 88px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+.reef-map__pin--selected .reef-map__pin-label {
+  border-color: rgba(94, 234, 212, 0.55);
+  color: #5eead4;
+}
+
+.reef-map__pin--diff-easy .reef-map__pin-dot {
+  background: linear-gradient(135deg, #86efac, #16a34a);
+}
+.reef-map__pin--diff-medium .reef-map__pin-dot {
+  background: linear-gradient(135deg, #7dd3fc, #0284c7);
+}
+.reef-map__pin--diff-hard .reef-map__pin-dot {
+  background: linear-gradient(135deg, #fde68a, #d97706);
+}
+.reef-map__pin--diff-very-hard .reef-map__pin-dot {
+  background: linear-gradient(135deg, #fdba74, #ea580c);
+}
+.reef-map__pin--diff-expert .reef-map__pin-dot {
+  background: linear-gradient(135deg, #f9a8d4, #db2777);
+}
+
 .reef-map__boat {
   position: absolute;
   left: 50%;
@@ -1678,17 +1767,24 @@ body {
   margin-left: -16px;
   margin-top: -16px;
   pointer-events: none;
+  z-index: 5;
   transition: left 0.22s ease-out, top 0.22s ease-out;
   filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.55));
 }
 
 .reef-map-panel__caption {
   margin: 8px 0 0;
-  font-size: 0.72rem;
-  color: var(--muted);
+  font-size: 0.78rem;
+  color: var(--text);
   line-height: 1.4;
   min-height: 2.8em;
   text-align: left;
+  font-weight: 700;
+}
+
+.event-card--global {
+  border-color: rgba(94, 234, 212, 0.35);
+  background: linear-gradient(165deg, rgba(18, 40, 58, 0.94), rgba(10, 22, 36, 0.97));
 }
 
 .rods__legend {
@@ -1730,15 +1826,15 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 68px;
+  width: 48px;
+  height: 74px;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
 }
 
 .rod-option__art .rod-art {
   display: block;
-  width: 40px;
-  height: 68px;
+  width: 44px;
+  height: 72px;
 }
 
 .rod-option__copy {
@@ -1851,16 +1947,16 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 72px;
+  width: 52px;
+  height: 76px;
   margin-right: 2px;
   filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.4));
 }
 
 .shop-item__art .rod-art {
   display: block;
-  width: 42px;
-  height: 70px;
+  width: 46px;
+  height: 74px;
 }
 
 .shop-item--rod {
@@ -2000,28 +2096,13 @@ body {
 }
 
 @media (min-width: 640px) {
-  .reef-picker {
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 16px;
-    min-width: 0;
-  }
-
-  .reef-picker .rods__grid--reefs {
-    flex: 1 1 52%;
-    min-width: 0;
+  .reef-picker--map-first {
     flex-direction: column;
-    flex-wrap: nowrap;
-  }
-
-  .reef-picker .rods__grid--reefs .rod-option {
-    flex: 0 0 auto;
   }
 
   .reef-map-panel {
-    flex: 0 0 200px;
-    width: 200px;
-    max-width: 44%;
+    width: 100%;
+    max-width: none;
   }
 }
 

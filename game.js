@@ -250,7 +250,7 @@ const MAGNET_ROD_ID = "magnet";
 const KRAKEN_SPRAY_BAIT_ID = "kraken_spray";
 const DAILY_SECOND_PLACE_KRAKEN_SPRAY = 3;
 
-/** Compact SVG portrait of a rod for shop + home picker. */
+/** Compact SVG portrait of a full fishing rod for shop + home picker. */
 function rodArtSvg(rod) {
   const v = rod.visual || {};
   const body = v.reelBody || "#5c4033";
@@ -261,54 +261,56 @@ function rodArtSvg(rod) {
   const glow = v.tipGlow || "rgba(255,200,120,0.2)";
   const uid = `rod-${rod.id}`;
 
-  let tip = "";
+  let tipGear = "";
   if (v.tipType === "magnet") {
     const north = v.magnetNorth || "#ef4444";
     const south = v.magnetSouth || "#3b82f6";
-    tip =
-      `<path d="M20 46 h6 v10 a8 8 0 0 1 -16 0 v-10 h6 v10 a2 2 0 0 0 4 0 z" fill="${v.magnetBody || "#64748b"}"/>` +
-      `<rect x="20" y="46" width="6" height="8" fill="${north}"/>` +
-      `<rect x="10" y="46" width="6" height="8" fill="${south}"/>`;
+    tipGear =
+      `<path d="M30 52 h5 v8 a6 6 0 0 1 -12 0 v-8 h5 v8 a1.5 1.5 0 0 0 3 0 z" fill="${v.magnetBody || "#64748b"}"/>` +
+      `<rect x="30" y="52" width="5" height="6" fill="${north}"/>` +
+      `<rect x="23" y="52" width="5" height="6" fill="${south}"/>`;
   } else if (rod.id === "wide_net") {
-    tip =
-      `<ellipse cx="18" cy="54" rx="12" ry="8" fill="none" stroke="${band}" stroke-width="1.6"/>` +
-      `<path d="M10 50 L18 58 L26 50 M14 52 L18 58 L22 52" fill="none" stroke="${metal}" stroke-width="1.1"/>` +
-      `<circle cx="18" cy="46" r="2.2" fill="${metal}"/>`;
+    tipGear =
+      `<ellipse cx="29" cy="58" rx="9" ry="6" fill="none" stroke="${band}" stroke-width="1.4"/>` +
+      `<path d="M23 55 L29 61 L35 55 M26 57 L29 61 L32 57" fill="none" stroke="${metal}" stroke-width="1"/>`;
   } else if (rod.id === "light") {
-    tip =
-      `<circle cx="18" cy="50" r="7" fill="${glow}"/>` +
-      `<circle cx="18" cy="50" r="4.2" fill="#ecfeff" stroke="${band}" stroke-width="1.2"/>` +
-      `<path d="M18 46 L14 56 L22 56 Z" fill="${barb}"/>`;
+    tipGear =
+      `<circle cx="29" cy="54" r="5.5" fill="${glow}"/>` +
+      `<circle cx="29" cy="54" r="3.2" fill="#ecfeff" stroke="${band}" stroke-width="1"/>`;
   } else {
-    tip =
-      `<path d="M18 46 L12 58 L24 58 Z" fill="${barb}"/>` +
-      `<circle cx="18" cy="59" r="2.6" fill="${metal}"/>`;
-  }
-
-  let extras = "";
-  if (rod.id === "legend") {
-    extras = `<path d="M30 14 l1.4 2.8 3 .4 -2.2 2.2 .5 3 -2.7-1.5 -2.7 1.5 .5-3 -2.2-2.2 3-.4 z" fill="${band}" opacity="0.9"/>`;
-  } else if (rod.id === "golden") {
-    extras = `<circle cx="28" cy="18" r="2.2" fill="${band}"/><circle cx="31" cy="24" r="1.6" fill="${metal}"/>`;
-  } else if (rod.id === "titan") {
-    extras = `<rect x="14" y="16" width="8" height="3" rx="1" fill="${band}" opacity="0.85"/>`;
+    tipGear =
+      `<path d="M29 48 L29 56 Q29 61 24 59" fill="none" stroke="${metal}" stroke-width="1.8" stroke-linecap="round"/>` +
+      `<path d="M24 59 L26.5 56.5 L25 61 Z" fill="${barb}"/>`;
   }
 
   return (
-    `<svg class="rod-art" viewBox="0 0 40 68" width="40" height="68" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">` +
+    `<svg class="rod-art" viewBox="0 0 44 72" width="44" height="72" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">` +
     `<defs>` +
-    `<linearGradient id="${uid}-shaft" x1="0" y1="0" x2="0" y2="1">` +
-    `<stop offset="0" stop-color="${band}"/>` +
-    `<stop offset="1" stop-color="${body}"/>` +
+    `<linearGradient id="${uid}-blank" x1="0" y1="0" x2="1" y2="1">` +
+    `<stop offset="0" stop-color="${body}"/>` +
+    `<stop offset="0.45" stop-color="${band}"/>` +
+    `<stop offset="1" stop-color="${metal}"/>` +
     `</linearGradient>` +
     `</defs>` +
-    `<ellipse cx="20" cy="64" rx="12" ry="2.4" fill="rgba(0,0,0,0.22)"/>` +
-    `<rect x="15.5" y="6" width="5" height="40" rx="2.4" fill="url(#${uid}-shaft)" stroke="${body}" stroke-width="0.6"/>` +
-    `<ellipse cx="18" cy="12" rx="7" ry="4.5" fill="${body}" stroke="${band}" stroke-width="1.2"/>` +
-    `<ellipse cx="18" cy="12" rx="2.4" ry="1.6" fill="${band}"/>` +
-    `<path d="M18 16.5 L18 46" stroke="${line}" stroke-width="1.4" stroke-linecap="round"/>` +
-    tip +
-    extras +
+    `<ellipse cx="22" cy="68" rx="14" ry="2.6" fill="rgba(0,0,0,0.22)"/>` +
+    // Full angled blank
+    `<path d="M8 58 L28 8" stroke="url(#${uid}-blank)" stroke-width="4.2" stroke-linecap="round"/>` +
+    `<path d="M8 58 L28 8" stroke="${band}" stroke-width="1.1" stroke-linecap="round" opacity="0.35"/>` +
+    // Cork grip
+    `<path d="M9 56 L13 48" stroke="#c4a574" stroke-width="6.2" stroke-linecap="round"/>` +
+    `<path d="M9.5 55 L12.5 49" stroke="rgba(90,60,30,0.35)" stroke-width="0.8"/>` +
+    // Spinning reel
+    `<ellipse cx="16" cy="50" rx="6.2" ry="4.6" fill="${body}" stroke="${band}" stroke-width="1.1"/>` +
+    `<ellipse cx="16" cy="50" rx="2.6" ry="2" fill="none" stroke="${band}" stroke-width="1.1"/>` +
+    // Guides
+    `<circle cx="15" cy="42" r="1.5" fill="none" stroke="${metal}" stroke-width="1"/>` +
+    `<circle cx="18" cy="34" r="1.35" fill="none" stroke="${metal}" stroke-width="1"/>` +
+    `<circle cx="21" cy="26" r="1.2" fill="none" stroke="${metal}" stroke-width="0.95"/>` +
+    `<circle cx="24" cy="18" r="1.05" fill="none" stroke="${metal}" stroke-width="0.9"/>` +
+    `<circle cx="27" cy="11" r="1.5" fill="${metal}"/>` +
+    // Line from tip
+    `<path d="M28 10 L29 48" stroke="${line}" stroke-width="1.15" stroke-linecap="round"/>` +
+    tipGear +
     `</svg>`
   );
 }
@@ -4947,6 +4949,7 @@ async function fetchSharedLeaderboard() {
   leaderboardLoading = true;
   renderLeaderboardOl(leaderboardStart);
   renderLeaderboardOl(leaderboardOver);
+  renderLeaderboardOl(leaderboardEvents);
   try {
     const url = `${LEADERBOARD_TABLE_URL}?select=initials,score,reef_id,created_at&order=score.desc,created_at.asc&limit=${LEADERBOARD_FETCH_LIMIT}`;
     const res = await fetch(url, { headers: leaderboardHeaders() });
@@ -5044,6 +5047,7 @@ function refreshLeaderboardViews(syncShared = true) {
   const rows = loadLeaderboard();
   renderLeaderboardOl(leaderboardStart, rows);
   renderLeaderboardOl(leaderboardOver, rows);
+  renderLeaderboardOl(leaderboardEvents, rows);
   if (syncShared) fetchSharedLeaderboard();
 }
 
@@ -5553,6 +5557,7 @@ async function refreshEventsPanel() {
   updateDailyEventResetLine();
   const rows = await fetchTodayDailyLeaderboard();
   updateDailyEventPlayerHint(rows);
+  refreshLeaderboardViews(false);
   refreshDuelEventCard();
   refreshCrabTrapEventCard();
 }
@@ -6543,20 +6548,12 @@ function drawHookLineForState(hookState, anchorX) {
   const hy = hookState.tipY;
   const topY = lineAnchorY();
   const v = selectedRod.visual;
-
-  const reelW = 14 * dpr * (isDuelActive() ? 0.82 : 1);
-  const reelH = 7 * dpr * (isDuelActive() ? 0.82 : 1);
-  const rg = ctx.createLinearGradient(hx - reelW, topY - reelH, hx + reelW, topY + reelH * 0.5);
-  rg.addColorStop(0, v.reelBody);
-  rg.addColorStop(0.5, v.reelBand);
-  rg.addColorStop(1, v.reelBody);
-  ctx.fillStyle = rg;
-  ctx.beginPath();
-  ctx.ellipse(hx, topY - dpr * 3.2, reelW * 0.48, reelH * 1.15, 0, 0, Math.PI * 2);
-  ctx.fill();
+  const boatCx = fishingRodBoatCenterX(hookState);
+  drawFishingRod(hx, topY, v, boatCx);
 
   ctx.strokeStyle = v.lineMain;
   ctx.lineWidth = v.lineW * dpr;
+  ctx.lineCap = "round";
   ctx.beginPath();
   ctx.moveTo(hx, topY);
   ctx.lineTo(hx, hy);
@@ -6890,7 +6887,141 @@ const CAST_UP_MS = 520;
 const TOUCH_TAP_CAST_MAX_MOVE_PX = 18;
 
 function lineAnchorY() {
-  return dpr * 6;
+  // Tip of the fishing rod sits just above the waterline.
+  return waterTop + dpr * 2;
+}
+
+function fishingRodBoatCenterX(hookState) {
+  if (isDuelActive()) {
+    return hookState === hook ? duelSideCenter("player") : duelSideCenter("opponent");
+  }
+  return w * 0.5;
+}
+
+/** Draw a full fishing rod blank, grip, reel, and guides from the boat to the tip. */
+function drawFishingRod(hx, tipY, v, boatCenterX) {
+  const g = getCharterBoatGeo(boatCenterX);
+  const scale = isDuelActive() ? 0.72 : 1;
+  const buttX = g.cx + g.L * 0.22;
+  const buttY = g.deckY(buttX) - dpr * 3 * scale;
+  const tipX = hx;
+  const dx = tipX - buttX;
+  const dy = tipY - buttY;
+  const len = Math.hypot(dx, dy) || 1;
+  const ux = dx / len;
+  const uy = dy / len;
+  const px = -uy;
+  const py = ux;
+
+  const along = (t, side = 0) => ({
+    x: buttX + dx * t + px * side,
+    y: buttY + dy * t + py * side,
+  });
+
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  // Soft shadow under the blank
+  ctx.strokeStyle = "rgba(0, 0, 0, 0.28)";
+  ctx.lineWidth = 5.2 * dpr * scale;
+  ctx.beginPath();
+  ctx.moveTo(buttX + dpr * 1.5, buttY + dpr * 2);
+  ctx.lineTo(tipX + dpr * 1.5, tipY + dpr * 2);
+  ctx.stroke();
+
+  // Tapered blank (butt → tip)
+  const blankGrad = ctx.createLinearGradient(buttX, buttY, tipX, tipY);
+  blankGrad.addColorStop(0, v.reelBody);
+  blankGrad.addColorStop(0.45, v.reelBand);
+  blankGrad.addColorStop(1, v.hookMetal || v.reelBand);
+  ctx.strokeStyle = blankGrad;
+  ctx.lineWidth = 4.6 * dpr * scale;
+  ctx.beginPath();
+  ctx.moveTo(buttX, buttY);
+  ctx.lineTo(...[along(0.55).x, along(0.55).y]);
+  ctx.stroke();
+  ctx.lineWidth = 3.1 * dpr * scale;
+  ctx.beginPath();
+  ctx.moveTo(along(0.5).x, along(0.5).y);
+  ctx.lineTo(along(0.82).x, along(0.82).y);
+  ctx.stroke();
+  ctx.lineWidth = 2 * dpr * scale;
+  ctx.beginPath();
+  ctx.moveTo(along(0.8).x, along(0.8).y);
+  ctx.lineTo(tipX, tipY);
+  ctx.stroke();
+
+  // Cork / EVA grip near the butt
+  const gripA = along(0.02);
+  const gripB = along(0.16);
+  ctx.strokeStyle = "#c4a574";
+  ctx.lineWidth = 7.2 * dpr * scale;
+  ctx.beginPath();
+  ctx.moveTo(gripA.x, gripA.y);
+  ctx.lineTo(gripB.x, gripB.y);
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(90, 60, 30, 0.35)";
+  ctx.lineWidth = 1.1 * dpr * scale;
+  for (let i = 0; i < 5; i++) {
+    const p = along(0.03 + i * 0.025);
+    ctx.beginPath();
+    ctx.moveTo(p.x + px * 3.2 * dpr * scale, p.y + py * 3.2 * dpr * scale);
+    ctx.lineTo(p.x - px * 3.2 * dpr * scale, p.y - py * 3.2 * dpr * scale);
+    ctx.stroke();
+  }
+
+  // Reel seat + spinning reel
+  const reelAt = along(0.14);
+  const reelR = 6.5 * dpr * scale;
+  const reelGrad = ctx.createRadialGradient(
+    reelAt.x - px * reelR * 0.3,
+    reelAt.y - py * reelR * 0.3,
+    reelR * 0.2,
+    reelAt.x,
+    reelAt.y,
+    reelR
+  );
+  reelGrad.addColorStop(0, v.reelBand);
+  reelGrad.addColorStop(0.55, v.reelBody);
+  reelGrad.addColorStop(1, "#1f2937");
+  ctx.fillStyle = reelGrad;
+  ctx.beginPath();
+  ctx.ellipse(reelAt.x + px * reelR * 0.85, reelAt.y + py * reelR * 0.85, reelR * 0.95, reelR * 0.72, Math.atan2(uy, ux), 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(0,0,0,0.35)";
+  ctx.lineWidth = 1 * dpr * scale;
+  ctx.stroke();
+  // Spool highlight
+  ctx.strokeStyle = v.lineSheen || "rgba(255,255,255,0.35)";
+  ctx.lineWidth = 1.4 * dpr * scale;
+  ctx.beginPath();
+  ctx.arc(reelAt.x + px * reelR * 0.85, reelAt.y + py * reelR * 0.85, reelR * 0.42, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Line guides along the blank
+  ctx.strokeStyle = v.hookMetal || "#cbd5e1";
+  ctx.lineWidth = 1.35 * dpr * scale;
+  for (const t of [0.28, 0.42, 0.56, 0.7, 0.84]) {
+    const p = along(t);
+    const half = (2.4 - t * 1.2) * dpr * scale;
+    ctx.beginPath();
+    ctx.moveTo(p.x + px * half, p.y + py * half);
+    ctx.lineTo(p.x - px * half * 1.6, p.y - py * half * 1.6);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(p.x - px * half * 1.15, p.y - py * half * 1.15, half * 0.55, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // Tip-top guide
+  ctx.fillStyle = v.hookMetal || "#e2e8f0";
+  ctx.beginPath();
+  ctx.arc(tipX, tipY, 2.1 * dpr * scale, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+  return { tipX, tipY, buttX, buttY };
 }
 
 function surfaceTipY() {
@@ -6966,6 +7097,7 @@ const panelOver = document.getElementById("panelGameOver");
 const appRoot = document.getElementById("app");
 const rodChoices = document.getElementById("rodChoices");
 const reefChoices = document.getElementById("reefChoices");
+const reefMapPins = document.getElementById("reefMapPins");
 const reefMapBoat = document.getElementById("reefMapBoat");
 const reefMapCaption = document.getElementById("reefMapCaption");
 const btnStartSub = document.getElementById("btnStartSub");
@@ -6975,6 +7107,7 @@ const finalScore = document.getElementById("finalScore");
 const catchSummary = document.getElementById("catchSummary");
 const leaderboardStart = document.getElementById("leaderboardStart");
 const leaderboardOver = document.getElementById("leaderboardOver");
+const leaderboardEvents = document.getElementById("leaderboardEvents");
 const initialsPanel = document.getElementById("initialsPanel");
 const initialsInput = document.getElementById("initialsInput");
 const btnSaveScore = document.getElementById("btnSaveScore");
@@ -10142,36 +10275,70 @@ function showReefOnMap(reef) {
   const p = reef.mapPin || { x: MAP_CHART_W / 2, y: MAP_CHART_H / 2 };
   reefMapBoat.style.left = `${(p.x / MAP_CHART_W) * 100}%`;
   reefMapBoat.style.top = `${(p.y / MAP_CHART_H) * 100}%`;
-  reefMapCaption.textContent = `${reef.name} — ${reef.mapPlace}`;
+  const badge = reef.difficulty ? ` · ${reef.difficulty}` : "";
+  reefMapCaption.textContent = `${reef.name}${badge} — ${reef.mapPlace}`;
 }
 
 function showSelectedReefOnMap() {
   showReefOnMap(getReef());
 }
 
+function selectReefFromMap(reefId) {
+  selectedReefId = reefId;
+  invalidateBackgroundCache();
+  updateStartButtonSubtext();
+  showSelectedReefOnMap();
+  if (reefMapPins) {
+    reefMapPins.querySelectorAll(".reef-map__pin").forEach((el) => {
+      const on = el.dataset.reefId === reefId;
+      el.classList.toggle("reef-map__pin--selected", on);
+      el.setAttribute("aria-selected", on ? "true" : "false");
+    });
+  }
+}
+
 function buildReefUI() {
-  if (!reefChoices) return;
-  reefChoices.innerHTML = "";
+  const pinHost = reefMapPins || reefChoices;
+  if (!pinHost) return;
+  pinHost.innerHTML = "";
   for (const reef of REEFS) {
+    const badgeSlug = reef.difficulty.toLowerCase().replace(/\s+/g, "-");
     const b = document.createElement("button");
     b.type = "button";
-    const badgeSlug = reef.difficulty.toLowerCase().replace(/\s+/g, "-");
-    const badgeClass = `rod-option__badge--${badgeSlug}`;
-    b.className = "rod-option" + (reef.id === selectedReefId ? " rod-option--selected" : "");
-    b.innerHTML = `<span class="rod-option__name">${reef.name} <span class="rod-option__badge ${badgeClass}">${reef.difficulty}</span></span><span class="rod-option__desc">${reef.desc}</span>`;
-    b.addEventListener("click", () => {
-      selectedReefId = reef.id;
-      invalidateBackgroundCache();
-      reefChoices.querySelectorAll(".rod-option").forEach((el) => el.classList.remove("rod-option--selected"));
-      b.classList.add("rod-option--selected");
-      updateStartButtonSubtext();
-      showSelectedReefOnMap();
-    });
+    b.setAttribute("role", "option");
+    b.dataset.reefId = reef.id;
+    b.className =
+      `reef-map__pin reef-map__pin--diff-${badgeSlug}` +
+      (reef.id === selectedReefId ? " reef-map__pin--selected" : "");
+    b.setAttribute("aria-selected", reef.id === selectedReefId ? "true" : "false");
+    b.setAttribute("aria-label", `${reef.name}, ${reef.difficulty}`);
+    b.title = `${reef.name} — ${reef.mapPlace}`;
+    const p = reef.mapPin || { x: MAP_CHART_W / 2, y: MAP_CHART_H / 2 };
+    // Nudge overlapping Pacific pins so labels stay readable.
+    let labelNudgeY = 0;
+    if (reef.id === "mariana_trench") labelNudgeY = 10;
+    if (reef.id === "japan_kuroshio") labelNudgeY = -2;
+    b.style.left = `${(p.x / MAP_CHART_W) * 100}%`;
+    b.style.top = `${((p.y + labelNudgeY) / MAP_CHART_H) * 100}%`;
+    const shortName =
+      reef.id === "australia"
+        ? "Barrier Reef"
+        : reef.id === "caribbean"
+          ? "Mesoamerican"
+          : reef.id === "mediterranean"
+            ? "Mediterranean"
+            : reef.id === "japan_kuroshio"
+              ? "Kuroshio"
+              : "Mariana";
+    b.innerHTML =
+      `<span class="reef-map__pin-dot" aria-hidden="true"></span>` +
+      `<span class="reef-map__pin-label">${shortName}</span>`;
+    b.addEventListener("click", () => selectReefFromMap(reef.id));
     b.addEventListener("pointerenter", () => showReefOnMap(reef));
     b.addEventListener("pointerleave", () => showSelectedReefOnMap());
     b.addEventListener("focus", () => showReefOnMap(reef));
     b.addEventListener("blur", () => showSelectedReefOnMap());
-    reefChoices.appendChild(b);
+    pinHost.appendChild(b);
   }
   updateStartButtonSubtext();
   showSelectedReefOnMap();
@@ -13526,18 +13693,29 @@ function drawHookTip(hx, hy, v, hs) {
     return;
   }
 
-  ctx.fillStyle = v.hookBarb;
+  // More realistic J-hook silhouette
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.strokeStyle = v.hookMetal;
+  ctx.lineWidth = 2.4 * dpr * hs;
   ctx.beginPath();
   ctx.moveTo(hx, hy);
-  ctx.lineTo(hx - dpr * 6 * hs, hy + dpr * 14 * hs);
-  ctx.lineTo(hx + dpr * 6 * hs, hy + dpr * 14 * hs);
+  ctx.lineTo(hx, hy + dpr * 10 * hs);
+  ctx.quadraticCurveTo(hx, hy + dpr * 18 * hs, hx - dpr * 7 * hs, hy + dpr * 16 * hs);
+  ctx.stroke();
+  ctx.fillStyle = v.hookBarb;
+  ctx.beginPath();
+  ctx.moveTo(hx - dpr * 7 * hs, hy + dpr * 16 * hs);
+  ctx.lineTo(hx - dpr * 3.5 * hs, hy + dpr * 13.5 * hs);
+  ctx.lineTo(hx - dpr * 5.5 * hs, hy + dpr * 18 * hs);
   ctx.closePath();
   ctx.fill();
-
   ctx.fillStyle = v.hookMetal;
   ctx.beginPath();
-  ctx.arc(hx, hy + dpr * 15 * hs, dpr * 3.2 * hs, 0, Math.PI * 2);
+  ctx.arc(hx, hy, dpr * 2.2 * hs, 0, Math.PI * 2);
   ctx.fill();
+  ctx.restore();
 }
 
 function drawHookLine() {
@@ -13545,23 +13723,11 @@ function drawHookLine() {
   const hy = hook.tipY;
   const topY = lineAnchorY();
   const v = selectedRod.visual;
-
-  const reelW = 14 * dpr;
-  const reelH = 7 * dpr;
-  const rg = ctx.createLinearGradient(hx - reelW, topY - reelH, hx + reelW, topY + reelH * 0.5);
-  rg.addColorStop(0, v.reelBody);
-  rg.addColorStop(0.5, v.reelBand);
-  rg.addColorStop(1, v.reelBody);
-  ctx.fillStyle = rg;
-  ctx.beginPath();
-  ctx.ellipse(hx, topY - dpr * 3.2, reelW * 0.48, reelH * 1.15, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = "rgba(0,0,0,0.28)";
-  ctx.lineWidth = 1 * dpr;
-  ctx.stroke();
+  drawFishingRod(hx, topY, v, fishingRodBoatCenterX(hook));
 
   ctx.strokeStyle = v.lineMain;
   ctx.lineWidth = v.lineW * dpr;
+  ctx.lineCap = "round";
   ctx.beginPath();
   ctx.moveTo(hx, topY);
   ctx.lineTo(hx, hy);
@@ -13573,13 +13739,13 @@ function drawHookLine() {
     const mx = kraken.x + f * L * 0.12;
     const my = kraken.y - L * 0.88;
     const t = performance.now() * 0.0038;
-    const w = Math.sin(t * 9) * dpr * 6;
+    const wiggle = Math.sin(t * 9) * dpr * 6;
     ctx.strokeStyle = "rgba(120, 22, 18, 0.92)";
     ctx.lineWidth = (v.lineW + 0.65) * dpr;
     ctx.lineCap = "round";
     ctx.beginPath();
     ctx.moveTo(hx, hy);
-    const midx = (hx + mx) * 0.5 + w;
+    const midx = (hx + mx) * 0.5 + wiggle;
     const midy = (hy + my) * 0.5 - Math.cos(t * 7.5) * dpr * 5;
     ctx.quadraticCurveTo(midx, midy, mx, my);
     ctx.stroke();

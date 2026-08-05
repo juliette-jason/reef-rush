@@ -266,8 +266,7 @@
         </div>
         <fieldset class="rods rods--with-map">
           <legend class="rods__legend">Choose your reef</legend>
-          <div class="reef-picker">
-            <div id="reefChoices" class="rods__grid rods__grid--reefs"></div>
+          <div class="reef-picker reef-picker--map-first">
             <div class="reef-map-panel">
               <div class="reef-map-panel__title">World map</div>
               <div class="reef-map" id="reefMap">
@@ -300,6 +299,7 @@
                     <path d="M138 55 L146 61 L143 69 L132 66 L130 59 Z" />
                   </g>
                 </svg>
+                <div id="reefMapPins" class="reef-map__pins" role="listbox" aria-label="Reef locations"></div>
                 <div id="reefMapBoat" class="reef-map__boat" aria-hidden="true">
                   <svg viewBox="0 0 32 32" width="32" height="32" fill="none">
                     <path
@@ -313,7 +313,7 @@
                   </svg>
                 </div>
               </div>
-              <p id="reefMapCaption" class="reef-map-panel__caption">Hover a reef to see it on the chart.</p>
+              <p id="reefMapCaption" class="reef-map-panel__caption">Tap a pin on the chart to choose your reef.</p>
             </div>
           </div>
         </fieldset>
@@ -807,6 +807,16 @@
         <div class="panel--events__inner">
         <h2 class="panel__headline">Events</h2>
         <p class="panel__lede">Daily boards, duels &amp; crab hauls.</p>
+        <article class="event-card event-card--global">
+          <header class="event-card__head">
+            <h3 class="event-card__title">Top 10 global scores</h3>
+            <p class="event-card__reset">All-time</p>
+          </header>
+          <p class="event-card__tagline">Best reef runs from fishers worldwide.</p>
+          <div class="leaderboard-block leaderboard-block--compact">
+            <ol id="leaderboardEvents" class="leaderboard" aria-label="Top 10 global scores"></ol>
+          </div>
+        </article>
         <article class="event-card event-card--daily">
           <div class="event-card__art event-card__art--daily" aria-hidden="true">
             <svg class="event-card__art-svg" viewBox="0 0 320 110" xmlns="http://www.w3.org/2000/svg">
