@@ -998,6 +998,8 @@ body {
   z-index: 80;
   padding: 0;
   margin: 0;
+  display: flex;
+  align-items: center;
   justify-content: center;
   overflow: hidden;
   background: #05535f;
@@ -1206,23 +1208,31 @@ body {
 .splash-minnow--5 .splash-fish-swim { animation-delay: -1.2s; }
 
 .splash-copy {
-  position: relative;
+  position: absolute;
+  left: 50%;
+  top: 50%;
   z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 24px 20px;
+  width: min(92vw, 640px);
   pointer-events: none;
+  transform: translate(-50%, -50%);
 }
 
 .splash-copy__brand {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 14px);
+  transform: translateX(-50%);
   margin: 0;
   font-family: var(--font-brand);
   font-size: clamp(3.2rem, 14vw, 6.2rem);
   font-weight: 400;
   letter-spacing: 0.04em;
   line-height: 0.95;
+  white-space: nowrap;
+  text-align: center;
   background: var(--brand-fill);
   -webkit-background-clip: text;
   background-clip: text;
@@ -1237,14 +1247,21 @@ body {
   font-size: clamp(1.2rem, 4.2vw, 1.75rem);
   letter-spacing: 0.16em;
   text-transform: uppercase;
+  text-align: center;
   color: #f8fafc;
   text-shadow: 0 2px 14px rgba(3, 21, 37, 0.7);
   animation: splashClickPulse 1.8s ease-in-out infinite;
 }
 
 .splash-copy__hint {
-  margin: 2px 0 0;
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 12px);
+  transform: translateX(-50%);
+  margin: 0;
   font-size: 0.95rem;
+  white-space: nowrap;
+  text-align: center;
   color: rgba(226, 242, 255, 0.78);
   text-shadow: 0 1px 10px rgba(3, 21, 37, 0.65);
 }
