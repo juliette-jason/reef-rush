@@ -444,7 +444,9 @@ const TREASURE_CINEMATIC_FLY_MS = 2400;
 const TREASURE_CINEMATIC_OPEN_MS = 1600;
 const TREASURE_CINEMATIC_HOLD_MS = 1400;
 
-/** Logical map height for trail SVG coords (matches stretched parchment art). */
+/** Logical map height for trail SVG coords (matches adventure-map-art viewBox). */
+const ADVENTURE_MAP_SVG_HEIGHT = 1200;
+/** Legacy chart height used by some layout helpers. */
 const ADVENTURE_MAP_HEIGHT = 3100;
 
 /** Section metadata — bounds computed dynamically in adventureMapSectionBounds(). */
@@ -7655,7 +7657,9 @@ function updateAdventureLaunchUI() {
 
 function adventureMapCoords(index) {
   const layout = ADVENTURE_MAP_NODE_LAYOUT[index] || { x: 50, y: 50 };
-  return { x: (layout.x / 100) * 400, y: (layout.y / 100) * ADVENTURE_MAP_HEIGHT };
+  // Match the adventure-map-art SVG viewBox (0 0 400 1200) so the red trail
+  // lines up with the CSS %-positioned voyage nodes on the board.
+  return { x: (layout.x / 100) * 400, y: (layout.y / 100) * ADVENTURE_MAP_SVG_HEIGHT };
 }
 
 function adventureMapExtentVh() {
@@ -7986,6 +7990,12 @@ function buildAdventureLevelUI(force = false) {
     adventureLevelList.children.length === visibleCount
   ) {
     syncAdventureMapNodeStates();
+    // Keep the trail visible even when node DOM is reused.
+    if (!pendingAdventureTrailReveal && adventureTrailDrawnCount !== visibleCount) {
+      syncAdventureMapTrail(false);
+    } else if (!adventureMapTrail?.getAttribute("d") && visibleCount > 1) {
+      syncAdventureMapTrail(false);
+    }
     return;
   }
   adventureMapUiProgress = highest;
