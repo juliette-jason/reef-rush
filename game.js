@@ -7095,6 +7095,7 @@ let bgCacheKey = "";
 const scoreDisplay = document.getElementById("scoreDisplay");
 const timeDisplay = document.getElementById("timeDisplay");
 const panelStart = document.getElementById("panelStart");
+const panelSplash = document.getElementById("panelSplash");
 const panelOver = document.getElementById("panelGameOver");
 const appRoot = document.getElementById("app");
 const rodChoices = document.getElementById("rodChoices");
@@ -7410,6 +7411,7 @@ function resetProgress() {
 }
 
 function hideAllPanels() {
+  if (panelSplash) panelSplash.hidden = true;
   if (panelStart) panelStart.hidden = true;
   if (panelOver) panelOver.hidden = true;
   if (panelShop) panelShop.hidden = true;
@@ -7420,7 +7422,7 @@ function hideAllPanels() {
   if (panelAdventureFail) panelAdventureFail.hidden = true;
   if (panelAdventureWin) panelAdventureWin.hidden = true;
   if (panelDuelOver) panelDuelOver.hidden = true;
-  appRoot?.classList.remove("app--events-mode");
+  appRoot?.classList.remove("app--events-mode", "app--splash");
   stopDailyEventCountdown();
 }
 
@@ -7606,8 +7608,23 @@ function showHomePanel() {
   });
 }
 
+function isSplashScreenActive() {
+  return Boolean(panelSplash && !panelSplash.hidden);
+}
+
+function dismissSplashScreen() {
+  if (!isSplashScreenActive()) return;
+  if (panelSplash) panelSplash.hidden = true;
+  appRoot?.classList.remove("app--splash");
+  unlockHomeAudio();
+  showHomePanel();
+  showIntroIfNeeded();
+  deferStartupWork();
+}
+
 function isHomeScreenActive() {
   if (playing) return false;
+  if (isSplashScreenActive()) return false;
   if (!panelStart || panelStart.hidden) return false;
   const blocking = [panelOver, panelShop, panelEvents, panelIntro, panelAdventure, panelAdventureFail, panelAdventureWin, panelDuelOver];
   for (const panel of blocking) {
@@ -14318,6 +14335,17 @@ btnIntroDone?.addEventListener("click", closeIntro);
 btnOpenIntro?.addEventListener("click", openIntro);
 btnResetProgress?.addEventListener("click", resetProgress);
 panelStart?.addEventListener("pointerdown", unlockHomeAudio, { once: true });
+panelSplash?.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  dismissSplashScreen();
+});
+window.addEventListener("keydown", (e) => {
+  if (!isSplashScreenActive()) return;
+  if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+    e.preventDefault();
+    dismissSplashScreen();
+  }
+});
 
 async function saveCurrentScoreToBoard() {
   if (leaderboardSaveInFlight) return;
@@ -14514,6 +14542,10 @@ function deferStartupWork() {
 updateMusicButton();
 resize();
 initBubbles();
-showIntroIfNeeded();
-deferStartupWork();
+if (isSplashScreenActive()) {
+  syncHomeLaunchButtons();
+} else {
+  showIntroIfNeeded();
+  deferStartupWork();
+}
 requestAnimationFrame(gameLoop);

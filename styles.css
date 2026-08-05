@@ -450,6 +450,265 @@ body {
   padding-bottom: max(24px, env(safe-area-inset-bottom, 0px) + 16px);
 }
 
+/* --- Opening splash: animated coral reef --- */
+.app--splash .hud,
+.app--splash .hint,
+.app--splash .home-launch-stack,
+.app--splash .adventure-launch__hint {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.panel--splash {
+  z-index: 80;
+  padding: 0;
+  margin: 0;
+  justify-content: center;
+  overflow: hidden;
+  background: #063a5c;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.panel--splash[hidden] {
+  display: none;
+}
+
+.splash-reef {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.splash-reef__svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.splash-reef__rays {
+  transform-origin: 400px 0;
+  animation: splashRaySway 8s ease-in-out infinite alternate;
+}
+
+.splash-coral--left,
+.splash-coral--right,
+.splash-coral--mid {
+  transform-origin: center bottom;
+  animation: splashCoralSway 4.5s ease-in-out infinite alternate;
+}
+
+.splash-coral--right {
+  animation-duration: 5.2s;
+  animation-delay: -1.2s;
+}
+
+.splash-coral--mid {
+  animation-duration: 3.8s;
+  animation-delay: -0.6s;
+}
+
+.splash-bubble {
+  animation: splashBubbleRise 6s ease-in infinite;
+}
+
+.splash-bubble--1 { animation-duration: 5.5s; animation-delay: 0s; }
+.splash-bubble--2 { animation-duration: 7s; animation-delay: -1.5s; }
+.splash-bubble--3 { animation-duration: 6.2s; animation-delay: -0.8s; }
+.splash-bubble--4 { animation-duration: 8s; animation-delay: -2.4s; }
+.splash-bubble--5 { animation-duration: 5.8s; animation-delay: -3.1s; }
+.splash-bubble--6 { animation-duration: 6.8s; animation-delay: -4.2s; }
+
+.splash-jelly--1 {
+  animation: splashJellyDrift 14s ease-in-out infinite;
+}
+
+.splash-jelly--2 {
+  animation: splashJellyDrift2 18s ease-in-out infinite;
+}
+
+.splash-turtle {
+  animation: splashTurtleSwim 22s linear infinite;
+}
+
+.splash-hero-fish {
+  animation: splashHeroSwim 12s ease-in-out infinite;
+}
+
+.splash-angel {
+  animation: splashAngelSwim 16s ease-in-out infinite;
+}
+
+.splash-clown {
+  animation: splashClownSwim 10s ease-in-out infinite;
+}
+
+.splash-minnow--1 { animation: splashMinnowSwim 9s linear infinite; }
+.splash-minnow--2 { animation: splashMinnowSwim 9s linear infinite -1.2s; }
+.splash-minnow--3 { animation: splashMinnowSwim 9s linear infinite -2.4s; }
+.splash-minnow--4 { animation: splashMinnowSwim 9s linear infinite -3.6s; }
+
+.splash-copy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 24px 20px;
+  text-shadow: 0 2px 18px rgba(3, 21, 37, 0.75);
+  pointer-events: none;
+}
+
+.splash-copy__brand {
+  margin: 0;
+  font-family: "Bebas Neue", Impact, sans-serif;
+  font-size: clamp(2.8rem, 12vw, 5rem);
+  letter-spacing: 0.1em;
+  color: #ffe08a;
+  filter: drop-shadow(0 0 16px rgba(255, 213, 74, 0.45));
+}
+
+.splash-copy__title {
+  margin: 0;
+  font-family: "Nunito", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: clamp(1.25rem, 4.5vw, 1.85rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #f8fafc;
+  animation: splashClickPulse 1.8s ease-in-out infinite;
+}
+
+.splash-copy__hint {
+  margin: 4px 0 0;
+  font-size: 0.95rem;
+  color: rgba(226, 242, 255, 0.78);
+}
+
+@keyframes splashRaySway {
+  from { opacity: 0.1; transform: skewX(-2deg); }
+  to { opacity: 0.18; transform: skewX(2deg); }
+}
+
+@keyframes splashCoralSway {
+  from { transform: rotate(-2.2deg); }
+  to { transform: rotate(2.2deg); }
+}
+
+@keyframes splashBubbleRise {
+  0% { transform: translate(0, 0); opacity: 0; }
+  12% { opacity: 0.55; }
+  100% { transform: translate(8px, -220px); opacity: 0; }
+}
+
+@keyframes splashJellyDrift {
+  0% { transform: translate(120px, 280px) scale(1); }
+  50% { transform: translate(200px, 160px) scale(1.05); }
+  100% { transform: translate(120px, 280px) scale(1); }
+}
+
+@keyframes splashJellyDrift2 {
+  0% { transform: translate(620px, 200px) scale(1); }
+  50% { transform: translate(540px, 120px) scale(1.08); }
+  100% { transform: translate(620px, 200px) scale(1); }
+}
+
+@keyframes splashTurtleSwim {
+  0% { transform: translate(-80px, 300px) scaleX(1); }
+  49% { transform: translate(820px, 260px) scaleX(1); }
+  50% { transform: translate(820px, 260px) scaleX(-1); }
+  99% { transform: translate(-80px, 320px) scaleX(-1); }
+  100% { transform: translate(-80px, 300px) scaleX(1); }
+}
+
+@keyframes splashHeroSwim {
+  0% { transform: translate(-90px, 180px) scaleX(1); }
+  45% { transform: translate(860px, 140px) scaleX(1); }
+  50% { transform: translate(860px, 140px) scaleX(-1); }
+  95% { transform: translate(-90px, 210px) scaleX(-1); }
+  100% { transform: translate(-90px, 180px) scaleX(1); }
+}
+
+@keyframes splashAngelSwim {
+  0% { transform: translate(860px, 220px) scaleX(-1); }
+  45% { transform: translate(-80px, 190px) scaleX(-1); }
+  50% { transform: translate(-80px, 190px) scaleX(1); }
+  95% { transform: translate(860px, 250px) scaleX(1); }
+  100% { transform: translate(860px, 220px) scaleX(-1); }
+}
+
+@keyframes splashClownSwim {
+  0% { transform: translate(-70px, 310px) scaleX(1); }
+  40% { transform: translate(880px, 280px) scaleX(1); }
+  50% { transform: translate(880px, 280px) scaleX(-1); }
+  90% { transform: translate(-70px, 330px) scaleX(-1); }
+  100% { transform: translate(-70px, 310px) scaleX(1); }
+}
+
+@keyframes splashMinnowSwim {
+  0% { transform: translate(-40px, 150px); }
+  100% { transform: translate(860px, 130px); }
+}
+
+.splash-minnow--2 { animation-name: splashMinnowSwimB; }
+.splash-minnow--3 { animation-name: splashMinnowSwimC; }
+.splash-minnow--4 { animation-name: splashMinnowSwimD; }
+
+@keyframes splashMinnowSwimB {
+  0% { transform: translate(-60px, 168px); }
+  100% { transform: translate(880px, 155px); }
+}
+@keyframes splashMinnowSwimC {
+  0% { transform: translate(-30px, 142px); }
+  100% { transform: translate(840px, 175px); }
+}
+@keyframes splashMinnowSwimD {
+  0% { transform: translate(-50px, 160px); }
+  100% { transform: translate(870px, 148px); }
+}
+
+@keyframes splashClickPulse {
+  0%, 100% { opacity: 0.72; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splash-reef__rays,
+  .splash-coral--left,
+  .splash-coral--right,
+  .splash-coral--mid,
+  .splash-bubble,
+  .splash-jelly--1,
+  .splash-jelly--2,
+  .splash-turtle,
+  .splash-hero-fish,
+  .splash-angel,
+  .splash-clown,
+  .splash-minnow--1,
+  .splash-minnow--2,
+  .splash-minnow--3,
+  .splash-minnow--4,
+  .splash-copy__title {
+    animation: none !important;
+  }
+  .splash-hero-fish { transform: translate(280px, 180px); }
+  .splash-angel { transform: translate(520px, 210px) scaleX(-1); }
+  .splash-clown { transform: translate(180px, 300px); }
+  .splash-turtle { transform: translate(400px, 280px); }
+  .splash-jelly--1 { transform: translate(140px, 220px); }
+  .splash-jelly--2 { transform: translate(580px, 160px); }
+  .splash-minnow--1 { transform: translate(200px, 150px); }
+  .splash-minnow--2 { transform: translate(240px, 168px); }
+  .splash-minnow--3 { transform: translate(280px, 142px); }
+  .splash-minnow--4 { transform: translate(320px, 160px); }
+  .splash-copy__title { opacity: 1; }
+}
+
 .panel--start .start-toolbar {
   position: absolute;
   top: max(12px, env(safe-area-inset-top, 0px));
