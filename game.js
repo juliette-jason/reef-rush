@@ -250,6 +250,69 @@ const MAGNET_ROD_ID = "magnet";
 const KRAKEN_SPRAY_BAIT_ID = "kraken_spray";
 const DAILY_SECOND_PLACE_KRAKEN_SPRAY = 3;
 
+/** Compact SVG portrait of a rod for shop + home picker. */
+function rodArtSvg(rod) {
+  const v = rod.visual || {};
+  const body = v.reelBody || "#5c4033";
+  const band = v.reelBand || "#8b6914";
+  const line = v.lineMain || "rgba(200,180,140,0.9)";
+  const metal = v.hookMetal || "#9ca3af";
+  const barb = v.hookBarb || "#b91c1c";
+  const glow = v.tipGlow || "rgba(255,200,120,0.2)";
+  const uid = `rod-${rod.id}`;
+
+  let tip = "";
+  if (v.tipType === "magnet") {
+    const north = v.magnetNorth || "#ef4444";
+    const south = v.magnetSouth || "#3b82f6";
+    tip =
+      `<path d="M20 46 h6 v10 a8 8 0 0 1 -16 0 v-10 h6 v10 a2 2 0 0 0 4 0 z" fill="${v.magnetBody || "#64748b"}"/>` +
+      `<rect x="20" y="46" width="6" height="8" fill="${north}"/>` +
+      `<rect x="10" y="46" width="6" height="8" fill="${south}"/>`;
+  } else if (rod.id === "wide_net") {
+    tip =
+      `<ellipse cx="18" cy="54" rx="12" ry="8" fill="none" stroke="${band}" stroke-width="1.6"/>` +
+      `<path d="M10 50 L18 58 L26 50 M14 52 L18 58 L22 52" fill="none" stroke="${metal}" stroke-width="1.1"/>` +
+      `<circle cx="18" cy="46" r="2.2" fill="${metal}"/>`;
+  } else if (rod.id === "light") {
+    tip =
+      `<circle cx="18" cy="50" r="7" fill="${glow}"/>` +
+      `<circle cx="18" cy="50" r="4.2" fill="#ecfeff" stroke="${band}" stroke-width="1.2"/>` +
+      `<path d="M18 46 L14 56 L22 56 Z" fill="${barb}"/>`;
+  } else {
+    tip =
+      `<path d="M18 46 L12 58 L24 58 Z" fill="${barb}"/>` +
+      `<circle cx="18" cy="59" r="2.6" fill="${metal}"/>`;
+  }
+
+  let extras = "";
+  if (rod.id === "legend") {
+    extras = `<path d="M30 14 l1.4 2.8 3 .4 -2.2 2.2 .5 3 -2.7-1.5 -2.7 1.5 .5-3 -2.2-2.2 3-.4 z" fill="${band}" opacity="0.9"/>`;
+  } else if (rod.id === "golden") {
+    extras = `<circle cx="28" cy="18" r="2.2" fill="${band}"/><circle cx="31" cy="24" r="1.6" fill="${metal}"/>`;
+  } else if (rod.id === "titan") {
+    extras = `<rect x="14" y="16" width="8" height="3" rx="1" fill="${band}" opacity="0.85"/>`;
+  }
+
+  return (
+    `<svg class="rod-art" viewBox="0 0 40 68" width="40" height="68" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">` +
+    `<defs>` +
+    `<linearGradient id="${uid}-shaft" x1="0" y1="0" x2="0" y2="1">` +
+    `<stop offset="0" stop-color="${band}"/>` +
+    `<stop offset="1" stop-color="${body}"/>` +
+    `</linearGradient>` +
+    `</defs>` +
+    `<ellipse cx="20" cy="64" rx="12" ry="2.4" fill="rgba(0,0,0,0.22)"/>` +
+    `<rect x="15.5" y="6" width="5" height="40" rx="2.4" fill="url(#${uid}-shaft)" stroke="${body}" stroke-width="0.6"/>` +
+    `<ellipse cx="18" cy="12" rx="7" ry="4.5" fill="${body}" stroke="${band}" stroke-width="1.2"/>` +
+    `<ellipse cx="18" cy="12" rx="2.4" ry="1.6" fill="${band}"/>` +
+    `<path d="M18 16.5 L18 46" stroke="${line}" stroke-width="1.4" stroke-linecap="round"/>` +
+    tip +
+    extras +
+    `</svg>`
+  );
+}
+
 /** Bait: standard is unlimited; premium types are sold in packs and use one piece each round you start with them equipped. */
 const BAITS = [
   {
@@ -8959,7 +9022,10 @@ function buildShopUI() {
     if (rod.id === FREE_ROD_ID || rod.id === MAGNET_ROD_ID) continue;
     const owned = isRodOwned(rod.id);
     const li = document.createElement("li");
-    li.className = "shop-item shop-item--rod";
+    li.className = `shop-item shop-item--rod shop-item--rod-${rod.id}`;
+    const art = document.createElement("div");
+    art.className = "shop-item__art";
+    art.innerHTML = rodArtSvg(rod);
     const body = document.createElement("div");
     body.className = "shop-item__body";
     const title = document.createElement("h3");
@@ -8989,7 +9055,7 @@ function buildShopUI() {
       buildRodUI();
       showToast(`${rod.name} unlocked!`, 1700);
     });
-    li.append(body, buy);
+    li.append(art, body, buy);
     shopList.appendChild(li);
   }
 }
@@ -10124,7 +10190,12 @@ function buildRodUI() {
       rod.id === MAGNET_ROD_ID
         ? `<span class="rod-option__stock rod-option__stock--prize">Prize · expires tonight</span>`
         : `<span class="rod-option__stock">Owned</span>`;
-    b.innerHTML = `<span class="rod-option__name">${rod.name}</span><span class="rod-option__desc">${rod.desc}</span>${stockLine}`;
+    b.innerHTML =
+      `<span class="rod-option__art">${rodArtSvg(rod)}</span>` +
+      `<span class="rod-option__copy">` +
+      `<span class="rod-option__name">${rod.name}</span>` +
+      `${stockLine}` +
+      `</span>`;
     b.addEventListener("click", () => {
       selectedRod = rod;
       gameMeta.selectedRodId = rod.id;
