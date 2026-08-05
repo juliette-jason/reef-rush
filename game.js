@@ -9077,6 +9077,60 @@ function animateCoinAward(fromCoins, toCoins, earnedCoins) {
   coinAwardAnimId = requestAnimationFrame(tick);
 }
 
+/** Compact SVG bait bucket for home picker + shop. */
+function baitBucketColors(baitId) {
+  switch (baitId) {
+    case "nightcrawler":
+      return { fill: "#6b8f71", mid: "#4d6b52", rim: "#8fbc8f", bits: "#3f2a1a" };
+    case "shrimp":
+      return { fill: "#f0a8a0", mid: "#d9776f", rim: "#fbc4bc", bits: "#fb7185" };
+    case "glow_jelly":
+      return { fill: "#67e8f9", mid: "#22d3ee", rim: "#a5f3fc", bits: "#e0f2fe" };
+    case "squid_ink":
+      return { fill: "#6b5b95", mid: "#4c3d73", rim: "#9b8ec4", bits: "#1e1b4b" };
+    case "golden_chum":
+      return { fill: "#f5d78e", mid: "#d4a017", rim: "#ffe08a", bits: "#b45309" };
+    case KRAKEN_SPRAY_BAIT_ID:
+      return { fill: "#a78bfa", mid: "#7c6bcf", rim: "#c4b5fd", bits: "#312e81" };
+    default:
+      return { fill: "#94a3b8", mid: "#64748b", rim: "#cbd5e1", bits: "#475569" };
+  }
+}
+
+function baitBucketSvg(baitId) {
+  const c = baitBucketColors(baitId);
+  const uid = `bait-${baitId}`;
+  return (
+    `<svg class="bait-bucket" viewBox="0 0 48 56" width="44" height="52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">` +
+    `<defs>` +
+    `<linearGradient id="${uid}-metal" x1="0" y1="0" x2="1" y2="1">` +
+    `<stop offset="0%" stop-color="#d6dde8"/>` +
+    `<stop offset="45%" stop-color="#9aa7b8"/>` +
+    `<stop offset="100%" stop-color="#6b7787"/>` +
+    `</linearGradient>` +
+    `<linearGradient id="${uid}-bait" x1="0" y1="0" x2="0" y2="1">` +
+    `<stop offset="0%" stop-color="${c.rim}"/>` +
+    `<stop offset="55%" stop-color="${c.fill}"/>` +
+    `<stop offset="100%" stop-color="${c.mid}"/>` +
+    `</linearGradient>` +
+    `</defs>` +
+    `<ellipse cx="24" cy="14" rx="16" ry="5.5" fill="url(#${uid}-bait)"/>` +
+    `<path d="M8 16 L11 46 Q24 52 37 46 L40 16 Z" fill="url(#${uid}-metal)" stroke="#4b5563" stroke-width="1.2"/>` +
+    `<path d="M11 22 L13 42 Q24 47 35 42 L37 22" fill="url(#${uid}-bait)" opacity="0.92"/>` +
+    `<ellipse cx="24" cy="16" rx="15.2" ry="5" fill="url(#${uid}-bait)"/>` +
+    `<ellipse cx="24" cy="14.5" rx="15.2" ry="4.2" fill="none" stroke="#4b5563" stroke-width="1.4"/>` +
+    `<path d="M8 16 Q24 21 40 16" fill="none" stroke="#374151" stroke-width="1.1" opacity="0.55"/>` +
+    `<circle cx="18" cy="15" r="2.1" fill="${c.bits}" opacity="0.85"/>` +
+    `<circle cx="26" cy="13.5" r="1.7" fill="${c.bits}" opacity="0.75"/>` +
+    `<circle cx="31" cy="16" r="1.5" fill="${c.bits}" opacity="0.7"/>` +
+    `<circle cx="22" cy="17.5" r="1.3" fill="${c.rim}" opacity="0.65"/>` +
+    `<rect x="6" y="24" width="4" height="10" rx="1.5" fill="#7b8794" stroke="#4b5563" stroke-width="0.8"/>` +
+    `<rect x="38" y="24" width="4" height="10" rx="1.5" fill="#7b8794" stroke="#4b5563" stroke-width="0.8"/>` +
+    `<path d="M10 28 H38" stroke="#e5e7eb" stroke-width="1.2" opacity="0.45"/>` +
+    `</svg>`
+  );
+}
+
 function buildBaitUI() {
   if (!baitChoices) return;
   normalizeSelectedBaitId();
@@ -9089,13 +9143,19 @@ function buildBaitUI() {
     btn.type = "button";
     const slug = b.id.replace(/_/g, "-");
     btn.className =
-      `rod-option rod-option--bait-${slug}` +
+      `rod-option rod-option--bait rod-option--bait-${slug}` +
       (gameMeta.selectedBaitId === b.id ? " rod-option--selected" : "") +
       (dis ? " rod-option--disabled" : "");
     const stockLine = b.consumesOnRound
       ? `<span class="rod-option__stock">${stock} in tackle box</span>`
       : `<span class="rod-option__stock">Unlimited</span>`;
-    btn.innerHTML = `<span class="rod-option__name">${b.name}</span><span class="rod-option__desc">${b.desc}</span>${stockLine}`;
+    btn.innerHTML =
+      `<span class="rod-option__art rod-option__art--bait">${baitBucketSvg(b.id)}</span>` +
+      `<span class="rod-option__copy">` +
+      `<span class="rod-option__name">${b.name}</span>` +
+      `<span class="rod-option__desc">${b.desc}</span>` +
+      `${stockLine}` +
+      `</span>`;
     if (!dis) {
       btn.addEventListener("click", () => {
         gameMeta.selectedBaitId = b.id;
@@ -9159,15 +9219,7 @@ function shopBaitIcon(baitId) {
   const art = document.createElement("div");
   art.className = `shop-item__icon shop-item__icon--bait shop-item__icon--${baitId}`;
   art.setAttribute("aria-hidden", "true");
-  const glyph = document.createElement("span");
-  glyph.className = "shop-item__glyph";
-  if (baitId === "nightcrawler") glyph.textContent = "🪱";
-  else if (baitId === "shrimp") glyph.textContent = "🦐";
-  else if (baitId === "glow_jelly") glyph.textContent = "🪼";
-  else if (baitId === "squid_ink") glyph.textContent = "🦑";
-  else if (baitId === KRAKEN_SPRAY_BAIT_ID) glyph.textContent = "🐙";
-  else glyph.textContent = "🎣";
-  art.appendChild(glyph);
+  art.innerHTML = baitBucketSvg(baitId);
   return art;
 }
 
