@@ -4488,7 +4488,7 @@ const REEFS = [
     fishSpeed: 0.76,
     rareRollMult: 1.12,
     weights: { common: 54, uncommon: 28, rare: 10, epic: 5, legendary: 3 },
-    mapPin: { x: 182, y: 62 },
+    mapPin: { x: 181, y: 60 },
     fishPool: [
       "barramundi",
       "pacific_sardine",
@@ -4537,7 +4537,7 @@ const REEFS = [
     fishSpeed: 1,
     rareRollMult: 1,
     weights: { common: 52, uncommon: 28, rare: 12, epic: 6, legendary: 2 },
-    mapPin: { x: 48, y: 56 },
+    mapPin: { x: 51, y: 40 },
     fishPool: [
       "northern_anchovy",
       "pacific_sardine",
@@ -4584,7 +4584,7 @@ const REEFS = [
     fishSpeed: 1.18,
     rareRollMult: 0.88,
     weights: { common: 60, uncommon: 24, rare: 10, epic: 4, legendary: 2 },
-    mapPin: { x: 108, y: 33 },
+    mapPin: { x: 106, y: 26 },
     fishPool: [
       "european_sprat",
       "atlantic_herring",
@@ -4623,7 +4623,7 @@ const REEFS = [
     fishSpeed: 1.32,
     rareRollMult: 0.78,
     weights: { common: 64, uncommon: 22, rare: 8, epic: 4, legendary: 2 },
-    mapPin: { x: 178, y: 31 },
+    mapPin: { x: 177, y: 31 },
     fishPool: [
       "pacific_sardine",
       "chub_mackerel",
@@ -4664,7 +4664,7 @@ const REEFS = [
     fishSpeed: 1.24,
     rareRollMult: 0.72,
     weights: { common: 54, uncommon: 23, rare: 12, epic: 7, legendary: 4 },
-    mapPin: { x: 183, y: 46 },
+    mapPin: { x: 181, y: 42 },
     fishPool: ["black_seadevil", "viperfish", "hatchetfish", "gulper_eel", "fangtooth", "giant_isopod"],
     visuals: {
       gradient: ["#02030a", "#010209", "#000107", "#000000"],
