@@ -424,10 +424,10 @@ const ADVENTURE_SECTION_PIRATES_PATH = "Pirates Path";
 const ADVENTURE_SECTION_GOLD_QUEST = "Gold Quest";
 const ADVENTURE_SECTION_FROZEN_SEA = "Frozen Sea";
 const ADVENTURE_SECTION_LOST_CITY = "The Lost City";
-/** +1s on the clock per voyage index as difficulty ramps up (Pirates Path only). */
-const ADVENTURE_LEVEL_TIME_BONUS_MS = 1_000;
-/** +2s per voyage from Gold Quest through The Lost City. */
-const ADVENTURE_GOLD_TO_LOST_CITY_TIME_BONUS_MS = 2_000;
+/** +0.75s on the clock per voyage index as difficulty ramps up (Pirates Path only). */
+const ADVENTURE_LEVEL_TIME_BONUS_MS = 750;
+/** +1.5s per voyage from Gold Quest through The Lost City. */
+const ADVENTURE_GOLD_TO_LOST_CITY_TIME_BONUS_MS = 1_500;
 
 function adventureLevelTimeBonusMs(levelIndex) {
   if (levelIndex < ADVENTURE_MAIN_LEVEL_COUNT) {
@@ -4200,19 +4200,21 @@ function registerGoldQuestTreasureBeds() {
 registerAdventureBonusThemes();
 
 function adventurePassScoreForIndex(i) {
+  // Tuned for a strong player: early voyages are a real challenge, finales demand
+  // clean casts and good rod/bait choices without feeling unwinnable.
   if (i < ADVENTURE_MAIN_LEVEL_COUNT) {
-    return 3000 + Math.round((i * (7000 - 3000)) / Math.max(1, ADVENTURE_MAIN_LEVEL_COUNT - 1));
+    return 3600 + Math.round((i * (8400 - 3600)) / Math.max(1, ADVENTURE_MAIN_LEVEL_COUNT - 1));
   }
   if (i < ADVENTURE_ICE_START_INDEX) {
     const bonusI = i - ADVENTURE_MAIN_LEVEL_COUNT;
-    return 7500 + Math.round((bonusI * (9000 - 7500)) / Math.max(1, ADVENTURE_BONUS_LEVEL_COUNT - 1));
+    return 9000 + Math.round((bonusI * (10800 - 9000)) / Math.max(1, ADVENTURE_BONUS_LEVEL_COUNT - 1));
   }
   if (i < ADVENTURE_LOST_CITY_START_INDEX) {
     const iceI = i - ADVENTURE_ICE_START_INDEX;
-    return 9250 + Math.round((iceI * (11000 - 9250)) / Math.max(1, ADVENTURE_ICE_LEVEL_COUNT - 1));
+    return 11100 + Math.round((iceI * (13200 - 11100)) / Math.max(1, ADVENTURE_ICE_LEVEL_COUNT - 1));
   }
   const lostI = i - ADVENTURE_LOST_CITY_START_INDEX;
-  return 11250 + Math.round((lostI * (13000 - 11250)) / Math.max(1, ADVENTURE_LOST_CITY_LEVEL_COUNT - 1));
+  return 13500 + Math.round((lostI * (15600 - 13500)) / Math.max(1, ADVENTURE_LOST_CITY_LEVEL_COUNT - 1));
 }
 
 function drawAdventureThemeOverlayInner(now) {
@@ -4701,14 +4703,14 @@ function buildAdventureLevels() {
       passScore: adventurePassScoreForIndex(i),
       roundMs:
         Math.max(
-          isLostCity ? 36_000 : isIce ? 38_000 : isBonus ? 40_000 : 46_000,
-          reef.roundMs - tier * 3500 - i * 600,
+          isLostCity ? 34_000 : isIce ? 36_000 : isBonus ? 38_000 : 44_000,
+          reef.roundMs - tier * 3500 - i * 650,
         ) + adventureLevelTimeBonusMs(i),
-      spawnMin: Math.max(isLostCity ? 120 : isIce ? 130 : isBonus ? 140 : 160, reef.spawnMin - i * 18),
-      spawnMax: Math.max(isLostCity ? 300 : isIce ? 320 : isBonus ? 340 : 380, reef.spawnMax - i * 45),
-      maxFish: Math.min(22, reef.maxFish + Math.floor(i / 2)),
-      fishSpeed: reef.fishSpeed * (1 + i * 0.035),
-      rareRollMult: Math.max(0.5, reef.rareRollMult * (0.98 - i * 0.012)),
+      spawnMin: Math.max(isLostCity ? 130 : isIce ? 140 : isBonus ? 150 : 170, reef.spawnMin - i * 16),
+      spawnMax: Math.max(isLostCity ? 320 : isIce ? 340 : isBonus ? 360 : 400, reef.spawnMax - i * 40),
+      maxFish: Math.min(20, reef.maxFish + Math.floor(i / 2.5)),
+      fishSpeed: reef.fishSpeed * (1 + i * 0.042),
+      rareRollMult: Math.max(0.48, reef.rareRollMult * (0.96 - i * 0.014)),
     });
   }
   return levels;
