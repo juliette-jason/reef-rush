@@ -596,7 +596,7 @@ body {
 
 .splash-copy__brand {
   margin: 0;
-  font-family: "Fugaz One", "Bebas Neue", cursive;
+  font-family: "Lilita One", "Bebas Neue", cursive;
   font-size: clamp(3.2rem, 14vw, 6.2rem);
   font-weight: 400;
   letter-spacing: 0.04em;
