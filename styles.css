@@ -14,6 +14,7 @@
   --radius: 14px;
   --shadow-glow: 0 0 24px rgba(255, 213, 74, 0.25);
   --font-brand: "Lilita One", "Bebas Neue", cursive;
+  --brand-fill: linear-gradient(180deg, #fff, var(--gold));
 }
 
 *,
@@ -376,11 +377,11 @@ body {
   font-family: var(--font-brand);
   font-size: clamp(1.5rem, 4vw, 2rem);
   letter-spacing: 0.03em;
-  background: linear-gradient(90deg, var(--gold), var(--gold-hot), var(--gold));
+  background: var(--brand-fill);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  text-shadow: var(--shadow-glow);
+  filter: drop-shadow(0 0 12px rgba(255, 213, 74, 0.45));
 }
 
 .hud__subtitle {
@@ -1222,15 +1223,11 @@ body {
   font-weight: 400;
   letter-spacing: 0.04em;
   line-height: 0.95;
-  background: linear-gradient(185deg, #fff8d6 8%, #ffe08a 38%, #5eead4 72%, #38bdf8 100%);
+  background: var(--brand-fill);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  filter:
-    drop-shadow(0 3px 0 rgba(8, 47, 73, 0.55))
-    drop-shadow(0 0 22px rgba(94, 234, 212, 0.45))
-    drop-shadow(0 0 40px rgba(255, 213, 74, 0.28));
-  animation: splashBrandShimmer 5.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 12px rgba(255, 213, 74, 0.45));
 }
 
 .splash-copy__title {
@@ -1384,11 +1381,6 @@ body {
   100% { transform: translate(870px, 158px) scaleX(1); }
 }
 
-@keyframes splashBrandShimmer {
-  0%, 100% { filter: drop-shadow(0 3px 0 rgba(8, 47, 73, 0.55)) drop-shadow(0 0 22px rgba(94, 234, 212, 0.4)) drop-shadow(0 0 40px rgba(255, 213, 74, 0.25)); }
-  50% { filter: drop-shadow(0 3px 0 rgba(8, 47, 73, 0.55)) drop-shadow(0 0 28px rgba(94, 234, 212, 0.65)) drop-shadow(0 0 48px rgba(255, 213, 74, 0.4)); }
-}
-
 @keyframes splashClickPulse {
   0%, 100% { opacity: 0.72; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.04); }
@@ -1423,8 +1415,7 @@ body {
   .splash-minnow--3,
   .splash-minnow--4,
   .splash-minnow--5,
-  .splash-copy__title,
-  .splash-copy__brand {
+  .splash-copy__title {
     animation: none !important;
   }
   .splash-hero-fish { transform: translate(280px, 180px); }
@@ -1439,11 +1430,6 @@ body {
   .splash-minnow--4 { transform: translate(320px, 160px); }
   .splash-minnow--5 { transform: translate(360px, 155px); }
   .splash-copy__title { opacity: 1; }
-  .splash-copy__brand {
-    filter:
-      drop-shadow(0 3px 0 rgba(8, 47, 73, 0.55))
-      drop-shadow(0 0 22px rgba(94, 234, 212, 0.45));
-  }
 }
 
 .panel--start .start-toolbar {
@@ -2290,7 +2276,7 @@ body {
   font-size: clamp(2.2rem, 8vw, 3.2rem);
   letter-spacing: 0.08em;
   margin: 0 0 8px;
-  background: linear-gradient(180deg, #fff, var(--gold));
+  background: var(--brand-fill);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
