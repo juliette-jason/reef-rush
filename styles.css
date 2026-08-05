@@ -2575,12 +2575,6 @@ body {
   filter: brightness(1.08);
 }
 
-.events-launch__icon {
-  font-size: 1rem;
-  color: #ffd54a;
-  text-shadow: 0 0 8px rgba(255, 213, 74, 0.55);
-}
-
 .panel.panel--events {
   max-width: none;
   width: 100%;
@@ -3498,10 +3492,6 @@ body {
   letter-spacing: 0.1em;
 }
 
-.adventure-launch--centered .adventure-launch__arrow {
-  font-size: 1.9rem;
-}
-
 .adventure-launch--centered .adventure-launch__lock {
   width: 28px;
   height: 32px;
@@ -3627,12 +3617,6 @@ body {
     border-color: rgba(255, 248, 200, 1);
     filter: brightness(1.18);
   }
-}
-
-.adventure-launch__arrow {
-  font-size: 1.5rem;
-  line-height: 1;
-  color: var(--neon-cyan);
 }
 
 .adventure-launch__lock {
