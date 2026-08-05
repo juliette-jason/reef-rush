@@ -4488,7 +4488,7 @@ const REEFS = [
     fishSpeed: 0.76,
     rareRollMult: 1.12,
     weights: { common: 54, uncommon: 28, rare: 10, epic: 5, legendary: 3 },
-    mapPin: { x: 172, y: 68 },
+    mapPin: { x: 178, y: 64 },
     fishPool: [
       "barramundi",
       "pacific_sardine",

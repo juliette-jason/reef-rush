@@ -523,32 +523,71 @@
               <div class="reef-map" id="reefMap">
                 <svg class="reef-map__ocean" viewBox="0 0 200 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
                   <defs>
-                    <linearGradient id="chartWater" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stop-color="#0c5a82" />
-                      <stop offset="50%" stop-color="#083654" />
-                      <stop offset="100%" stop-color="#041a2c" />
+                    <linearGradient id="chartWater" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stop-color="#0a6a96" />
+                      <stop offset="45%" stop-color="#085a7a" />
+                      <stop offset="100%" stop-color="#04263d" />
                     </linearGradient>
-                    <linearGradient id="mapLand" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stop-color="#8ab17d" />
-                      <stop offset="50%" stop-color="#5f8c62" />
-                      <stop offset="100%" stop-color="#3f6f55" />
+                    <linearGradient id="mapLand" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stop-color="#9bc47a" />
+                      <stop offset="55%" stop-color="#6f9a55" />
+                      <stop offset="100%" stop-color="#4d7340" />
+                    </linearGradient>
+                    <linearGradient id="mapDesert" x1="0%" y1="0%" x2="0%" y2="1">
+                      <stop offset="0%" stop-color="#c4a574" />
+                      <stop offset="100%" stop-color="#9a7a4a" />
+                    </linearGradient>
+                    <linearGradient id="mapIce" x1="0%" y1="0%" x2="0%" y2="1">
+                      <stop offset="0%" stop-color="#f8fafc" />
+                      <stop offset="100%" stop-color="#cbd5e1" />
                     </linearGradient>
                   </defs>
                   <rect width="200" height="100" fill="url(#chartWater)" />
-                  <g stroke="rgba(255, 255, 255, 0.08)" stroke-width="0.35">
-                    <path d="M0 25 H200 M0 50 H200 M0 75 H200" />
-                    <path d="M40 0 V100 M80 0 V100 M120 0 V100 M160 0 V100" />
+                  <!-- soft ocean depth bands -->
+                  <ellipse cx="55" cy="52" rx="42" ry="28" fill="rgba(2, 40, 70, 0.22)" />
+                  <ellipse cx="150" cy="48" rx="48" ry="30" fill="rgba(2, 40, 70, 0.2)" />
+                  <g class="reef-map__grid" stroke="rgba(255,255,255,0.07)" stroke-width="0.3" fill="none">
+                    <path d="M0 16.7 H200 M0 33.3 H200 M0 50 H200 M0 66.7 H200 M0 83.3 H200" />
+                    <path d="M25 0 V100 M50 0 V100 M75 0 V100 M100 0 V100 M125 0 V100 M150 0 V100 M175 0 V100" />
                   </g>
-                  <g fill="url(#mapLand)" stroke="rgba(219, 245, 213, 0.55)" stroke-width="0.45" stroke-linejoin="round">
-                    <path d="M18 20 L32 13 L49 16 L60 24 L56 36 L45 38 L39 47 L30 45 L20 36 Z" />
-                    <path d="M50 40 L61 48 L64 60 L58 73 L53 89 L45 78 L40 64 L43 51 Z" />
-                    <path d="M73 31 L90 24 L105 27 L111 36 L101 43 L83 42 L72 38 Z" />
-                    <path d="M98 42 L112 43 L121 56 L116 75 L106 84 L97 70 L91 55 Z" />
-                    <path d="M111 24 L137 17 L170 23 L190 35 L184 49 L160 51 L146 45 L128 50 L112 42 Z" />
-                    <path d="M167 65 L184 69 L191 82 L181 91 L161 87 L154 76 Z" />
-                    <path d="M28 78 L42 80 L46 87 L36 91 L23 87 Z" />
-                    <path d="M138 55 L146 61 L143 69 L132 66 L130 59 Z" />
+                  <g fill="url(#mapLand)" stroke="rgba(230, 245, 220, 0.45)" stroke-width="0.4" stroke-linejoin="round">
+                    <!-- North America -->
+                    <path d="M18 28 L22 18 L30 12 L42 11 L52 14 L56 20 L52 26 L46 30 L42 36 L40 46 L36 54 L40 60 L34 64 L26 58 L22 48 L18 38 Z" />
+                    <!-- Central America / Yucatán -->
+                    <path d="M36 58 L44 60 L48 66 L46 72 L40 70 L34 64 Z" />
+                    <!-- South America -->
+                    <path d="M46 70 L54 68 L60 74 L58 86 L52 94 L44 90 L42 80 L44 74 Z" />
+                    <!-- Europe -->
+                    <path d="M96 24 L104 20 L114 22 L116 28 L110 34 L102 34 L96 30 Z" />
+                    <!-- UK / Ireland -->
+                    <path d="M92 24 L96 22 L98 26 L94 28 Z" />
+                    <!-- Africa -->
+                    <path d="M98 38 L108 36 L118 40 L120 52 L116 66 L108 74 L100 70 L96 58 L96 46 Z" />
+                    <!-- Middle East / Arabia -->
+                    <path d="M116 40 L126 40 L130 48 L124 52 L116 48 Z" />
+                    <!-- Asia mainland -->
+                    <path d="M118 20 L132 14 L150 12 L168 16 L178 22 L180 30 L170 34 L158 32 L148 36 L140 34 L130 30 L122 28 Z" />
+                    <!-- India -->
+                    <path d="M142 38 L150 40 L152 50 L146 56 L140 48 Z" />
+                    <!-- SE Asia / Indochina -->
+                    <path d="M156 40 L166 42 L168 50 L160 52 L154 46 Z" />
+                    <!-- Indonesia / Philippines hint -->
+                    <path d="M162 52 L172 50 L176 56 L170 58 L164 56 Z" />
+                    <!-- Japan -->
+                    <path d="M174 30 L180 28 L182 34 L178 38 L174 34 Z" />
+                    <!-- Australia -->
+                    <path d="M164 62 L178 58 L188 62 L190 70 L182 78 L168 76 L162 68 Z" />
+                    <!-- New Zealand -->
+                    <path d="M188 78 L192 76 L194 82 L190 84 Z" />
                   </g>
+                  <!-- Sahara / arid band -->
+                  <path d="M100 42 L118 40 L118 50 L100 52 Z" fill="url(#mapDesert)" opacity="0.55" />
+                  <!-- Greenland -->
+                  <path d="M58 8 L70 6 L78 10 L76 20 L66 22 L56 16 Z" fill="url(#mapIce)" stroke="rgba(255,255,255,0.5)" stroke-width="0.35" stroke-linejoin="round" />
+                  <!-- Antarctica -->
+                  <path d="M10 94 H190 L185 99 H15 Z" fill="url(#mapIce)" stroke="rgba(255,255,255,0.4)" stroke-width="0.3" />
+                  <!-- Mediterranean sea pocket -->
+                  <path d="M100 34 L114 32 L116 36 L108 38 L100 36 Z" fill="#0a5578" opacity="0.85" />
                 </svg>
                 <div id="reefMapPins" class="reef-map__pins" role="listbox" aria-label="Reef locations"></div>
                 <div id="reefMapBoat" class="reef-map__boat" aria-hidden="true">
