@@ -10324,25 +10324,9 @@ function buildReefUI() {
     b.setAttribute("aria-label", `${reef.name}, ${reef.difficulty}`);
     b.title = `${reef.name} — ${reef.mapPlace}`;
     const p = reef.mapPin || { x: MAP_CHART_W / 2, y: MAP_CHART_H / 2 };
-    // Nudge overlapping Pacific pins so labels stay readable.
-    let labelNudgeY = 0;
-    if (reef.id === "mariana_trench") labelNudgeY = 10;
-    if (reef.id === "japan_kuroshio") labelNudgeY = -2;
     b.style.left = `${(p.x / MAP_CHART_W) * 100}%`;
-    b.style.top = `${((p.y + labelNudgeY) / MAP_CHART_H) * 100}%`;
-    const shortName =
-      reef.id === "australia"
-        ? "Barrier Reef"
-        : reef.id === "caribbean"
-          ? "Mesoamerican"
-          : reef.id === "mediterranean"
-            ? "Mediterranean"
-            : reef.id === "japan_kuroshio"
-              ? "Kuroshio"
-              : "Mariana";
-    b.innerHTML =
-      `<span class="reef-map__pin-dot" aria-hidden="true"></span>` +
-      `<span class="reef-map__pin-label">${shortName}</span>`;
+    b.style.top = `${(p.y / MAP_CHART_H) * 100}%`;
+    b.innerHTML = `<span class="reef-map__pin-dot" aria-hidden="true"></span>`;
     b.addEventListener("click", () => selectReefFromMap(reef.id));
     b.addEventListener("pointerenter", () => showReefOnMap(reef));
     b.addEventListener("pointerleave", () => showSelectedReefOnMap());
