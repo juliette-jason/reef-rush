@@ -1311,21 +1311,18 @@ body {
 }
 
 @keyframes splashFishSwim {
-  0% { transform: translateY(0) rotate(-4deg) skewX(3deg); }
-  25% { transform: translateY(-5px) rotate(2deg) skewX(-4deg); }
-  50% { transform: translateY(0) rotate(4deg) skewX(2deg); }
-  75% { transform: translateY(5px) rotate(-2deg) skewX(-3deg); }
-  100% { transform: translateY(0) rotate(-4deg) skewX(3deg); }
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-2px) rotate(1deg); }
 }
 
 @keyframes splashFishTail {
-  0%, 100% { transform: rotate(0deg) skewY(0deg); }
-  50% { transform: rotate(22deg) skewY(6deg); }
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(6deg); }
 }
 
 @keyframes splashFishFin {
-  0%, 100% { transform: rotate(-8deg); }
-  50% { transform: rotate(10deg); }
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(4deg); }
 }
 
 @keyframes splashTurtleSwim {
@@ -1339,84 +1336,51 @@ body {
 }
 
 @keyframes splashHeroSwim {
-  0% { transform: translate(-100px, 185px) scaleX(1); }
-  12% { transform: translate(120px, 168px) scaleX(1); }
-  24% { transform: translate(340px, 198px) scaleX(1); }
-  36% { transform: translate(560px, 158px) scaleX(1); }
-  46% { transform: translate(870px, 175px) scaleX(1); }
-  50% { transform: translate(870px, 175px) scaleX(-1); }
-  62% { transform: translate(620px, 205px) scaleX(-1); }
-  74% { transform: translate(380px, 160px) scaleX(-1); }
-  86% { transform: translate(140px, 200px) scaleX(-1); }
-  96% { transform: translate(-100px, 215px) scaleX(-1); }
-  100% { transform: translate(-100px, 185px) scaleX(1); }
+  0% { transform: translate(-100px, 180px) scaleX(1); }
+  46% { transform: translate(870px, 168px) scaleX(1); }
+  50% { transform: translate(870px, 168px) scaleX(-1); }
+  96% { transform: translate(-100px, 192px) scaleX(-1); }
+  100% { transform: translate(-100px, 180px) scaleX(1); }
 }
 
 @keyframes splashAngelSwim {
-  0% { transform: translate(870px, 225px) scaleX(-1); }
-  12% { transform: translate(650px, 205px) scaleX(-1); }
-  24% { transform: translate(420px, 235px) scaleX(-1); }
-  36% { transform: translate(180px, 200px) scaleX(-1); }
-  46% { transform: translate(-90px, 215px) scaleX(-1); }
-  50% { transform: translate(-90px, 215px) scaleX(1); }
-  62% { transform: translate(160px, 240px) scaleX(1); }
-  74% { transform: translate(400px, 200px) scaleX(1); }
-  86% { transform: translate(640px, 245px) scaleX(1); }
-  96% { transform: translate(870px, 255px) scaleX(1); }
-  100% { transform: translate(870px, 225px) scaleX(-1); }
+  0% { transform: translate(870px, 220px) scaleX(-1); }
+  46% { transform: translate(-90px, 210px) scaleX(-1); }
+  50% { transform: translate(-90px, 210px) scaleX(1); }
+  96% { transform: translate(870px, 232px) scaleX(1); }
+  100% { transform: translate(870px, 220px) scaleX(-1); }
 }
 
 @keyframes splashClownSwim {
   0% { transform: translate(-80px, 315px) scaleX(1); }
-  12% { transform: translate(140px, 300px) scaleX(1); }
-  24% { transform: translate(360px, 330px) scaleX(1); }
-  36% { transform: translate(600px, 295px) scaleX(1); }
-  46% { transform: translate(890px, 310px) scaleX(1); }
-  50% { transform: translate(890px, 310px) scaleX(-1); }
-  62% { transform: translate(640px, 335px) scaleX(-1); }
-  74% { transform: translate(380px, 300px) scaleX(-1); }
-  86% { transform: translate(140px, 340px) scaleX(-1); }
-  96% { transform: translate(-80px, 325px) scaleX(-1); }
+  46% { transform: translate(890px, 305px) scaleX(1); }
+  50% { transform: translate(890px, 305px) scaleX(-1); }
+  96% { transform: translate(-80px, 322px) scaleX(-1); }
   100% { transform: translate(-80px, 315px) scaleX(1); }
 }
 
 @keyframes splashMinnowSwimA {
   0% { transform: translate(-50px, 148px) scaleX(1); }
-  25% { transform: translate(180px, 132px) scaleX(1); }
-  50% { transform: translate(420px, 158px) scaleX(1); }
-  75% { transform: translate(660px, 138px) scaleX(1); }
-  100% { transform: translate(880px, 150px) scaleX(1); }
+  100% { transform: translate(880px, 142px) scaleX(1); }
 }
 
 @keyframes splashMinnowSwimB {
-  0% { transform: translate(-70px, 168px) scaleX(1); }
-  25% { transform: translate(170px, 155px) scaleX(1); }
-  50% { transform: translate(430px, 175px) scaleX(1); }
-  75% { transform: translate(680px, 148px) scaleX(1); }
-  100% { transform: translate(900px, 162px) scaleX(1); }
+  0% { transform: translate(-70px, 165px) scaleX(1); }
+  100% { transform: translate(900px, 158px) scaleX(1); }
 }
 
 @keyframes splashMinnowSwimC {
-  0% { transform: translate(-40px, 138px) scaleX(1); }
-  25% { transform: translate(190px, 160px) scaleX(1); }
-  50% { transform: translate(410px, 145px) scaleX(1); }
-  75% { transform: translate(650px, 170px) scaleX(1); }
-  100% { transform: translate(860px, 152px) scaleX(1); }
+  0% { transform: translate(-40px, 140px) scaleX(1); }
+  100% { transform: translate(860px, 148px) scaleX(1); }
 }
 
 @keyframes splashMinnowSwimD {
-  0% { transform: translate(-60px, 158px) scaleX(1); }
-  25% { transform: translate(175px, 142px) scaleX(1); }
-  50% { transform: translate(440px, 165px) scaleX(1); }
-  75% { transform: translate(670px, 140px) scaleX(1); }
-  100% { transform: translate(890px, 155px) scaleX(1); }
+  0% { transform: translate(-60px, 156px) scaleX(1); }
+  100% { transform: translate(890px, 150px) scaleX(1); }
 }
 
 @keyframes splashMinnowSwimE {
-  0% { transform: translate(-55px, 155px) scaleX(1); }
-  25% { transform: translate(185px, 168px) scaleX(1); }
-  50% { transform: translate(415px, 148px) scaleX(1); }
-  75% { transform: translate(655px, 172px) scaleX(1); }
+  0% { transform: translate(-55px, 152px) scaleX(1); }
   100% { transform: translate(870px, 158px) scaleX(1); }
 }
 
