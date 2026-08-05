@@ -805,19 +805,46 @@
         </div>
         <div class="panel--events__inner">
         <h2 class="panel__headline">Events</h2>
-        <p class="panel__lede">Compete with fishers worldwide for bonus coins.</p>
+        <p class="panel__lede">Daily boards, duels &amp; crab hauls.</p>
         <article class="event-card event-card--daily">
+          <div class="event-card__art event-card__art--daily" aria-hidden="true">
+            <svg class="event-card__art-svg" viewBox="0 0 320 110" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="evDailySky" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#1a3a5c"/>
+                  <stop offset="0.55" stop-color="#2a5a7a"/>
+                  <stop offset="1" stop-color="#c4783a"/>
+                </linearGradient>
+                <radialGradient id="evDailySun" cx="0.5" cy="0.55" r="0.5">
+                  <stop offset="0" stop-color="#ffe082"/>
+                  <stop offset="0.45" stop-color="#ffb300"/>
+                  <stop offset="1" stop-color="#ffb300" stop-opacity="0"/>
+                </radialGradient>
+              </defs>
+              <rect width="320" height="110" fill="url(#evDailySky)"/>
+              <ellipse cx="160" cy="78" rx="70" ry="42" fill="url(#evDailySun)"/>
+              <path d="M0 78 Q40 68 80 76 T160 72 T240 78 T320 70 L320 110 L0 110 Z" fill="#0c2840" opacity="0.9"/>
+              <path d="M0 86 Q50 78 100 88 T200 82 T320 90 L320 110 L0 110 Z" fill="#143850"/>
+              <g class="event-card__art-bob">
+                <path d="M148 34 h24 v6 h-10 v28 h-4 v-28 h-10 z" fill="#f5d78e"/>
+                <circle cx="160" cy="28" r="14" fill="#ffd54f" stroke="#b8860b" stroke-width="2"/>
+                <path d="M160 18 l3 7 h7 l-5.5 4 2 7 -6.5-4.5 -6.5 4.5 2-7 -5.5-4 h7 z" fill="#fff8e1"/>
+                <rect x="112" y="52" width="28" height="10" rx="2" fill="#90a4ae"/>
+                <rect x="180" y="52" width="28" height="10" rx="2" fill="#bf8a4a"/>
+                <text x="126" y="60" text-anchor="middle" font-size="8" font-weight="800" fill="#263238">2</text>
+                <text x="194" y="60" text-anchor="middle" font-size="8" font-weight="800" fill="#3e2723">3</text>
+              </g>
+            </svg>
+          </div>
           <header class="event-card__head">
             <h3 class="event-card__title">Fisher of the Day</h3>
             <p id="dailyEventReset" class="event-card__reset">Resets tonight</p>
           </header>
-          <p class="event-card__desc">
-            Fisher of the Day is separate from the all-time top 10. Post any reef run — only your best score today counts toward the daily board.
-          </p>
-          <ul class="event-card__prizes" aria-label="Daily coin prizes">
-            <li><span class="event-card__medal event-card__medal--1">1st</span> 1,500 coins + Magnet Rod (1 day)</li>
-            <li><span class="event-card__medal event-card__medal--2">2nd</span> 1,000 coins + 3 Kraken Spray</li>
-            <li><span class="event-card__medal event-card__medal--3">3rd</span> 800 coins</li>
+          <p class="event-card__tagline">Today's best score wins the podium.</p>
+          <ul class="event-card__prize-row" aria-label="Daily prizes">
+            <li class="event-card__chip event-card__chip--gold"><span>1st</span> 1,500 + Magnet Rod</li>
+            <li class="event-card__chip event-card__chip--silver"><span>2nd</span> 1,000 + Spray</li>
+            <li class="event-card__chip event-card__chip--bronze"><span>3rd</span> 800 coins</li>
           </ul>
           <div class="leaderboard-block leaderboard-block--compact">
             <h4 id="dailyLeaderboardTitle" class="leaderboard-block__title">Today's standings</h4>
@@ -826,20 +853,49 @@
           <p id="dailyEventPlayerHint" class="event-card__hint"></p>
         </article>
         <article class="event-card event-card--duel" id="eventCardDuel">
+          <div class="event-card__art event-card__art--duel" aria-hidden="true">
+            <svg class="event-card__art-svg" viewBox="0 0 320 110" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="evDuelBg" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#3a1520"/>
+                  <stop offset="0.5" stop-color="#1a1428"/>
+                  <stop offset="1" stop-color="#122838"/>
+                </linearGradient>
+              </defs>
+              <rect width="320" height="110" fill="url(#evDuelBg)"/>
+              <path d="M0 70 Q80 58 160 72 T320 64 L320 110 L0 110 Z" fill="#0a2030" opacity="0.85"/>
+              <g class="event-card__art-duel-left">
+                <path d="M48 18 L48 78" stroke="#c4a574" stroke-width="4" stroke-linecap="round"/>
+                <path d="M48 28 Q78 36 92 58" fill="none" stroke="#9ca8b8" stroke-width="2"/>
+                <path d="M88 58 l8 10 -14 2 z" fill="#ef4444"/>
+                <circle cx="36" cy="88" r="16" fill="#1e3a5c" stroke="#5eead4" stroke-width="2"/>
+                <text x="36" y="92" text-anchor="middle" font-size="11" font-weight="800" fill="#5eead4">YOU</text>
+              </g>
+              <g class="event-card__art-duel-right">
+                <path d="M272 18 L272 78" stroke="#c4a574" stroke-width="4" stroke-linecap="round"/>
+                <path d="M272 28 Q242 36 228 58" fill="none" stroke="#9ca8b8" stroke-width="2"/>
+                <path d="M232 58 l-8 10 14 2 z" fill="#60a5fa"/>
+                <circle cx="284" cy="88" r="16" fill="#3a1a28" stroke="#f87171" stroke-width="2"/>
+                <text x="284" y="92" text-anchor="middle" font-size="10" font-weight="800" fill="#fca5a5">RIVAL</text>
+              </g>
+              <g class="event-card__art-vs">
+                <circle cx="160" cy="52" r="22" fill="#7f1d1d" stroke="#f87171" stroke-width="2"/>
+                <text x="160" y="58" text-anchor="middle" font-family="Bebas Neue, sans-serif" font-size="20" fill="#fecaca" letter-spacing="1">VS</text>
+              </g>
+            </svg>
+          </div>
           <header class="event-card__head">
             <h3 class="event-card__title">Duel Fishing</h3>
-            <p class="event-card__reset">Split-screen</p>
+            <p class="event-card__reset">1 minute</p>
           </header>
-          <p class="event-card__desc">
-            Face a rival fisher on a random home-screen reef for one minute. Rival difficulty ranges from 4,000 pts (easy) up to your personal best.
-          </p>
-          <ul class="event-card__prizes" aria-label="Duel prize">
-            <li><span class="event-card__medal event-card__medal--win">Win</span> 800 coins</li>
+          <p class="event-card__tagline">You vs a rival. Highest score takes the coins.</p>
+          <ul class="event-card__prize-row" aria-label="Duel prize">
+            <li class="event-card__chip event-card__chip--win"><span>Win</span> 800 coins</li>
+            <li class="event-card__chip event-card__chip--ticket"><span>1</span> ticket</li>
           </ul>
-          <p class="event-card__desc event-card__desc--tickets">1 ticket per duel · 5 free tickets daily · extra tickets in the shop (700 coins)</p>
-          <p id="duelEventUnavailable" class="event-card__unavailable" hidden>Desktop or tablet only — Duel Fishing is not available on phones.</p>
+          <p id="duelEventUnavailable" class="event-card__unavailable" hidden>Desktop or tablet only — not available on phones.</p>
           <p id="duelEventTickets" class="event-card__tickets">Tickets: 5</p>
-          <p id="duelEventMatchup" class="event-card__matchup">Find a real rival in the lobby — 15 second countdown, then COM if nobody joins.</p>
+          <p id="duelEventMatchup" class="event-card__matchup">Lobby search · COM if nobody joins</p>
           <div id="duelLobbyCountdown" class="duel-lobby-countdown" hidden aria-hidden="true">
             <p class="duel-lobby-countdown__label" id="duelLobbyCountdownLabel">Trying to find a rival</p>
             <p class="duel-lobby-countdown__time" id="duelLobbyCountdownValue" aria-live="polite">15</p>
@@ -850,19 +906,73 @@
           <button type="button" id="btnStartDuel" class="btn btn--secondary event-card__play">Find duel rival</button>
         </article>
         <article class="event-card event-card--crab" id="eventCardCrab">
+          <div class="event-card__art event-card__art--crab" aria-hidden="true">
+            <svg class="event-card__art-svg" viewBox="0 0 320 110" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="evCrabWater" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#0a2038"/>
+                  <stop offset="0.55" stop-color="#0f5064"/>
+                  <stop offset="1" stop-color="#1c7f88"/>
+                </linearGradient>
+                <linearGradient id="evCrabSand" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#e8c684"/>
+                  <stop offset="1" stop-color="#a87a3e"/>
+                </linearGradient>
+                <linearGradient id="evCrabShell" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#f87171"/>
+                  <stop offset="1" stop-color="#991b1b"/>
+                </linearGradient>
+                <linearGradient id="evCrabChest" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#fde68a"/>
+                  <stop offset="1" stop-color="#b45309"/>
+                </linearGradient>
+              </defs>
+              <rect width="320" height="70" fill="url(#evCrabWater)"/>
+              <path d="M0 62 Q40 56 80 64 T160 58 T240 66 T320 60 L320 110 L0 110 Z" fill="url(#evCrabSand)"/>
+              <rect x="0" y="64" width="320" height="8" fill="rgba(140,100,50,0.28)"/>
+              <g class="event-card__art-cage">
+                <line x1="72" y1="8" x2="72" y2="28" stroke="#e6d2aa" stroke-width="1.5" opacity="0.7"/>
+                <rect x="52" y="28" width="40" height="30" rx="4" fill="rgba(40,60,78,0.35)" stroke="#6b4423" stroke-width="3"/>
+                <line x1="60" y1="32" x2="60" y2="54" stroke="rgba(214,226,236,0.7)" stroke-width="1.2"/>
+                <line x1="72" y1="32" x2="72" y2="54" stroke="rgba(214,226,236,0.7)" stroke-width="1.2"/>
+                <line x1="84" y1="32" x2="84" y2="54" stroke="rgba(214,226,236,0.7)" stroke-width="1.2"/>
+                <line x1="56" y1="38" x2="88" y2="38" stroke="rgba(214,226,236,0.55)" stroke-width="1"/>
+                <line x1="56" y1="46" x2="88" y2="46" stroke="rgba(214,226,236,0.55)" stroke-width="1"/>
+              </g>
+              <g class="event-card__art-crab-run" transform="translate(190 58)">
+                <ellipse cx="0" cy="18" rx="28" ry="5" fill="rgba(8,12,18,0.25)"/>
+                <path d="M-18 4 L-28 14 M-10 6 L-16 18 M10 6 L16 18 M18 4 L28 14" stroke="#7f1d1d" stroke-width="2.2" stroke-linecap="round"/>
+                <ellipse cx="0" cy="2" rx="22" ry="14" fill="url(#evCrabShell)" stroke="#7f1d1d" stroke-width="1.2"/>
+                <line x1="-8" y1="-8" x2="-10" y2="-16" stroke="#7f1d1d" stroke-width="2"/>
+                <line x1="8" y1="-8" x2="10" y2="-16" stroke="#7f1d1d" stroke-width="2"/>
+                <circle cx="-10" cy="-17" r="2.4" fill="#0f172a"/>
+                <circle cx="10" cy="-17" r="2.4" fill="#0f172a"/>
+                <circle cx="-10.6" cy="-17.4" r="0.8" fill="#fff"/>
+                <circle cx="9.4" cy="-17.4" r="0.8" fill="#fff"/>
+                <rect x="-14" y="-36" width="28" height="16" rx="2" fill="url(#evCrabChest)" stroke="#78350f" stroke-width="1"/>
+                <path d="M-15 -28 Q0 -40 15 -28" fill="#fcd34d" stroke="#92400e" stroke-width="1"/>
+                <path d="M-16 -4 Q-28 -22 -14 -24" fill="none" stroke="#b91c1c" stroke-width="3.5" stroke-linecap="round"/>
+                <path d="M16 -4 Q28 -22 14 -24" fill="none" stroke="#b91c1c" stroke-width="3.5" stroke-linecap="round"/>
+                <ellipse cx="-14" cy="-24" rx="5" ry="3.5" fill="#dc2626" transform="rotate(-20 -14 -24)"/>
+                <ellipse cx="14" cy="-24" rx="5" ry="3.5" fill="#dc2626" transform="rotate(20 14 -24)"/>
+              </g>
+              <g opacity="0.85">
+                <circle cx="248" cy="42" r="3.5" fill="#ffd94d" stroke="#c8901f" stroke-width="0.6"/>
+                <circle cx="258" cy="48" r="3" fill="#ffd94d" stroke="#c8901f" stroke-width="0.6"/>
+                <circle cx="240" cy="50" r="2.5" fill="#fff2b0" stroke="#c8901f" stroke-width="0.5"/>
+              </g>
+            </svg>
+          </div>
           <header class="event-card__head">
             <h3 class="event-card__title">Crab Trap</h3>
             <p class="event-card__reset">60 seconds</p>
           </header>
-          <p class="event-card__desc">
-            Drop lobster cages on the scuttling treasure crabs. Every crab you trap is worth 1 point — they never stop coming, so trap as many as you can before time runs out.
-          </p>
-          <ul class="event-card__prizes" aria-label="Crab Trap rewards">
-            <li><span class="event-card__medal event-card__medal--3">Low</span> Common chests — a little coin</li>
-            <li><span class="event-card__medal event-card__medal--2">Good</span> Better chests — more coins + bait</li>
-            <li><span class="event-card__medal event-card__medal--1">Great</span> Rich chests — coins, bait &amp; rods</li>
+          <p class="event-card__tagline">Cage the treasure crabs. Open a chest.</p>
+          <ul class="event-card__prize-row" aria-label="Crab Trap rewards">
+            <li class="event-card__chip event-card__chip--bronze"><span>Low</span> Coins</li>
+            <li class="event-card__chip event-card__chip--silver"><span>Good</span> Coins + bait</li>
+            <li class="event-card__chip event-card__chip--gold"><span>Great</span> Coins, bait &amp; rods</li>
           </ul>
-          <p class="event-card__desc event-card__desc--tickets">1 ticket per game · pick 1 of 3 treasure chests for your reward</p>
           <p id="crabEventTickets" class="event-card__tickets">Tickets: 5</p>
           <button type="button" id="btnStartCrab" class="btn btn--secondary event-card__play">Play Crab Trap</button>
         </article>
