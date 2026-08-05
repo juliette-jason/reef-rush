@@ -969,6 +969,11 @@ body {
   50% { transform: translateY(-6px); }
 }
 
+@keyframes shopPileBobFlip {
+  0%, 100% { transform: scaleX(-1) translateY(0); }
+  50% { transform: scaleX(-1) translateY(-6px); }
+}
+
 @keyframes shopSparkle {
   0%, 100% { opacity: 0.25; transform: scale(0.75) rotate(0deg); }
   50% { opacity: 0.9; transform: scale(1.15) rotate(20deg); }
