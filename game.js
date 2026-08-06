@@ -426,6 +426,8 @@ const INTRO_SEEN_KEY = "reefRushIntroSeen_v1";
 const SHOP_GUIDE_SEEN_KEY = "reefRushShopGuideSeen_v1";
 const SEAGULL_SHOP_HINT_KEY = "reefRushSeagullShopHint_v1";
 const SEAGULL_SHOP_PENDING_KEY = "reefRushSeagullShopPending_v1";
+/** Snapshot saved before Ctrl+N new-player wipe — restored with Ctrl+R. */
+const PROGRESS_BACKUP_KEY = "reefRushProgressBackup_v1";
 
 const TREASURE_CHESTS_TO_UNLOCK_ADVENTURE = 20;
 const SECRET_TREASURE_CHEST_GRANT = 19;
@@ -7797,7 +7799,50 @@ function resetProgress() {
 }
 
 /** Dev/test: wipe progress + first-time tutorial flags so you can play as a new fisher. Ctrl+N */
-function resetAsNewPlayer() {
+function saveProgressBackupBeforeNewPlayerTest() {
+  try {
+    // Don't overwrite a real backup with an already-wiped new-player state.
+    const looksEmpty =
+      (gameMeta.coins || 0) <= 0 &&
+      (gameMeta.totalTreasureChests || 0) <= 0 &&
+      (gameMeta.adventureHighestLevel || 0) <= 0 &&
+      !hasSeenIntro();
+    if (looksEmpty && localStorage.getItem(PROGRESS_BACKUP_KEY)) return;
+    const snapshot = {
+      meta: gameMeta,
+      introSeen: localStorage.getItem(INTRO_SEEN_KEY),
+      shopGuideSeen: localStorage.getItem(SHOP_GUIDE_SEEN_KEY),
+      seagullShopHint: localStorage.getItem(SEAGULL_SHOP_HINT_KEY),
+      seagullShopPending: localStorage.getItem(SEAGULL_SHOP_PENDING_KEY),
+      savedAt: Date.now(),
+    };
+    localStorage.setItem(PROGRESS_BACKUP_KEY, JSON.stringify(snapshot));
+  } catch {
+    /* ignore quota */
+  }
+}
+
+function applyLoadedProgressState() {
+  selectedRod = rodSpecById(FREE_ROD_ID);
+  roundBait = { catchRadiusMult: 1, rareAssistAdd: 0, lightRadiusMult: 1 };
+  normalizeSelectedBaitId();
+  normalizeSelectedRod();
+  refreshCoinDisplays();
+  buildBaitUI();
+  buildRodUI();
+  buildShopUI();
+  updateAdventureLaunchUI();
+  adventureMapUiProgress = -1;
+  adventureTrailDrawnCount = 0;
+  pendingAdventureTrailReveal = false;
+  cancelAdventureTrailReveal();
+  buildAdventureLevelUI(true);
+  hideMapSeagullGuide();
+  ensureDailyCatchChallenge();
+  showHomePanel();
+}
+
+function stopActiveSessionsForProgressTest() {
   if (playing) {
     playing = false;
     stopReefMusic();
@@ -7816,6 +7861,11 @@ function resetAsNewPlayer() {
   }
   duelSession = null;
   adventureSession = null;
+}
+
+function resetAsNewPlayer() {
+  saveProgressBackupBeforeNewPlayerTest();
+  stopActiveSessionsForProgressTest();
   try {
     localStorage.removeItem(INTRO_SEEN_KEY);
     localStorage.removeItem(SHOP_GUIDE_SEEN_KEY);
@@ -7825,24 +7875,83 @@ function resetAsNewPlayer() {
     /* ignore */
   }
   gameMeta = defaultMeta();
-  selectedRod = rodSpecById(FREE_ROD_ID);
-  roundBait = { catchRadiusMult: 1, rareAssistAdd: 0, lightRadiusMult: 1 };
   saveMeta();
-  normalizeSelectedBaitId();
-  normalizeSelectedRod();
-  refreshCoinDisplays();
-  buildBaitUI();
-  buildRodUI();
-  buildShopUI();
-  updateAdventureLaunchUI();
-  adventureMapUiProgress = -1;
-  adventureTrailDrawnCount = 0;
-  pendingAdventureTrailReveal = false;
-  cancelAdventureTrailReveal();
-  buildAdventureLevelUI(true);
-  hideMapSeagullGuide();
-  showHomePanel();
-  showToast("New player test mode — seagull tutorial reset", 2200);
+  applyLoadedProgressState();
+  showToast("New player test mode — press Ctrl+R to restore", 2600);
+}
+
+/** Dev/test: restore the progress snapshot saved by Ctrl+N. Ctrl+R */
+function restoreProgressBackup() {
+  let snapshot = null;
+  try {
+    const raw = localStorage.getItem(PROGRESS_BACKUP_KEY);
+    if (raw) snapshot = JSON.parse(raw);
+  } catch {
+    snapshot = null;
+  }
+  if (!snapshot || !snapshot.meta || typeof snapshot.meta !== "object") {
+    showToast("No saved progress to restore — use Ctrl+N first", 2200);
+    return;
+  }
+  stopActiveSessionsForProgressTest();
+  try {
+    const setOrClear = (key, value) => {
+      if (value == null || value === "") localStorage.removeItem(key);
+      else localStorage.setItem(key, String(value));
+    };
+    setOrClear(INTRO_SEEN_KEY, snapshot.introSeen);
+    setOrClear(SHOP_GUIDE_SEEN_KEY, snapshot.shopGuideSeen);
+    setOrClear(SEAGULL_SHOP_HINT_KEY, snapshot.seagullShopHint);
+    setOrClear(SEAGULL_SHOP_PENDING_KEY, snapshot.seagullShopPending);
+  } catch {
+    /* ignore */
+  }
+  gameMeta = loadMetaFromObject(snapshot.meta);
+  saveMeta();
+  applyLoadedProgressState();
+  showToast("Progress restored", 1800);
+}
+
+function loadMetaFromObject(o) {
+  try {
+    const counts = o.baitCounts && typeof o.baitCounts === "object" && !Array.isArray(o.baitCounts) ? { ...o.baitCounts } : {};
+    for (const k of Object.keys(counts)) {
+      counts[k] = Math.max(0, Math.floor(Number(counts[k]) || 0));
+    }
+    let selectedBaitId = typeof o.selectedBaitId === "string" ? o.selectedBaitId : "standard";
+    if (!BAITS.some((b) => b.id === selectedBaitId)) selectedBaitId = "standard";
+    const owned = Array.isArray(o.ownedRodIds)
+      ? o.ownedRodIds.filter((id) => RODS.some((r) => r.id === id) && id !== MAGNET_ROD_ID)
+      : [];
+    const ownedRodIds = Array.from(new Set([FREE_ROD_ID, ...owned]));
+    let selectedRodId = typeof o.selectedRodId === "string" ? o.selectedRodId : FREE_ROD_ID;
+    if (!ownedRodIds.includes(selectedRodId)) selectedRodId = FREE_ROD_ID;
+    return {
+      coins: Math.max(0, Math.floor(Number(o.coins) || 0)),
+      baitCounts: counts,
+      selectedBaitId,
+      ownedRodIds,
+      selectedRodId,
+      totalTreasureChests: Math.max(0, Math.floor(Number(o.totalTreasureChests) || 0)),
+      adventureHighestLevel: Math.max(0, Math.min(ADVENTURE_LEVEL_COUNT, Math.floor(Number(o.adventureHighestLevel) || 0))),
+      pendingAdventureHomeCelebration: Boolean(o.pendingAdventureHomeCelebration),
+      pendingBonusVoyagesCelebration: Boolean(o.pendingBonusVoyagesCelebration),
+      pendingIceVoyagesCelebration: Boolean(o.pendingIceVoyagesCelebration),
+      pendingLostCityCelebration: Boolean(o.pendingLostCityCelebration),
+      pendingDailyPrizeCelebration: normalizePendingDailyPrizeCelebration(o.pendingDailyPrizeCelebration),
+      playerInitials: String(o.playerInitials || "")
+        .toUpperCase()
+        .replace(/[^A-Z]/g, "")
+        .slice(0, 3),
+      dailyPrizeCheckedDay: String(o.dailyPrizeCheckedDay || ""),
+      magnetRodDayKey: String(o.magnetRodDayKey || ""),
+      duelTickets: Math.max(0, Math.floor(Number(o.duelTickets) || 0)),
+      duelTicketsDayKey: String(o.duelTicketsDayKey || ""),
+      dailyCatch: normalizeDailyCatchState(o.dailyCatch),
+    };
+  } catch {
+    return defaultMeta();
+  }
 }
 
 function hideAllPanels() {
@@ -16099,6 +16208,13 @@ window.addEventListener("keydown", (e) => {
     resetAsNewPlayer();
     return;
   }
+  if (e.ctrlKey && !e.metaKey && !e.altKey && e.code === "KeyR") {
+    const tag = e.target?.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || e.target?.isContentEditable) return;
+    e.preventDefault();
+    restoreProgressBackup();
+    return;
+  }
   if (e.ctrlKey && e.shiftKey && e.code === "Digit3") {
     const tag = e.target?.tagName;
     if (tag === "INPUT" || tag === "TEXTAREA" || e.target?.isContentEditable) return;
@@ -16397,6 +16513,18 @@ window.addEventListener("resize", () => {
 });
 
 gameMeta = loadMeta();
+(function keepProgressBackupFresh() {
+  try {
+    const hasProgress =
+      (gameMeta.coins || 0) > 0 ||
+      (gameMeta.totalTreasureChests || 0) > 0 ||
+      (gameMeta.adventureHighestLevel || 0) > 0 ||
+      hasSeenIntro();
+    if (hasProgress) saveProgressBackupBeforeNewPlayerTest();
+  } catch {
+    /* ignore */
+  }
+})();
 ensureDailyCatchChallenge();
 refreshDuelTicketsForToday();
 normalizeSelectedRod();

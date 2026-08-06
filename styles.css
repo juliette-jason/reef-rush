@@ -2646,8 +2646,15 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
+.reef-map-stage {
+  position: relative;
+  overflow: visible;
+  margin-top: 8px;
+}
+
 .rods--with-map {
   max-width: min(520px, 94vw);
+  overflow: visible;
 }
 
 .reef-picker,
@@ -2677,19 +2684,28 @@ body {
 
 .map-seagull {
   position: absolute;
-  right: clamp(4px, 2vw, 18px);
-  top: 1.6rem;
+  left: 50%;
+  top: 0;
   z-index: 8;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
+  align-items: center;
+  gap: 4px;
+  width: min(300px, 92%);
+  transform: translateX(-50%);
   pointer-events: none;
   filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.35));
 }
 
 .map-seagull[hidden] {
   display: none;
+}
+
+.map-seagull__perch {
+  display: block;
+  transform: translateY(-68%) scale(1.75);
+  transform-origin: 50% 100%;
+  z-index: 2;
 }
 
 .map-seagull__bird {
@@ -2827,7 +2843,7 @@ body {
 
 .map-seagull__bubble {
   pointer-events: auto;
-  max-width: min(280px, 78vw);
+  max-width: min(300px, 86vw);
   padding: 12px 14px 12px;
   border-radius: 14px;
   background: linear-gradient(165deg, rgba(255, 252, 245, 0.98), rgba(232, 242, 250, 0.96));
@@ -2835,6 +2851,7 @@ body {
   color: #0f172a;
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
   animation: mapSeagullBubbleIn 0.45s ease-out;
+  text-align: left;
 }
 
 .map-seagull__title {
