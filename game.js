@@ -6385,6 +6385,7 @@ function spawnFishInDuelHalf(side) {
     spec,
     x: fromLeft ? xMin - len : xMax + len,
     y,
+    homeY: y,
     vx: fromLeft ? speed : -speed,
     len,
     phase: Math.random() * Math.PI * 2,
@@ -6406,9 +6407,15 @@ function updateOpponentFish(dt) {
   if (!duelSession) return;
   const t = performance.now();
   const half = duelHalfW();
+  const step = dt / 16;
   for (const f of duelSession.opponentFish) {
     if (f.caught) continue;
-    f.x += f.vx * (dt / 16) * 1.2;
+    f.x += f.vx * step * 1.2;
+    const morph = f.spec?.morph || "";
+    const soft = morph === "jellyfish" || morph === "seaturtle";
+    f.phase = (f.phase || 0) + (soft ? 0.05 : 0.088) * step;
+    if (f.homeY == null) f.homeY = f.y;
+    f.y = f.homeY + Math.sin(f.phase) * f.len * (soft ? 0.04 : 0.07);
   }
   duelSession.opponentFish = duelSession.opponentFish.filter((f) => {
     if (f.caught && f.removeAt && t >= f.removeAt) return false;
@@ -10714,6 +10721,7 @@ function spawnFish() {
     spec,
     x: fromLeft ? -len : w + len,
     y,
+    homeY: y,
     vx: fromLeft ? speed : -speed,
     len,
     phase: Math.random() * Math.PI * 2,
@@ -12530,39 +12538,54 @@ function drawFishMorph(morph, L, body, shade, accent, speciesId, phase = 0) {
   }
 
   function forkTail(depth = 0.28) {
-    const tg = ctx.createLinearGradient(-L * 0.4, 0, -L * 0.95, 0);
+    const wag = Math.sin(phase * 2.15) * 0.22;
+    ctx.save();
+    ctx.translate(-L * 0.38, 0);
+    ctx.rotate(wag);
+    const tg = ctx.createLinearGradient(0, 0, -L * 0.55, 0);
     tg.addColorStop(0, body);
     tg.addColorStop(1, shade);
     ctx.fillStyle = tg;
     ctx.beginPath();
-    ctx.moveTo(-L * 0.4, 0);
-    ctx.lineTo(-L * 0.92, -L * depth);
-    ctx.lineTo(-L * 0.76, 0);
-    ctx.lineTo(-L * 0.92, L * depth);
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-L * 0.54, -L * depth);
+    ctx.lineTo(-L * 0.38, 0);
+    ctx.lineTo(-L * 0.54, L * depth);
     ctx.closePath();
     ctx.fill();
+    ctx.restore();
   }
 
   function dorsalSail(h = 0.42, w = 0.22) {
+    const flutter = Math.sin(phase * 1.55 + 0.6) * 0.12;
+    ctx.save();
+    ctx.translate(L * 0.08, -L * 0.1);
+    ctx.rotate(flutter);
     ctx.fillStyle = shade;
     ctx.beginPath();
-    ctx.moveTo(L * 0.02, -L * 0.12);
-    ctx.lineTo(L * 0.08, -L * h);
-    ctx.lineTo(L * 0.22, -L * w);
+    ctx.moveTo(-L * 0.06, -L * 0.02);
+    ctx.lineTo(0, -L * (h - 0.1));
+    ctx.lineTo(L * 0.14, -L * (w - 0.1));
     ctx.closePath();
     ctx.fill();
+    ctx.restore();
   }
 
   function pectoral() {
+    const flutter = Math.sin(phase * 1.7 + 1.2) * 0.28;
+    ctx.save();
+    ctx.translate(L * 0.08, L * 0.02);
+    ctx.rotate(flutter);
     ctx.fillStyle = shade;
     ctx.globalAlpha = 0.85;
     ctx.beginPath();
-    ctx.moveTo(L * 0.08, L * 0.02);
-    ctx.quadraticCurveTo(L * 0.02, L * 0.22, -L * 0.06, L * 0.18);
-    ctx.quadraticCurveTo(L * 0.02, L * 0.08, L * 0.08, L * 0.02);
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(-L * 0.06, L * 0.2, -L * 0.14, L * 0.16);
+    ctx.quadraticCurveTo(-L * 0.06, L * 0.06, 0, 0);
     ctx.closePath();
     ctx.fill();
     ctx.globalAlpha = 1;
+    ctx.restore();
   }
 
   function bellySheen(rx = L * 0.22, ry = L * 0.09, ox = L * 0.08, oy = -L * 0.03) {
@@ -13702,21 +13725,24 @@ function drawFish(f) {
   const accent = spec.colors[2] || "#ffffff";
   const scary = isSkullShoalsPlay() && spec.morph === "skullfish";
   const soft = spec.morph === "jellyfish" || spec.morph === "seaturtle";
+  const swim = f.phase;
+  // Splash-style body roll + faster secondary sway (vertical bob is in updateFish)
+  const bodyRoll = Math.sin(swim) * (scary ? 0.14 : soft ? 0.055 : 0.1);
+  const sway = Math.sin(swim * 2.05) * (scary ? 0.05 : soft ? 0.02 : 0.04);
 
   ctx.save();
   ctx.translate(f.x, f.y);
-  ctx.rotate(Math.sin(f.phase) * (scary ? 0.12 : soft ? 0.05 : 0.08));
+  ctx.rotate(bodyRoll + sway);
   ctx.scale(facing, 1);
 
-  ctx.fillStyle = "rgba(2, 18, 32, 0.16)";
+  ctx.fillStyle = "rgba(2, 18, 32, 0.14)";
   ctx.beginPath();
-  ctx.ellipse(0, L * 0.22, L * 0.38, L * 0.09, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, L * 0.24, L * 0.36, L * 0.08, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  drawFishMorph(spec.morph || "silverside", L, body, shade, accent, spec.id, f.phase);
+  drawFishMorph(spec.morph || "silverside", L, body, shade, accent, spec.id, swim);
 
   ctx.restore();
-  f.phase += scary ? 0.09 : soft ? 0.045 : 0.06;
 }
 
 function drawClam() {
@@ -14520,9 +14546,19 @@ function drawTrenchRodLight() {
 
 function updateFish(dt) {
   const t = performance.now();
+  const step = dt / 16;
   for (const f of fishList) {
     if (f.caught) continue;
-    f.x += f.vx * (dt / 16) * 1.2;
+    f.x += f.vx * step * 1.2;
+    const morph = f.spec?.morph || "";
+    const scary = isSkullShoalsPlay() && morph === "skullfish";
+    const soft = morph === "jellyfish" || morph === "seaturtle";
+    const rate = scary ? 0.11 : soft ? 0.05 : 0.088;
+    f.phase = (f.phase || 0) + rate * step;
+    if (f.homeY == null) f.homeY = f.y;
+    // Vertical undulation like splash-screen swim bob
+    const amp = f.len * (soft ? 0.04 : 0.07);
+    f.y = f.homeY + Math.sin(f.phase) * amp;
   }
   fishList = fishList.filter((f) => {
     if (f.caught && f.removeAt && t >= f.removeAt) return false;
