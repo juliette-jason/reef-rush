@@ -8146,7 +8146,21 @@ function buildAdventureLevelUI(force = false) {
           <span class="adventure-map-node__num">${lvl.level}</span>
         </span>
         ${showTreasureX ? '<span class="adventure-map-node__x"></span>' : ""}
-        ${isCurrent ? '<span class="adventure-map-node__boat" aria-hidden="true"></span>' : ""}
+        ${isCurrent
+          ? `<span class="adventure-map-node__boat" aria-hidden="true">
+          <svg class="adventure-map-node__boat-svg" viewBox="0 0 48 42" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 28 L10 34 L38 34 L42 28 Z" fill="#3a2410"/>
+            <path d="M8 28 L12 22 L36 22 L40 28 Z" fill="#5c3a18"/>
+            <rect x="22.5" y="6" width="2.2" height="22" fill="#2e2418"/>
+            <path d="M24.5 8 L38 14 L24.5 20 Z" fill="#f2e6c8" stroke="#2e2418" stroke-width="0.7"/>
+            <path d="M22.5 10 L10 15 L22.5 19 Z" fill="#e8d8b0" stroke="#2e2418" stroke-width="0.6"/>
+            <path d="M24.5 6 L24.5 2 L32 5 L24.5 6 Z" fill="#1a1a1a"/>
+            <circle cx="27.5" cy="4.2" r="1.1" fill="#f5f0e6"/>
+            <path d="M26.6 3.7 L28.4 3.7 M27.5 2.8 L27.5 4.6 M26.8 3.1 L28.2 4.5 M28.2 3.1 L26.8 4.5" stroke="#1a1a1a" stroke-width="0.35"/>
+            <path d="M14 34 Q24 38 34 34" fill="none" stroke="#4a6880" stroke-width="1.2" opacity="0.55"/>
+          </svg>
+        </span>`
+          : ""}
         ${cleared ? '<span class="adventure-map-node__star" aria-hidden="true"></span>' : ""}
         ${!playable ? '<span class="adventure-map-node__lock" aria-hidden="true"></span>' : ""}
       </span>
