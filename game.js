@@ -11407,7 +11407,7 @@ function catchNetLayout(boatCx = w * 0.5) {
 }
 
 function catchNetBagOutline(lay) {
-  const { rimCx, rimCy, rimRx, sackCx, sackCy, sackHx, sackVy } = lay;
+  const { rimCx, rimCy, rimRx, rimRy, sackCx, sackCy, sackHx, sackVy } = lay;
   const topY = rimCy + rimRy * 0.2;
   const left = rimCx - rimRx;
   const right = rimCx + rimRx;
@@ -11424,7 +11424,7 @@ function catchNetBagOutline(lay) {
 }
 
 function drawCatchNetMeshFill(lay) {
-  const { rimCx, rimCy, rimRx, sackCx, sackCy, sackHx, sackVy } = lay;
+  const { rimCx, rimCy, rimRx, rimRy, sackCx, sackCy, sackHx, sackVy } = lay;
   const topY = rimCy + rimRy * 0.2;
   const botY = sackCy + sackVy * 0.68;
   const t = performance.now() * 0.0011;
@@ -12860,10 +12860,13 @@ function drawCachedBackground() {
     bgCacheCanvas.width = w;
     bgCacheCanvas.height = h;
     const saved = ctx;
-    ctx = bgCacheCanvas.getContext("2d");
-    drawBackground();
-    ctx = saved;
-    bgCacheKey = key;
+    try {
+      ctx = bgCacheCanvas.getContext("2d");
+      drawBackground();
+      bgCacheKey = key;
+    } finally {
+      ctx = saved;
+    }
   }
   ctx.drawImage(bgCacheCanvas, 0, 0);
 }
