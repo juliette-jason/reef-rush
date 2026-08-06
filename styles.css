@@ -1898,8 +1898,8 @@ body {
 }
 
 .shop-guide__brows {
-  transform-origin: 120px 94px;
-  animation: shopSailorBrow 2.4s ease-in-out infinite;
+  transform-origin: 120px 98px;
+  animation: shopSailorBrow 2.8s ease-in-out infinite;
 }
 
 .shop-guide__eye-l,
@@ -1908,18 +1908,11 @@ body {
   transform-origin: center;
 }
 
-.shop-guide__eye-l {
-  animation: shopSailorBlink 4.8s ease-in-out infinite;
-}
-
-.shop-guide__eye-r {
-  animation: shopSailorBlink 4.8s ease-in-out infinite;
-  animation-delay: 0.08s;
-}
-
-.shop-guide__stache {
-  transform-origin: 120px 128px;
-  animation: shopSailorMustache 0.55s ease-in-out infinite;
+.shop-guide__eyelid {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  transform: scaleY(0.12);
+  animation: shopSailorBlink 4.5s ease-in-out infinite;
 }
 
 .shop-guide__mouth-open,
@@ -1990,13 +1983,24 @@ body {
 
 @keyframes shopSailorBlink {
   0%,
-  88%,
+  86%,
   100% {
+    transform: scaleY(0.12);
+  }
+  88% {
     transform: scaleY(1);
   }
-  90%,
-  93% {
-    transform: scaleY(0.08);
+  90% {
+    transform: scaleY(0.12);
+  }
+  94% {
+    transform: scaleY(0.12);
+  }
+  95.5% {
+    transform: scaleY(1);
+  }
+  97% {
+    transform: scaleY(0.12);
   }
 }
 
@@ -2005,21 +2009,8 @@ body {
   100% {
     transform: translateY(0);
   }
-  45% {
-    transform: translateY(-1.5px);
-  }
-  70% {
-    transform: translateY(1px);
-  }
-}
-
-@keyframes shopSailorMustache {
-  0%,
-  100% {
-    transform: translateY(0) scaleY(1);
-  }
   50% {
-    transform: translateY(1px) scaleY(0.94);
+    transform: translateY(-1px);
   }
 }
 
@@ -2049,9 +2040,7 @@ body {
   .shop-guide__sailor,
   .shop-guide__head,
   .shop-guide__brows,
-  .shop-guide__eye-l,
-  .shop-guide__eye-r,
-  .shop-guide__stache,
+  .shop-guide__eyelid,
   .shop-guide__mouth-g .shop-guide__lips,
   .shop-guide__mouth-g .shop-guide__mouth-open,
   .shop-guide__mouth-g .shop-guide__teeth,
@@ -2059,6 +2048,10 @@ body {
   .shop-guide-launch__face,
   .shop-guide-launch__face::after {
     animation: none !important;
+  }
+
+  .shop-guide__eyelid {
+    transform: scaleY(0.12);
   }
 
   .shop-guide__mouth-open,
