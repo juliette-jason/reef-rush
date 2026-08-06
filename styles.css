@@ -3053,6 +3053,10 @@ body {
   gap: 10px;
 }
 
+.panel--start .rods__grid {
+  gap: 11px;
+}
+
 .rod-option {
   display: flex;
   align-items: flex-start;
