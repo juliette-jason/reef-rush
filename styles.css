@@ -3601,19 +3601,6 @@ body {
   flex-shrink: 0;
 }
 
-@media (min-width: 540px) {
-  .rods__grid:not(.rods__grid--reefs) {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-
-  .rods__grid:not(.rods__grid--reefs) .rod-option {
-    flex: 1 1 calc(50% - 5px);
-    min-width: 0;
-    max-width: calc(50% - 5px);
-  }
-}
-
 @media (min-width: 640px) {
   .reef-picker--map-first {
     flex-direction: column;
