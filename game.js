@@ -4534,25 +4534,25 @@ const REEFS = [
       "sea_otter",
     ],
     visuals: {
-      gradient: ["#6ee7b7", "#0f766e", "#134e4a", "#022c26"],
-      shaft: ["rgba(255, 253, 240, 0.2)", "rgba(255, 253, 240, 0)"],
-      silhouette: "rgba(6, 78, 72, 0.48)",
+      gradient: ["#5ec8c0", "#1a8a8a", "#0d5c5c", "#043838"],
+      shaft: ["rgba(255, 253, 240, 0.18)", "rgba(255, 253, 240, 0)"],
+      silhouette: "rgba(8, 70, 68, 0.5)",
       corals: [
-        { x: 0.04, c: "#ccfbf1", h: 0.4 },
-        { x: 0.1, c: "#5eead4", h: 0.34 },
-        { x: 0.16, c: "#f9a8d4", h: 0.38 },
-        { x: 0.24, c: "#2dd4bf", h: 0.31 },
-        { x: 0.32, c: "#fde68a", h: 0.36 },
-        { x: 0.4, c: "#99f6e4", h: 0.29 },
-        { x: 0.49, c: "#fb7185", h: 0.42 },
-        { x: 0.58, c: "#67e8f9", h: 0.33 },
-        { x: 0.66, c: "#f0abfc", h: 0.39 },
-        { x: 0.74, c: "#34d399", h: 0.3 },
-        { x: 0.82, c: "#2dd4bf", h: 0.41 },
-        { x: 0.9, c: "#99f6e4", h: 0.35 },
-        { x: 0.96, c: "#fdba74", h: 0.28 },
+        { x: 0.04, c: "#d4a574", h: 0.4 },
+        { x: 0.1, c: "#2a9d8f", h: 0.34 },
+        { x: 0.16, c: "#e07a5f", h: 0.38 },
+        { x: 0.24, c: "#3d8b7a", h: 0.31 },
+        { x: 0.32, c: "#e9c46a", h: 0.36 },
+        { x: 0.4, c: "#4a9b8e", h: 0.29 },
+        { x: 0.49, c: "#c97b63", h: 0.42 },
+        { x: 0.58, c: "#5aa9a0", h: 0.33 },
+        { x: 0.66, c: "#d4a017", h: 0.39 },
+        { x: 0.74, c: "#2f855a", h: 0.3 },
+        { x: 0.82, c: "#c0846a", h: 0.41 },
+        { x: 0.9, c: "#3b8c80", h: 0.35 },
+        { x: 0.96, c: "#d97706", h: 0.28 },
       ],
-      bubble: "rgba(210, 255, 250, 0.38)",
+      bubble: "rgba(200, 245, 235, 0.32)",
     },
   },
   {
@@ -4594,21 +4594,21 @@ const REEFS = [
       "atlantic_bluefin",
     ],
     visuals: {
-      gradient: ["#06b6d4", "#0e7490", "#155e75", "#0a1628"],
-      shaft: ["rgba(255, 250, 220, 0.12)", "rgba(255, 250, 220, 0)"],
-      silhouette: "rgba(5, 30, 45, 0.55)",
+      gradient: ["#4db8d4", "#1a7fa0", "#0e5470", "#062838"],
+      shaft: ["rgba(255, 250, 220, 0.14)", "rgba(255, 250, 220, 0)"],
+      silhouette: "rgba(8, 40, 55, 0.52)",
       corals: [
-        { x: 0.06, c: "#c44a7a", h: 0.34 },
-        { x: 0.14, c: "#ff8fb3", h: 0.28 },
-        { x: 0.24, c: "#fb7185", h: 0.32 },
-        { x: 0.34, c: "#f97316", h: 0.25 },
-        { x: 0.46, c: "#f9a8d4", h: 0.3 },
-        { x: 0.58, c: "#7a3d9c", h: 0.27 },
-        { x: 0.7, c: "#e879f9", h: 0.33 },
-        { x: 0.82, c: "#ff6b9d", h: 0.29 },
-        { x: 0.92, c: "#c084fc", h: 0.24 },
+        { x: 0.06, c: "#c45c5c", h: 0.34 },
+        { x: 0.14, c: "#d4785a", h: 0.28 },
+        { x: 0.24, c: "#e08a4a", h: 0.32 },
+        { x: 0.34, c: "#c97a3a", h: 0.25 },
+        { x: 0.46, c: "#b86b7a", h: 0.3 },
+        { x: 0.58, c: "#7a5c8c", h: 0.27 },
+        { x: 0.7, c: "#d4a06a", h: 0.33 },
+        { x: 0.82, c: "#c07060", h: 0.29 },
+        { x: 0.92, c: "#8a6a9a", h: 0.24 },
       ],
-      bubble: "rgba(200, 240, 255, 0.35)",
+      bubble: "rgba(190, 230, 245, 0.3)",
     },
   },
   {
@@ -4643,16 +4643,16 @@ const REEFS = [
       "atlantic_bluefin",
     ],
     visuals: {
-      gradient: ["#4c1d95", "#3730a3", "#1e1b4b", "#020617"],
-      shaft: ["rgba(196, 181, 253, 0.14)", "rgba(196, 181, 253, 0)"],
-      silhouette: "rgba(15, 23, 42, 0.58)",
+      gradient: ["#5b7fa8", "#3a5678", "#243850", "#0c1828"],
+      shaft: ["rgba(200, 215, 235, 0.1)", "rgba(200, 215, 235, 0)"],
+      silhouette: "rgba(20, 32, 48, 0.55)",
       corals: [
-        { x: 0.09, c: "#818cf8", h: 0.2 },
-        { x: 0.2, c: "#a78bfa", h: 0.16 },
-        { x: 0.86, c: "#6366f1", h: 0.21 },
-        { x: 0.93, c: "#c4b5fd", h: 0.13 },
+        { x: 0.09, c: "#6b7c5e", h: 0.2 },
+        { x: 0.2, c: "#8a9a72", h: 0.16 },
+        { x: 0.86, c: "#5a6b58", h: 0.21 },
+        { x: 0.93, c: "#7a8a6a", h: 0.13 },
       ],
-      bubble: "rgba(180, 198, 252, 0.28)",
+      bubble: "rgba(170, 195, 220, 0.24)",
     },
   },
   {
@@ -4689,16 +4689,16 @@ const REEFS = [
       "sea_otter",
     ],
     visuals: {
-      gradient: ["#38bdf8", "#0369a1", "#0c4a6e", "#000814"],
-      shaft: ["rgba(125, 211, 252, 0.1)", "rgba(125, 211, 252, 0)"],
-      silhouette: "rgba(3, 20, 40, 0.62)",
+      gradient: ["#4aa3c8", "#1a6a90", "#0c4568", "#031828"],
+      shaft: ["rgba(160, 220, 245, 0.1)", "rgba(160, 220, 245, 0)"],
+      silhouette: "rgba(4, 28, 48, 0.58)",
       corals: [
-        { x: 0.1, c: "#0284c7", h: 0.18 },
-        { x: 0.22, c: "#0ea5e9", h: 0.14 },
-        { x: 0.8, c: "#0369a1", h: 0.2 },
-        { x: 0.91, c: "#38bdf8", h: 0.12 },
+        { x: 0.1, c: "#4a7a68", h: 0.18 },
+        { x: 0.22, c: "#5a8a78", h: 0.14 },
+        { x: 0.8, c: "#3a6570", h: 0.2 },
+        { x: 0.91, c: "#4a8090", h: 0.12 },
       ],
-      bubble: "rgba(125, 211, 252, 0.22)",
+      bubble: "rgba(140, 210, 240, 0.2)",
     },
   },
   {
@@ -9814,89 +9814,133 @@ function crabTrapLoop(now) {
   s.rafId = requestAnimationFrame(crabTrapLoop);
 }
 
-// Matches the "treasure crab" from the main fishing game: a red crab with
-// jointed legs and eye stalks, hoisting a gold treasure chest overhead.
-function drawCrabTrapCrab(ctx, x, y, sc, legT, facing) {
-  const leg = legT;
-  const face = facing >= 0 ? 1 : -1;
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.scale(face, 1);
 
-  const swing = (i, m) => Math.sin(leg * m + i * 1.1) * 0.2;
+/** Shared treasure-crab body (jackpot + crab trap). Slightly more natural shell & legs. */
+function paintTreasureCrabBody(drawCtx, sc, leg) {
+  const swing = (i, m) => Math.sin(leg * m + i * 1.1) * 0.22;
 
-  ctx.fillStyle = "rgba(8, 12, 18, 0.2)";
-  ctx.beginPath();
-  ctx.ellipse(0, 7 * sc, 42 * sc, 10 * sc, 0.03, 0, Math.PI * 2);
-  ctx.fill();
+  drawCtx.fillStyle = "rgba(8, 12, 18, 0.22)";
+  drawCtx.beginPath();
+  drawCtx.ellipse(0, 8 * sc, 44 * sc, 11 * sc, 0.03, 0, Math.PI * 2);
+  drawCtx.fill();
 
   const drawWalkingLeg = (side, idx) => {
-    const sx = side;
-    const bx = sx * (15 + idx * 5.5) * sc;
-    const by = idx * 2.6 * sc;
+    const bx = side * (14 + idx * 5.8) * sc;
+    const by = idx * 2.4 * sc;
     const s1 = swing(idx + side * 2, 1.12);
     const s2 = swing(idx + side * 2 + 0.5, 0.92);
-    const a1 = (side > 0 ? 0.38 : Math.PI - 0.38) + s1;
-    const a2 = a1 + (side > 0 ? 0.52 : -0.52) + s2;
-    const l1 = 13 * sc;
-    const l2 = 15 * sc;
+    const a1 = (side > 0 ? 0.4 : Math.PI - 0.4) + s1;
+    const a2 = a1 + (side > 0 ? 0.55 : -0.55) + s2 * 0.8;
+    const l1 = 12 * sc;
+    const l2 = 14 * sc;
     const j1x = bx + Math.cos(a1) * l1;
     const j1y = by + Math.sin(a1) * l1;
-    ctx.strokeStyle = idx < 2 ? "#7f1d1d" : "#991b1b";
-    ctx.lineWidth = (2.05 - idx * 0.12) * sc;
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(bx, by);
-    ctx.lineTo(j1x, j1y);
-    ctx.lineTo(j1x + Math.cos(a2) * l2, j1y + Math.sin(a2) * l2);
-    ctx.stroke();
+    const tipX = j1x + Math.cos(a2) * l2;
+    const tipY = j1y + Math.sin(a2) * l2;
+    const legGrad = drawCtx.createLinearGradient(bx, by, tipX, tipY);
+    legGrad.addColorStop(0, "#b45309");
+    legGrad.addColorStop(0.55, "#9a3412");
+    legGrad.addColorStop(1, "#7c2d12");
+    drawCtx.strokeStyle = legGrad;
+    drawCtx.lineWidth = (2.6 - idx * 0.15) * sc;
+    drawCtx.lineCap = "round";
+    drawCtx.lineJoin = "round";
+    drawCtx.beginPath();
+    drawCtx.moveTo(bx, by);
+    drawCtx.lineTo(j1x, j1y);
+    drawCtx.lineTo(tipX, tipY);
+    drawCtx.stroke();
+    drawCtx.fillStyle = "#78350f";
+    drawCtx.beginPath();
+    drawCtx.arc(j1x, j1y, 1.6 * sc, 0, Math.PI * 2);
+    drawCtx.fill();
+    // Dactyl tip
+    drawCtx.strokeStyle = "#451a03";
+    drawCtx.lineWidth = 1.4 * sc;
+    drawCtx.beginPath();
+    drawCtx.moveTo(tipX, tipY);
+    drawCtx.lineTo(tipX + Math.cos(a2) * 3.2 * sc, tipY + Math.sin(a2) * 3.2 * sc);
+    drawCtx.stroke();
   };
   for (const side of [-1, 1]) {
     for (let i = 0; i < 4; i++) drawWalkingLeg(side, i);
   }
 
-  const capGrad = ctx.createRadialGradient(-6 * sc, -12 * sc, 2 * sc, 8 * sc, 4 * sc, 36 * sc);
-  capGrad.addColorStop(0, "#f87171");
-  capGrad.addColorStop(0.35, "#ef4444");
-  capGrad.addColorStop(0.65, "#dc2626");
-  capGrad.addColorStop(1, "#991b1b");
-  ctx.fillStyle = capGrad;
-  ctx.beginPath();
-  ctx.moveTo(0, -20 * sc);
-  ctx.quadraticCurveTo(14 * sc, -22 * sc, 24 * sc, -14 * sc);
-  ctx.quadraticCurveTo(30 * sc, 0, 26 * sc, 9 * sc);
-  ctx.quadraticCurveTo(14 * sc, 11 * sc, 0, 10 * sc);
-  ctx.quadraticCurveTo(-14 * sc, 11 * sc, -26 * sc, 9 * sc);
-  ctx.quadraticCurveTo(-30 * sc, 0, -24 * sc, -14 * sc);
-  ctx.quadraticCurveTo(-14 * sc, -22 * sc, 0, -20 * sc);
-  ctx.closePath();
-  ctx.fill();
-  ctx.strokeStyle = "#7f1d1d";
-  ctx.lineWidth = 1.35 * sc;
-  ctx.stroke();
+  // Carapace — rounded oval with lateral spines (more crab-like than blob)
+  const capGrad = drawCtx.createRadialGradient(-8 * sc, -14 * sc, 2 * sc, 4 * sc, 2 * sc, 40 * sc);
+  capGrad.addColorStop(0, "#fb923c");
+  capGrad.addColorStop(0.28, "#ea580c");
+  capGrad.addColorStop(0.62, "#c2410c");
+  capGrad.addColorStop(1, "#7c2d12");
+  drawCtx.fillStyle = capGrad;
+  drawCtx.beginPath();
+  drawCtx.moveTo(0, -22 * sc);
+  drawCtx.quadraticCurveTo(12 * sc, -24 * sc, 22 * sc, -16 * sc);
+  drawCtx.lineTo(28 * sc, -8 * sc); // lateral spine
+  drawCtx.quadraticCurveTo(30 * sc, 2 * sc, 24 * sc, 10 * sc);
+  drawCtx.quadraticCurveTo(12 * sc, 13 * sc, 0, 12 * sc);
+  drawCtx.quadraticCurveTo(-12 * sc, 13 * sc, -24 * sc, 10 * sc);
+  drawCtx.quadraticCurveTo(-30 * sc, 2 * sc, -28 * sc, -8 * sc);
+  drawCtx.lineTo(-22 * sc, -16 * sc);
+  drawCtx.quadraticCurveTo(-12 * sc, -24 * sc, 0, -22 * sc);
+  drawCtx.closePath();
+  drawCtx.fill();
+  drawCtx.strokeStyle = "#5c1a0a";
+  drawCtx.lineWidth = 1.4 * sc;
+  drawCtx.stroke();
 
+  // Shell ridges / grooves
+  drawCtx.strokeStyle = "rgba(69, 26, 3, 0.45)";
+  drawCtx.lineWidth = 1.05 * sc;
+  drawCtx.beginPath();
+  drawCtx.moveTo(-16 * sc, -6 * sc);
+  drawCtx.quadraticCurveTo(0, -2 * sc, 16 * sc, -6 * sc);
+  drawCtx.moveTo(-14 * sc, 2 * sc);
+  drawCtx.quadraticCurveTo(0, 5 * sc, 14 * sc, 2 * sc);
+  drawCtx.stroke();
+
+  // Pale underside lip
+  drawCtx.fillStyle = "rgba(253, 230, 138, 0.35)";
+  drawCtx.beginPath();
+  drawCtx.ellipse(0, 6 * sc, 16 * sc, 4.5 * sc, 0, 0, Math.PI * 2);
+  drawCtx.fill();
+
+  // Eye stalks with sockets
   const eyeStalk = (ex) => {
-    ctx.strokeStyle = "#7f1d1d";
-    ctx.lineWidth = 2 * sc;
-    ctx.beginPath();
-    ctx.moveTo(ex * 0.45, -14 * sc);
-    ctx.lineTo(ex, -22 * sc);
-    ctx.stroke();
-    ctx.fillStyle = "#0f172a";
-    ctx.beginPath();
-    ctx.arc(ex, -23 * sc, 2.5 * sc, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
-    ctx.beginPath();
-    ctx.arc(ex - 0.7 * sc, -23.4 * sc, 0.85 * sc, 0, Math.PI * 2);
-    ctx.fill();
+    drawCtx.strokeStyle = "#9a3412";
+    drawCtx.lineWidth = 2.4 * sc;
+    drawCtx.lineCap = "round";
+    drawCtx.beginPath();
+    drawCtx.moveTo(ex * 0.4, -16 * sc);
+    drawCtx.quadraticCurveTo(ex * 0.85, -20 * sc, ex, -24 * sc);
+    drawCtx.stroke();
+    drawCtx.fillStyle = "#7c2d12";
+    drawCtx.beginPath();
+    drawCtx.arc(ex, -24.5 * sc, 3.4 * sc, 0, Math.PI * 2);
+    drawCtx.fill();
+    drawCtx.fillStyle = "#0f172a";
+    drawCtx.beginPath();
+    drawCtx.arc(ex, -24.5 * sc, 2.3 * sc, 0, Math.PI * 2);
+    drawCtx.fill();
+    drawCtx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    drawCtx.beginPath();
+    drawCtx.arc(ex - 0.7 * sc, -25 * sc, 0.85 * sc, 0, Math.PI * 2);
+    drawCtx.fill();
   };
-  eyeStalk(-7 * sc);
-  eyeStalk(7 * sc);
+  eyeStalk(-8 * sc);
+  eyeStalk(8 * sc);
+}
 
+// Matches the "treasure crab" from the main fishing game: a red crab with
+// jointed legs and eye stalks, hoisting a gold treasure chest overhead.
+function drawCrabTrapCrab(ctx, x, y, sc, legT, facing) {
+  const face = facing >= 0 ? 1 : -1;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(face, 1);
+  paintTreasureCrabBody(ctx, sc, legT);
   drawCrabTrapChest(ctx, sc);
   drawCrabTrapCrabArms(ctx, sc);
-
   ctx.restore();
 }
 
@@ -9991,7 +10035,7 @@ function drawCrabTrapCrabArms(ctx, sc) {
     const midY = -40 * sc;
     const gx = sx > 0 ? gripRX : gripLX;
     const gy = gripY;
-    ctx.strokeStyle = "#b91c1c";
+    ctx.strokeStyle = "#c2410c";
     ctx.lineWidth = 5.2 * sc;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
@@ -9999,7 +10043,7 @@ function drawCrabTrapCrabArms(ctx, sc) {
     ctx.moveTo(shx, shy);
     ctx.quadraticCurveTo(midX, midY, gx, gy);
     ctx.stroke();
-    ctx.strokeStyle = "#7f1d1d";
+    ctx.strokeStyle = "#7c2d12";
     ctx.lineWidth = 2.8 * sc;
     ctx.beginPath();
     ctx.moveTo(shx, shy);
@@ -10009,15 +10053,15 @@ function drawCrabTrapCrabArms(ctx, sc) {
     const ang = Math.atan2(gy - midY, gx - midX);
     const cx = gx + Math.cos(ang + sx * 0.5) * 5 * sc;
     const cy = gy + Math.sin(ang + sx * 0.5) * 5 * sc;
-    ctx.fillStyle = "#dc2626";
+    ctx.fillStyle = "#ea580c";
     ctx.beginPath();
     ctx.ellipse(cx, cy, 9 * sc, 6.5 * sc, ang, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = "#ef4444";
+    ctx.fillStyle = "#fb923c";
     ctx.beginPath();
     ctx.ellipse(cx + Math.cos(ang + sx * 0.9) * 4 * sc, cy + Math.sin(ang + sx * 0.9) * 4 * sc, 5 * sc, 3.8 * sc, ang + sx * 0.25, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = "#7f1d1d";
+    ctx.strokeStyle = "#7c2d12";
     ctx.lineWidth = 0.95 * sc;
     ctx.beginPath();
     ctx.ellipse(cx, cy, 9 * sc, 6.5 * sc, ang, 0, Math.PI * 2);
@@ -11770,216 +11814,100 @@ function drawKraken() {
   if (!kraken || (kraken.state !== "active" && kraken.state !== "biting")) return;
   const L = kraken.len;
   const facing = kraken.state === "biting" ? kraken.biteFacing : kraken.face;
-  const phase = kraken.phase;
-  const biting = kraken.state === "biting";
+  const ink = "#2d1b4e";
+  const mantle = "#5b3d8a";
+  const belly = "#7c5aad";
+  const glow = "#22d3ee";
 
-  // Giant-squid palette: deep mahogany mantle, cooler shaded underside.
-  const hideDeep = "#3a1418";
-  const hideMid = "#6b2a28";
-  const hideWarm = "#8f3d32";
-  const hidePale = "#c4896e";
-  const suckerRing = "#5c221c";
-  const suckerCup = "#d4a28a";
+  ctx.save();
+  ctx.translate(kraken.x, kraken.y);
+  ctx.rotate(Math.sin(kraken.phase) * 0.04);
+  ctx.scale(facing, 1);
+  ctx.globalAlpha = 0.97;
 
-  function mantleGradient(cx, cy, rx, ry) {
-    const g = ctx.createRadialGradient(cx - rx * 0.25, cy - ry * 0.35, rx * 0.08, cx, cy, Math.max(rx, ry));
-    g.addColorStop(0, hidePale);
-    g.addColorStop(0.35, hideWarm);
-    g.addColorStop(0.72, hideMid);
-    g.addColorStop(1, hideDeep);
-    return g;
-  }
-
-  function drawTentacle(i, count, front) {
-    const u = i / (count - 1 || 1);
-    const baseX = (u - 0.5) * L * (front ? 0.48 : 0.7);
-    const baseY = -L * (front ? 0.18 : 0.28);
-    const wob = Math.sin(phase * (front ? 1.45 : 1.05) + i * 0.95) * L * (front ? 0.055 : 0.04);
-    const curl = Math.sin(phase * 0.7 + i * 1.3) * L * (front ? 0.12 : 0.08);
-    const tipX = baseX * (front ? 1.15 : 1.45) + wob + curl;
-    const tipY = L * (front ? 0.34 : 0.18) + Math.abs(baseX) * 0.16;
-    const midX = baseX * 0.65 + wob * 0.6;
-    const midY = L * (front ? 0.06 : -0.02);
-    const thickness = L * (front ? 0.085 - u * 0.018 : 0.1 - u * 0.022);
-
-    const tg = ctx.createLinearGradient(baseX, baseY, tipX, tipY);
-    tg.addColorStop(0, hideMid);
-    tg.addColorStop(0.45, hideWarm);
-    tg.addColorStop(1, hideDeep);
-    ctx.strokeStyle = tg;
-    ctx.lineWidth = thickness;
+  const tentacleCount = 7;
+  for (let i = 0; i < tentacleCount; i++) {
+    const u = i / (tentacleCount - 1 || 1);
+    const baseX = (u - 0.5) * L * 0.62;
+    const wob = Math.sin(kraken.phase * 1.2 + i * 0.9) * L * 0.05;
+    const tipX = baseX * 1.35 + wob + Math.sin(kraken.phase * 0.8 + i) * L * 0.09;
+    const tipY = L * 0.24 + Math.abs(baseX) * 0.14;
+    ctx.strokeStyle = i % 2 === 0 ? ink : mantle;
+    ctx.lineWidth = (0.1 - u * 0.028) * L;
     ctx.lineCap = "round";
     ctx.beginPath();
-    ctx.moveTo(baseX, baseY);
-    ctx.bezierCurveTo(midX, midY, tipX * 0.78, tipY * 0.55, tipX, tipY);
+    ctx.moveTo(baseX * 0.35, -L * 0.22);
+    ctx.bezierCurveTo(baseX * 0.5 + wob * 0.5, -L * 0.05, tipX * 0.72, L * 0.02, tipX, tipY);
     ctx.stroke();
-
-    // Underside highlight
-    ctx.strokeStyle = "rgba(212, 162, 138, 0.28)";
-    ctx.lineWidth = Math.max(1, thickness * 0.28);
-    ctx.beginPath();
-    ctx.moveTo(baseX + L * 0.01, baseY);
-    ctx.bezierCurveTo(midX + L * 0.012, midY + L * 0.01, tipX * 0.78, tipY * 0.55, tipX, tipY);
-    ctx.stroke();
-
-    // Suckers along the underside of the arm
-    const suckerN = front ? 7 : 5;
-    for (let s = 0; s < suckerN; s++) {
-      const t = (s + 1) / (suckerN + 1);
-      const sx =
-        (1 - t) * (1 - t) * baseX +
-        2 * (1 - t) * t * midX +
-        t * t * (tipX * 0.78);
-      const sy =
-        (1 - t) * (1 - t) * baseY +
-        2 * (1 - t) * t * midY +
-        t * t * (tipY * 0.55);
-      const sr = thickness * (0.28 - t * 0.08);
-      ctx.fillStyle = suckerRing;
+    // Simple cartoon sucker dots
+    ctx.fillStyle = belly;
+    for (let s = 1; s <= 3; s++) {
+      const t = s / 4;
+      const sx = baseX * 0.35 * (1 - t) + tipX * t;
+      const sy = -L * 0.22 * (1 - t) + tipY * t;
       ctx.beginPath();
-      ctx.ellipse(sx + L * 0.012, sy + L * 0.01, sr, sr * 0.72, 0.2, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = suckerCup;
-      ctx.beginPath();
-      ctx.ellipse(sx + L * 0.012, sy + L * 0.01, sr * 0.55, sr * 0.4, 0.2, 0, Math.PI * 2);
+      ctx.arc(sx + L * 0.02, sy, L * 0.018, 0, Math.PI * 2);
       ctx.fill();
     }
   }
 
-  ctx.save();
-  ctx.translate(kraken.x, kraken.y);
-  ctx.rotate(Math.sin(phase) * 0.035);
-  ctx.scale(facing, 1);
-  ctx.globalAlpha = 0.98;
-
-  // Soft depth shadow under the beast
-  ctx.fillStyle = "rgba(8, 4, 12, 0.28)";
+  ctx.fillStyle = mantle;
   ctx.beginPath();
-  ctx.ellipse(0, L * 0.12, L * 0.42, L * 0.12, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, -L * 0.4, L * 0.36, L * 0.24, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Rear tentacles
-  for (let i = 0; i < 5; i++) drawTentacle(i, 5, false);
-
-  // Mantle (elongated squid body, tip upward)
-  ctx.fillStyle = mantleGradient(0, -L * 0.58, L * 0.26, L * 0.42);
+  ctx.fillStyle = ink;
   ctx.beginPath();
-  ctx.moveTo(0, -L * 1.02);
-  ctx.bezierCurveTo(L * 0.22, -L * 0.92, L * 0.32, -L * 0.62, L * 0.28, -L * 0.38);
-  ctx.bezierCurveTo(L * 0.22, -L * 0.22, L * 0.12, -L * 0.16, 0, -L * 0.14);
-  ctx.bezierCurveTo(-L * 0.12, -L * 0.16, -L * 0.22, -L * 0.22, -L * 0.28, -L * 0.38);
-  ctx.bezierCurveTo(-L * 0.32, -L * 0.62, -L * 0.22, -L * 0.92, 0, -L * 1.02);
+  ctx.ellipse(0, -L * 0.55, L * 0.3, L * 0.22, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = belly;
+  ctx.beginPath();
+  ctx.moveTo(L * 0.1, -L * 0.62);
+  ctx.quadraticCurveTo(L * 0.24, -L * 0.8, L * 0.08, -L * 0.92);
+  ctx.quadraticCurveTo(0, -L * 0.84, -L * 0.08, -L * 0.92);
+  ctx.quadraticCurveTo(-L * 0.24, -L * 0.8, -L * 0.1, -L * 0.62);
+  ctx.quadraticCurveTo(0, -L * 0.58, L * 0.1, -L * 0.62);
   ctx.closePath();
   ctx.fill();
 
-  // Mantle fins (giant-squid style)
-  ctx.fillStyle = hideMid;
+  // Big cartoon eyes
+  ctx.fillStyle = "#fff";
   ctx.beginPath();
-  ctx.moveTo(-L * 0.06, -L * 0.92);
-  ctx.quadraticCurveTo(-L * 0.34, -L * 0.98, -L * 0.28, -L * 0.78);
-  ctx.quadraticCurveTo(-L * 0.14, -L * 0.84, -L * 0.04, -L * 0.86);
-  ctx.closePath();
+  ctx.arc(-L * 0.12, -L * 0.58, L * 0.07, 0, Math.PI * 2);
+  ctx.arc(L * 0.12, -L * 0.58, L * 0.07, 0, Math.PI * 2);
   ctx.fill();
+  ctx.fillStyle = glow;
+  ctx.globalAlpha = 0.65 + 0.25 * Math.sin(kraken.phase * 2.1);
   ctx.beginPath();
-  ctx.moveTo(L * 0.06, -L * 0.92);
-  ctx.quadraticCurveTo(L * 0.34, -L * 0.98, L * 0.28, -L * 0.78);
-  ctx.quadraticCurveTo(L * 0.14, -L * 0.84, L * 0.04, -L * 0.86);
-  ctx.closePath();
+  ctx.arc(-L * 0.12, -L * 0.58, L * 0.045, 0, Math.PI * 2);
+  ctx.arc(L * 0.12, -L * 0.58, L * 0.045, 0, Math.PI * 2);
   ctx.fill();
-
-  // Skin mottling
-  ctx.fillStyle = "rgba(30, 8, 10, 0.22)";
-  for (let i = 0; i < 8; i++) {
-    const mx = Math.sin(i * 1.7 + phase * 0.2) * L * 0.16;
-    const my = -L * 0.72 + (i % 4) * L * 0.1;
-    ctx.beginPath();
-    ctx.ellipse(mx, my, L * 0.045, L * 0.03, i * 0.4, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // Head / brachial crown
-  ctx.fillStyle = mantleGradient(0, -L * 0.28, L * 0.3, L * 0.2);
+  ctx.globalAlpha = 0.97;
+  ctx.fillStyle = "#0f172a";
   ctx.beginPath();
-  ctx.ellipse(0, -L * 0.28, L * 0.3, L * 0.2, 0, 0, Math.PI * 2);
+  ctx.arc(-L * 0.1, -L * 0.58, L * 0.022, 0, Math.PI * 2);
+  ctx.arc(L * 0.14, -L * 0.58, L * 0.022, 0, Math.PI * 2);
   ctx.fill();
 
-  // Siphon
-  ctx.fillStyle = hideDeep;
-  ctx.beginPath();
-  ctx.ellipse(L * 0.16, -L * 0.22, L * 0.07, L * 0.045, 0.35, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Eyes — large cephalopod eyes with realistic highlights
-  function drawEye(ex, ey) {
-    ctx.fillStyle = "rgba(0,0,0,0.35)";
-    ctx.beginPath();
-    ctx.ellipse(ex, ey + L * 0.01, L * 0.09, L * 0.07, 0, 0, Math.PI * 2);
-    ctx.fill();
-    const eg = ctx.createRadialGradient(ex - L * 0.02, ey - L * 0.02, L * 0.01, ex, ey, L * 0.085);
-    eg.addColorStop(0, "#f5e6c8");
-    eg.addColorStop(0.45, "#c4a574");
-    eg.addColorStop(1, "#3a2410");
-    ctx.fillStyle = eg;
-    ctx.beginPath();
-    ctx.ellipse(ex, ey, L * 0.085, L * 0.065, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#0a0604";
-    ctx.beginPath();
-    ctx.ellipse(ex + L * 0.01, ey, L * 0.028, L * 0.048, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,0.75)";
-    ctx.beginPath();
-    ctx.arc(ex - L * 0.025, ey - L * 0.02, L * 0.016, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,0.35)";
-    ctx.beginPath();
-    ctx.arc(ex + L * 0.02, ey + L * 0.015, L * 0.008, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  drawEye(-L * 0.14, -L * 0.34);
-  drawEye(L * 0.14, -L * 0.34);
-
-  // Beak
-  ctx.fillStyle = "#1a0e0a";
-  ctx.beginPath();
-  ctx.moveTo(0, -L * 0.42);
-  ctx.lineTo(L * 0.05, -L * 0.52);
-  ctx.lineTo(0, -L * 0.58);
-  ctx.lineTo(-L * 0.05, -L * 0.52);
-  ctx.closePath();
-  ctx.fill();
-  if (biting) {
-    ctx.fillStyle = "#2a1610";
-    ctx.beginPath();
-    ctx.moveTo(0, -L * 0.5);
-    ctx.lineTo(L * 0.04, -L * 0.62);
-    ctx.lineTo(0, -L * 0.68);
-    ctx.lineTo(-L * 0.04, -L * 0.62);
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  // Front arms
-  for (let i = 0; i < 6; i++) drawTentacle(i, 6, true);
-
-  if (biting) {
+  if (kraken.state === "biting") {
     const pulse = 0.3 + 0.7 * Math.abs(Math.sin(performance.now() * 0.028));
-    ctx.globalAlpha = 0.16 * pulse;
-    ctx.fillStyle = "#8b1a0a";
+    ctx.globalAlpha = 0.22 * pulse;
+    ctx.fillStyle = "#ff1a0a";
     ctx.beginPath();
     ctx.ellipse(0, -L * 0.48, L * 0.55, L * 0.36, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.globalAlpha = 0.22 * pulse;
-    ctx.fillStyle = "#c45a3a";
+    ctx.globalAlpha = 0.3 * pulse;
+    ctx.fillStyle = "#ff6b4d";
     ctx.beginPath();
     ctx.ellipse(0, -L * 0.55, L * 0.32, L * 0.22, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.globalAlpha = 0.98;
+    ctx.globalAlpha = 0.97;
   }
 
   ctx.restore();
 
-  if (biting && kraken.netGrab) {
+  if (kraken.state === "biting" && kraken.netGrab) {
     const f = kraken.biteFacing || facing || 1;
     const pulse = 0.55 + 0.45 * Math.abs(Math.sin(performance.now() * 0.016));
     const startX = kraken.x + f * L * 0.1;
@@ -11990,35 +11918,22 @@ function drawKraken() {
     const midY = Math.min(startY, endY) - dpr * (34 + 12 * pulse);
     ctx.save();
     ctx.lineCap = "round";
-    const armGrad = ctx.createLinearGradient(startX, startY, endX, endY);
-    armGrad.addColorStop(0, "rgba(107, 42, 40, 0.95)");
-    armGrad.addColorStop(1, "rgba(58, 20, 24, 0.92)");
-    ctx.strokeStyle = armGrad;
+    ctx.strokeStyle = "rgba(45, 27, 78, 0.9)";
     ctx.lineWidth = L * 0.075;
     ctx.beginPath();
     ctx.moveTo(startX, startY);
     ctx.bezierCurveTo(midX, midY, endX - f * dpr * 18, endY - dpr * 10, endX, endY);
     ctx.stroke();
-    ctx.strokeStyle = "rgba(212, 162, 138, 0.35)";
+    ctx.strokeStyle = "rgba(140, 105, 180, 0.45)";
     ctx.lineWidth = L * 0.025;
     ctx.beginPath();
     ctx.moveTo(startX + f * dpr * 5, startY - dpr * 2);
     ctx.bezierCurveTo(midX + f * dpr * 6, midY + dpr * 4, endX - f * dpr * 10, endY - dpr * 7, endX, endY);
     ctx.stroke();
-    // Grab sucker cluster on the net
-    for (let i = 0; i < 4; i++) {
-      const a = (i / 4) * Math.PI * 2 + pulse;
-      const gx = endX + Math.cos(a) * dpr * 7;
-      const gy = endY + Math.sin(a) * dpr * 5;
-      ctx.fillStyle = `rgba(92, 34, 28, ${0.55 + 0.2 * pulse})`;
-      ctx.beginPath();
-      ctx.ellipse(gx, gy, dpr * 5.5, dpr * 4, a, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = `rgba(212, 162, 138, ${0.45 + 0.2 * pulse})`;
-      ctx.beginPath();
-      ctx.ellipse(gx, gy, dpr * 3, dpr * 2.2, a, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    ctx.fillStyle = `rgba(107, 77, 143, ${0.45 + 0.25 * pulse})`;
+    ctx.beginPath();
+    ctx.ellipse(endX, endY, dpr * 12, dpr * 7, 0.2, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
   }
 }
@@ -12043,24 +11958,24 @@ function drawReefAmbience(reefId, waterTopY) {
     ctx.fillRect(0, waterTopY, w, waterH);
   } else if (reefId === "caribbean") {
     const g = ctx.createRadialGradient(w * 0.2, h - dpr * 120, 10, w * 0.2, h, w * 0.55);
-    g.addColorStop(0, "rgba(255, 140, 180, 0.14)");
-    g.addColorStop(0.5, "rgba(255, 200, 120, 0.06)");
+    g.addColorStop(0, "rgba(80, 170, 190, 0.12)");
+    g.addColorStop(0.5, "rgba(200, 160, 100, 0.06)");
     g.addColorStop(1, "rgba(0, 0, 0, 0)");
     ctx.fillStyle = g;
     ctx.fillRect(0, waterTopY, w, waterH);
     const g2 = ctx.createRadialGradient(w * 0.88, h - dpr * 90, 8, w * 0.88, h, w * 0.45);
-    g2.addColorStop(0, "rgba(200, 120, 255, 0.1)");
+    g2.addColorStop(0, "rgba(90, 140, 160, 0.1)");
     g2.addColorStop(1, "rgba(0, 0, 0, 0)");
     ctx.fillStyle = g2;
     ctx.fillRect(0, waterTopY, w, waterH);
   } else if (reefId === "mediterranean") {
-    ctx.fillStyle = "rgba(15, 10, 40, 0.18)";
+    ctx.fillStyle = "rgba(20, 30, 45, 0.16)";
     ctx.fillRect(0, waterTopY + waterH * 0.15, w, waterH * 0.35);
-    ctx.fillStyle = "rgba(5, 8, 30, 0.22)";
+    ctx.fillStyle = "rgba(12, 20, 35, 0.2)";
     ctx.fillRect(0, waterTopY + waterH * 0.45, w, waterH * 0.4);
     for (let i = 0; i < perfN(5); i++) {
       const y = waterTopY + waterH * (0.2 + i * 0.14) + Math.sin(t + i) * dpr * 6;
-      ctx.strokeStyle = `rgba(160, 170, 220, ${0.04 + i * 0.015})`;
+      ctx.strokeStyle = `rgba(150, 175, 200, ${0.04 + i * 0.015})`;
       ctx.lineWidth = (3 + i) * dpr;
       ctx.beginPath();
       ctx.moveTo(0, y);
@@ -12105,9 +12020,9 @@ function drawGreatBarrierReefBed() {
   const reefTop = h - dpr * 150;
   const reefBase = h - dpr * 12;
   const reefGrad = ctx.createLinearGradient(0, reefTop, 0, reefBase);
-  reefGrad.addColorStop(0, "rgba(24, 140, 118, 0.12)");
-  reefGrad.addColorStop(0.38, "rgba(24, 104, 94, 0.48)");
-  reefGrad.addColorStop(1, "rgba(6, 78, 72, 0.86)");
+  reefGrad.addColorStop(0, "rgba(24, 140, 118, 0.1)");
+  reefGrad.addColorStop(0.38, "rgba(28, 100, 90, 0.42)");
+  reefGrad.addColorStop(1, "rgba(10, 70, 65, 0.78)");
   ctx.fillStyle = reefGrad;
   ctx.beginPath();
   ctx.moveTo(0, reefBase);
@@ -12121,7 +12036,7 @@ function drawGreatBarrierReefBed() {
   ctx.closePath();
   ctx.fill();
 
-  const colors = ["#fb7185", "#f9a8d4", "#fdba74", "#fde68a", "#5eead4", "#67e8f9", "#c4b5fd"];
+  const colors = ["#c97b63", "#d4a574", "#e9c46a", "#2a9d8f", "#3d8b7a", "#e07a5f", "#4a9b8e"];
   for (let i = 0; i < perfN(30); i++) {
     const x = ((i * 83) % 1000) / 1000 * w;
     const y = h - dpr * (24 + ((i * 37) % 96));
@@ -12164,9 +12079,9 @@ function drawMesoamericanReefBed() {
   const reefTop = h - dpr * 122;
   const reefBase = h - dpr * 10;
   const reefGrad = ctx.createLinearGradient(0, reefTop, 0, reefBase);
-  reefGrad.addColorStop(0, "rgba(255, 125, 170, 0.08)");
-  reefGrad.addColorStop(0.4, "rgba(126, 55, 140, 0.34)");
-  reefGrad.addColorStop(1, "rgba(44, 18, 78, 0.72)");
+  reefGrad.addColorStop(0, "rgba(70, 150, 170, 0.08)");
+  reefGrad.addColorStop(0.4, "rgba(40, 90, 110, 0.32)");
+  reefGrad.addColorStop(1, "rgba(18, 50, 68, 0.68)");
   ctx.fillStyle = reefGrad;
   ctx.beginPath();
   ctx.moveTo(0, reefBase);
@@ -12180,7 +12095,7 @@ function drawMesoamericanReefBed() {
   ctx.closePath();
   ctx.fill();
 
-  const colors = ["#ff8fb3", "#fb7185", "#f97316", "#facc15", "#c084fc", "#e879f9", "#38bdf8"];
+  const colors = ["#c45c5c", "#d4785a", "#e08a4a", "#c97a3a", "#b86b7a", "#7a5c8c", "#d4a06a"];
   for (let i = 0; i < perfN(26); i++) {
     const x = ((i * 97) % 1000) / 1000 * w;
     const y = h - dpr * (22 + ((i * 43) % 82));
@@ -12330,8 +12245,13 @@ function drawReefStructure(reefId, corals) {
     const ch = c.h;
     ctx.globalAlpha = 0.88;
     if (reefId === "caribbean") {
-      ctx.strokeStyle = c.c;
-      ctx.lineWidth = 2.2 * dpr;
+      const branchGrad = ctx.createLinearGradient(cx, base, cx, base - dpr * 120 * ch);
+      branchGrad.addColorStop(0, c.c);
+      branchGrad.addColorStop(0.55, c.c);
+      branchGrad.addColorStop(1, "rgba(255, 240, 220, 0.55)");
+      ctx.strokeStyle = branchGrad;
+      ctx.lineWidth = 2.6 * dpr;
+      ctx.lineCap = "round";
       ctx.beginPath();
       ctx.moveTo(cx, base);
       ctx.bezierCurveTo(cx - dpr * 28 * ch, base - dpr * 50 * ch, cx + dpr * 32 * ch, base - dpr * 90 * ch, cx + dpr * 6 * ch, base - dpr * 120 * ch);
@@ -12340,16 +12260,25 @@ function drawReefStructure(reefId, corals) {
       ctx.moveTo(cx, base);
       ctx.bezierCurveTo(cx + dpr * 24 * ch, base - dpr * 45 * ch, cx - dpr * 26 * ch, base - dpr * 85 * ch, cx - dpr * 8 * ch, base - dpr * 115 * ch);
       ctx.stroke();
-      ctx.fillStyle = c.c;
-      ctx.globalAlpha = 0.35;
+      // Brain-coral mound at base
+      const mound = ctx.createRadialGradient(cx - dpr * 6, base - dpr * 10, 2, cx, base, dpr * 32 * ch);
+      mound.addColorStop(0, "rgba(255, 230, 200, 0.45)");
+      mound.addColorStop(0.5, c.c);
+      mound.addColorStop(1, "rgba(40, 30, 25, 0.35)");
+      ctx.fillStyle = mound;
+      ctx.globalAlpha = 0.55;
       ctx.beginPath();
-      ctx.ellipse(cx, base - dpr * 8, dpr * 28 * ch, dpr * 10, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx, base - dpr * 8, dpr * 30 * ch, dpr * 12, 0, 0, Math.PI * 2);
       ctx.fill();
     } else if (reefId === "australia") {
-      ctx.fillStyle = c.c;
       for (let s = 0; s < 6; s++) {
         const py = base - s * dpr * 15 * ch;
         const pw = dpr * (68 - s * 6) * ch;
+        const plate = ctx.createLinearGradient(cx - pw * 0.5, py, cx + pw * 0.5, py - dpr * 24 * ch);
+        plate.addColorStop(0, c.c);
+        plate.addColorStop(0.55, c.c);
+        plate.addColorStop(1, "rgba(255, 250, 230, 0.5)");
+        ctx.fillStyle = plate;
         ctx.beginPath();
         ctx.moveTo(cx - pw * 0.5, py);
         ctx.lineTo(cx + pw * 0.5, py);
@@ -12389,8 +12318,8 @@ function drawReefStructure(reefId, corals) {
         ctx.ellipse(px, py, dpr * 15 * ch, dpr * 9 * ch, p * 0.34, 0, Math.PI * 2);
         ctx.fill();
       }
-      ctx.globalAlpha = 0.32;
-      ctx.fillStyle = "#fffef0";
+      ctx.globalAlpha = 0.28;
+      ctx.fillStyle = "#fff8e7";
       ctx.beginPath();
       ctx.ellipse(cx + dpr * 12 * ch, base - dpr * 94 * ch, dpr * 24 * ch, dpr * 12 * ch, 0.3, 0, Math.PI * 2);
       ctx.fill();
@@ -14098,7 +14027,7 @@ function drawJackpotCrabChestArms(sc) {
     const midY = -40 * sc;
     const gx = sx > 0 ? gripRX : gripLX;
     const gy = gripY;
-    ctx.strokeStyle = "#b91c1c";
+    ctx.strokeStyle = "#c2410c";
     ctx.lineWidth = 5.2 * sc;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
@@ -14106,7 +14035,7 @@ function drawJackpotCrabChestArms(sc) {
     ctx.moveTo(shx, shy);
     ctx.quadraticCurveTo(midX, midY, gx, gy);
     ctx.stroke();
-    ctx.strokeStyle = "#7f1d1d";
+    ctx.strokeStyle = "#7c2d12";
     ctx.lineWidth = 2.8 * sc;
     ctx.beginPath();
     ctx.moveTo(shx, shy);
@@ -14116,15 +14045,15 @@ function drawJackpotCrabChestArms(sc) {
     const ang = Math.atan2(gy - midY, gx - midX);
     const cx = gx + Math.cos(ang + sx * 0.5) * 5 * sc;
     const cy = gy + Math.sin(ang + sx * 0.5) * 5 * sc;
-    ctx.fillStyle = "#dc2626";
+    ctx.fillStyle = "#ea580c";
     ctx.beginPath();
     ctx.ellipse(cx, cy, 9 * sc, 6.5 * sc, ang, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = "#ef4444";
+    ctx.fillStyle = "#fb923c";
     ctx.beginPath();
     ctx.ellipse(cx + Math.cos(ang + sx * 0.9) * 4 * sc, cy + Math.sin(ang + sx * 0.9) * 4 * sc, 5 * sc, 3.8 * sc, ang + sx * 0.25, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = "#7f1d1d";
+    ctx.strokeStyle = "#7c2d12";
     ctx.lineWidth = 0.95 * sc;
     ctx.beginPath();
     ctx.ellipse(cx, cy, 9 * sc, 6.5 * sc, ang, 0, Math.PI * 2);
@@ -14360,77 +14289,7 @@ function drawJackpotCrab() {
     return;
   }
 
-  const swing = (i, m) => Math.sin(leg * m + i * 1.1) * 0.2;
-
-  ctx.fillStyle = "rgba(8, 12, 18, 0.2)";
-  ctx.beginPath();
-  ctx.ellipse(0, 7 * sc, 42 * sc, 10 * sc, 0.03, 0, Math.PI * 2);
-  ctx.fill();
-
-  function drawWalkingLeg(side, idx) {
-    const sx = side;
-    const bx = sx * (15 + idx * 5.5) * sc;
-    const by = (0 + idx * 2.6) * sc;
-    const s1 = swing(idx + side * 2, 1.12);
-    const s2 = swing(idx + side * 2 + 0.5, 0.92);
-    const a1 = (side > 0 ? 0.38 : Math.PI - 0.38) + s1;
-    const a2 = a1 + (side > 0 ? 0.52 : -0.52) + s2;
-    const l1 = 13 * sc;
-    const l2 = 15 * sc;
-    const j1x = bx + Math.cos(a1) * l1;
-    const j1y = by + Math.sin(a1) * l1;
-    ctx.strokeStyle = idx < 2 ? "#7f1d1d" : "#991b1b";
-    ctx.lineWidth = (2.05 - idx * 0.12) * sc;
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(bx, by);
-    ctx.lineTo(j1x, j1y);
-    ctx.lineTo(j1x + Math.cos(a2) * l2, j1y + Math.sin(a2) * l2);
-    ctx.stroke();
-  }
-  for (const side of [-1, 1]) {
-    for (let i = 0; i < 4; i++) drawWalkingLeg(side, i);
-  }
-
-  const capGrad = ctx.createRadialGradient(-6 * sc, -12 * sc, 2 * sc, 8 * sc, 4 * sc, 36 * sc);
-  capGrad.addColorStop(0, "#f87171");
-  capGrad.addColorStop(0.35, "#ef4444");
-  capGrad.addColorStop(0.65, "#dc2626");
-  capGrad.addColorStop(1, "#991b1b");
-  ctx.fillStyle = capGrad;
-  ctx.beginPath();
-  ctx.moveTo(0, -20 * sc);
-  ctx.quadraticCurveTo(14 * sc, -22 * sc, 24 * sc, -14 * sc);
-  ctx.quadraticCurveTo(30 * sc, 0, 26 * sc, 9 * sc);
-  ctx.quadraticCurveTo(14 * sc, 11 * sc, 0, 10 * sc);
-  ctx.quadraticCurveTo(-14 * sc, 11 * sc, -26 * sc, 9 * sc);
-  ctx.quadraticCurveTo(-30 * sc, 0, -24 * sc, -14 * sc);
-  ctx.quadraticCurveTo(-14 * sc, -22 * sc, 0, -20 * sc);
-  ctx.closePath();
-  ctx.fill();
-  ctx.strokeStyle = "#7f1d1d";
-  ctx.lineWidth = 1.35 * sc;
-  ctx.stroke();
-
-  function eyeStalk(ex) {
-    ctx.strokeStyle = "#7f1d1d";
-    ctx.lineWidth = 2 * sc;
-    ctx.beginPath();
-    ctx.moveTo(ex * 0.45, -14 * sc);
-    ctx.lineTo(ex, -22 * sc);
-    ctx.stroke();
-    ctx.fillStyle = "#0f172a";
-    ctx.beginPath();
-    ctx.arc(ex, -23 * sc, 2.5 * sc, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
-    ctx.beginPath();
-    ctx.arc(ex - 0.7 * sc, -23.4 * sc, 0.85 * sc, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  eyeStalk(-7 * sc);
-  eyeStalk(7 * sc);
-
+  paintTreasureCrabBody(ctx, sc, leg);
   drawTreasureChestInCrabSpace(sc, 0);
   drawJackpotCrabChestArms(sc);
 
