@@ -2487,7 +2487,10 @@ body {
 }
 
 .panel--start {
-  background: #04283a;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 213, 74, 0.18), transparent 46%),
+    radial-gradient(ellipse at 18% 85%, rgba(77, 255, 243, 0.1), transparent 42%),
+    linear-gradient(180deg, #0c5a78 0%, var(--ocean-mid) 48%, var(--ocean-deep) 100%);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
