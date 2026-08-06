@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=seagull-grip-2" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -633,8 +633,13 @@
             <span id="btnStartSub" class="btn__sub">Round length depends on reef · tap to play</span>
           </button>
           <div id="mapSeagullGuide" class="map-seagull" hidden aria-live="polite">
+            <div class="map-seagull__bubble" role="dialog" aria-labelledby="mapSeagullTitle">
+              <strong id="mapSeagullTitle" class="map-seagull__title">Ahoy!</strong>
+              <div id="mapSeagullText" class="map-seagull__text"></div>
+              <button type="button" id="btnMapSeagullDone" class="btn btn--secondary map-seagull__btn">Got it</button>
+            </div>
             <div class="map-seagull__perch" aria-hidden="true">
-              <svg class="map-seagull__bird" viewBox="0 0 140 130" xmlns="http://www.w3.org/2000/svg" focusable="false">
+              <svg class="map-seagull__bird" viewBox="0 0 140 142" xmlns="http://www.w3.org/2000/svg" focusable="false">
                 <defs>
                   <linearGradient id="mapSgBody" x1="30%" y1="10%" x2="70%" y2="95%">
                     <stop offset="0%" stop-color="#ffffff"/>
@@ -659,15 +664,6 @@
                     <stop offset="100%" stop-color="#fda4af" stop-opacity="0"/>
                   </radialGradient>
                 </defs>
-                <!-- feet / legs perched -->
-                <g class="map-seagull__legs">
-                  <path d="M58 108 L56 122 L52 124" fill="none" stroke="#ea580c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M56 122 L60 125" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M56 122 L54 126" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M82 108 L84 122 L88 124" fill="none" stroke="#ea580c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M84 122 L80 125" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M84 122 L86 126" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round"/>
-                </g>
                 <!-- tail behind -->
                 <path d="M62 96 Q70 108 78 96 Q70 102 62 96 Z" fill="#94a3b8" stroke="#64748b" stroke-width="0.8"/>
                 <!-- body facing camera -->
@@ -714,12 +710,27 @@
                     <path d="M66 50 Q70 54 74 50" fill="none" stroke="#92400e" stroke-width="0.6" opacity="0.45"/>
                   </g>
                 </g>
+                <!-- feet drawn last so they grip on top of the button rim -->
+                <ellipse class="map-seagull__grip-shadow" cx="70" cy="118" rx="34" ry="4" fill="rgba(15, 23, 42, 0.42)"/>
+                <g class="map-seagull__legs">
+                  <path d="M59 96 L55 116" fill="none" stroke="#9a3412" stroke-width="3.2" stroke-linecap="round"/>
+                  <path d="M55 116 Q48 112 42 107" fill="none" stroke="#9a3412" stroke-width="2.6" stroke-linecap="round"/>
+                  <path d="M55 116 Q46 124 40 132" fill="none" stroke="#7c2d12" stroke-width="2.8" stroke-linecap="round"/>
+                  <path d="M55 116 Q53 126 50 134" fill="none" stroke="#9a3412" stroke-width="2.8" stroke-linecap="round"/>
+                  <path d="M55 116 Q62 126 65 134" fill="none" stroke="#7c2d12" stroke-width="2.8" stroke-linecap="round"/>
+                  <path d="M81 96 L85 116" fill="none" stroke="#9a3412" stroke-width="3.2" stroke-linecap="round"/>
+                  <path d="M85 116 Q92 112 98 107" fill="none" stroke="#9a3412" stroke-width="2.6" stroke-linecap="round"/>
+                  <path d="M85 116 Q94 124 100 132" fill="none" stroke="#7c2d12" stroke-width="2.8" stroke-linecap="round"/>
+                  <path d="M85 116 Q87 126 90 134" fill="none" stroke="#9a3412" stroke-width="2.8" stroke-linecap="round"/>
+                  <path d="M85 116 Q78 126 75 134" fill="none" stroke="#7c2d12" stroke-width="2.8" stroke-linecap="round"/>
+                  <circle cx="40" cy="132" r="2" fill="#431407" stroke="#fef3c7" stroke-width="0.6"/>
+                  <circle cx="50" cy="134" r="2" fill="#431407" stroke="#fef3c7" stroke-width="0.6"/>
+                  <circle cx="65" cy="134" r="2" fill="#431407" stroke="#fef3c7" stroke-width="0.6"/>
+                  <circle cx="100" cy="132" r="2" fill="#431407" stroke="#fef3c7" stroke-width="0.6"/>
+                  <circle cx="90" cy="134" r="2" fill="#431407" stroke="#fef3c7" stroke-width="0.6"/>
+                  <circle cx="75" cy="134" r="2" fill="#431407" stroke="#fef3c7" stroke-width="0.6"/>
+                </g>
               </svg>
-            </div>
-            <div class="map-seagull__bubble" role="dialog" aria-labelledby="mapSeagullTitle">
-              <strong id="mapSeagullTitle" class="map-seagull__title">Ahoy!</strong>
-              <div id="mapSeagullText" class="map-seagull__text"></div>
-              <button type="button" id="btnMapSeagullDone" class="btn btn--secondary map-seagull__btn">Got it</button>
             </div>
           </div>
         </div>
@@ -1814,6 +1825,6 @@
       </section>
     </div>
 
-    <script src="game.js" defer></script>
+    <script src="game.js?v=seagull-grip-2" defer></script>
   </body>
 </html>
