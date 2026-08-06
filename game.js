@@ -293,8 +293,9 @@ function rodArtSvg(rod) {
       `<rect x="23" y="52" width="5" height="6" fill="${south}"/>`;
   } else if (rod.id === "wide_net") {
     tipGear =
-      `<ellipse cx="29" cy="58" rx="9" ry="6" fill="none" stroke="${band}" stroke-width="1.4"/>` +
-      `<path d="M23 55 L29 61 L35 55 M26 57 L29 61 L32 57" fill="none" stroke="${metal}" stroke-width="1"/>`;
+      `<rect x="20" y="50" width="18" height="3.2" rx="1.2" fill="${band}"/>` +
+      `<path d="M21 53 L22 64 Q29 68 36 64 L37 53" fill="none" stroke="${metal}" stroke-width="1.1"/>` +
+      `<path d="M24 54 L25 63 M29 54 L29 65 M34 54 L33 63 M22 57 L36 57 M22.5 60.5 L35.5 60.5" fill="none" stroke="${metal}" stroke-width="0.7" opacity="0.75"/>`;
   } else if (rod.id === "light") {
     tipGear =
       `<circle cx="29" cy="54" r="5.5" fill="${glow}"/>` +
@@ -11391,20 +11392,183 @@ function getFishOnlyCatchEntries() {
 }
 
 function catchNetLayout(boatCx = w * 0.5) {
-  const rimRx = 58 * dpr;
-  const rimRy = 16 * dpr;
-  const sackHx = 54 * dpr;
-  const sackVy = 74 * dpr;
+  // Keep-net / hanging fish bag (not a round butterfly landing net).
+  const rimRx = 64 * dpr; // half-width of float frame
+  const rimRy = 7 * dpr; // float-pipe thickness
+  const sackHx = 58 * dpr;
+  const sackVy = 78 * dpr;
   let rimCx;
   if (isDuelActive()) {
-    rimCx = duelHalfW() - 58 * dpr;
+    rimCx = duelHalfW() - 62 * dpr;
   } else {
-    rimCx = w - 58 * dpr;
+    rimCx = w - 62 * dpr;
   }
-  const rimCy = waterTop + 10 * dpr;
+  const rimCy = waterTop + 8 * dpr;
   const sackCx = rimCx;
-  const sackCy = rimCy + rimRy + sackVy * 0.52;
+  const sackCy = rimCy + sackVy * 0.52;
   return { boatCx, rimCx, rimCy, rimRx, rimRy, sackCx, sackCy, sackHx, sackVy };
+}
+
+function catchNetBagOutline(lay) {
+  const { rimCx, rimCy, rimRx, sackCx, sackCy, sackHx, sackVy } = lay;
+  const topY = rimCy + rimRy * 0.2;
+  const left = rimCx - rimRx;
+  const right = rimCx + rimRx;
+  const bagLeft = sackCx - sackHx * 0.9;
+  const bagRight = sackCx + sackHx * 0.9;
+  const botY = sackCy + sackVy * 0.68;
+  ctx.beginPath();
+  ctx.moveTo(left, topY);
+  ctx.lineTo(bagLeft + dpr * 3, botY - dpr * 10);
+  ctx.quadraticCurveTo(sackCx - sackHx * 0.35, botY + dpr * 8, sackCx, botY + dpr * 12);
+  ctx.quadraticCurveTo(sackCx + sackHx * 0.35, botY + dpr * 8, bagRight - dpr * 3, botY - dpr * 10);
+  ctx.lineTo(right, topY);
+  ctx.closePath();
+}
+
+function drawCatchNetMeshFill(lay) {
+  const { rimCx, rimCy, rimRx, sackCx, sackCy, sackHx, sackVy } = lay;
+  const topY = rimCy + rimRy * 0.2;
+  const botY = sackCy + sackVy * 0.68;
+  const t = performance.now() * 0.0011;
+  ctx.save();
+  catchNetBagOutline(lay);
+  ctx.clip();
+
+  // Soft underwater bag body
+  const body = ctx.createLinearGradient(sackCx, topY, sackCx, botY);
+  body.addColorStop(0, "rgba(12, 28, 42, 0.12)");
+  body.addColorStop(0.45, "rgba(8, 22, 36, 0.32)");
+  body.addColorStop(1, "rgba(4, 14, 24, 0.48)");
+  ctx.fillStyle = body;
+  ctx.fillRect(sackCx - sackHx, topY - dpr, sackHx * 2, botY - topY + dpr * 20);
+
+  // Diamond commercial mesh
+  ctx.strokeStyle = "rgba(196, 210, 222, 0.38)";
+  ctx.lineWidth = 1.05 * dpr;
+  const step = dpr * 11;
+  for (let yy = topY - step * 2; yy < botY + step * 2; yy += step) {
+    const wave = Math.sin(yy * 0.04 + t) * dpr * 2.2;
+    for (let xx = sackCx - sackHx - step; xx < sackCx + sackHx + step; xx += step) {
+      const cx = xx + wave;
+      const cy = yy;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - step * 0.48);
+      ctx.lineTo(cx + step * 0.48, cy);
+      ctx.lineTo(cx, cy + step * 0.48);
+      ctx.lineTo(cx - step * 0.48, cy);
+      ctx.closePath();
+      ctx.stroke();
+    }
+  }
+
+  // Vertical panel seams
+  ctx.strokeStyle = "rgba(160, 176, 190, 0.28)";
+  ctx.lineWidth = 1.35 * dpr;
+  for (const u of [-0.55, 0, 0.55]) {
+    const x0 = rimCx + rimRx * u;
+    const x1 = sackCx + sackHx * 0.82 * u;
+    ctx.beginPath();
+    ctx.moveTo(x0, topY);
+    ctx.quadraticCurveTo((x0 + x1) * 0.5 + dpr * 2, (topY + botY) * 0.5, x1, botY - dpr * 6);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawCatchNetStructure(lay, boatCx) {
+  const { rimCx, rimCy, rimRx, rimRy, sackCx, sackCy, sackHx, sackVy } = lay;
+  const g = getCharterBoatGeo(boatCx);
+  const ropeAx = g.cx + g.L * 0.34;
+  const ropeAy = g.deckY(ropeAx) - dpr * 6;
+  const left = rimCx - rimRx;
+  const right = rimCx + rimRx;
+  const topY = rimCy;
+
+  ctx.save();
+
+  // Twin bridle lines from boat rail to float frame corners
+  ctx.strokeStyle = "rgba(72, 58, 42, 0.92)";
+  ctx.lineWidth = 2.2 * dpr;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(ropeAx, ropeAy);
+  ctx.quadraticCurveTo((ropeAx + left) * 0.55 + dpr * 8, (ropeAy + topY) * 0.45, left + dpr * 4, topY);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(ropeAx + dpr * 6, ropeAy);
+  ctx.quadraticCurveTo((ropeAx + right) * 0.55 + dpr * 14, (ropeAy + topY) * 0.42, right - dpr * 4, topY);
+  ctx.stroke();
+
+  drawCatchNetMeshFill(lay);
+
+  // Float-pipe frame (PVC / cork rail) — rectangular opening
+  const pipeH = Math.max(rimRy * 1.6, dpr * 9);
+  const frameGrad = ctx.createLinearGradient(left, topY - pipeH, left, topY + pipeH * 0.4);
+  frameGrad.addColorStop(0, "#f3e7c8");
+  frameGrad.addColorStop(0.45, "#d6b56a");
+  frameGrad.addColorStop(1, "#9a7340");
+  ctx.fillStyle = frameGrad;
+  ctx.strokeStyle = "rgba(70, 48, 24, 0.7)";
+  ctx.lineWidth = 1.4 * dpr;
+  const rr = dpr * 5;
+  ctx.beginPath();
+  ctx.moveTo(left + rr, topY - pipeH * 0.55);
+  ctx.lineTo(right - rr, topY - pipeH * 0.55);
+  ctx.quadraticCurveTo(right, topY - pipeH * 0.55, right, topY - pipeH * 0.15);
+  ctx.lineTo(right, topY + pipeH * 0.35);
+  ctx.quadraticCurveTo(right, topY + pipeH * 0.55, right - rr, topY + pipeH * 0.55);
+  ctx.lineTo(left + rr, topY + pipeH * 0.55);
+  ctx.quadraticCurveTo(left, topY + pipeH * 0.55, left, topY + pipeH * 0.35);
+  ctx.lineTo(left, topY - pipeH * 0.15);
+  ctx.quadraticCurveTo(left, topY - pipeH * 0.55, left + rr, topY - pipeH * 0.55);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Cork floats along the frame
+  const floatN = 5;
+  for (let i = 0; i < floatN; i++) {
+    const u = (i + 0.5) / floatN;
+    const fx = left + (right - left) * u;
+    const fy = topY - pipeH * 0.05;
+    const fg = ctx.createRadialGradient(fx - dpr, fy - dpr, dpr * 0.5, fx, fy, dpr * 5.5);
+    fg.addColorStop(0, "#ffe9b0");
+    fg.addColorStop(0.55, "#e2b35a");
+    fg.addColorStop(1, "#a87432");
+    ctx.fillStyle = fg;
+    ctx.beginPath();
+    ctx.ellipse(fx, fy, dpr * 5.2, dpr * 4.2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(90, 55, 22, 0.45)";
+    ctx.lineWidth = 0.9 * dpr;
+    ctx.stroke();
+  }
+
+  // Bag outline + leadline along the bottom
+  ctx.strokeStyle = "rgba(170, 186, 200, 0.55)";
+  ctx.lineWidth = 1.6 * dpr;
+  catchNetBagOutline(lay);
+  ctx.stroke();
+
+  const botY = sackCy + sackVy * 0.68;
+  ctx.strokeStyle = "rgba(40, 44, 50, 0.78)";
+  ctx.lineWidth = 2.4 * dpr;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(sackCx - sackHx * 0.78, botY - dpr * 4);
+  ctx.quadraticCurveTo(sackCx, botY + dpr * 14, sackCx + sackHx * 0.78, botY - dpr * 4);
+  ctx.stroke();
+  for (const u of [-0.55, -0.18, 0.18, 0.55]) {
+    const wx = sackCx + sackHx * 0.7 * u;
+    const wy = botY + dpr * (6 - Math.abs(u) * 4);
+    ctx.fillStyle = "rgba(55, 58, 64, 0.9)";
+    ctx.beginPath();
+    ctx.ellipse(wx, wy, dpr * 2.4, dpr * 3.2, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore();
 }
 
 function spawnFishEscapingFromNet(freedEntries, sackCx, sackCy) {
@@ -11556,51 +11720,13 @@ function drawBoatHullInWater(centerX = w * 0.5) {
 
 function drawCatchNetWithFish() {
   const lay = catchNetLayout();
-  const { rimCx, rimCy, rimRx, rimRy, sackCx, sackCy, sackHx, sackVy } = lay;
-  const g = getCharterBoatGeo();
-  const ropeAx = g.cx + g.L * 0.34;
-  const ropeAy = g.deckY(ropeAx) - dpr * 6;
-  ctx.save();
-  ctx.strokeStyle = "rgba(55, 58, 62, 0.92)";
-  ctx.lineWidth = 2.4 * dpr;
-  ctx.beginPath();
-  ctx.moveTo(ropeAx, ropeAy);
-  ctx.quadraticCurveTo((ropeAx + rimCx) * 0.5 + 22 * dpr, (ropeAy + rimCy) * 0.5 + 14 * dpr, rimCx, rimCy - rimRy * 0.55);
-  ctx.stroke();
-  ctx.strokeStyle = "rgba(88, 92, 98, 0.96)";
-  ctx.lineWidth = 2.9 * dpr;
-  ctx.beginPath();
-  ctx.ellipse(rimCx, rimCy, rimRx, rimRy, 0.06, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.save();
-  ctx.beginPath();
-  ctx.ellipse(sackCx, sackCy, sackHx, sackVy, 0.05, 0, Math.PI * 2);
-  ctx.clip();
-  ctx.strokeStyle = "rgba(210, 220, 232, 0.42)";
-  ctx.lineWidth = 1.1 * dpr;
-  for (let yy = sackCy - sackVy; yy < sackCy + sackVy; yy += dpr * 9) {
-    const wv = Math.sin(yy * 0.035 + performance.now() * 0.001) * dpr * 3.5;
-    ctx.beginPath();
-    ctx.moveTo(sackCx - sackHx, yy + wv);
-    ctx.lineTo(sackCx + sackHx, yy - wv);
-    ctx.stroke();
-  }
-  for (let xx = sackCx - sackHx; xx < sackCx + sackHx; xx += dpr * 10) {
-    ctx.beginPath();
-    ctx.moveTo(xx, sackCy - sackVy);
-    ctx.quadraticCurveTo(xx + dpr * 5, sackCy, xx, sackCy + sackVy);
-    ctx.stroke();
-  }
-  ctx.restore();
-  ctx.fillStyle = "rgba(8, 20, 36, 0.28)";
-  ctx.beginPath();
-  ctx.ellipse(sackCx, sackCy + dpr * 7, sackHx * 0.92, sackVy * 0.9, 0.05, 0, Math.PI * 2);
-  ctx.fill();
+  const { sackCx, sackCy, sackVy } = lay;
+  drawCatchNetStructure(lay, lay.boatCx);
 
+  ctx.save();
   if (kraken?.state === "biting" && kraken.netGrab) {
     const tearX = kraken.netGrab.x;
     const tearY = kraken.netGrab.y;
-    ctx.save();
     ctx.strokeStyle = "rgba(255, 235, 210, 0.85)";
     ctx.lineWidth = 2.4 * dpr;
     ctx.lineCap = "round";
@@ -11622,7 +11748,6 @@ function drawCatchNetWithFish() {
     ctx.beginPath();
     ctx.ellipse(tearX, tearY, 26 * dpr, 17 * dpr, 0.35, 0, Math.PI * 2);
     ctx.stroke();
-    ctx.restore();
   }
 
   const fishEntries = getFishOnlyCatchEntries();
@@ -11632,7 +11757,7 @@ function drawCatchNetWithFish() {
     const row = Math.floor(i / 7);
     const col = i % 7;
     const fx = sackCx + (col - 3) * dpr * 12.5 + (row % 2) * dpr * 5.5;
-    const fy = sackCy - dpr * 10 + row * dpr * 11;
+    const fy = sackCy - dpr * 6 + row * dpr * 11;
     const hue = hashHueFromLabel(list[i].label);
     const fsz = dpr * (5.2 + (i % 4) * 0.45);
     ctx.save();
@@ -11657,7 +11782,7 @@ function drawCatchNetWithFish() {
     ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
     ctx.font = `${10 * dpr}px system-ui, sans-serif`;
     ctx.textAlign = "center";
-    ctx.fillText(`+${fishEntries.length - maxShow}`, sackCx, sackCy + sackVy - dpr * 6);
+    ctx.fillText(`+${fishEntries.length - maxShow}`, sackCx, sackCy + sackVy * 0.55);
     ctx.textAlign = "left";
   }
   ctx.restore();
@@ -11669,41 +11794,7 @@ function drawBoatHullAt(centerX) {
 
 function drawCatchNetForSide(centerX) {
   const lay = catchNetLayout(centerX);
-  const { rimCx, rimCy, rimRx, rimRy, sackCx, sackCy, sackHx, sackVy } = lay;
-  const g = getCharterBoatGeo(centerX);
-  const ropeAx = g.cx + g.L * 0.34;
-  const ropeAy = g.deckY(ropeAx) - dpr * 6;
-  ctx.save();
-  ctx.strokeStyle = "rgba(55, 58, 62, 0.92)";
-  ctx.lineWidth = 2.4 * dpr;
-  ctx.beginPath();
-  ctx.moveTo(ropeAx, ropeAy);
-  ctx.quadraticCurveTo((ropeAx + rimCx) * 0.5 + 22 * dpr, (ropeAy + rimCy) * 0.5 + 14 * dpr, rimCx, rimCy - rimRy * 0.55);
-  ctx.stroke();
-  ctx.strokeStyle = "rgba(88, 92, 98, 0.96)";
-  ctx.lineWidth = 2.9 * dpr;
-  ctx.beginPath();
-  ctx.ellipse(rimCx, rimCy, rimRx, rimRy, 0.06, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.save();
-  ctx.beginPath();
-  ctx.ellipse(sackCx, sackCy, sackHx, sackVy, 0.05, 0, Math.PI * 2);
-  ctx.clip();
-  ctx.strokeStyle = "rgba(210, 220, 232, 0.42)";
-  ctx.lineWidth = 1.1 * dpr;
-  for (let yy = sackCy - sackVy; yy < sackCy + sackVy; yy += dpr * 9) {
-    const wv = Math.sin(yy * 0.035 + performance.now() * 0.001) * dpr * 3.5;
-    ctx.beginPath();
-    ctx.moveTo(sackCx - sackHx, yy + wv);
-    ctx.lineTo(sackCx + sackHx, yy - wv);
-    ctx.stroke();
-  }
-  ctx.restore();
-  ctx.fillStyle = "rgba(8, 20, 36, 0.28)";
-  ctx.beginPath();
-  ctx.ellipse(sackCx, sackCy + dpr * 7, sackHx * 0.92, sackVy * 0.9, 0.05, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
+  drawCatchNetStructure(lay, centerX);
 }
 
 function drawBoatHullAndCatchNetAt(centerX) {
