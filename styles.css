@@ -5105,8 +5105,18 @@ body {
   min-height: calc(var(--adv-map-height-vh, 400) * 1vh);
   padding-bottom: max(120px, calc(env(safe-area-inset-bottom, 0px) + 96px));
   background:
-    radial-gradient(ellipse at 50% 12%, rgba(255, 248, 230, 0.55), transparent 42%),
-    #efe6d4;
+    radial-gradient(ellipse 120% 40% at 12% 8%, rgba(120, 72, 28, 0.16), transparent 55%),
+    radial-gradient(ellipse 90% 35% at 88% 18%, rgba(90, 55, 25, 0.12), transparent 50%),
+    radial-gradient(ellipse 70% 30% at 70% 78%, rgba(110, 70, 30, 0.1), transparent 55%),
+    radial-gradient(ellipse at 50% 12%, rgba(255, 248, 230, 0.45), transparent 42%),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(90, 60, 30, 0.015) 3px,
+      rgba(90, 60, 30, 0.015) 4px
+    ),
+    #e8d9b8;
   transition: min-height 1.1s cubic-bezier(0.34, 1.2, 0.64, 1);
 }
 
@@ -5134,13 +5144,13 @@ body {
   width: 94%;
   height: var(--adv-lost-city-theme-height, 20%);
   z-index: 3;
-  border-radius: 18px 18px 8px 8px;
+  border-radius: 0;
   overflow: hidden;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 85% 70% at 50% 35%, rgba(255, 230, 150, 0.14), transparent 68%),
-    linear-gradient(180deg, rgba(158, 189, 208, 0.16) 0%, rgba(120, 180, 200, 0.1) 55%, rgba(90, 150, 170, 0.06) 100%);
-  box-shadow: inset 0 0 32px rgba(255, 220, 140, 0.08);
+    radial-gradient(ellipse 85% 70% at 50% 35%, rgba(200, 170, 90, 0.1), transparent 68%),
+    linear-gradient(180deg, rgba(140, 175, 195, 0.1) 0%, transparent 100%);
+  box-shadow: none;
 }
 
 .adventure-map-board--lost-city-revealed .adventure-map-lost-city-theme {
@@ -5183,10 +5193,25 @@ body {
   pointer-events: none;
   z-index: 3;
   box-shadow:
-    inset 0 0 0 3px rgba(255, 213, 74, 0.28),
-    inset 0 0 0 8px rgba(92, 70, 45, 0.18),
-    inset 0 0 60px rgba(92, 70, 45, 0.22),
-    inset 0 0 20px rgba(61, 41, 20, 0.14);
+    inset 0 0 0 2px rgba(120, 80, 40, 0.35),
+    inset 0 0 0 10px rgba(70, 45, 22, 0.12),
+    inset 0 0 80px rgba(70, 42, 18, 0.28),
+    inset 0 0 28px rgba(40, 24, 10, 0.18);
+}
+
+.adventure-map-board::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.55;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(90, 50, 20, 0.14) 0 28px, transparent 52px),
+    radial-gradient(circle at 78% 40%, rgba(80, 45, 18, 0.12) 0 36px, transparent 70px),
+    radial-gradient(circle at 40% 68%, rgba(100, 60, 25, 0.1) 0 24px, transparent 48px),
+    radial-gradient(circle at 62% 88%, rgba(70, 40, 15, 0.13) 0 40px, transparent 78px);
+  mix-blend-mode: multiply;
 }
 
 .adventure-map-art {
@@ -5194,7 +5219,7 @@ body {
   width: 100%;
   min-height: calc(var(--adv-map-height-vh, 400) * 1vh);
   height: auto;
-  filter: sepia(0.05) contrast(1.03) brightness(1.03);
+  filter: sepia(0.22) contrast(1.06) brightness(0.97) saturate(0.88);
   contain: layout paint;
   transition: min-height 1.1s cubic-bezier(0.34, 1.2, 0.64, 1);
 }
@@ -5208,12 +5233,12 @@ body {
 
 .adventure-map-section {
   position: absolute;
-  left: 3%;
-  width: 94%;
-  border-radius: 18px;
-  overflow: hidden;
+  left: 2%;
+  width: 96%;
+  border-radius: 0;
+  overflow: visible;
   opacity: 0;
-  transform: scaleY(0.92);
+  transform: scaleY(0.96);
   transition:
     opacity 0.7s ease,
     transform 0.9s cubic-bezier(0.34, 1.2, 0.64, 1);
@@ -5231,31 +5256,25 @@ body {
 .adventure-map-section--pirates {
   z-index: 1;
   background:
-    radial-gradient(ellipse 80% 60% at 50% 85%, rgba(180, 150, 100, 0.18), transparent 70%),
-    linear-gradient(180deg, rgba(244, 232, 200, 0.08) 0%, rgba(220, 195, 150, 0.22) 55%, rgba(200, 170, 120, 0.28) 100%);
-  border: 2px solid rgba(92, 64, 51, 0.35);
-  box-shadow: inset 0 0 40px rgba(120, 90, 50, 0.08);
+    radial-gradient(ellipse 80% 55% at 50% 90%, rgba(150, 110, 60, 0.14), transparent 72%),
+    linear-gradient(180deg, transparent 0%, rgba(190, 155, 100, 0.08) 70%, rgba(160, 120, 70, 0.12) 100%);
+  border: none;
+  box-shadow: none;
 }
 
 .adventure-map-section--gold {
   z-index: 2;
   background:
-    radial-gradient(ellipse 70% 45% at 50% 88%, rgba(255, 210, 80, 0.38), transparent 68%),
-    radial-gradient(circle at 18% 72%, rgba(255, 180, 40, 0.22) 0%, transparent 35%),
-    radial-gradient(circle at 82% 55%, rgba(255, 200, 60, 0.2) 0%, transparent 32%),
-    radial-gradient(circle at 45% 25%, rgba(255, 220, 100, 0.14) 0%, transparent 40%),
-    linear-gradient(180deg, rgba(255, 235, 170, 0.5) 0%, rgba(255, 210, 100, 0.44) 42%, rgba(220, 170, 60, 0.4) 100%);
-  border: 2.5px solid rgba(168, 120, 16, 0.65);
-  box-shadow:
-    inset 0 0 50px rgba(255, 200, 60, 0.22),
-    0 0 24px rgba(255, 180, 40, 0.15);
+    radial-gradient(ellipse 70% 40% at 50% 88%, rgba(220, 170, 50, 0.2), transparent 70%),
+    radial-gradient(circle at 20% 70%, rgba(210, 150, 30, 0.1) 0%, transparent 40%),
+    linear-gradient(180deg, transparent 0%, rgba(230, 190, 80, 0.1) 100%);
+  border: none;
+  box-shadow: none;
 }
 
 .adventure-map-section--gold.adventure-map-section--extends-north {
-  border-top-color: rgba(200, 150, 40, 0.75);
-  box-shadow:
-    inset 0 0 60px rgba(255, 200, 60, 0.26),
-    0 0 28px rgba(255, 180, 40, 0.18);
+  border-top-color: transparent;
+  box-shadow: none;
 }
 
 .adventure-map-section--gold.adventure-map-section--revealing {
@@ -5265,12 +5284,10 @@ body {
 .adventure-map-section--ice {
   z-index: 3;
   background:
-    radial-gradient(ellipse 75% 50% at 50% 82%, rgba(200, 235, 255, 0.42), transparent 68%),
-    linear-gradient(180deg, rgba(210, 240, 255, 0.5) 0%, rgba(160, 210, 240, 0.38) 50%, rgba(120, 180, 220, 0.32) 100%);
-  border: 2.5px solid rgba(88, 152, 184, 0.55);
-  box-shadow:
-    inset 0 0 45px rgba(180, 230, 255, 0.25),
-    0 0 20px rgba(140, 200, 240, 0.12);
+    radial-gradient(ellipse 75% 45% at 50% 82%, rgba(170, 210, 230, 0.18), transparent 70%),
+    linear-gradient(180deg, transparent 0%, rgba(160, 200, 225, 0.1) 100%);
+  border: none;
+  box-shadow: none;
 }
 
 .adventure-map-section--ice.adventure-map-section--revealing {
@@ -5280,17 +5297,10 @@ body {
 .adventure-map-section--lost-city {
   z-index: 4;
   background:
-    radial-gradient(ellipse 80% 55% at 50% 40%, rgba(255, 230, 150, 0.12), transparent 62%),
-    linear-gradient(
-      180deg,
-      rgba(158, 189, 208, 0.14) 0%,
-      rgba(244, 232, 200, 0.06) 55%,
-      transparent 100%
-    );
-  border: 2.5px solid rgba(92, 64, 51, 0.42);
-  box-shadow:
-    inset 0 0 28px rgba(255, 220, 140, 0.08),
-    0 0 18px rgba(80, 180, 220, 0.1);
+    radial-gradient(ellipse 80% 50% at 50% 40%, rgba(200, 170, 90, 0.08), transparent 65%),
+    linear-gradient(180deg, rgba(140, 180, 200, 0.08) 0%, transparent 70%);
+  border: none;
+  box-shadow: none;
 }
 
 .adventure-map-section--lost-city.adventure-map-section--revealing {
@@ -5300,57 +5310,54 @@ body {
 .adventure-map-section__label {
   position: absolute;
   top: auto;
-  bottom: 12px;
+  bottom: 14px;
   left: 50%;
-  transform: translateX(-50%);
-  padding: 7px 18px;
-  border-radius: 999px;
+  transform: translateX(-50%) rotate(-2deg);
+  padding: 0;
+  border-radius: 0;
   font-family: "IM Fell English SC", Georgia, serif;
-  font-size: 0.88rem;
+  font-size: 1.05rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
   white-space: nowrap;
   pointer-events: none;
+  text-shadow:
+    0 1px 0 rgba(255, 245, 220, 0.35),
+    1px 1px 0 rgba(60, 35, 15, 0.15);
+  background: none;
+  border: none;
+  box-shadow: none;
 }
 
 .adventure-map-section--pirates .adventure-map-section__label {
-  background:
-    linear-gradient(180deg, rgba(255, 252, 240, 0.98), rgba(244, 232, 200, 0.95));
-  border: 2px solid #5c4033;
-  color: #3d2914;
-  box-shadow:
-    0 4px 14px rgba(60, 40, 20, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  background: none;
+  border: none;
+  color: #5a3a1c;
+  box-shadow: none;
 }
 
 .adventure-map-section--gold .adventure-map-section__label {
-  background: linear-gradient(180deg, #fff3b0, #ffd54a 55%, #f0b429);
-  border: 2px solid #a87810;
-  color: #4a3010;
-  box-shadow:
-    0 4px 16px rgba(160, 110, 10, 0.4),
-    0 0 16px rgba(255, 213, 74, 0.35),
-    inset 0 1px 0 rgba(255, 255, 220, 0.7);
-  text-shadow: 0 1px 0 rgba(255, 255, 220, 0.55);
+  background: none;
+  border: none;
+  color: #8a5a10;
+  box-shadow: none;
+  text-shadow:
+    0 0 10px rgba(255, 200, 60, 0.35),
+    0 1px 0 rgba(255, 245, 200, 0.4);
 }
 
 .adventure-map-section--ice .adventure-map-section__label {
-  background: linear-gradient(180deg, rgba(245, 252, 255, 0.98), rgba(180, 220, 245, 0.95));
-  border: 2px solid #5898b8;
-  color: #1a4058;
-  box-shadow:
-    0 4px 16px rgba(60, 120, 160, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  background: none;
+  border: none;
+  color: #3a6080;
+  box-shadow: none;
 }
 
 .adventure-map-section--lost-city .adventure-map-section__label {
-  background: linear-gradient(180deg, rgba(255, 248, 220, 0.98), rgba(120, 200, 220, 0.92));
-  border: 2px solid #48a8c8;
-  color: #0a3848;
-  box-shadow:
-    0 4px 16px rgba(40, 120, 150, 0.32),
-    0 0 14px rgba(255, 213, 74, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  background: none;
+  border: none;
+  color: #2a5060;
+  box-shadow: none;
 }
 
 .adventure-map-section__decor {
@@ -5488,14 +5495,14 @@ body {
 }
 
 .adventure-map-trail {
-  stroke: #c41e1e;
-  stroke-width: 3.6;
+  stroke: #8b2a18;
+  stroke-width: 2.8;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-dasharray: 7 9;
-  opacity: 0.95;
+  stroke-dasharray: 5 8;
+  opacity: 0.88;
   pointer-events: none;
-  filter: drop-shadow(0 1px 1.5px rgba(80, 20, 20, 0.45));
+  filter: drop-shadow(0 1px 0.5px rgba(60, 25, 10, 0.35));
 }
 
 .adventure-map-trail--reveal {
@@ -5534,36 +5541,40 @@ body {
 
 .adventure-map-title {
   margin: 0;
-  padding: 8px 20px;
-  border-radius: 999px;
-  font-family: var(--font-brand);
-  font-size: clamp(1.35rem, 5vw, 1.7rem);
+  padding: 10px 22px 12px;
+  border-radius: 4px 6px 5px 7px;
+  font-family: "IM Fell English SC", Georgia, serif;
+  font-size: clamp(1.35rem, 5vw, 1.75rem);
   font-weight: 400;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   line-height: 1;
-  background: var(--brand-fill);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  filter:
-    drop-shadow(0 1px 0 rgba(120, 53, 15, 0.35))
-    drop-shadow(0 0 12px rgba(255, 213, 74, 0.45));
+  background:
+    linear-gradient(180deg, rgba(255, 248, 225, 0.92), rgba(228, 205, 150, 0.88));
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  color: #4a3010;
+  border: 1.5px solid rgba(90, 55, 25, 0.45);
+  box-shadow:
+    0 4px 14px rgba(40, 24, 10, 0.28),
+    inset 0 1px 0 rgba(255, 252, 240, 0.55);
+  filter: none;
   text-align: center;
+  transform: rotate(-1deg);
 }
 
 .adventure-map-banner {
   margin: 0;
-  padding: 9px 16px;
-  border-radius: 14px;
-  background:
-    linear-gradient(180deg, rgba(255, 252, 240, 0.97), rgba(244, 232, 200, 0.94));
-  border: 2px solid rgba(92, 64, 51, 0.75);
+  padding: 8px 14px;
+  border-radius: 3px 5px 4px 6px;
+  background: rgba(244, 230, 190, 0.82);
+  border: 1px solid rgba(90, 55, 25, 0.4);
   color: #3d2914;
-  font-weight: 800;
+  font-family: "IM Fell English", Georgia, serif;
+  font-style: italic;
+  font-weight: 600;
   font-size: 0.78rem;
-  box-shadow:
-    0 6px 18px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  box-shadow: 0 3px 10px rgba(40, 24, 10, 0.2);
+  transform: rotate(0.6deg);
 }
 
 .adventure-map-banner[hidden] {
@@ -5770,10 +5781,10 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  width: 100px;
-  margin-left: -50px;
-  margin-top: -32px;
+  gap: 2px;
+  width: 92px;
+  margin-left: -46px;
+  margin-top: -22px;
   padding: 0;
   border: none;
   background: transparent;
@@ -5789,42 +5800,26 @@ body {
 }
 
 .adventure-map-node:not(:disabled):hover {
-  transform: scale(1.06);
+  transform: scale(1.08);
 }
 
 .adventure-map-node:not(:disabled):active {
   transform: scale(0.96);
 }
 
-.adventure-map-node__scene-wrap {
+.adventure-map-node__mark {
   position: relative;
-  display: block;
-  width: 76px;
-  height: 54px;
-  border-radius: 12px;
-  border: 2.5px solid #2e2418;
-  overflow: hidden;
-  box-shadow:
-    0 5px 14px rgba(30, 24, 20, 0.42),
-    0 0 0 1px rgba(255, 213, 74, 0.15),
-    inset 0 0 0 1px rgba(255, 252, 245, 0.4);
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
 }
 
-.adventure-map-node__scene--lite {
-  display: block;
-  width: 100%;
-  height: 100%;
-  min-height: 2.5rem;
-  border-radius: 8px;
-  background: linear-gradient(145deg, #3a4558 0%, #252a35 100%);
-  opacity: 0.55;
-}
-
+.adventure-map-node__scene-wrap,
+.adventure-map-node__scene--lite,
 .adventure-map-node__scene {
-  display: block;
-  width: 100%;
-  height: 100%;
+  display: none !important;
 }
 
 .adventure-map-node__pin {
@@ -5832,81 +5827,82 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  background: linear-gradient(180deg, #fff8e7, #e8dcc8);
-  border: 2.5px solid #2e2418;
+  background:
+    radial-gradient(circle at 35% 30%, #fff6e0, #e2c48a 55%, #b88948);
+  border: 2px solid #3a2814;
   box-shadow:
-    0 3px 8px rgba(30, 24, 20, 0.4),
-    inset 0 0 0 3px rgba(255, 252, 245, 0.55),
-    0 0 10px rgba(255, 213, 74, 0.12);
+    0 2px 0 #5c3d1e,
+    0 4px 8px rgba(40, 24, 10, 0.35),
+    inset 0 1px 0 rgba(255, 250, 230, 0.55);
 }
 
 .adventure-map-node__pin::after {
   content: "";
   position: absolute;
-  inset: 5px;
+  inset: 4px;
   border-radius: 50%;
-  border: 1px solid rgba(46, 36, 24, 0.35);
+  border: 1px dashed rgba(70, 45, 20, 0.35);
   pointer-events: none;
 }
 
 .adventure-map-node__num {
-  position: absolute;
+  position: relative;
   z-index: 2;
-  left: 3px;
-  top: 2px;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 5px;
+  min-width: 0;
+  height: auto;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #fff8e7, #f0d78a);
-  border: 1.5px solid #2e2418;
+  border-radius: 0;
+  background: none;
+  border: none;
   font-family: "IM Fell English SC", Georgia, serif;
-  font-size: 0.74rem;
+  font-size: 0.85rem;
   line-height: 1;
-  color: #2a2014;
-  box-shadow: 0 2px 5px rgba(30, 24, 20, 0.35);
+  color: #3a2410;
+  box-shadow: none;
+  text-shadow: 0 1px 0 rgba(255, 245, 220, 0.35);
 }
 
 .adventure-map-node__label {
   font-weight: 700;
-  font-size: 0.72rem;
-  line-height: 1.2;
-  max-width: 110px;
-  padding: 3px 7px;
-  border-radius: 8px;
+  font-size: 0.7rem;
+  line-height: 1.15;
+  max-width: 100px;
+  padding: 0;
+  border-radius: 0;
   text-align: center;
   font-family: "IM Fell English", Georgia, serif;
-  color: #2a2014;
-  letter-spacing: 0.02em;
-  background: rgba(255, 248, 230, 0.88);
-  border: 1px solid rgba(46, 36, 24, 0.28);
-  box-shadow: 0 2px 6px rgba(30, 24, 20, 0.18);
+  font-style: italic;
+  color: #3d2914;
+  letter-spacing: 0.01em;
+  background: none;
+  border: none;
+  box-shadow: none;
+  text-shadow:
+    0 0 4px rgba(232, 217, 184, 0.9),
+    0 1px 0 rgba(255, 248, 230, 0.55);
+  transform: rotate(-1.5deg);
 }
 
 .adventure-map-node__meta {
-  font-size: 0.58rem;
-  font-weight: 400;
-  font-family: "IM Fell English", Georgia, serif;
-  font-style: italic;
-  color: #4a3d2e;
+  display: none;
 }
 
 .adventure-map-node__boat {
   position: absolute;
-  top: -20px;
+  top: -18px;
   left: 50%;
   width: 0;
   height: 0;
   margin-left: -7px;
   border-left: 7px solid transparent;
   border-right: 7px solid transparent;
-  border-bottom: 12px solid #2e2418;
+  border-bottom: 12px solid #7a1e12;
   filter: drop-shadow(0 1px 2px rgba(30, 24, 20, 0.4));
   animation: adventureMapBoatBob 1.4s ease-in-out infinite;
 }
@@ -5919,30 +5915,30 @@ body {
   width: 1px;
   height: 10px;
   margin-left: -0.5px;
-  background: #2e2418;
+  background: #7a1e12;
 }
 
 .adventure-map-node__star {
   position: absolute;
-  right: -2px;
+  right: -4px;
   top: -2px;
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   font-size: 0;
-  background: #2e2418;
+  background: #1f6a3a;
   clip-path: polygon(50% 0%, 61% 38%, 100% 38%, 68% 59%, 79% 100%, 50% 76%, 21% 100%, 32% 59%, 0% 38%, 39% 38%);
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .adventure-map-node__lock {
   position: absolute;
-  width: 10px;
-  height: 8px;
-  bottom: 4px;
-  right: 4px;
+  width: 9px;
+  height: 7px;
+  bottom: 2px;
+  right: 2px;
   background: #4a3d2e;
   border-radius: 1px;
-  opacity: 0.7;
+  opacity: 0.65;
 }
 
 .adventure-map-node__lock::before {
@@ -5950,100 +5946,31 @@ body {
   position: absolute;
   left: 1px;
   bottom: 100%;
-  width: 8px;
-  height: 6px;
+  width: 7px;
+  height: 5px;
   border: 2px solid #4a3d2e;
   border-bottom: none;
   border-radius: 6px 6px 0 0;
 }
 
-.adventure-map-node--locked .adventure-map-node__scene-wrap {
-  filter: grayscale(0.75) brightness(0.88);
-  border-color: #6b6358;
-  opacity: 0.88;
-}
-
-.adventure-map-node--locked .adventure-map-node__num {
-  color: #6b6358;
-  background: rgba(201, 191, 176, 0.92);
-}
-
-.adventure-map-node--cleared .adventure-map-node__scene-wrap {
-  border-color: #1f7a45;
-  box-shadow:
-    0 4px 12px rgba(46, 92, 58, 0.4),
-    0 0 14px rgba(52, 211, 153, 0.22),
-    inset 0 0 0 1px rgba(255, 252, 245, 0.45);
-}
-
-.adventure-map-node--cleared .adventure-map-node__star {
-  background: #1f7a45;
-}
-
-.adventure-map-node--current .adventure-map-node__scene-wrap {
-  animation: adventureMapNodePulse 1.4s ease-in-out infinite;
-  border-color: #d97706;
-  box-shadow:
-    0 0 0 3px rgba(255, 213, 74, 0.35),
-    0 0 18px rgba(255, 213, 74, 0.45),
-    0 6px 16px rgba(30, 24, 20, 0.42);
-}
-
-.adventure-map-node--finale .adventure-map-node__scene-wrap {
-  width: 80px;
-  height: 58px;
-  border-color: #b91c1c;
-  box-shadow:
-    0 0 0 2px rgba(196, 30, 30, 0.25),
-    0 4px 14px rgba(30, 24, 20, 0.45);
-}
-
-.adventure-map-node--finale.adventure-map-node--current .adventure-map-node__scene-wrap {
-  box-shadow:
-    0 0 0 3px rgba(196, 30, 30, 0.35),
-    0 0 18px rgba(255, 200, 50, 0.45),
-    0 4px 14px rgba(30, 24, 20, 0.45);
-}
-
-.adventure-map-node--theme-treasure-cove .adventure-map-node__scene-wrap {
-  border-color: #c8a020;
-  box-shadow:
-    0 0 10px rgba(255, 200, 50, 0.4),
-    0 4px 12px rgba(30, 24, 20, 0.4);
-}
-
-.adventure-map-node--theme-treasure-cove:not(.adventure-map-node--locked) .adventure-map-node__scene {
-  animation: adventureMapTreasureCoveGlow 2.8s ease-in-out infinite;
-}
-
-.adventure-map-node--theme-treasure-cove .adventure-map-node__label {
+.adventure-map-node--theme-treasure-cove .adventure-map-node__label,
+.adventure-map-node--theme-skull-shoals .adventure-map-node__label {
   color: #7a1e12;
-  font-weight: 600;
 }
 
-.adventure-map-node--bonus .adventure-map-node__scene-wrap {
-  border-color: #c8a020;
-  box-shadow:
-    0 0 8px rgba(255, 200, 50, 0.35),
-    0 4px 12px rgba(30, 24, 20, 0.4);
+.adventure-map-node--bonus .adventure-map-node__pin {
+  background: radial-gradient(circle at 35% 30%, #fff8d0, #f0c85a 55%, #c89620);
+  border-color: #8a6010;
 }
 
-.adventure-map-node--bonus.adventure-map-node--locked .adventure-map-node__scene-wrap {
-  filter: grayscale(0.35) brightness(0.88);
+.adventure-map-node--ice .adventure-map-node__pin {
+  background: radial-gradient(circle at 35% 30%, #f4fbff, #c8e4f4 55%, #88b8d0);
+  border-color: #4a7898;
 }
 
-.adventure-map-node--bonus:not(.adventure-map-node--locked) .adventure-map-node__scene {
-  animation: adventureMapTreasureCoveGlow 2.8s ease-in-out infinite;
-}
-
-.adventure-map-node--bonus-finale .adventure-map-node__scene-wrap {
-  width: 84px;
-  height: 60px;
-  border-color: #d4af37;
-  box-shadow:
-    0 0 0 2px rgba(212, 175, 55, 0.4),
-    0 0 16px rgba(255, 220, 80, 0.5),
-    0 4px 14px rgba(30, 24, 20, 0.45);
+.adventure-map-node--lost-city .adventure-map-node__pin {
+  background: radial-gradient(circle at 35% 30%, #fff8e0, #d8c898 50%, #78b0c8);
+  border-color: #3a6880;
 }
 
 .adventure-map-node--bonus .adventure-map-node__bonus-lock {
@@ -6056,130 +5983,6 @@ body {
   font-size: 0.55rem;
   font-weight: 800;
   letter-spacing: 0.02em;
-}
-
-.adventure-map-node--ice .adventure-map-node__scene-wrap {
-  border-color: #88c8e8;
-  box-shadow:
-    0 0 8px rgba(180, 230, 255, 0.45),
-    0 4px 12px rgba(30, 50, 70, 0.35);
-}
-
-.adventure-map-node--ice:not(.adventure-map-node--locked) .adventure-map-node__scene {
-  animation: adventureMapIceGlow 3s ease-in-out infinite;
-}
-
-.adventure-map-node--ice-finale .adventure-map-node__scene-wrap {
-  width: 84px;
-  height: 60px;
-  border-color: #b8e8ff;
-  box-shadow:
-    0 0 0 2px rgba(184, 232, 255, 0.45),
-    0 0 16px rgba(160, 220, 255, 0.5),
-    0 4px 14px rgba(30, 50, 70, 0.4);
-}
-
-@keyframes adventureMapIceGlow {
-  0%,
-  100% {
-    filter: brightness(0.98) saturate(1.05);
-  }
-  50% {
-    filter: brightness(1.08) saturate(1.12);
-  }
-}
-
-.adventure-map-node--lost-city .adventure-map-node__scene-wrap {
-  border-color: #68c8e8;
-  box-shadow:
-    0 0 10px rgba(255, 220, 140, 0.35),
-    0 4px 12px rgba(20, 50, 70, 0.35);
-}
-
-.adventure-map-node--lost-city:not(.adventure-map-node--locked) .adventure-map-node__scene {
-  animation: adventureMapAtlantisGlow 3.2s ease-in-out infinite;
-}
-
-.adventure-map-node--lost-city-finale .adventure-map-node__scene-wrap {
-  width: 84px;
-  height: 60px;
-  border-color: #ffe898;
-  box-shadow:
-    0 0 0 2px rgba(255, 232, 152, 0.45),
-    0 0 18px rgba(255, 220, 140, 0.55),
-    0 4px 14px rgba(20, 50, 70, 0.4);
-}
-
-@keyframes adventureMapAtlantisGlow {
-  0%,
-  100% {
-    filter: brightness(0.98) saturate(1.08);
-  }
-  50% {
-    filter: brightness(1.1) saturate(1.18);
-  }
-}
-
-.adventure-map-node--theme-skull-shoals .adventure-map-node__scene-wrap {
-  border-color: #4a2830;
-  box-shadow: 0 0 8px rgba(80, 20, 30, 0.35);
-}
-
-.adventure-map-node--theme-skull-shoals .adventure-map-node__label {
-  color: #7f1d1d;
-}
-
-.adventure-map-node--theme-mariners-rest .adventure-map-node__scene-wrap {
-  border-color: #4a6888;
-}
-
-.adventure-map-node--theme-golden-atoll .adventure-map-node__scene-wrap {
-  border-color: #c8a030;
-}
-
-.adventure-map-node--theme-serpent-strait .adventure-map-node__scene-wrap {
-  border-color: #2e6858;
-}
-
-.adventure-map-node--theme-doubloon-bay .adventure-map-node__scene-wrap {
-  border-color: #a88020;
-}
-
-.adventure-map-node--theme-compass-cay .adventure-map-node__scene-wrap {
-  border-color: #5a6858;
-}
-
-.adventure-map-node--theme-krakens-teeth .adventure-map-node__scene-wrap {
-  border-color: #5a2848;
-}
-
-.adventure-map-node--theme-palmwood-harbor .adventure-map-node__scene-wrap {
-  border-color: #4a7858;
-}
-
-.adventure-map-node--theme-emerald-lagoon .adventure-map-node__scene-wrap {
-  border-color: #208858;
-}
-
-.adventure-map-node--theme-lava-falls .adventure-map-node__scene-wrap {
-  border-color: #c84818;
-  box-shadow: 0 0 8px rgba(255, 90, 20, 0.35);
-}
-
-.adventure-map-node--theme-stormbreak-isle .adventure-map-node__scene-wrap {
-  border-color: #485878;
-}
-
-.adventure-map-node--theme-treasurehorn-peak .adventure-map-node__scene-wrap {
-  border-color: #8a7860;
-}
-
-.adventure-map-node--theme-leviathan-deep .adventure-map-node__scene-wrap {
-  border-color: #1a3050;
-}
-
-.adventure-map-node--theme-captains-landing .adventure-map-node__scene-wrap {
-  border-color: #6a5030;
 }
 
 @keyframes adventureMapTreasureCoveGlow {
@@ -6231,7 +6034,7 @@ body {
 
 .adventure-map-node__x {
   position: absolute;
-  inset: 0;
+  inset: -4px;
   z-index: 3;
   pointer-events: none;
 }
@@ -6242,14 +6045,14 @@ body {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 36px;
-  height: 3px;
-  margin-left: -18px;
-  margin-top: -1.5px;
-  background: #b91c1c;
+  width: 40px;
+  height: 3.5px;
+  margin-left: -20px;
+  margin-top: -1.75px;
+  background: #8b1a12;
   border-radius: 1px;
-  box-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
-  opacity: 0.85;
+  box-shadow: 0 1px 0 rgba(255, 240, 210, 0.25);
+  opacity: 0.92;
 }
 
 .adventure-map-node__x::before {
@@ -6301,29 +6104,27 @@ body {
 
 @media (max-width: 560px) {
   .adventure-map-node {
-    width: 88px;
-    margin-left: -44px;
+    width: 82px;
+    margin-left: -41px;
   }
 
-  .adventure-map-node__scene-wrap {
-    width: 64px;
-    height: 46px;
+  .adventure-map-node__mark {
+    width: 40px;
+    height: 40px;
   }
 
-  .adventure-map-node--finale .adventure-map-node__scene-wrap {
-    width: 72px;
-    height: 52px;
+  .adventure-map-node__pin {
+    width: 30px;
+    height: 30px;
   }
 
   .adventure-map-node__num {
-    min-width: 16px;
-    height: 16px;
-    font-size: 0.65rem;
+    font-size: 0.75rem;
   }
 
   .adventure-map-node__label {
-    font-size: 0.62rem;
-    max-width: 88px;
+    font-size: 0.6rem;
+    max-width: 86px;
   }
 }
 

@@ -8139,21 +8139,18 @@ function buildAdventureLevelUI(force = false) {
     b.title = `${lvl.name} — ${sectionName} · pass ${lvl.passScore}`;
     b.dataset.levelIndex = String(i);
     b.dataset.section = isLostCity ? "lost-city" : isIce ? "ice" : isBonus ? "gold" : "pirates";
-    const sceneMarkup =
-      PERF_CHROMEBOOK && !playable
-        ? ADVENTURE_MAP_SCENE_LITE
-        : cachedAdventureMapSceneSvg(themeId, `n${i}`);
+    const showTreasureX = isTreasureCoveFinale || isUltimateFinale || (isIce && i === AURORA_REACH_INDEX);
     b.innerHTML = `
-      <span class="adventure-map-node__scene-wrap" aria-hidden="true">
-        ${sceneMarkup}
-        <span class="adventure-map-node__num">${lvl.level}</span>
-        ${isTreasureCoveFinale ? '<span class="adventure-map-node__x" aria-hidden="true"></span>' : ""}
+      <span class="adventure-map-node__mark" aria-hidden="true">
+        <span class="adventure-map-node__pin">
+          <span class="adventure-map-node__num">${lvl.level}</span>
+        </span>
+        ${showTreasureX ? '<span class="adventure-map-node__x"></span>' : ""}
         ${isCurrent ? '<span class="adventure-map-node__boat" aria-hidden="true"></span>' : ""}
         ${cleared ? '<span class="adventure-map-node__star" aria-hidden="true"></span>' : ""}
         ${!playable ? '<span class="adventure-map-node__lock" aria-hidden="true"></span>' : ""}
       </span>
       <span class="adventure-map-node__label">${lvl.name}</span>
-      <span class="adventure-map-node__meta">${sectionName} · ${lvl.passScore} pts</span>
     `;
     frag.appendChild(b);
   }
