@@ -2,7 +2,7 @@
  * Reef Rush — responsive canvas fishing game
  */
 
-// --- Real fish species: rarity, size tier, palette (cartoon + Vegas accents) ---
+// --- Sea creatures: rarity, size tier, palette (splash-screen realism) ---
 const RARITY = {
   common: { id: "common", label: "Common", weight: 52, mult: 1 },
   uncommon: { id: "uncommon", label: "Uncommon", weight: 28, mult: 1.45 },
@@ -18,12 +18,14 @@ const SIZE = {
 };
 
 const FISH_SPECIES = [
-  { id: "northern_anchovy", name: "Northern Anchovy", rarity: "common", size: "small", morph: "silverside", speed: 1.35, hue: 200, colors: ["#4ecdc4", "#0d6b6b", "#b8fff8"] },
-  { id: "pacific_sardine", name: "Pacific Sardine", rarity: "common", size: "small", morph: "silverside", speed: 1.28, hue: 218, colors: ["#7eb6ff", "#2a4a9e", "#dce9ff"] },
-  { id: "atlantic_herring", name: "Atlantic Herring", rarity: "common", size: "small", morph: "silverside", speed: 1.22, hue: 248, colors: ["#a78bfa", "#4c1d95", "#ede9fe"] },
-  { id: "chub_mackerel", name: "Chub Mackerel", rarity: "common", size: "medium", morph: "mackerel", speed: 1.45, hue: 168, colors: ["#34d399", "#065f46", "#d1fae5"] },
-  { id: "european_sprat", name: "European Sprat", rarity: "common", size: "small", morph: "silverside", speed: 1.18, hue: 38, colors: ["#fb923c", "#9a3412", "#ffedd5"] },
-  { id: "barramundi", name: "Barramundi", rarity: "common", size: "medium", morph: "barramundi", speed: 1.05, hue: 95, colors: ["#a3e635", "#3f6212", "#ecfccb"] },
+  { id: "northern_anchovy", name: "Northern Anchovy", rarity: "common", size: "small", morph: "silverside", speed: 1.35, hue: 200, colors: ["#38bdf8", "#0369a1", "#e0f2fe"] },
+  { id: "pacific_sardine", name: "Pacific Sardine", rarity: "common", size: "small", morph: "silverside", speed: 1.28, hue: 218, colors: ["#7dd3fc", "#0284c7", "#f0f9ff"] },
+  { id: "atlantic_herring", name: "Atlantic Herring", rarity: "common", size: "small", morph: "silverside", speed: 1.22, hue: 210, colors: ["#94a3b8", "#334155", "#f8fafc"] },
+  { id: "chub_mackerel", name: "Chub Mackerel", rarity: "common", size: "medium", morph: "mackerel", speed: 1.45, hue: 168, colors: ["#2dd4bf", "#0f766e", "#ccfbf1"] },
+  { id: "european_sprat", name: "European Sprat", rarity: "common", size: "small", morph: "silverside", speed: 1.18, hue: 38, colors: ["#fdba74", "#c2410c", "#ffedd5"] },
+  { id: "barramundi", name: "Barramundi", rarity: "common", size: "medium", morph: "barramundi", speed: 1.05, hue: 95, colors: ["#86efac", "#166534", "#ecfccb"] },
+  { id: "clown_anemonefish", name: "Clown Anemonefish", rarity: "common", size: "small", morph: "clownfish", speed: 0.92, hue: 24, colors: ["#f97316", "#c2410c", "#ffffff"] },
+  { id: "moon_jellyfish", name: "Moon Jellyfish", rarity: "common", size: "small", morph: "jellyfish", speed: 0.42, hue: 280, colors: ["#e9d5ff", "#a78bfa", "#f5f3ff"] },
   { id: "yellowfin_tuna", name: "Yellowfin Tuna", rarity: "uncommon", size: "large", morph: "tuna", speed: 1.85, hue: 210, colors: ["#38bdf8", "#0c4a6e", "#e0f2fe"] },
   { id: "albacore_tuna", name: "Albacore Tuna", rarity: "uncommon", size: "large", morph: "tuna", speed: 1.72, hue: 195, colors: ["#94a3b8", "#334155", "#f1f5f9"] },
   { id: "striped_bass", name: "Striped Bass", rarity: "uncommon", size: "medium", morph: "bass", speed: 1.12, hue: 142, colors: ["#4ade80", "#14532d", "#bbf7d0"] },
@@ -31,19 +33,30 @@ const FISH_SPECIES = [
   { id: "red_snapper", name: "Red Snapper", rarity: "uncommon", size: "medium", morph: "snapper", speed: 0.95, hue: 350, colors: ["#f87171", "#7f1d1d", "#fecaca"] },
   { id: "coral_trout_gbr", name: "Coral Trout", rarity: "uncommon", size: "medium", morph: "snapper", speed: 0.88, hue: 12, colors: ["#fb7185", "#881337", "#ffe4e6"] },
   { id: "european_seabass", name: "European Seabass", rarity: "uncommon", size: "medium", morph: "bass", speed: 1.08, hue: 160, colors: ["#5eead4", "#134e4a", "#ccfbf1"] },
+  { id: "queen_angelfish", name: "Queen Angelfish", rarity: "uncommon", size: "small", morph: "angelfish", speed: 0.98, hue: 200, colors: ["#e0f2fe", "#0284c7", "#f97316"] },
+  { id: "lined_seahorse", name: "Lined Seahorse", rarity: "uncommon", size: "small", morph: "seahorse", speed: 0.48, hue: 32, colors: ["#fdba74", "#b45309", "#ffedd5"] },
+  { id: "caribbean_lobster", name: "Caribbean Spiny Lobster", rarity: "uncommon", size: "medium", morph: "lobster", speed: 0.55, hue: 350, colors: ["#b91c1c", "#7f1d1d", "#fecaca"] },
+  { id: "common_cuttlefish", name: "Common Cuttlefish", rarity: "uncommon", size: "medium", morph: "cuttlefish", speed: 0.72, hue: 265, colors: ["#a78bfa", "#4c1d95", "#ede9fe"] },
   { id: "dolphinfish_mahi", name: "Dolphinfish (Mahi-Mahi)", rarity: "rare", size: "large", morph: "mahi", speed: 1.55, hue: 185, colors: ["#22d3ee", "#15803d", "#fef08a"] },
   { id: "yellowtail_amberjack", name: "Yellowtail Amberjack", rarity: "rare", size: "large", morph: "amberjack", speed: 1.62, hue: 48, colors: ["#facc15", "#854d0e", "#fef9c3"] },
   { id: "atlantic_halibut", name: "Atlantic Halibut", rarity: "rare", size: "large", morph: "halibut", speed: 0.62, hue: 215, colors: ["#9ca3af", "#374151", "#f3f4f6"] },
   { id: "australian_blacktip", name: "Australian Blacktip Shark", rarity: "rare", size: "large", morph: "reefshark", speed: 1.52, hue: 210, colors: ["#64748b", "#0f172a", "#cbd5e1"] },
-  { id: "blue_marlin", name: "Blue Marlin", rarity: "epic", size: "large", morph: "marlin", speed: 2.05, hue: 258, colors: ["#6366f1", "#1e1b4b", "#c7d2fe"] },
-  { id: "swordfish", name: "Swordfish", rarity: "epic", size: "large", morph: "swordfish", speed: 1.95, hue: 230, colors: ["#818cf8", "#312e81", "#e0e7ff"] },
+  { id: "green_sea_turtle", name: "Green Sea Turtle", rarity: "rare", size: "large", morph: "seaturtle", speed: 0.68, hue: 145, colors: ["#4ade80", "#166534", "#d9f99d"] },
+  { id: "reef_octopus", name: "Reef Octopus", rarity: "rare", size: "medium", morph: "octopus", speed: 0.7, hue: 330, colors: ["#fb7185", "#9f1239", "#ffe4e6"] },
+  { id: "harbor_seal", name: "Harbor Seal", rarity: "rare", size: "large", morph: "seal", speed: 1.15, hue: 220, colors: ["#94a3b8", "#334155", "#f1f5f9"] },
+  { id: "blue_marlin", name: "Blue Marlin", rarity: "epic", size: "large", morph: "marlin", speed: 2.05, hue: 220, colors: ["#3b82f6", "#1e3a8a", "#bfdbfe"] },
+  { id: "swordfish", name: "Swordfish", rarity: "epic", size: "large", morph: "swordfish", speed: 1.95, hue: 230, colors: ["#64748b", "#1e293b", "#e2e8f0"] },
   { id: "giant_trevally", name: "Giant Trevally", rarity: "epic", size: "large", morph: "trevally", speed: 1.78, hue: 32, colors: ["#d97706", "#422006", "#fde68a"] },
+  { id: "reef_manta", name: "Reef Manta Ray", rarity: "epic", size: "large", morph: "manta", speed: 0.88, hue: 215, colors: ["#475569", "#0f172a", "#e2e8f0"] },
+  { id: "bottlenose_dolphin", name: "Bottlenose Dolphin", rarity: "epic", size: "large", morph: "dolphin", speed: 1.48, hue: 205, colors: ["#94a3b8", "#334155", "#f8fafc"] },
   { id: "atlantic_bluefin", name: "Atlantic Bluefin Tuna", rarity: "legendary", size: "large", morph: "bluefin", speed: 1.68, hue: 222, colors: ["#1d4ed8", "#0f172a", "#93c5fd"] },
-  { id: "great_barracuda", name: "Great Barracuda", rarity: "legendary", size: "large", morph: "barracuda", speed: 2.2, hue: 280, colors: ["#c084fc", "#3b0764", "#f3e8ff"] },
-  { id: "great_hammerhead", name: "Great Hammerhead Shark", rarity: "legendary", size: "large", morph: "hammerhead", speed: 1.42, hue: 265, colors: ["#94a3b8", "#1e293b", "#e2e8f0"] },
+  { id: "great_barracuda", name: "Great Barracuda", rarity: "legendary", size: "large", morph: "barracuda", speed: 2.2, hue: 200, colors: ["#cbd5e1", "#334155", "#f8fafc"] },
+  { id: "great_hammerhead", name: "Great Hammerhead Shark", rarity: "legendary", size: "large", morph: "hammerhead", speed: 1.42, hue: 210, colors: ["#94a3b8", "#1e293b", "#e2e8f0"] },
+  { id: "sea_otter", name: "Sea Otter", rarity: "legendary", size: "medium", morph: "otter", speed: 0.95, hue: 28, colors: ["#a16207", "#451a03", "#fef3c7"] },
   { id: "black_seadevil", name: "Black Seadevil", rarity: "common", size: "small", morph: "deepsea", speed: 0.95, hue: 188, colors: ["#172033", "#05070d", "#86efff"] },
   { id: "viperfish", name: "Pacific Viperfish", rarity: "common", size: "medium", morph: "deepsea", speed: 1.2, hue: 205, colors: ["#243047", "#070b14", "#bdefff"] },
   { id: "hatchetfish", name: "Hatchetfish", rarity: "uncommon", size: "small", morph: "deepsea", speed: 1.38, hue: 220, colors: ["#2c3b55", "#08111f", "#d9f7ff"] },
+  { id: "dumbo_octopus", name: "Dumbo Octopus", rarity: "uncommon", size: "medium", morph: "octopus", speed: 0.52, hue: 330, colors: ["#f472b6", "#9d174d", "#fce7f3"] },
   { id: "gulper_eel", name: "Gulper Eel", rarity: "rare", size: "large", morph: "deepsea", speed: 0.82, hue: 258, colors: ["#211632", "#05030a", "#c084fc"] },
   { id: "fangtooth", name: "Fangtooth", rarity: "epic", size: "medium", morph: "deepsea", speed: 1.08, hue: 24, colors: ["#2a201b", "#080503", "#fed7aa"] },
   { id: "giant_isopod", name: "Giant Isopod", rarity: "legendary", size: "large", morph: "deepsea", speed: 0.58, hue: 190, colors: ["#475569", "#111827", "#cffafe"] },
@@ -56,6 +69,15 @@ const FISH_SPECIES = [
   { id: "abyss_lantern", name: "Abyss Lantern", rarity: "epic", size: "medium", morph: "skullfish", speed: 1.28, hue: 12, colors: ["#180c0c", "#040202", "#ff3333"] },
   { id: "leviathan_skull", name: "Leviathan Skull", rarity: "legendary", size: "large", morph: "skullfish", speed: 1.02, hue: 200, colors: ["#0c1418", "#020406", "#67e8f9"] },
 ];
+
+const BIG_CRITTER_MORPHS = new Set([
+  "hammerhead",
+  "reefshark",
+  "seaturtle",
+  "manta",
+  "dolphin",
+  "seal",
+]);
 
 const SKULL_SHOALS_FISH_IDS = [
   "bonefish",
@@ -427,9 +449,10 @@ const ADVENTURE_SECTION_GOLD_QUEST = "Gold Quest";
 const ADVENTURE_SECTION_FROZEN_SEA = "Frozen Sea";
 const ADVENTURE_SECTION_LOST_CITY = "The Lost City";
 /** +0.75s on the clock per voyage index as difficulty ramps up (Pirates Path only). */
-const ADVENTURE_LEVEL_TIME_BONUS_MS = 750;
-/** +1.5s per voyage from Gold Quest through The Lost City. */
-const ADVENTURE_GOLD_TO_LOST_CITY_TIME_BONUS_MS = 1_500;
+/** +0.9s per Pirates Path voyage so later main levels keep a bit more clock. */
+const ADVENTURE_LEVEL_TIME_BONUS_MS = 900;
+/** +1.7s per voyage from Gold Quest through The Lost City. */
+const ADVENTURE_GOLD_TO_LOST_CITY_TIME_BONUS_MS = 1_700;
 
 function adventureLevelTimeBonusMs(levelIndex) {
   if (levelIndex < ADVENTURE_MAIN_LEVEL_COUNT) {
@@ -4204,21 +4227,21 @@ function registerGoldQuestTreasureBeds() {
 registerAdventureBonusThemes();
 
 function adventurePassScoreForIndex(i) {
-  // Tuned for a strong player: early voyages are a real challenge, finales demand
-  // clean casts and good rod/bait choices without feeling unwinnable.
+  // Tuned for a solid casual player: early voyages teach the loop, later
+  // finales still need focus and gear without feeling punishing.
   if (i < ADVENTURE_MAIN_LEVEL_COUNT) {
-    return 3600 + Math.round((i * (8400 - 3600)) / Math.max(1, ADVENTURE_MAIN_LEVEL_COUNT - 1));
+    return 3100 + Math.round((i * (7200 - 3100)) / Math.max(1, ADVENTURE_MAIN_LEVEL_COUNT - 1));
   }
   if (i < ADVENTURE_ICE_START_INDEX) {
     const bonusI = i - ADVENTURE_MAIN_LEVEL_COUNT;
-    return 9000 + Math.round((bonusI * (10800 - 9000)) / Math.max(1, ADVENTURE_BONUS_LEVEL_COUNT - 1));
+    return 7700 + Math.round((bonusI * (9300 - 7700)) / Math.max(1, ADVENTURE_BONUS_LEVEL_COUNT - 1));
   }
   if (i < ADVENTURE_LOST_CITY_START_INDEX) {
     const iceI = i - ADVENTURE_ICE_START_INDEX;
-    return 11100 + Math.round((iceI * (13200 - 11100)) / Math.max(1, ADVENTURE_ICE_LEVEL_COUNT - 1));
+    return 9600 + Math.round((iceI * (11400 - 9600)) / Math.max(1, ADVENTURE_ICE_LEVEL_COUNT - 1));
   }
   const lostI = i - ADVENTURE_LOST_CITY_START_INDEX;
-  return 13500 + Math.round((lostI * (15600 - 13500)) / Math.max(1, ADVENTURE_LOST_CITY_LEVEL_COUNT - 1));
+  return 11700 + Math.round((lostI * (13600 - 11700)) / Math.max(1, ADVENTURE_LOST_CITY_LEVEL_COUNT - 1));
 }
 
 function drawAdventureThemeOverlayInner(now) {
@@ -4493,14 +4516,22 @@ const REEFS = [
       "barramundi",
       "pacific_sardine",
       "chub_mackerel",
+      "clown_anemonefish",
+      "queen_angelfish",
+      "lined_seahorse",
+      "moon_jellyfish",
       "coral_trout_gbr",
       "yellowfin_tuna",
       "yellowtail_amberjack",
       "dolphinfish_mahi",
+      "green_sea_turtle",
+      "reef_octopus",
       "australian_blacktip",
       "giant_trevally",
+      "reef_manta",
       "great_hammerhead",
       "great_barracuda",
+      "sea_otter",
     ],
     visuals: {
       gradient: ["#6ee7b7", "#0f766e", "#134e4a", "#022c26"],
@@ -4542,12 +4573,21 @@ const REEFS = [
       "northern_anchovy",
       "pacific_sardine",
       "chub_mackerel",
+      "clown_anemonefish",
+      "moon_jellyfish",
       "red_snapper",
       "striped_bass",
+      "queen_angelfish",
+      "caribbean_lobster",
+      "common_cuttlefish",
       "albacore_tuna",
       "dolphinfish_mahi",
       "yellowtail_amberjack",
       "yellowfin_tuna",
+      "green_sea_turtle",
+      "reef_octopus",
+      "bottlenose_dolphin",
+      "reef_manta",
       "blue_marlin",
       "swordfish",
       "great_barracuda",
@@ -4589,12 +4629,17 @@ const REEFS = [
       "european_sprat",
       "atlantic_herring",
       "chub_mackerel",
+      "moon_jellyfish",
       "european_seabass",
       "atlantic_cod",
+      "lined_seahorse",
+      "harbor_seal",
+      "common_cuttlefish",
       "yellowfin_tuna",
       "atlantic_halibut",
       "swordfish",
       "blue_marlin",
+      "bottlenose_dolphin",
       "atlantic_bluefin",
     ],
     visuals: {
@@ -4628,15 +4673,20 @@ const REEFS = [
       "pacific_sardine",
       "chub_mackerel",
       "northern_anchovy",
+      "moon_jellyfish",
       "albacore_tuna",
       "yellowfin_tuna",
       "yellowtail_amberjack",
       "atlantic_halibut",
+      "harbor_seal",
       "giant_trevally",
       "swordfish",
       "blue_marlin",
+      "reef_manta",
+      "bottlenose_dolphin",
       "atlantic_bluefin",
       "great_barracuda",
+      "sea_otter",
     ],
     visuals: {
       gradient: ["#38bdf8", "#0369a1", "#0c4a6e", "#000814"],
@@ -4665,7 +4715,15 @@ const REEFS = [
     rareRollMult: 0.72,
     weights: { common: 54, uncommon: 23, rare: 12, epic: 7, legendary: 4 },
     mapPin: { x: 181, y: 42 },
-    fishPool: ["black_seadevil", "viperfish", "hatchetfish", "gulper_eel", "fangtooth", "giant_isopod"],
+    fishPool: [
+      "black_seadevil",
+      "viperfish",
+      "hatchetfish",
+      "dumbo_octopus",
+      "gulper_eel",
+      "fangtooth",
+      "giant_isopod",
+    ],
     visuals: {
       gradient: ["#02030a", "#010209", "#000107", "#000000"],
       shaft: ["rgba(40, 120, 180, 0.04)", "rgba(0, 0, 0, 0)"],
@@ -4707,14 +4765,14 @@ function buildAdventureLevels() {
       passScore: adventurePassScoreForIndex(i),
       roundMs:
         Math.max(
-          isLostCity ? 34_000 : isIce ? 36_000 : isBonus ? 38_000 : 44_000,
-          reef.roundMs - tier * 3500 - i * 650,
+          isLostCity ? 37_000 : isIce ? 39_000 : isBonus ? 41_000 : 47_000,
+          reef.roundMs - tier * 2800 - i * 520,
         ) + adventureLevelTimeBonusMs(i),
-      spawnMin: Math.max(isLostCity ? 130 : isIce ? 140 : isBonus ? 150 : 170, reef.spawnMin - i * 16),
-      spawnMax: Math.max(isLostCity ? 320 : isIce ? 340 : isBonus ? 360 : 400, reef.spawnMax - i * 40),
+      spawnMin: Math.max(isLostCity ? 145 : isIce ? 155 : isBonus ? 165 : 185, reef.spawnMin - i * 12),
+      spawnMax: Math.max(isLostCity ? 350 : isIce ? 370 : isBonus ? 390 : 430, reef.spawnMax - i * 32),
       maxFish: Math.min(20, reef.maxFish + Math.floor(i / 2.5)),
-      fishSpeed: reef.fishSpeed * (1 + i * 0.042),
-      rareRollMult: Math.max(0.48, reef.rareRollMult * (0.96 - i * 0.014)),
+      fishSpeed: reef.fishSpeed * (1 + i * 0.032),
+      rareRollMult: Math.max(0.55, reef.rareRollMult * (0.98 - i * 0.011)),
     });
   }
   return levels;
@@ -6308,8 +6366,8 @@ function duelExpectedOpponentScore(now) {
 
 function spawnFishInDuelHalf(side) {
   const spec = pickSpecies();
-  const shark = spec.morph === "hammerhead" || spec.morph === "reefshark";
-  const len = SIZE[spec.size].length * dpr * (shark ? 1.4 : 1);
+  const big = BIG_CRITTER_MORPHS.has(spec.morph);
+  const len = SIZE[spec.size].length * dpr * (big ? 1.4 : 1);
   const reef = getReef();
   const half = duelHalfW();
   const xMin = side === "player" ? 0 : half;
@@ -10596,8 +10654,8 @@ function spawnFish() {
     return;
   }
   const spec = pickSpecies();
-  const shark = spec.morph === "hammerhead" || spec.morph === "reefshark";
-  const len = SIZE[spec.size].length * dpr * (shark ? 1.4 : 1);
+  const big = BIG_CRITTER_MORPHS.has(spec.morph);
+  const len = SIZE[spec.size].length * dpr * (spec.morph === "manta" ? 1.55 : big ? 1.4 : 1);
   const fromLeft = Math.random() < 0.5;
   const reef = getReef();
   const trench = reef.id === "mariana_trench";
@@ -12398,21 +12456,37 @@ function drawBubbles(dt) {
 }
 
 /** Species-shaped silhouettes; speciesId refines recognizable traits per fish. */
-function drawFishMorph(morph, L, body, shade, accent, speciesId) {
+function drawFishMorph(morph, L, body, shade, accent, speciesId, phase = 0) {
   const sid = speciesId || "";
-  function eye() {
+  function oceanBody(rx = L * 0.48, ry = L * 0.22) {
+    const g = ctx.createLinearGradient(0, -ry * 1.35, 0, ry * 1.45);
+    g.addColorStop(0, shade);
+    g.addColorStop(0.38, body);
+    g.addColorStop(0.78, accent);
+    g.addColorStop(1, "#ffffff");
+    return g;
+  }
+
+  function eye(ex = L * 0.34, ey = -L * 0.03, er = L * 0.072) {
     ctx.fillStyle = "#fff";
     ctx.beginPath();
-    ctx.arc(L * 0.34, -L * 0.03, L * 0.072, 0, Math.PI * 2);
+    ctx.arc(ex, ey, er, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = "#0a1a22";
+    ctx.fillStyle = "#0f172a";
     ctx.beginPath();
-    ctx.arc(L * 0.36, -L * 0.03, L * 0.03, 0, Math.PI * 2);
+    ctx.arc(ex + er * 0.28, ey, er * 0.42, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.arc(ex + er * 0.42, ey - er * 0.35, er * 0.22, 0, Math.PI * 2);
     ctx.fill();
   }
 
   function forkTail(depth = 0.28) {
-    ctx.fillStyle = shade;
+    const tg = ctx.createLinearGradient(-L * 0.4, 0, -L * 0.95, 0);
+    tg.addColorStop(0, body);
+    tg.addColorStop(1, shade);
+    ctx.fillStyle = tg;
     ctx.beginPath();
     ctx.moveTo(-L * 0.4, 0);
     ctx.lineTo(-L * 0.92, -L * depth);
@@ -12432,6 +12506,37 @@ function drawFishMorph(morph, L, body, shade, accent, speciesId) {
     ctx.fill();
   }
 
+  function pectoral() {
+    ctx.fillStyle = shade;
+    ctx.globalAlpha = 0.85;
+    ctx.beginPath();
+    ctx.moveTo(L * 0.08, L * 0.02);
+    ctx.quadraticCurveTo(L * 0.02, L * 0.22, -L * 0.06, L * 0.18);
+    ctx.quadraticCurveTo(L * 0.02, L * 0.08, L * 0.08, L * 0.02);
+    ctx.closePath();
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  function bellySheen(rx = L * 0.22, ry = L * 0.09, ox = L * 0.08, oy = -L * 0.03) {
+    ctx.fillStyle = "rgba(255,255,255,0.28)";
+    ctx.beginPath();
+    ctx.ellipse(ox, oy, rx, ry, -0.12, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function lateralLine() {
+    ctx.strokeStyle = shade;
+    ctx.globalAlpha = 0.45;
+    ctx.lineWidth = Math.max(1, L * 0.028);
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(L * 0.28, L * 0.02);
+    ctx.quadraticCurveTo(0, L * 0.06, -L * 0.32, L * 0.01);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
   function lateralStripe(n, y0, spread) {
     ctx.strokeStyle = accent;
     ctx.lineWidth = L * 0.045;
@@ -12449,12 +12554,14 @@ function drawFishMorph(morph, L, body, shade, accent, speciesId) {
 
   if (morph === "silverside") {
     const slim = sid === "european_sprat" ? 0.9 : sid === "northern_anchovy" ? 0.95 : 1;
-    ctx.fillStyle = body;
+    const ry = L * (sid === "european_sprat" ? 0.17 : 0.2) * slim;
+    const rx = L * 0.48 * slim;
+    ctx.fillStyle = oceanBody(rx, ry);
     ctx.beginPath();
-    ctx.ellipse(0, 0, L * 0.48 * slim, L * (sid === "european_sprat" ? 0.17 : 0.2), 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
     ctx.fill();
     if (sid === "northern_anchovy") {
-      ctx.fillStyle = body;
+      ctx.fillStyle = shade;
       ctx.beginPath();
       ctx.moveTo(L * 0.48, 0);
       ctx.lineTo(L * 0.62, -L * 0.06);
@@ -12462,10 +12569,8 @@ function drawFishMorph(morph, L, body, shade, accent, speciesId) {
       ctx.closePath();
       ctx.fill();
     }
-    ctx.fillStyle = "rgba(255,255,255,0.22)";
-    ctx.beginPath();
-    ctx.ellipse(L * 0.1, -L * 0.04, L * 0.28, L * 0.08, -0.12, 0, Math.PI * 2);
-    ctx.fill();
+    bellySheen(L * 0.26, L * 0.075, L * 0.1, -L * 0.035);
+    lateralLine();
     if (sid === "atlantic_herring") {
       ctx.strokeStyle = shade;
       ctx.lineWidth = L * 0.026;
@@ -12491,23 +12596,433 @@ function drawFishMorph(morph, L, body, shade, accent, speciesId) {
       ctx.lineTo(-L * 0.22, L * 0.02);
       ctx.stroke();
     }
-    forkTail(sid === "european_sprat" ? 0.38 : 0.34);
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = shade;
     ctx.beginPath();
-    ctx.arc(L * 0.34, -L * 0.03, L * (sid === "northern_anchovy" ? 0.055 : 0.072), 0, Math.PI * 2);
+    ctx.moveTo(L * -0.02, -ry * 0.7);
+    ctx.quadraticCurveTo(L * 0.06, -ry * 1.7, L * 0.18, -ry * 0.55);
+    ctx.closePath();
     ctx.fill();
-    ctx.fillStyle = "#0a1a22";
     ctx.beginPath();
-    ctx.arc(L * (sid === "northern_anchovy" ? 0.36 : 0.36), -L * 0.03, L * (sid === "northern_anchovy" ? 0.022 : 0.03), 0, Math.PI * 2);
+    ctx.moveTo(L * 0.0, ry * 0.55);
+    ctx.quadraticCurveTo(L * 0.08, ry * 1.35, L * 0.16, ry * 0.4);
+    ctx.closePath();
+    ctx.fill();
+    forkTail(sid === "european_sprat" ? 0.38 : 0.34);
+    pectoral();
+    eye(L * 0.34, -L * 0.03, L * (sid === "northern_anchovy" ? 0.055 : 0.072));
+    return;
+  }
+
+  if (morph === "clownfish") {
+    ctx.fillStyle = oceanBody(L * 0.46, L * 0.24);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, L * 0.46, L * 0.24, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = L * 0.1;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(-L * 0.16, -L * 0.22);
+    ctx.quadraticCurveTo(-L * 0.16, 0, -L * 0.12, L * 0.22);
+    ctx.stroke();
+    ctx.lineWidth = L * 0.085;
+    ctx.beginPath();
+    ctx.moveTo(L * 0.12, -L * 0.22);
+    ctx.quadraticCurveTo(L * 0.12, 0, L * 0.16, L * 0.22);
+    ctx.stroke();
+    ctx.fillStyle = shade;
+    ctx.beginPath();
+    ctx.moveTo(-L * 0.04, -L * 0.16);
+    ctx.quadraticCurveTo(L * 0.02, -L * 0.32, L * 0.14, -L * 0.18);
+    ctx.closePath();
+    ctx.fill();
+    forkTail(0.28);
+    eye(L * 0.3, -L * 0.04, L * 0.06);
+    return;
+  }
+
+  if (morph === "angelfish") {
+    ctx.fillStyle = shade;
+    ctx.beginPath();
+    ctx.moveTo(-L * 0.08, -L * 0.18);
+    ctx.lineTo(-L * 0.02, -L * 0.58);
+    ctx.lineTo(L * 0.14, -L * 0.16);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(-L * 0.08, L * 0.18);
+    ctx.lineTo(-L * 0.02, L * 0.58);
+    ctx.lineTo(L * 0.14, L * 0.16);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = oceanBody(L * 0.28, L * 0.38);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, L * 0.28, L * 0.38, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(224, 242, 254, 0.55)";
+    ctx.beginPath();
+    ctx.ellipse(L * 0.02, 0, L * 0.18, L * 0.28, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = L * 0.055;
+    ctx.beginPath();
+    ctx.moveTo(-L * 0.08, -L * 0.28);
+    ctx.lineTo(-L * 0.08, L * 0.28);
+    ctx.stroke();
+    ctx.lineWidth = L * 0.045;
+    ctx.beginPath();
+    ctx.moveTo(L * 0.08, -L * 0.3);
+    ctx.lineTo(L * 0.08, L * 0.3);
+    ctx.stroke();
+    forkTail(0.22);
+    eye(L * 0.16, -L * 0.06, L * 0.055);
+    return;
+  }
+
+  if (morph === "jellyfish") {
+    const bob = Math.sin(phase) * L * 0.04;
+    ctx.save();
+    ctx.translate(0, bob);
+    const bell = ctx.createRadialGradient(0, -L * 0.08, L * 0.04, 0, 0, L * 0.42);
+    bell.addColorStop(0, "rgba(255,255,255,0.55)");
+    bell.addColorStop(0.45, body);
+    bell.addColorStop(1, "rgba(167, 139, 250, 0.15)");
+    ctx.fillStyle = bell;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, L * 0.38, L * 0.28, 0, Math.PI, 0);
+    ctx.quadraticCurveTo(0, L * 0.12, -L * 0.38, 0);
+    ctx.fill();
+    ctx.strokeStyle = accent;
+    ctx.globalAlpha = 0.55;
+    ctx.lineWidth = Math.max(1, L * 0.02);
+    for (let i = 0; i < 7; i++) {
+      const tx = -L * 0.22 + i * L * 0.075;
+      ctx.beginPath();
+      ctx.moveTo(tx, L * 0.02);
+      ctx.quadraticCurveTo(tx + Math.sin(phase + i) * L * 0.06, L * 0.28, tx + Math.sin(phase * 1.4 + i) * L * 0.08, L * 0.55);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    ctx.restore();
+    return;
+  }
+
+  if (morph === "seaturtle") {
+    ctx.fillStyle = shade;
+    const flap = Math.sin(phase) * 0.18;
+    ctx.save();
+    ctx.translate(-L * 0.08, -L * 0.18);
+    ctx.rotate(-0.35 + flap);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, L * 0.22, L * 0.08, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    ctx.save();
+    ctx.translate(-L * 0.08, L * 0.18);
+    ctx.rotate(0.35 - flap);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, L * 0.22, L * 0.08, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    ctx.save();
+    ctx.translate(-L * 0.32, -L * 0.12);
+    ctx.rotate(-0.5 - flap * 0.5);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, L * 0.14, L * 0.06, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    ctx.save();
+    ctx.translate(-L * 0.32, L * 0.12);
+    ctx.rotate(0.5 + flap * 0.5);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, L * 0.14, L * 0.06, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    const shell = ctx.createRadialGradient(-L * 0.05, -L * 0.08, L * 0.04, 0, 0, L * 0.42);
+    shell.addColorStop(0, accent);
+    shell.addColorStop(0.55, body);
+    shell.addColorStop(1, shade);
+    ctx.fillStyle = shell;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, L * 0.42, L * 0.3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = shade;
+    ctx.lineWidth = Math.max(1, L * 0.025);
+    ctx.globalAlpha = 0.55;
+    for (let i = -1; i <= 1; i++) {
+      ctx.beginPath();
+      ctx.moveTo(-L * 0.28, i * L * 0.1);
+      ctx.quadraticCurveTo(0, i * L * 0.18, L * 0.28, i * L * 0.08);
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.moveTo(0, -L * 0.22);
+    ctx.lineTo(0, L * 0.22);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = accent;
+    ctx.beginPath();
+    ctx.ellipse(L * 0.4, 0, L * 0.14, L * 0.1, 0.1, 0, Math.PI * 2);
+    ctx.fill();
+    eye(L * 0.46, -L * 0.02, L * 0.045);
+    return;
+  }
+
+  if (morph === "octopus") {
+    const ear = sid === "dumbo_octopus";
+    ctx.fillStyle = body;
+    ctx.beginPath();
+    ctx.ellipse(L * 0.08, -L * 0.04, L * 0.28, L * 0.26, 0, 0, Math.PI * 2);
+    ctx.fill();
+    if (ear) {
+      ctx.fillStyle = shade;
+      ctx.beginPath();
+      ctx.ellipse(L * 0.02, -L * 0.28, L * 0.16, L * 0.1, -0.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(L * 0.02, L * 0.18, L * 0.16, L * 0.1, 0.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.strokeStyle = shade;
+    ctx.lineWidth = Math.max(1.5, L * 0.045);
+    ctx.lineCap = "round";
+    for (let i = 0; i < 6; i++) {
+      const a = -0.7 + i * 0.28;
+      const sway = Math.sin(phase * 1.4 + i) * L * 0.08;
+      ctx.beginPath();
+      ctx.moveTo(L * 0.02, L * 0.12);
+      ctx.quadraticCurveTo(-L * 0.15 + sway, L * (0.28 + a * 0.2), -L * 0.42 + sway * 0.5, L * (0.42 + a * 0.35));
+      ctx.stroke();
+    }
+    eye(L * 0.18, -L * 0.06, L * 0.06);
+    return;
+  }
+
+  if (morph === "seahorse") {
+    ctx.strokeStyle = shade;
+    ctx.lineWidth = Math.max(2, L * 0.08);
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(L * 0.12, -L * 0.42);
+    ctx.quadraticCurveTo(L * 0.32, -L * 0.2, L * 0.08, 0);
+    ctx.quadraticCurveTo(-L * 0.12, L * 0.25, -L * 0.02, L * 0.48);
+    ctx.stroke();
+    ctx.fillStyle = oceanBody(L * 0.16, L * 0.14);
+    ctx.beginPath();
+    ctx.ellipse(L * 0.1, -L * 0.28, L * 0.14, L * 0.12, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = shade;
+    ctx.beginPath();
+    ctx.moveTo(L * 0.02, -L * 0.1);
+    ctx.lineTo(-L * 0.18, -L * 0.02);
+    ctx.lineTo(L * 0.02, L * 0.08);
+    ctx.closePath();
+    ctx.fill();
+    eye(L * 0.16, -L * 0.3, L * 0.04);
+    return;
+  }
+
+  if (morph === "manta") {
+    const flap = Math.sin(phase) * 0.12;
+    ctx.fillStyle = oceanBody(L * 0.55, L * 0.18);
+    ctx.beginPath();
+    ctx.moveTo(L * 0.42, 0);
+    ctx.quadraticCurveTo(L * 0.1, -L * (0.42 + flap), -L * 0.45, -L * 0.08);
+    ctx.quadraticCurveTo(-L * 0.55, 0, -L * 0.45, L * 0.08);
+    ctx.quadraticCurveTo(L * 0.1, L * (0.42 + flap), L * 0.42, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = accent;
+    ctx.globalAlpha = 0.35;
+    ctx.beginPath();
+    ctx.ellipse(L * 0.05, L * 0.04, L * 0.28, L * 0.1, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = shade;
+    ctx.beginPath();
+    ctx.moveTo(-L * 0.35, 0);
+    ctx.lineTo(-L * 0.72, -L * 0.06);
+    ctx.lineTo(-L * 0.72, L * 0.06);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "#0f172a";
+    ctx.beginPath();
+    ctx.arc(L * 0.28, -L * 0.04, L * 0.03, 0, Math.PI * 2);
+    ctx.fill();
+    return;
+  }
+
+  if (morph === "seal") {
+    ctx.fillStyle = oceanBody(L * 0.48, L * 0.22);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, L * 0.48, L * 0.22, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = shade;
+    ctx.beginPath();
+    ctx.moveTo(-L * 0.35, 0);
+    ctx.quadraticCurveTo(-L * 0.55, -L * 0.18, -L * 0.72, -L * 0.02);
+    ctx.quadraticCurveTo(-L * 0.55, L * 0.16, -L * 0.35, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = accent;
+    ctx.beginPath();
+    ctx.ellipse(L * 0.42, 0, L * 0.16, L * 0.14, 0.15, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = shade;
+    const flap = Math.sin(phase) * 0.15;
+    ctx.save();
+    ctx.translate(L * 0.05, L * 0.12);
+    ctx.rotate(0.4 + flap);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, L * 0.16, L * 0.06, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    eye(L * 0.48, -L * 0.04, L * 0.05);
+    ctx.fillStyle = "#0f172a";
+    ctx.beginPath();
+    ctx.arc(L * 0.55, L * 0.02, L * 0.025, 0, Math.PI * 2);
+    ctx.fill();
+    return;
+  }
+
+  if (morph === "dolphin") {
+    ctx.fillStyle = oceanBody(L * 0.5, L * 0.2);
+    ctx.beginPath();
+    ctx.moveTo(L * 0.52, 0);
+    ctx.quadraticCurveTo(L * 0.15, -L * 0.26, -L * 0.35, -L * 0.06);
+    ctx.quadraticCurveTo(-L * 0.48, 0, -L * 0.35, L * 0.08);
+    ctx.quadraticCurveTo(L * 0.1, L * 0.24, L * 0.52, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = shade;
+    ctx.beginPath();
+    ctx.moveTo(L * 0.02, -L * 0.12);
+    ctx.lineTo(L * 0.08, -L * 0.42);
+    ctx.lineTo(L * 0.2, -L * 0.14);
+    ctx.closePath();
+    ctx.fill();
+    forkTail(0.16);
+    bellySheen(L * 0.24, L * 0.07, L * 0.05, L * 0.06);
+    eye(L * 0.36, -L * 0.02, L * 0.045);
+    ctx.strokeStyle = shade;
+    ctx.lineWidth = L * 0.02;
+    ctx.beginPath();
+    ctx.arc(L * 0.48, L * 0.04, L * 0.05, 0.2, Math.PI * 0.9);
+    ctx.stroke();
+    return;
+  }
+
+  if (morph === "lobster") {
+    ctx.fillStyle = body;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, L * 0.38, L * 0.18, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = shade;
+    ctx.lineWidth = L * 0.03;
+    for (let i = 0; i < 5; i++) {
+      const x = L * (0.2 - i * 0.1);
+      ctx.beginPath();
+      ctx.moveTo(x, -L * 0.14);
+      ctx.lineTo(x - L * 0.03, L * 0.14);
+      ctx.stroke();
+    }
+    ctx.fillStyle = shade;
+    for (let s = -1; s <= 1; s += 2) {
+      ctx.beginPath();
+      ctx.moveTo(L * 0.28, s * L * 0.06);
+      ctx.lineTo(L * 0.55, s * L * 0.22);
+      ctx.lineTo(L * 0.48, s * L * 0.08);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = L * 0.025;
+    ctx.beginPath();
+    ctx.moveTo(L * 0.35, -L * 0.08);
+    ctx.lineTo(L * 0.55, -L * 0.28);
+    ctx.moveTo(L * 0.35, L * 0.08);
+    ctx.lineTo(L * 0.55, L * 0.28);
+    ctx.stroke();
+    ctx.fillStyle = shade;
+    ctx.beginPath();
+    ctx.moveTo(-L * 0.35, 0);
+    ctx.lineTo(-L * 0.62, -L * 0.18);
+    ctx.lineTo(-L * 0.55, 0);
+    ctx.lineTo(-L * 0.62, L * 0.18);
+    ctx.closePath();
+    ctx.fill();
+    eye(L * 0.32, -L * 0.06, L * 0.04);
+    return;
+  }
+
+  if (morph === "cuttlefish") {
+    ctx.fillStyle = oceanBody(L * 0.42, L * 0.26);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, L * 0.42, L * 0.26, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = accent;
+    ctx.globalAlpha = 0.45;
+    for (let i = 0; i < 6; i++) {
+      ctx.beginPath();
+      ctx.arc(L * (0.18 - i * 0.1), (i % 2 ? -1 : 1) * L * 0.08, L * 0.04, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = shade;
+    ctx.lineWidth = L * 0.035;
+    ctx.lineCap = "round";
+    for (let i = 0; i < 5; i++) {
+      const y = -L * 0.1 + i * L * 0.05;
+      ctx.beginPath();
+      ctx.moveTo(L * 0.35, y);
+      ctx.quadraticCurveTo(L * 0.5, y + Math.sin(phase + i) * L * 0.04, L * 0.62, y);
+      ctx.stroke();
+    }
+    ctx.fillStyle = shade;
+    ctx.beginPath();
+    ctx.moveTo(-L * 0.3, -L * 0.08);
+    ctx.lineTo(-L * 0.55, 0);
+    ctx.lineTo(-L * 0.3, L * 0.08);
+    ctx.closePath();
+    ctx.fill();
+    eye(L * 0.22, -L * 0.04, L * 0.07);
+    return;
+  }
+
+  if (morph === "otter") {
+    ctx.fillStyle = oceanBody(L * 0.46, L * 0.2);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, L * 0.46, L * 0.2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = shade;
+    ctx.beginPath();
+    ctx.moveTo(-L * 0.4, 0);
+    ctx.quadraticCurveTo(-L * 0.62, -L * 0.12, -L * 0.78, 0);
+    ctx.quadraticCurveTo(-L * 0.62, L * 0.12, -L * 0.4, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = accent;
+    ctx.beginPath();
+    ctx.ellipse(L * 0.4, -L * 0.02, L * 0.16, L * 0.14, 0.1, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = shade;
+    ctx.beginPath();
+    ctx.ellipse(L * 0.08, L * 0.14, L * 0.12, L * 0.05, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    eye(L * 0.46, -L * 0.04, L * 0.045);
+    ctx.fillStyle = "#0f172a";
+    ctx.beginPath();
+    ctx.arc(L * 0.52, L * 0.02, L * 0.022, 0, Math.PI * 2);
     ctx.fill();
     return;
   }
 
   if (morph === "mackerel") {
-    ctx.fillStyle = body;
+    ctx.fillStyle = oceanBody(L * 0.46, L * 0.26);
     ctx.beginPath();
     ctx.ellipse(0, 0, L * 0.46, L * 0.26, 0, 0, Math.PI * 2);
     ctx.fill();
+    bellySheen();
     ctx.strokeStyle = shade;
     ctx.lineWidth = L * 0.04;
     for (let i = 0; i < 5; i++) {
@@ -12517,13 +13032,15 @@ function drawFishMorph(morph, L, body, shade, accent, speciesId) {
       ctx.stroke();
     }
     forkTail(0.26);
+    dorsalSail(0.28, 0.16);
+    pectoral();
     eye();
     return;
   }
 
   if (morph === "tuna" || morph === "bluefin") {
     const chunky = morph === "bluefin" ? 1.08 : 1;
-    ctx.fillStyle = body;
+    ctx.fillStyle = oceanBody(L * 0.5, L * 0.28 * chunky);
     ctx.beginPath();
     ctx.moveTo(L * 0.52, 0);
     ctx.quadraticCurveTo(L * 0.15, -L * 0.32 * chunky, -L * 0.35, -L * 0.08);
@@ -12531,6 +13048,7 @@ function drawFishMorph(morph, L, body, shade, accent, speciesId) {
     ctx.quadraticCurveTo(L * 0.15, L * 0.28 * chunky, L * 0.52, 0);
     ctx.closePath();
     ctx.fill();
+    bellySheen(L * 0.2, L * 0.07, L * 0.05, L * 0.08);
     ctx.fillStyle = shade;
     ctx.beginPath();
     ctx.moveTo(-L * 0.38, 0);
@@ -12539,6 +13057,7 @@ function drawFishMorph(morph, L, body, shade, accent, speciesId) {
     ctx.closePath();
     ctx.fill();
     dorsalSail(0.28, 0.18);
+    pectoral();
     if (sid === "yellowfin_tuna") {
       ctx.fillStyle = "#facc15";
       ctx.globalAlpha = 0.88;
@@ -13135,16 +13654,22 @@ function drawFish(f) {
   const shade = spec.colors[1];
   const accent = spec.colors[2] || "#ffffff";
   const scary = isSkullShoalsPlay() && spec.morph === "skullfish";
+  const soft = spec.morph === "jellyfish" || spec.morph === "seaturtle";
 
   ctx.save();
   ctx.translate(f.x, f.y);
-  ctx.rotate(Math.sin(f.phase) * (scary ? 0.12 : 0.08));
+  ctx.rotate(Math.sin(f.phase) * (scary ? 0.12 : soft ? 0.05 : 0.08));
   ctx.scale(facing, 1);
 
-  drawFishMorph(spec.morph || "silverside", L, body, shade, accent, spec.id);
+  ctx.fillStyle = "rgba(2, 18, 32, 0.16)";
+  ctx.beginPath();
+  ctx.ellipse(0, L * 0.22, L * 0.38, L * 0.09, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  drawFishMorph(spec.morph || "silverside", L, body, shade, accent, spec.id, f.phase);
 
   ctx.restore();
-  f.phase += scary ? 0.09 : 0.06;
+  f.phase += scary ? 0.09 : soft ? 0.045 : 0.06;
 }
 
 function drawClam() {
