@@ -11632,7 +11632,285 @@ function getCharterBoatGeo(centerX = w * 0.5) {
   return { cx, wt, L, bowX, sternX, deckY };
 }
 
+/** Classic pirate galleon with Jolly Roger — used in Adventure Mode. */
+function drawPirateBoatInWater(centerX = w * 0.5) {
+  const { cx, wt, L, bowX, sternX, deckY } = getCharterBoatGeo(centerX);
+  const belowD = 52 * dpr;
+  const midX = cx + L * 0.06;
+  const mastX = cx - L * 0.08;
+  const deckMid = deckY(midX);
+
+  ctx.save();
+
+  // Hull shadow in water
+  ctx.fillStyle = "rgba(20, 12, 8, 0.55)";
+  ctx.beginPath();
+  ctx.moveTo(bowX, wt);
+  ctx.lineTo(bowX - dpr * 4, wt + belowD * 0.2);
+  ctx.quadraticCurveTo(bowX + L * 0.15, wt + belowD * 0.95, cx, wt + belowD * 1.05);
+  ctx.quadraticCurveTo(sternX - L * 0.12, wt + belowD * 0.88, sternX + dpr * 3, wt + belowD * 0.2);
+  ctx.lineTo(sternX, wt);
+  ctx.closePath();
+  ctx.fill();
+
+  // Wooden hull
+  const hullGrad = ctx.createLinearGradient(bowX, wt - 80 * dpr, sternX, wt + dpr * 6);
+  hullGrad.addColorStop(0, "#8b5a2b");
+  hullGrad.addColorStop(0.35, "#6b4423");
+  hullGrad.addColorStop(0.7, "#4a2f16");
+  hullGrad.addColorStop(1, "#2e1c0e");
+  ctx.fillStyle = hullGrad;
+  ctx.beginPath();
+  ctx.moveTo(bowX, wt);
+  ctx.lineTo(bowX, deckY(bowX));
+  for (let i = 1; i <= 16; i++) {
+    const x = bowX + ((sternX - bowX) * i) / 16;
+    ctx.lineTo(x, deckY(x));
+  }
+  ctx.lineTo(sternX, wt);
+  ctx.closePath();
+  ctx.fill();
+
+  // Plank lines
+  ctx.strokeStyle = "rgba(30, 18, 8, 0.35)";
+  ctx.lineWidth = Math.max(1, dpr);
+  for (let i = 1; i <= 3; i++) {
+    const yOff = wt - dpr * (10 + i * 10);
+    ctx.beginPath();
+    ctx.moveTo(bowX + dpr * 8, Math.min(deckY(bowX + dpr * 8), yOff));
+    ctx.lineTo(sternX - dpr * 8, Math.min(deckY(sternX - dpr * 8), yOff));
+    ctx.stroke();
+  }
+
+  // Waterline rail
+  ctx.strokeStyle = "rgba(255, 220, 160, 0.28)";
+  ctx.lineWidth = 1.6 * dpr;
+  ctx.beginPath();
+  ctx.moveTo(bowX, wt);
+  ctx.quadraticCurveTo(cx, wt - dpr * 1.5, sternX, wt);
+  ctx.stroke();
+
+  // Sterncastle
+  const scL = cx + L * 0.18;
+  const scR = sternX - dpr * 6;
+  const scB = deckY(scL) + dpr * 4;
+  const scT = scB - dpr * 28;
+  ctx.fillStyle = "#5a3a1c";
+  ctx.strokeStyle = "rgba(20, 12, 6, 0.55)";
+  ctx.lineWidth = 1.3 * dpr;
+  ctx.beginPath();
+  ctx.moveTo(scL, scB);
+  ctx.lineTo(scL + dpr * 4, scT);
+  ctx.lineTo(scR - dpr * 2, scT);
+  ctx.lineTo(scR, scB);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "rgba(10, 8, 6, 0.55)";
+  ctx.fillRect(scL + dpr * 8, scT + dpr * 8, scR - scL - dpr * 14, dpr * 8);
+
+  // Forecastle
+  const fcR = cx - L * 0.22;
+  const fcL = bowX + dpr * 10;
+  const fcB = deckY(fcR) + dpr * 2;
+  const fcT = fcB - dpr * 18;
+  ctx.fillStyle = "#6a4420";
+  ctx.beginPath();
+  ctx.moveTo(fcL, fcB);
+  ctx.lineTo(fcL + dpr * 6, fcT);
+  ctx.lineTo(fcR, fcT + dpr * 4);
+  ctx.lineTo(fcR + dpr * 4, fcB);
+  ctx.closePath();
+  ctx.fill();
+
+  // Main mast + yards
+  const mastTop = deckMid - dpr * 92;
+  ctx.strokeStyle = "#2a1a0c";
+  ctx.lineWidth = 3.2 * dpr;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(mastX, deckMid + dpr * 4);
+  ctx.lineTo(mastX, mastTop);
+  ctx.stroke();
+  ctx.lineWidth = 2 * dpr;
+  ctx.beginPath();
+  ctx.moveTo(mastX - dpr * 28, deckMid - dpr * 52);
+  ctx.lineTo(mastX + dpr * 28, deckMid - dpr * 52);
+  ctx.moveTo(mastX - dpr * 22, deckMid - dpr * 28);
+  ctx.lineTo(mastX + dpr * 22, deckMid - dpr * 28);
+  ctx.stroke();
+
+  // Square sails (aged canvas)
+  const sailGrad = ctx.createLinearGradient(mastX, mastTop, mastX + dpr * 40, deckMid);
+  sailGrad.addColorStop(0, "#f0e2c0");
+  sailGrad.addColorStop(0.55, "#e0cc98");
+  sailGrad.addColorStop(1, "#c8ae70");
+  ctx.fillStyle = sailGrad;
+  ctx.beginPath();
+  ctx.moveTo(mastX + dpr * 2, deckMid - dpr * 86);
+  ctx.quadraticCurveTo(mastX + dpr * 36, deckMid - dpr * 70, mastX + dpr * 30, deckMid - dpr * 52);
+  ctx.lineTo(mastX + dpr * 2, deckMid - dpr * 52);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(mastX - dpr * 2, deckMid - dpr * 50);
+  ctx.quadraticCurveTo(mastX - dpr * 30, deckMid - dpr * 40, mastX - dpr * 24, deckMid - dpr * 28);
+  ctx.lineTo(mastX - dpr * 2, deckMid - dpr * 28);
+  ctx.closePath();
+  ctx.fill();
+
+  // Jolly Roger flag
+  const flagX = mastX;
+  const flagY = mastTop - dpr * 2;
+  ctx.fillStyle = "#0e0e10";
+  ctx.beginPath();
+  ctx.moveTo(flagX, flagY);
+  ctx.lineTo(flagX + dpr * 28, flagY + dpr * 6);
+  ctx.lineTo(flagX + dpr * 28, flagY + dpr * 22);
+  ctx.lineTo(flagX, flagY + dpr * 16);
+  ctx.closePath();
+  ctx.fill();
+  // Skull
+  ctx.fillStyle = "#f2efe6";
+  ctx.beginPath();
+  ctx.ellipse(flagX + dpr * 14, flagY + dpr * 11, dpr * 5.2, dpr * 4.6, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#0e0e10";
+  ctx.beginPath();
+  ctx.arc(flagX + dpr * 12, flagY + dpr * 10, dpr * 1.35, 0, Math.PI * 2);
+  ctx.arc(flagX + dpr * 16.2, flagY + dpr * 10, dpr * 1.35, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "#0e0e10";
+  ctx.lineWidth = 1.1 * dpr;
+  ctx.beginPath();
+  ctx.moveTo(flagX + dpr * 12.5, flagY + dpr * 13.5);
+  ctx.quadraticCurveTo(flagX + dpr * 14, flagY + dpr * 15.2, flagX + dpr * 15.5, flagY + dpr * 13.5);
+  ctx.stroke();
+  // Crossbones
+  ctx.lineWidth = 1.6 * dpr;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(flagX + dpr * 8, flagY + dpr * 17);
+  ctx.lineTo(flagX + dpr * 20, flagY + dpr * 21);
+  ctx.moveTo(flagX + dpr * 20, flagY + dpr * 17);
+  ctx.lineTo(flagX + dpr * 8, flagY + dpr * 21);
+  ctx.stroke();
+
+  // Bowsprit
+  ctx.strokeStyle = "#2a1a0c";
+  ctx.lineWidth = 2.2 * dpr;
+  ctx.beginPath();
+  ctx.moveTo(bowX + dpr * 4, deckY(bowX + dpr * 4));
+  ctx.lineTo(bowX - dpr * 28, wt - dpr * 18);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function adventureAnchorLayout(boatCx = w * 0.5) {
+  const g = getCharterBoatGeo(boatCx);
+  const attachX = g.sternX - dpr * 18;
+  const attachY = g.deckY(attachX) + dpr * 2;
+  const rimCx = attachX + dpr * 8;
+  const rimCy = waterTop + dpr * 18;
+  const sackCx = rimCx;
+  const sackCy = rimCy + dpr * 48;
+  return {
+    boatCx,
+    rimCx,
+    rimCy,
+    rimRx: 24 * dpr,
+    rimRy: 8 * dpr,
+    sackCx,
+    sackCy,
+    sackHx: 36 * dpr,
+    sackVy: 52 * dpr,
+    attachX,
+    attachY,
+  };
+}
+
+function drawAdventureAnchor(lay) {
+  const { attachX, attachY, sackCx, sackCy } = lay;
+  const t = performance.now() * 0.001;
+  const sway = Math.sin(t * 1.4) * dpr * 3;
+
+  ctx.save();
+  // Rope from stern to water
+  ctx.strokeStyle = "rgba(90, 65, 40, 0.92)";
+  ctx.lineWidth = 2.4 * dpr;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(attachX, attachY);
+  ctx.quadraticCurveTo(
+    (attachX + sackCx) * 0.5 + dpr * 10,
+    (attachY + sackCy) * 0.45,
+    sackCx + sway,
+    sackCy - dpr * 28
+  );
+  ctx.stroke();
+
+  // Chain links near the anchor
+  ctx.strokeStyle = "rgba(70, 75, 82, 0.9)";
+  ctx.lineWidth = 2.8 * dpr;
+  ctx.beginPath();
+  ctx.moveTo(sackCx + sway, sackCy - dpr * 28);
+  ctx.lineTo(sackCx + sway * 0.6, sackCy - dpr * 8);
+  ctx.stroke();
+
+  const ax = sackCx + sway * 0.5;
+  const ay = sackCy;
+  // Stock (crossbar)
+  ctx.strokeStyle = "#3a4048";
+  ctx.lineWidth = 3.2 * dpr;
+  ctx.beginPath();
+  ctx.moveTo(ax - dpr * 16, ay - dpr * 4);
+  ctx.lineTo(ax + dpr * 16, ay - dpr * 4);
+  ctx.stroke();
+  // Shank
+  ctx.lineWidth = 3.6 * dpr;
+  ctx.beginPath();
+  ctx.moveTo(ax, ay - dpr * 10);
+  ctx.lineTo(ax, ay + dpr * 22);
+  ctx.stroke();
+  // Ring
+  ctx.strokeStyle = "#4a5058";
+  ctx.lineWidth = 2.4 * dpr;
+  ctx.beginPath();
+  ctx.arc(ax, ay - dpr * 14, dpr * 5, 0, Math.PI * 2);
+  ctx.stroke();
+  // Arms / flukes
+  ctx.strokeStyle = "#2e343c";
+  ctx.lineWidth = 3.2 * dpr;
+  ctx.beginPath();
+  ctx.moveTo(ax, ay + dpr * 18);
+  ctx.quadraticCurveTo(ax - dpr * 22, ay + dpr * 28, ax - dpr * 18, ay + dpr * 8);
+  ctx.moveTo(ax, ay + dpr * 18);
+  ctx.quadraticCurveTo(ax + dpr * 22, ay + dpr * 28, ax + dpr * 18, ay + dpr * 8);
+  ctx.stroke();
+  // Fluke tips
+  ctx.fillStyle = "#3a4048";
+  ctx.beginPath();
+  ctx.moveTo(ax - dpr * 18, ay + dpr * 8);
+  ctx.lineTo(ax - dpr * 26, ay + dpr * 2);
+  ctx.lineTo(ax - dpr * 14, ay + dpr * 12);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(ax + dpr * 18, ay + dpr * 8);
+  ctx.lineTo(ax + dpr * 26, ay + dpr * 2);
+  ctx.lineTo(ax + dpr * 14, ay + dpr * 12);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+}
+
 function drawBoatHullInWater(centerX = w * 0.5) {
+  if (adventureSession) {
+    drawPirateBoatInWater(centerX);
+    return;
+  }
   const { cx, wt, L, bowX, sternX, deckY } = getCharterBoatGeo(centerX);
   const belowD = 54 * dpr;
 
@@ -11730,6 +12008,10 @@ function drawBoatHullInWater(centerX = w * 0.5) {
 }
 
 function drawCatchNetWithFish() {
+  if (adventureSession) {
+    drawAdventureAnchorWithFish();
+    return;
+  }
   const lay = catchNetLayout();
   const { sackCx, sackCy, sackVy } = lay;
   drawCatchNetStructure(lay, lay.boatCx);
@@ -11804,8 +12086,77 @@ function drawBoatHullAt(centerX) {
 }
 
 function drawCatchNetForSide(centerX) {
+  if (adventureSession) {
+    drawAdventureAnchor(adventureAnchorLayout(centerX));
+    return;
+  }
   const lay = catchNetLayout(centerX);
   drawCatchNetStructure(lay, centerX);
+}
+
+function drawAdventureAnchorWithFish() {
+  const lay = adventureAnchorLayout();
+  const { sackCx, sackCy, sackVy } = lay;
+  drawAdventureAnchor(lay);
+
+  ctx.save();
+  if (kraken?.state === "biting" && kraken.netGrab) {
+    const tearX = kraken.netGrab.x;
+    const tearY = kraken.netGrab.y;
+    ctx.strokeStyle = "rgba(255, 235, 210, 0.85)";
+    ctx.lineWidth = 2.4 * dpr;
+    ctx.lineCap = "round";
+    for (let i = 0; i < 7; i++) {
+      const a = -Math.PI * 0.85 + i * 0.28 + Math.sin(performance.now() * 0.012 + i) * 0.08;
+      const r0 = dpr * (7 + (i % 2) * 3);
+      const r1 = dpr * (30 + (i % 3) * 7);
+      ctx.beginPath();
+      ctx.moveTo(tearX + Math.cos(a) * r0, tearY + Math.sin(a) * r0);
+      ctx.lineTo(tearX + Math.cos(a) * r1, tearY + Math.sin(a) * r1);
+      ctx.stroke();
+    }
+    ctx.fillStyle = "rgba(3, 12, 22, 0.55)";
+    ctx.beginPath();
+    ctx.ellipse(tearX, tearY, 18 * dpr, 12 * dpr, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const fishEntries = getFishOnlyCatchEntries();
+  const maxShow = 24;
+  const list = fishEntries.slice(-maxShow);
+  for (let i = 0; i < list.length; i++) {
+    const row = Math.floor(i / 5);
+    const col = i % 5;
+    const fx = sackCx + (col - 2) * dpr * 11 + (row % 2) * dpr * 4;
+    const fy = sackCy - dpr * 18 + row * dpr * 10;
+    const hue = hashHueFromLabel(list[i].label);
+    const fsz = dpr * (4.8 + (i % 4) * 0.4);
+    ctx.save();
+    ctx.translate(fx, fy);
+    ctx.rotate((row * 0.1 + col * 0.05) * (col % 2 === 0 ? 1 : -1));
+    ctx.globalAlpha = 0.88;
+    ctx.fillStyle = `hsla(${hue}, 62%, 48%, 0.92)`;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, fsz * 0.55, fsz * 0.28, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = `hsla(${hue}, 48%, 28%, 0.95)`;
+    ctx.beginPath();
+    ctx.moveTo(-fsz * 0.48, 0);
+    ctx.lineTo(-fsz * 0.95, -fsz * 0.18);
+    ctx.lineTo(-fsz * 0.78, 0);
+    ctx.lineTo(-fsz * 0.95, fsz * 0.18);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+  if (fishEntries.length > maxShow) {
+    ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
+    ctx.font = `${10 * dpr}px system-ui, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillText(`+${fishEntries.length - maxShow}`, sackCx, sackCy + sackVy * 0.35);
+    ctx.textAlign = "left";
+  }
+  ctx.restore();
 }
 
 function drawBoatHullAndCatchNetAt(centerX) {
@@ -11896,7 +12247,7 @@ function tryCatchKraken(opts) {
   const lost = releaseHalfCatchToKraken();
   spawnReleasedFishJumpingIntoWater(lost.count);
   if (lost.freed.length) {
-    const lay = catchNetLayout();
+    const lay = adventureSession ? adventureAnchorLayout() : catchNetLayout();
     kraken.netGrab = { x: lay.sackCx, y: lay.sackCy + lay.sackVy * 0.12, rimX: lay.rimCx, rimY: lay.rimCy };
     spawnFishEscapingFromNet(lost.freed, kraken.netGrab.x, kraken.netGrab.y);
   }
