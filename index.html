@@ -68,36 +68,50 @@
           <svg class="events-ocean__sky" viewBox="0 0 800 420" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <linearGradient id="eventsSunsetSky" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#12082e" />
-                <stop offset="22%" stop-color="#3a1f5c" />
-                <stop offset="42%" stop-color="#8c3a6a" />
-                <stop offset="58%" stop-color="#d45a52" />
-                <stop offset="72%" stop-color="#f08840" />
-                <stop offset="86%" stop-color="#ffc858" />
-                <stop offset="100%" stop-color="#ffae58" />
+                <stop offset="0%" stop-color="#0b1428" />
+                <stop offset="18%" stop-color="#1a2a4a" />
+                <stop offset="38%" stop-color="#4a4a78" />
+                <stop offset="52%" stop-color="#b86858" />
+                <stop offset="66%" stop-color="#e88848" />
+                <stop offset="80%" stop-color="#f0b060" />
+                <stop offset="100%" stop-color="#f8d090" />
               </linearGradient>
-              <radialGradient id="eventsSunGlow" cx="50%" cy="88%" r="42%">
-                <stop offset="0%" stop-color="#fff6c8" />
-                <stop offset="28%" stop-color="#ffd870" stop-opacity="0.95" />
-                <stop offset="55%" stop-color="#ff9848" stop-opacity="0.55" />
-                <stop offset="100%" stop-color="#ff7040" stop-opacity="0" />
+              <radialGradient id="eventsSunGlow" cx="50%" cy="86%" r="48%">
+                <stop offset="0%" stop-color="#fff4c8" stop-opacity="0.95" />
+                <stop offset="22%" stop-color="#ffd078" stop-opacity="0.7" />
+                <stop offset="48%" stop-color="#ff9a48" stop-opacity="0.32" />
+                <stop offset="75%" stop-color="#e07050" stop-opacity="0.1" />
+                <stop offset="100%" stop-color="#804060" stop-opacity="0" />
+              </radialGradient>
+              <radialGradient id="eventsHorizonBloom" cx="50%" cy="100%" r="70%">
+                <stop offset="0%" stop-color="#ffc878" stop-opacity="0.55" />
+                <stop offset="40%" stop-color="#e88858" stop-opacity="0.22" />
+                <stop offset="100%" stop-color="#804868" stop-opacity="0" />
               </radialGradient>
               <linearGradient id="eventsSunDisc" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#fff8b0" />
-                <stop offset="100%" stop-color="#ffb840" />
+                <stop offset="0%" stop-color="#fff6d0" />
+                <stop offset="45%" stop-color="#ffd070" />
+                <stop offset="100%" stop-color="#f09838" />
+              </linearGradient>
+              <linearGradient id="eventsCloudShade" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#f0c8b0" stop-opacity="0.42" />
+                <stop offset="100%" stop-color="#c88878" stop-opacity="0.28" />
               </linearGradient>
             </defs>
             <rect width="800" height="420" fill="url(#eventsSunsetSky)" />
-            <ellipse cx="400" cy="372" rx="220" ry="90" fill="url(#eventsSunGlow)" />
-            <g class="events-ocean__clouds">
-              <ellipse cx="130" cy="118" rx="72" ry="34" fill="rgba(255, 180, 210, 0.38)" />
-              <ellipse cx="185" cy="108" rx="58" ry="28" fill="rgba(255, 210, 230, 0.32)" />
-              <ellipse cx="620" cy="95" rx="80" ry="36" fill="rgba(255, 170, 200, 0.34)" />
-              <ellipse cx="680" cy="112" rx="52" ry="26" fill="rgba(255, 200, 220, 0.28)" />
-              <ellipse cx="340" cy="72" rx="64" ry="28" fill="rgba(200, 160, 220, 0.26)" />
+            <ellipse cx="400" cy="400" rx="380" ry="110" fill="url(#eventsHorizonBloom)" />
+            <ellipse cx="400" cy="350" rx="260" ry="100" fill="url(#eventsSunGlow)" />
+            <g class="events-ocean__clouds" fill="url(#eventsCloudShade)">
+              <ellipse cx="120" cy="108" rx="78" ry="22" opacity="0.85" />
+              <ellipse cx="168" cy="98" rx="48" ry="16" opacity="0.7" />
+              <ellipse cx="640" cy="88" rx="90" ry="24" opacity="0.78" />
+              <ellipse cx="700" cy="102" rx="46" ry="15" opacity="0.65" />
+              <ellipse cx="360" cy="64" rx="70" ry="18" opacity="0.55" />
+              <ellipse cx="250" cy="140" rx="56" ry="14" opacity="0.4" />
             </g>
-            <circle cx="400" cy="358" r="46" fill="url(#eventsSunDisc)" stroke="#ff9830" stroke-width="5" />
-            <path d="M400 312 L400 298 M428 318 L438 306 M372 318 L362 306 M448 338 L462 332 M352 338 L338 332 M454 362 L468 362 M346 362 L332 362 M448 386 L462 392 M352 386 L338 392" stroke="#ffe878" stroke-width="4" stroke-linecap="round" opacity="0.75" />
+            <!-- Soft sun disc sitting on the horizon (no cartoon rays) -->
+            <circle cx="400" cy="348" r="52" fill="url(#eventsSunDisc)" opacity="0.98" />
+            <ellipse cx="400" cy="348" rx="52" ry="52" fill="#fff8e0" opacity="0.22" />
           </svg>
           <div class="events-ocean__horizon"></div>
           <div class="events-ocean__deep"></div>

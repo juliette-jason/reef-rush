@@ -3882,17 +3882,17 @@ body {
   overflow: hidden;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 60% 42% at 50% 78%, rgba(255, 220, 130, 0.72) 0%, rgba(255, 150, 70, 0.38) 42%, transparent 72%),
+    radial-gradient(ellipse 55% 28% at 50% 62%, rgba(255, 200, 110, 0.55) 0%, rgba(255, 140, 70, 0.22) 45%, transparent 72%),
     linear-gradient(
       180deg,
-      #12082e 0%,
-      #3a1f5c 18%,
-      #8c3a6a 36%,
-      #d45a52 50%,
-      #f08840 62%,
-      #ffc858 74%,
-      #ffae58 84%,
-      #b86878 100%
+      #0b1428 0%,
+      #1a2a4a 16%,
+      #4a4a78 34%,
+      #b86858 48%,
+      #e88848 60%,
+      #f0b060 72%,
+      #d89868 84%,
+      #1a3048 100%
     );
 }
 
@@ -3918,14 +3918,14 @@ body {
   position: absolute;
   left: 0;
   right: 0;
-  top: 38%;
-  height: 18%;
+  top: 36%;
+  height: 22%;
   z-index: 1;
   background: linear-gradient(
     180deg,
-    rgba(255, 210, 120, 0.55) 0%,
-    rgba(255, 170, 90, 0.35) 40%,
-    rgba(200, 100, 120, 0.22) 75%,
+    rgba(255, 220, 150, 0.28) 0%,
+    rgba(255, 170, 90, 0.22) 35%,
+    rgba(180, 90, 70, 0.12) 70%,
     transparent 100%
   );
   pointer-events: none;
@@ -3937,11 +3937,11 @@ body {
   z-index: 1;
   background: linear-gradient(
     180deg,
-    transparent 34%,
-    rgba(154, 88, 120, 0.55) 48%,
-    #3a4468 62%,
-    #243050 78%,
-    #141e38 100%
+    transparent 32%,
+    rgba(60, 70, 100, 0.35) 46%,
+    #1e3a52 58%,
+    #142838 74%,
+    #0a1628 100%
   );
   pointer-events: none;
 }
@@ -4023,57 +4023,66 @@ body {
 }
 
 .events-ocean__wave {
-  stroke: #0a1428;
-  stroke-width: 3.2;
+  stroke: #061018;
+  stroke-width: 2.4;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
 }
 
 .events-ocean__layer--1 .events-ocean__wave {
-  fill: #b86888;
+  fill: #2a4860;
 }
 
 .events-ocean__layer--2 .events-ocean__wave {
-  fill: #6a5088;
+  fill: #1e3a52;
 }
 
 .events-ocean__layer--3 .events-ocean__wave {
-  fill: #3a5888;
+  fill: #152e44;
 }
 
 .events-ocean__layer--4 .events-ocean__wave {
-  fill: #284878;
+  fill: #0e2236;
 }
 
 .events-ocean__crest {
   fill: none;
-  stroke: rgba(255, 210, 160, 0.55);
-  stroke-width: 3.5;
+  stroke: rgba(255, 200, 140, 0.35);
+  stroke-width: 2.8;
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
 }
 
 .events-ocean__crest--bright {
-  stroke: rgba(255, 230, 190, 0.82);
-  stroke-width: 4.5;
+  stroke: rgba(255, 220, 170, 0.55);
+  stroke-width: 3.4;
 }
 
 .events-ocean__reflection {
   position: absolute;
-  left: 0;
-  right: 0;
+  left: 28%;
+  right: 28%;
   bottom: 0;
-  height: 22%;
+  height: 38%;
   z-index: 6;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(255, 180, 100, 0.12) 30%,
-    rgba(255, 140, 80, 0.08) 100%
-  );
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 210, 130, 0.28) 0%,
+      rgba(255, 170, 90, 0.14) 35%,
+      rgba(255, 140, 70, 0.06) 70%,
+      transparent 100%
+    ),
+    repeating-linear-gradient(
+      180deg,
+      transparent 0 7px,
+      rgba(255, 230, 180, 0.08) 7px 8px
+    );
+  clip-path: polygon(42% 0%, 58% 0%, 92% 100%, 8% 100%);
   animation: events-ocean-reflection 7s ease-in-out infinite alternate;
   pointer-events: none;
+  mix-blend-mode: screen;
 }
 
 @keyframes events-ocean-drift {
