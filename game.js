@@ -7199,9 +7199,6 @@ const panelIntro = document.getElementById("panelIntro");
 const btnIntroDone = document.getElementById("btnIntroDone");
 const btnOpenIntro = document.getElementById("btnOpenIntro");
 const btnResetProgress = document.getElementById("btnResetProgress");
-const btnStartSettings = document.getElementById("btnStartSettings");
-const startSettingsMenu = document.getElementById("startSettingsMenu");
-const startSettings = document.querySelector(".start-settings");
 const btnAdventureMode = document.getElementById("btnAdventureMode");
 const adventureLock = document.getElementById("adventureLock");
 const adventureUnlockHint = document.getElementById("adventureUnlockHint");
@@ -14480,39 +14477,8 @@ btnToggleMusic?.addEventListener("pointerdown", () => {
   unlockHomeAudio();
 });
 btnIntroDone?.addEventListener("click", closeIntro);
-btnOpenIntro?.addEventListener("click", () => {
-  setStartSettingsOpen(false);
-  openIntro();
-});
-btnResetProgress?.addEventListener("click", () => {
-  setStartSettingsOpen(false);
-  resetProgress();
-});
-
-function setStartSettingsOpen(open) {
-  if (!btnStartSettings || !startSettingsMenu) return;
-  startSettingsMenu.hidden = !open;
-  btnStartSettings.setAttribute("aria-expanded", open ? "true" : "false");
-}
-
-btnStartSettings?.addEventListener("click", (e) => {
-  e.stopPropagation();
-  const open = btnStartSettings.getAttribute("aria-expanded") !== "true";
-  setStartSettingsOpen(open);
-});
-
-document.addEventListener("pointerdown", (e) => {
-  if (!btnStartSettings || !startSettingsMenu || startSettingsMenu.hidden) return;
-  if (startSettings?.contains(e.target)) return;
-  setStartSettingsOpen(false);
-});
-
-window.addEventListener("keydown", (e) => {
-  if (e.key !== "Escape") return;
-  if (!startSettingsMenu || startSettingsMenu.hidden) return;
-  setStartSettingsOpen(false);
-});
-
+btnOpenIntro?.addEventListener("click", openIntro);
+btnResetProgress?.addEventListener("click", resetProgress);
 panelStart?.addEventListener("pointerdown", unlockHomeAudio, { once: true });
 panelSplash?.addEventListener("pointerdown", (e) => {
   e.preventDefault();
