@@ -1447,14 +1447,14 @@
             <svg class="shop-guide__art" viewBox="0 0 220 420" xmlns="http://www.w3.org/2000/svg" focusable="false">
               <defs>
                 <linearGradient id="shopSailorSkin" x1="30%" y1="8%" x2="78%" y2="95%">
-                  <stop offset="0%" stop-color="#f0c4a0"/>
-                  <stop offset="42%" stop-color="#d4a07a"/>
-                  <stop offset="100%" stop-color="#b07858"/>
+                  <stop offset="0%" stop-color="#ffe0c2"/>
+                  <stop offset="45%" stop-color="#f0c09a"/>
+                  <stop offset="100%" stop-color="#d4a07a"/>
                 </linearGradient>
                 <linearGradient id="shopSailorSkinShade" x1="20%" y1="0%" x2="90%" y2="100%">
-                  <stop offset="0%" stop-color="#ffe8d0" stop-opacity="0.55"/>
-                  <stop offset="55%" stop-color="#c48462" stop-opacity="0"/>
-                  <stop offset="100%" stop-color="#8a5438" stop-opacity="0.35"/>
+                  <stop offset="0%" stop-color="#fff5e8" stop-opacity="0.65"/>
+                  <stop offset="55%" stop-color="#e8b892" stop-opacity="0"/>
+                  <stop offset="100%" stop-color="#c48462" stop-opacity="0.22"/>
                 </linearGradient>
                 <linearGradient id="shopSailorNavy" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stop-color="#3b6fd4"/>
@@ -1476,8 +1476,8 @@
                   <stop offset="100%" stop-color="#2a1810"/>
                 </linearGradient>
                 <radialGradient id="shopSailorCheek" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stop-color="#d4785c" stop-opacity="0.45"/>
-                  <stop offset="100%" stop-color="#d4785c" stop-opacity="0"/>
+                  <stop offset="0%" stop-color="#ff9a8a" stop-opacity="0.42"/>
+                  <stop offset="100%" stop-color="#ff9a8a" stop-opacity="0"/>
                 </radialGradient>
               </defs>
 
@@ -1553,79 +1553,91 @@
               </g>
 
               <!-- neck -->
-              <path d="M108 140 L112 168 L128 168 L132 140 Z" fill="url(#shopSailorSkin)" stroke="#8a5438" stroke-width="0.6"/>
+              <path d="M109 146 L112 168 L128 168 L131 146 Z" fill="url(#shopSailorSkin)" stroke="#b88968" stroke-width="0.6"/>
 
               <!-- head group -->
               <g class="shop-guide__head">
                 <!-- ears -->
-                <ellipse cx="86" cy="108" rx="7" ry="10" fill="url(#shopSailorSkin)" stroke="#8a5438" stroke-width="0.8"/>
-                <ellipse cx="154" cy="108" rx="7" ry="10" fill="url(#shopSailorSkin)" stroke="#8a5438" stroke-width="0.8"/>
-                <ellipse cx="86" cy="109" rx="3" ry="5" fill="#c48462" opacity="0.45"/>
-                <ellipse cx="154" cy="109" rx="3" ry="5" fill="#c48462" opacity="0.45"/>
+                <ellipse cx="87" cy="112" rx="6.5" ry="9" fill="url(#shopSailorSkin)" stroke="#b88968" stroke-width="0.7"/>
+                <ellipse cx="153" cy="112" rx="6.5" ry="9" fill="url(#shopSailorSkin)" stroke="#b88968" stroke-width="0.7"/>
+                <ellipse cx="87" cy="113" rx="2.6" ry="4.2" fill="#e0a888" opacity="0.5"/>
+                <ellipse cx="153" cy="113" rx="2.6" ry="4.2" fill="#e0a888" opacity="0.5"/>
 
-                <!-- hair back -->
-                <path d="M92 78 C88 96 90 118 96 132 L144 132 C150 118 152 96 148 78 Z" fill="url(#shopSailorHair)"/>
+                <!-- hair under hat -->
+                <path d="M94 86 C90 100 92 122 98 136 L142 136 C148 122 150 100 146 86 Z" fill="url(#shopSailorHair)"/>
 
                 <!-- face -->
-                <ellipse cx="120" cy="108" rx="34" ry="40" fill="url(#shopSailorSkin)" stroke="#8a5438" stroke-width="1"/>
-                <ellipse cx="120" cy="108" rx="34" ry="40" fill="url(#shopSailorSkinShade)"/>
-                <ellipse cx="104" cy="118" rx="8" ry="5" fill="url(#shopSailorCheek)"/>
-                <ellipse cx="136" cy="118" rx="8" ry="5" fill="url(#shopSailorCheek)"/>
+                <ellipse cx="120" cy="114" rx="32" ry="36" fill="url(#shopSailorSkin)" stroke="#b88968" stroke-width="1"/>
+                <ellipse cx="120" cy="114" rx="32" ry="36" fill="url(#shopSailorSkinShade)"/>
+                <!-- warm friendly cheeks -->
+                <ellipse cx="102" cy="122" rx="9" ry="6" fill="url(#shopSailorCheek)"/>
+                <ellipse cx="138" cy="122" rx="9" ry="6" fill="url(#shopSailorCheek)"/>
 
-                <!-- hair front / sideburns -->
-                <path d="M90 86 C94 72 104 64 120 62 C136 64 146 72 150 86
-                  C148 78 140 72 120 70 C100 72 92 78 90 86 Z" fill="url(#shopSailorHair)"/>
-                <path d="M92 92 C90 108 91 120 94 128 L98 120 C96 108 96 96 98 90 Z" fill="url(#shopSailorHair)"/>
-                <path d="M148 92 C150 108 149 120 146 128 L142 120 C144 108 144 96 142 90 Z" fill="url(#shopSailorHair)"/>
+                <!-- soft sideburns -->
+                <path d="M93 96 C91 110 92 122 95 130 L99 122 C97 110 97 100 99 94 Z" fill="url(#shopSailorHair)" opacity="0.9"/>
+                <path d="M147 96 C149 110 148 122 145 130 L141 122 C143 110 143 100 141 94 Z" fill="url(#shopSailorHair)" opacity="0.9"/>
 
-                <!-- brows -->
+                <!-- soft arched brows -->
                 <g class="shop-guide__brows">
-                  <path d="M98 96 Q108 90 116 94" fill="none" stroke="#3f2618" stroke-width="2.2" stroke-linecap="round"/>
-                  <path d="M124 94 Q132 90 142 96" fill="none" stroke="#3f2618" stroke-width="2.2" stroke-linecap="round"/>
+                  <path d="M99 98 Q108 92 117 96" fill="none" stroke="#6b4428" stroke-width="1.8" stroke-linecap="round"/>
+                  <path d="M123 96 Q132 92 141 98" fill="none" stroke="#6b4428" stroke-width="1.8" stroke-linecap="round"/>
                 </g>
 
-                <!-- eyes -->
+                <!-- friendly eyes -->
                 <g class="shop-guide__eyes">
                   <g class="shop-guide__eye-l">
-                    <ellipse cx="107" cy="106" rx="6.5" ry="5.2" fill="#f8fafc" stroke="#1e293b" stroke-width="0.9"/>
-                    <circle cx="108" cy="107" r="3.1" fill="#4a6d82"/>
-                    <circle cx="108.5" cy="107.2" r="1.6" fill="#0f172a"/>
-                    <circle cx="106.8" cy="105.6" r="0.7" fill="#fff"/>
+                    <ellipse cx="107" cy="110" rx="7" ry="5.8" fill="#fffef9" stroke="#5b4636" stroke-width="0.85"/>
+                    <circle cx="107.5" cy="110.5" r="3.3" fill="#5b8fad"/>
+                    <circle cx="108" cy="110.8" r="1.7" fill="#1e293b"/>
+                    <circle cx="106.4" cy="109.2" r="0.85" fill="#fff"/>
+                    <!-- soft smile crease -->
+                    <path d="M101 115 Q107 117 113 115" fill="none" stroke="#c48462" stroke-width="0.7" stroke-linecap="round" opacity="0.45"/>
                   </g>
                   <g class="shop-guide__eye-r">
-                    <ellipse cx="133" cy="106" rx="6.5" ry="5.2" fill="#f8fafc" stroke="#1e293b" stroke-width="0.9"/>
-                    <circle cx="132" cy="107" r="3.1" fill="#4a6d82"/>
-                    <circle cx="131.5" cy="107.2" r="1.6" fill="#0f172a"/>
-                    <circle cx="130.8" cy="105.6" r="0.7" fill="#fff"/>
+                    <ellipse cx="133" cy="110" rx="7" ry="5.8" fill="#fffef9" stroke="#5b4636" stroke-width="0.85"/>
+                    <circle cx="132.5" cy="110.5" r="3.3" fill="#5b8fad"/>
+                    <circle cx="132" cy="110.8" r="1.7" fill="#1e293b"/>
+                    <circle cx="131.2" cy="109.2" r="0.85" fill="#fff"/>
+                    <path d="M127 115 Q133 117 139 115" fill="none" stroke="#c48462" stroke-width="0.7" stroke-linecap="round" opacity="0.45"/>
                   </g>
                 </g>
 
-                <!-- nose -->
-                <path d="M120 108 L116 122 Q120 126 124 122 Z" fill="#c48462" stroke="#a06a4e" stroke-width="0.6"/>
-                <path d="M118 121 Q120 123 122 121" fill="none" stroke="#8a5438" stroke-width="0.7" stroke-linecap="round" opacity="0.5"/>
+                <!-- small soft nose -->
+                <path d="M120 112 L117.5 123 Q120 126 122.5 123 Z" fill="#e0a888" stroke="#c48462" stroke-width="0.55"/>
+                <path d="M118.5 123 Q120 124.5 121.5 123" fill="none" stroke="#b88968" stroke-width="0.65" stroke-linecap="round" opacity="0.55"/>
 
-                <!-- mustache -->
+                <!-- neat friendly mustache -->
                 <g class="shop-guide__stache">
-                  <path d="M106 128 Q112 124 120 127 Q128 124 134 128 Q128 132 120 131 Q112 132 106 128 Z" fill="#4a2f1c"/>
+                  <path d="M108 130 Q114 126 120 129 Q126 126 132 130 Q126 133 120 132.5 Q114 133 108 130 Z" fill="#7a5236"/>
                 </g>
 
-                <!-- short beard / stubble -->
-                <path d="M98 128 C100 142 110 148 120 148 C130 148 140 142 142 128
-                  C138 136 130 140 120 140 C110 140 102 136 98 128 Z" fill="#5a3a28" opacity="0.55"/>
+                <!-- light chin stubble -->
+                <path d="M102 132 C104 142 112 146 120 146 C128 146 136 142 138 132
+                  C134 138 128 140 120 140 C112 140 106 138 102 132 Z" fill="#8a6348" opacity="0.28"/>
 
-                <!-- mouth -->
+                <!-- friendly smile / talking mouth -->
                 <g class="shop-guide__mouth-g">
-                  <path class="shop-guide__lips" d="M110 136 Q120 140 130 136" fill="none" stroke="#8a4040" stroke-width="1.6" stroke-linecap="round"/>
-                  <ellipse class="shop-guide__mouth-open" cx="120" cy="138" rx="7" ry="3.5" fill="#5a2020"/>
-                  <path class="shop-guide__teeth" d="M114 136.5 H126 V138.2 Q120 139 114 138.2 Z" fill="#f1e9e0"/>
+                  <path class="shop-guide__lips" d="M109 136 Q120 144 131 136" fill="none" stroke="#c45a5a" stroke-width="1.7" stroke-linecap="round"/>
+                  <ellipse class="shop-guide__mouth-open" cx="120" cy="139" rx="7.5" ry="4" fill="#8a3a3a"/>
+                  <path class="shop-guide__teeth" d="M114 136.8 H126 V138.6 Q120 139.4 114 138.6 Z" fill="#fff8f0"/>
                 </g>
 
-                <!-- sailor hat -->
+                <!-- sailor hat seated on the head -->
                 <g class="shop-guide__cap">
-                  <ellipse cx="120" cy="68" rx="42" ry="8" fill="#e8eef4" stroke="#94a3b8" stroke-width="1"/>
-                  <path d="M86 66 Q90 42 120 38 Q150 42 154 66 Z" fill="url(#shopSailorHat)" stroke="#64748b" stroke-width="1"/>
-                  <path d="M98 54 H142" stroke="#1d4ed8" stroke-width="4.5" stroke-linecap="round"/>
-                  <ellipse cx="108" cy="46" rx="10" ry="5" fill="#fff" opacity="0.55"/>
+                  <!-- crown sits over the crown of the skull -->
+                  <path d="M92 78
+                    Q94 52 120 48
+                    Q146 52 148 78
+                    Q148 84 120 86
+                    Q92 84 92 78 Z"
+                    fill="url(#shopSailorHat)" stroke="#94a3b8" stroke-width="1"/>
+                  <!-- brim wraps the forehead -->
+                  <ellipse cx="120" cy="80" rx="38" ry="7.5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+                  <ellipse cx="120" cy="79" rx="34" ry="4.5" fill="#ffffff" opacity="0.35"/>
+                  <!-- navy band -->
+                  <path d="M100 66 Q120 62 140 66" fill="none" stroke="#1d4ed8" stroke-width="4" stroke-linecap="round"/>
+                  <!-- highlight -->
+                  <ellipse cx="108" cy="58" rx="9" ry="4.5" fill="#fff" opacity="0.55"/>
                 </g>
               </g>
             </svg>

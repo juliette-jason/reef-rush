@@ -1835,8 +1835,8 @@ body {
   height: 28px;
   border-radius: 50%;
   background:
-    radial-gradient(circle at 35% 28%, #efc4a0, transparent 40%),
-    linear-gradient(185deg, #efc4a0, #c48462);
+    radial-gradient(circle at 35% 28%, #ffe0c2, transparent 42%),
+    linear-gradient(185deg, #f0c09a, #d4a07a);
   border: 2px solid #0f172a;
   animation: shopSailorIdle 3.6s ease-in-out infinite;
 }
@@ -1845,9 +1845,9 @@ body {
   content: "";
   position: absolute;
   left: 50%;
-  top: -9px;
-  width: 34px;
-  height: 13px;
+  top: -8px;
+  width: 32px;
+  height: 12px;
   transform: translateX(-50%);
   border-radius: 9px 9px 4px 4px;
   background: #fff7ed;
@@ -1862,7 +1862,7 @@ body {
   bottom: 6px;
   height: 3px;
   border-radius: 999px;
-  background: #5a2828;
+  background: #c45a5a;
   animation: shopLaunchTalk 0.45s steps(2, end) infinite;
   transform-origin: 50% 0;
 }
