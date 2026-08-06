@@ -500,6 +500,15 @@
       </section>
 
       <section id="panelStart" class="panel panel--start" hidden>
+        <div class="start-scene" aria-hidden="true">
+          <span class="start-scene__ray start-scene__ray--1"></span>
+          <span class="start-scene__ray start-scene__ray--2"></span>
+          <span class="start-scene__bubble start-scene__bubble--1"></span>
+          <span class="start-scene__bubble start-scene__bubble--2"></span>
+          <span class="start-scene__bubble start-scene__bubble--3"></span>
+          <span class="start-scene__bubble start-scene__bubble--4"></span>
+          <span class="start-scene__glow"></span>
+        </div>
         <h1 class="panel__headline panel__headline--brand">Reef Rush</h1>
         <div class="start-toolbar">
           <p class="start-toolbar__coins">
@@ -514,7 +523,7 @@
           <button type="button" id="btnToggleMusic" class="btn btn--secondary btn--music" aria-pressed="false">Music</button>
           <button type="button" id="btnResetProgress" class="btn btn--secondary btn--reset">Reset progress</button>
         </div>
-        <fieldset class="rods rods--with-map">
+        <fieldset class="rods rods--with-map rods--card">
           <legend class="rods__legend">Choose your reef</legend>
           <div class="reef-picker reef-picker--map-first">
             <div class="reef-map-panel">
@@ -547,17 +556,18 @@
             </div>
           </div>
         </fieldset>
-        <fieldset class="rods">
+        <fieldset class="rods rods--card">
           <legend class="rods__legend">Choose your bait</legend>
           <p class="rods__hint">Premium bait is used for one round when you start (stock shown on each option).</p>
           <div id="baitChoices" class="rods__grid"></div>
         </fieldset>
-        <fieldset class="rods">
+        <fieldset class="rods rods--card">
           <legend class="rods__legend">Choose your rod</legend>
           <div id="rodChoices" class="rods__grid"></div>
         </fieldset>
         <button type="button" id="btnStart" class="btn btn--primary btn--start">
-          Start Game
+          <span class="btn--start__shine" aria-hidden="true"></span>
+          <span class="btn--start__label">Start Game</span>
           <span id="btnStartSub" class="btn__sub">Round length depends on reef · tap to play</span>
         </button>
       </section>

@@ -1023,7 +1023,91 @@ body {
 
 .panel--start {
   padding-top: max(88px, env(safe-area-inset-top, 0px));
-  padding-bottom: max(24px, env(safe-area-inset-bottom, 0px) + 16px);
+  padding-bottom: max(28px, env(safe-area-inset-bottom, 0px) + 20px);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(56, 189, 248, 0.22), transparent 42%),
+    radial-gradient(ellipse at 12% 70%, rgba(255, 213, 74, 0.12), transparent 36%),
+    radial-gradient(ellipse at 90% 40%, rgba(45, 212, 191, 0.14), transparent 38%),
+    linear-gradient(180deg, rgba(8, 48, 72, 0.92), rgba(3, 21, 37, 0.96));
+}
+
+.start-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.panel--start > *:not(.start-scene) {
+  position: relative;
+  z-index: 1;
+}
+
+.start-scene__glow {
+  position: absolute;
+  left: 50%;
+  top: 8%;
+  width: min(520px, 90vw);
+  height: 180px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(255, 224, 138, 0.22), transparent 70%);
+  filter: blur(8px);
+}
+
+.start-scene__ray {
+  position: absolute;
+  top: -10%;
+  width: 18%;
+  height: 70%;
+  background: linear-gradient(180deg, rgba(255, 248, 220, 0.16), transparent 75%);
+  filter: blur(1px);
+  opacity: 0.55;
+  animation: startRayDrift 8s ease-in-out infinite alternate;
+}
+
+.start-scene__ray--1 {
+  left: 28%;
+  transform: skewX(-8deg);
+}
+
+.start-scene__ray--2 {
+  left: 54%;
+  width: 12%;
+  animation-delay: -2.4s;
+  transform: skewX(6deg);
+}
+
+.start-scene__bubble {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid rgba(186, 230, 253, 0.45);
+  background: rgba(186, 230, 253, 0.12);
+  animation: startBubbleRise 9s linear infinite;
+}
+
+.start-scene__bubble--1 { left: 12%; bottom: 8%; width: 10px; height: 10px; animation-duration: 8s; }
+.start-scene__bubble--2 { left: 78%; bottom: 4%; width: 14px; height: 14px; animation-duration: 11s; animation-delay: -2s; }
+.start-scene__bubble--3 { left: 34%; bottom: 0%; width: 8px; height: 8px; animation-duration: 9.5s; animation-delay: -4s; }
+.start-scene__bubble--4 { left: 62%; bottom: 10%; width: 11px; height: 11px; animation-duration: 10s; animation-delay: -1s; }
+
+@keyframes startRayDrift {
+  from { opacity: 0.35; }
+  to { opacity: 0.7; }
+}
+
+@keyframes startBubbleRise {
+  0% { transform: translateY(0) scale(0.8); opacity: 0; }
+  12% { opacity: 0.7; }
+  100% { transform: translateY(-70vh) scale(1.15); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .start-scene__ray,
+  .start-scene__bubble,
+  .btn--start__shine {
+    animation: none !important;
+  }
 }
 
 /* --- Opening splash: animated coral reef --- */
@@ -2584,7 +2668,7 @@ body {
 
 .rods {
   border: none;
-  margin: 0 0 20px;
+  margin: 0 0 18px;
   padding: 0;
   max-width: 420px;
   width: 100%;
@@ -2593,6 +2677,18 @@ body {
   display: flex;
   flex-direction: column;
   align-items: stretch;
+}
+
+.rods--card {
+  padding: 14px 14px 16px;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 40%),
+    linear-gradient(180deg, rgba(12, 58, 78, 0.78), rgba(6, 32, 48, 0.88));
+  border: 1px solid rgba(255, 213, 74, 0.28);
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .rods--with-map {
@@ -2613,24 +2709,26 @@ body {
 }
 
 .reef-map-panel__title {
-  font-size: 0.62rem;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: var(--neon-cyan);
-  margin-bottom: 6px;
+  color: #7dd3fc;
+  margin-bottom: 8px;
 }
 
 .reef-map {
   position: relative;
   width: 100%;
   aspect-ratio: 2 / 1;
-  border-radius: var(--radius);
+  border-radius: 16px;
   overflow: hidden;
-  border: 2px solid rgba(255, 213, 74, 0.35);
+  border: 2px solid rgba(255, 213, 74, 0.42);
   background: #031525;
   box-shadow:
     inset 0 0 32px rgba(0, 0, 0, 0.45),
-    0 8px 22px rgba(0, 0, 0, 0.28);
+    0 10px 26px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 .reef-map__photo {
@@ -2754,11 +2852,13 @@ body {
 }
 
 .rods__legend {
-  font-size: 0.72rem;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.05rem;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: var(--neon-cyan);
-  margin-bottom: 12px;
+  letter-spacing: 0.12em;
+  color: #ffe08a;
+  margin: 0 0 10px;
+  text-shadow: 0 0 12px rgba(255, 213, 74, 0.25);
 }
 
 .rods__grid {
@@ -3014,20 +3114,124 @@ body {
 }
 
 .btn--start {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   width: 100%;
-  max-width: min(420px, 92vw);
+  max-width: min(440px, 94vw);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  min-height: 64px;
-  padding: 18px 28px;
-  font-size: clamp(1.35rem, 5vw, 1.85rem);
-  font-family: "Bebas Neue", "Nunito", sans-serif;
-  letter-spacing: 0.06em;
-  line-height: 1.1;
+  gap: 6px;
+  min-height: 78px;
+  margin-top: 4px;
+  padding: 20px 32px;
+  border-radius: 22px;
+  border: 2px solid rgba(255, 248, 220, 0.65);
+  background:
+    linear-gradient(180deg, #fff6c2 0%, #ffd54a 38%, #f0b429 72%, #d97706 100%);
+  color: #3b2208;
+  box-shadow:
+    0 8px 0 #92400e,
+    0 14px 32px rgba(255, 213, 74, 0.35),
+    0 0 28px rgba(255, 213, 74, 0.28),
+    inset 0 2px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -3px 8px rgba(146, 64, 14, 0.25);
+  font-size: clamp(1.55rem, 5.5vw, 2.1rem);
+  font-family: var(--font-brand);
+  letter-spacing: 0.04em;
+  line-height: 1.05;
   flex-shrink: 0;
+  transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
+}
+
+.btn--start__shine {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.45) 48%,
+    transparent 62%
+  );
+  transform: translateX(-120%);
+  animation: startBtnShine 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.btn--start__label,
+.btn--start .btn__sub {
+  position: relative;
+  z-index: 1;
+}
+
+.btn--start__label {
+  display: block;
+}
+
+.btn--start:hover {
+  filter: brightness(1.06);
+  transform: translateY(-2px);
+  box-shadow:
+    0 10px 0 #92400e,
+    0 18px 36px rgba(255, 213, 74, 0.42),
+    0 0 34px rgba(255, 213, 74, 0.35),
+    inset 0 2px 0 rgba(255, 255, 255, 0.7);
+}
+
+.btn--start:active {
+  transform: translateY(4px);
+  box-shadow:
+    0 4px 0 #92400e,
+    0 8px 18px rgba(255, 213, 74, 0.28),
+    inset 0 2px 0 rgba(255, 255, 255, 0.5);
+}
+
+.btn--start .btn__sub {
+  display: block;
+  font-family: "Nunito", sans-serif;
+  font-size: clamp(0.72rem, 2.8vw, 0.86rem);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: rgba(59, 34, 8, 0.82);
+  opacity: 1;
+}
+
+@keyframes startBtnShine {
+  0%, 55% { transform: translateX(-120%); }
+  75%, 100% { transform: translateX(120%); }
+}
+
+.panel--start .rod-option {
+  border-radius: 14px;
+  border-color: rgba(125, 211, 252, 0.28);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 45%),
+    rgba(6, 30, 46, 0.82);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
+}
+
+.panel--start .rod-option--selected {
+  border-color: rgba(255, 213, 74, 0.75);
+  box-shadow:
+    0 0 0 1px rgba(255, 213, 74, 0.35),
+    0 8px 22px rgba(255, 213, 74, 0.18);
+}
+
+.panel--start .start-toolbar {
+  border-radius: 16px;
+  border-color: rgba(255, 213, 74, 0.32);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 50%),
+    rgba(8, 32, 48, 0.82);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+}
+
+.panel--start .panel__headline--brand {
+  margin-bottom: 14px;
+  font-size: clamp(2.6rem, 10vw, 3.6rem);
 }
 
 .btn__sub {
