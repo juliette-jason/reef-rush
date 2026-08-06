@@ -12100,25 +12100,19 @@ function drawAdventureAnchorWithFish() {
   drawAdventureAnchor(lay);
 
   ctx.save();
-  if (kraken?.state === "biting" && kraken.netGrab) {
-    const tearX = kraken.netGrab.x;
-    const tearY = kraken.netGrab.y;
-    ctx.strokeStyle = "rgba(255, 235, 210, 0.85)";
-    ctx.lineWidth = 2.4 * dpr;
-    ctx.lineCap = "round";
-    for (let i = 0; i < 7; i++) {
-      const a = -Math.PI * 0.85 + i * 0.28 + Math.sin(performance.now() * 0.012 + i) * 0.08;
-      const r0 = dpr * (7 + (i % 2) * 3);
-      const r1 = dpr * (30 + (i % 3) * 7);
+  // Adventure kraken steals by rocking the ship — no net-tear rip FX.
+  if (kraken?.state === "biting" && kraken.boatRockSteal) {
+    const g = getCharterBoatGeo(lay.boatCx);
+    const pulse = 0.45 + 0.55 * Math.abs(Math.sin(performance.now() * 0.022));
+    ctx.strokeStyle = `rgba(180, 210, 240, ${0.25 * pulse})`;
+    ctx.lineWidth = 2 * dpr;
+    for (let i = 0; i < 5; i++) {
+      const x = g.cx + (i - 2) * dpr * 18;
       ctx.beginPath();
-      ctx.moveTo(tearX + Math.cos(a) * r0, tearY + Math.sin(a) * r0);
-      ctx.lineTo(tearX + Math.cos(a) * r1, tearY + Math.sin(a) * r1);
+      ctx.moveTo(x - dpr * 6, g.wt + dpr * 2);
+      ctx.quadraticCurveTo(x, g.wt + dpr * (10 + pulse * 8), x + dpr * 6, g.wt + dpr * 2);
       ctx.stroke();
     }
-    ctx.fillStyle = "rgba(3, 12, 22, 0.55)";
-    ctx.beginPath();
-    ctx.ellipse(tearX, tearY, 18 * dpr, 12 * dpr, 0.2, 0, Math.PI * 2);
-    ctx.fill();
   }
 
   const fishEntries = getFishOnlyCatchEntries();
@@ -12165,10 +12159,54 @@ function drawBoatHullAndCatchNetAt(centerX) {
   drawCatchNetForSide(centerX);
 }
 
+function adventureBoatRockAngle() {
+  if (!adventureSession || !kraken || kraken.state !== "biting") return 0;
+  const t = kraken.biteT || 0;
+  const snap = kraken.biteSnapMs || 520;
+  if (t < snap * 0.35) return 0;
+  const intensity = Math.min(1, (t - snap * 0.35) / 380);
+  const now = performance.now();
+  const face = kraken.biteFacing || 1;
+  return (
+    Math.sin(now * 0.017) * 0.14 * intensity * face +
+    Math.sin(now * 0.029 + 0.8) * 0.06 * intensity
+  );
+}
+
+function drawBoatRockSplashes(g, rock) {
+  if (Math.abs(rock) < 0.025) return;
+  const t = performance.now() * 0.001;
+  ctx.save();
+  ctx.globalAlpha = Math.min(0.55, Math.abs(rock) * 3.2);
+  ctx.fillStyle = "rgba(210, 235, 255, 0.75)";
+  for (let i = 0; i < 7; i++) {
+    const side = i % 2 === 0 ? -1 : 1;
+    const x = g.cx + side * g.L * (0.35 + (i % 3) * 0.12) + Math.sin(t * 8 + i) * dpr * 4;
+    const y = g.wt + dpr * (4 + (i % 4) * 3) + Math.cos(t * 9 + i * 0.7) * dpr * 2;
+    ctx.beginPath();
+    ctx.ellipse(x, y, dpr * (3 + (i % 3)), dpr * (1.6 + (i % 2)), side * 0.3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 function drawBoatHullAndCatchNet() {
   if (w <= 0 || h <= 0) return;
   if (isDuelActive()) {
     drawBoatHullAndCatchNetAt(duelSideCenter("player"));
+    return;
+  }
+  if (adventureSession) {
+    const g = getCharterBoatGeo();
+    const rock = adventureBoatRockAngle();
+    ctx.save();
+    ctx.translate(g.cx, g.wt);
+    ctx.rotate(rock);
+    ctx.translate(-g.cx, -g.wt);
+    drawPirateBoatInWater();
+    drawAdventureAnchorWithFish();
+    ctx.restore();
+    drawBoatRockSplashes(g, rock);
     return;
   }
   drawBoatHullInWater();
@@ -12246,15 +12284,28 @@ function tryCatchKraken(opts) {
   spawnCatchFX(mouthX, mouthY, 280);
   const lost = releaseHalfCatchToKraken();
   spawnReleasedFishJumpingIntoWater(lost.count);
+  kraken.boatRockSteal = false;
   if (lost.freed.length) {
-    const lay = adventureSession ? adventureAnchorLayout() : catchNetLayout();
-    kraken.netGrab = { x: lay.sackCx, y: lay.sackCy + lay.sackVy * 0.12, rimX: lay.rimCx, rimY: lay.rimCy };
-    spawnFishEscapingFromNet(lost.freed, kraken.netGrab.x, kraken.netGrab.y);
+    if (adventureSession) {
+      const g = getCharterBoatGeo();
+      const grabX = g.cx + (biteFace > 0 ? g.L * 0.22 : -g.L * 0.12);
+      const grabY = g.wt + dpr * 16;
+      kraken.netGrab = { x: grabX, y: grabY, rimX: g.cx, rimY: g.wt };
+      kraken.boatRockSteal = true;
+      spawnFishEscapingFromNet(lost.freed, g.cx, g.wt + dpr * 8);
+      spawnCatchFX(grabX, grabY, 160);
+    } else {
+      const lay = catchNetLayout();
+      kraken.netGrab = { x: lay.sackCx, y: lay.sackCy + lay.sackVy * 0.12, rimX: lay.rimCx, rimY: lay.rimCy };
+      spawnFishEscapingFromNet(lost.freed, kraken.netGrab.x, kraken.netGrab.y);
+    }
   }
   catchFlash = Math.min(0.62, catchFlash + 0.22);
 
   if (lost.count === 0) {
-    showToast("The kraken seized the line!", 2200);
+    showToast(adventureSession ? "The kraken seizes the hull!" : "The kraken seized the line!", 2200);
+  } else if (adventureSession) {
+    showToast(`The kraken rocks the ship — ${lost.count} fish stolen (−${lost.pts} pts)`, 3600);
   } else {
     showToast(`The kraken has the line — ${lost.count} fish lost (−${lost.pts} pts)`, 3600);
   }
@@ -12302,6 +12353,7 @@ function tickKraken(now, dt) {
     if (kraken.biteT >= snap + kraken.biteHoldMs) {
       kraken.state = "done";
       kraken.netGrab = null;
+      kraken.boatRockSteal = false;
       hook.krakenBiteLocked = false;
     }
     return;
