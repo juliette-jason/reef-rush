@@ -4343,6 +4343,7 @@ function defaultMeta() {
     magnetRodDayKey: "",
     duelTickets: 0,
     duelTicketsDayKey: "",
+    dailyCatch: null,
   };
 }
 
@@ -4389,6 +4390,7 @@ function loadMeta() {
       magnetRodDayKey: String(o.magnetRodDayKey || ""),
       duelTickets: Math.max(0, Math.floor(Number(o.duelTickets) || 0)),
       duelTicketsDayKey: String(o.duelTicketsDayKey || ""),
+      dailyCatch: normalizeDailyCatchState(o.dailyCatch),
     };
   } catch {
     return defaultMeta();
@@ -4443,6 +4445,152 @@ function normalizePendingDailyPrizeCelebration(raw) {
   const dayLabel = String(raw.dayLabel || "").trim();
   if (!coins) return null;
   return { rank, coins, dayLabel };
+}
+
+/** Daily Catch challenge pool — morph targets with counts tuned for OK players. */
+const DAILY_CATCH_POOL = [
+  { morph: "jellyfish", label: "Moon Jellyfish", count: 15 },
+  { morph: "clownfish", label: "Clown Anemonefish", count: 14 },
+  { morph: "silverside", label: "silverside fish", count: 22 },
+  { morph: "mackerel", label: "Chub Mackerel", count: 12 },
+  { morph: "barramundi", label: "Barramundi", count: 12 },
+  { morph: "angelfish", label: "Queen Angelfish", count: 10 },
+  { morph: "seahorse", label: "Lined Seahorse", count: 8 },
+  { morph: "lobster", label: "Caribbean Spiny Lobster", count: 8 },
+  { morph: "cuttlefish", label: "Common Cuttlefish", count: 8 },
+  { morph: "snapper", label: "snapper", count: 10 },
+];
+
+function hashDailyCatchSeed(dayKey) {
+  let h = 2166136261;
+  const s = String(dayKey || "");
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function normalizeDailyCatchState(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const dayKey = String(raw.dayKey || "");
+  const morph = String(raw.morph || "");
+  const label = String(raw.label || "").trim();
+  const target = Math.max(1, Math.floor(Number(raw.target) || 0));
+  const progress = Math.max(0, Math.floor(Number(raw.progress) || 0));
+  const claimed = Boolean(raw.claimed);
+  if (!dayKey || !morph || !label || !target) return null;
+  return { dayKey, morph, label, target, progress, claimed };
+}
+
+function rollDailyCatchForDay(dayKey) {
+  const pool = DAILY_CATCH_POOL;
+  const idx = hashDailyCatchSeed(dayKey) % pool.length;
+  const pick = pool[idx];
+  return {
+    dayKey,
+    morph: pick.morph,
+    label: pick.label,
+    target: pick.count,
+    progress: 0,
+    claimed: false,
+  };
+}
+
+function ensureDailyCatchChallenge() {
+  const today = getDailyDayKey();
+  const cur = normalizeDailyCatchState(gameMeta.dailyCatch);
+  if (cur && cur.dayKey === today) {
+    gameMeta.dailyCatch = cur;
+    return cur;
+  }
+  gameMeta.dailyCatch = rollDailyCatchForDay(today);
+  saveMeta();
+  return gameMeta.dailyCatch;
+}
+
+function isDailyCatchComplete(ch = gameMeta.dailyCatch) {
+  const c = normalizeDailyCatchState(ch);
+  return Boolean(c && c.progress >= c.target);
+}
+
+function refreshDailyCatchEventCard() {
+  const ch = ensureDailyCatchChallenge();
+  if (!ch) return;
+  const done = isDailyCatchComplete(ch);
+  const pct = Math.min(100, Math.round((ch.progress / Math.max(1, ch.target)) * 100));
+  if (dailyCatchGoalEl) dailyCatchGoalEl.textContent = `Catch ${ch.target} ${ch.label}`;
+  if (dailyCatchProgressBar) dailyCatchProgressBar.style.width = `${pct}%`;
+  if (dailyCatchProgressText) {
+    dailyCatchProgressText.textContent = `${Math.min(ch.progress, ch.target)} / ${ch.target}`;
+  }
+  if (dailyCatchReset) dailyCatchReset.textContent = formatDailyResetCountdown(msUntilDailyReset());
+  if (dailyCatchStatus) {
+    if (ch.claimed) {
+      dailyCatchStatus.textContent = "Reward claimed — new challenge tomorrow.";
+    } else if (done) {
+      dailyCatchStatus.textContent = "Challenge complete! Claim your reward.";
+    } else {
+      dailyCatchStatus.textContent = "Play any reef round — matching catches count toward today's goal.";
+    }
+  }
+  if (btnDailyCatchClaim) {
+    if (ch.claimed) {
+      btnDailyCatchClaim.hidden = true;
+    } else if (done) {
+      btnDailyCatchClaim.hidden = false;
+      btnDailyCatchClaim.disabled = false;
+      btnDailyCatchClaim.textContent = "Claim your reward";
+    } else {
+      btnDailyCatchClaim.hidden = true;
+    }
+  }
+}
+
+function noteDailyCatchFromSpec(spec) {
+  if (!spec || !spec.morph) return;
+  const ch = ensureDailyCatchChallenge();
+  if (!ch || ch.claimed || ch.progress >= ch.target) return;
+  if (spec.morph !== ch.morph) return;
+  const before = ch.progress;
+  ch.progress = Math.min(ch.target, ch.progress + 1);
+  gameMeta.dailyCatch = ch;
+  saveMeta();
+  if (ch.progress >= ch.target && before < ch.target) {
+    showToast("Daily Catch complete! Claim your reward in Events", 2800);
+  } else if (ch.progress > before && (ch.progress === 1 || ch.progress % 5 === 0 || ch.progress >= ch.target - 2)) {
+    showToast(`Daily Catch ${ch.progress}/${ch.target} · ${ch.label}`, 1200);
+  }
+  if (panelEvents && !panelEvents.hidden) refreshDailyCatchEventCard();
+}
+
+/** "crab" | "dailyCatch" — which flow owns the shared chest panel. */
+let crabRewardSource = "crab";
+
+function showDailyCatchReward() {
+  const ch = ensureDailyCatchChallenge();
+  if (!ch || ch.claimed || !isDailyCatchComplete(ch)) return;
+  hideAllPanels();
+  crabRewardSource = "dailyCatch";
+  const tier = "medium";
+  crabRewardBundles = rollCrabBundles(tier);
+  crabRewardClaimed = false;
+  if (crabRewardHeadline) crabRewardHeadline.textContent = "Daily Catch!";
+  if (crabRewardSummary) {
+    crabRewardSummary.innerHTML = `You caught <strong>${ch.target}</strong> ${ch.label}`;
+  }
+  if (crabRewardTier) {
+    crabRewardTier.textContent =
+      "Nice work finishing today's catch challenge! Pick one chest — same loot style as Crab Trap.";
+  }
+  if (crabRewardPrompt) crabRewardPrompt.textContent = "Choose one chest to claim your reward.";
+  if (crabRewardResult) {
+    crabRewardResult.hidden = true;
+    crabRewardResult.textContent = "";
+  }
+  if (btnCrabPlayAgain) btnCrabPlayAgain.hidden = true;
+  renderCrabRewardChests(tier);
+  if (panelCrabReward) panelCrabReward.hidden = false;
 }
 
 function dailyPrizeExtrasLabel(rank) {
@@ -5425,8 +5573,8 @@ function updateDailyGameOverStatus(score, submitted = null, rows = dailyLeaderbo
 }
 
 function updateDailyEventResetLine() {
-  if (!dailyEventReset) return;
-  dailyEventReset.textContent = formatDailyResetCountdown(msUntilDailyReset());
+  if (dailyEventReset) dailyEventReset.textContent = formatDailyResetCountdown(msUntilDailyReset());
+  if (dailyCatchReset) dailyCatchReset.textContent = formatDailyResetCountdown(msUntilDailyReset());
 }
 
 function stopDailyEventCountdown() {
@@ -5623,6 +5771,7 @@ async function refreshEventsPanel() {
   refreshLeaderboardViews(false);
   refreshDuelEventCard();
   refreshCrabTrapEventCard();
+  refreshDailyCatchEventCard();
 }
 
 const DUEL_WIN_COINS = 800;
@@ -7247,6 +7396,13 @@ const btnDuelBackEvents = document.getElementById("btnDuelBackEvents");
 const eventCardCrab = document.getElementById("eventCardCrab");
 const crabEventTickets = document.getElementById("crabEventTickets");
 const btnStartCrab = document.getElementById("btnStartCrab");
+const btnDailyCatchClaim = document.getElementById("btnDailyCatchClaim");
+const dailyCatchGoalEl = document.getElementById("dailyCatchGoal");
+const dailyCatchProgressBar = document.getElementById("dailyCatchProgressBar");
+const dailyCatchProgressText = document.getElementById("dailyCatchProgressText");
+const dailyCatchStatus = document.getElementById("dailyCatchStatus");
+const dailyCatchReset = document.getElementById("dailyCatchReset");
+const crabRewardHeadline = document.getElementById("crabRewardHeadline");
 const crabTrapStage = document.getElementById("crabTrapStage");
 const crabTrapCanvas = document.getElementById("crabTrapCanvas");
 const crabTrapScoreEl = document.getElementById("crabTrapScore");
@@ -7652,6 +7808,7 @@ function hideAllPanels() {
   if (panelAdventureFail) panelAdventureFail.hidden = true;
   if (panelAdventureWin) panelAdventureWin.hidden = true;
   if (panelDuelOver) panelDuelOver.hidden = true;
+  if (panelCrabReward) panelCrabReward.hidden = true;
   appRoot?.classList.remove("app--events-mode", "app--splash");
   stopDailyEventCountdown();
 }
@@ -10639,6 +10796,14 @@ function onCrabChestPick(idx) {
   crabRewardClaimed = true;
   grantCrabReward(bundle);
   playCrabChestSound();
+  if (crabRewardSource === "dailyCatch") {
+    const ch = ensureDailyCatchChallenge();
+    if (ch) {
+      ch.claimed = true;
+      gameMeta.dailyCatch = ch;
+      saveMeta();
+    }
+  }
   const chests = crabRewardChests ? crabRewardChests.querySelectorAll(".crab-chest") : [];
   chests.forEach((chest) => {
     const ci = Number(chest.dataset.idx);
@@ -10672,16 +10837,22 @@ function onCrabChestPick(idx) {
   }
   const tickets = getDuelTicketCount();
   if (btnCrabPlayAgain) {
-    btnCrabPlayAgain.hidden = false;
-    btnCrabPlayAgain.disabled = tickets <= 0;
-    btnCrabPlayAgain.textContent = tickets > 0 ? "Play again (1 ticket)" : "No tickets left";
+    if (crabRewardSource === "dailyCatch") {
+      btnCrabPlayAgain.hidden = true;
+    } else {
+      btnCrabPlayAgain.hidden = false;
+      btnCrabPlayAgain.disabled = tickets <= 0;
+      btnCrabPlayAgain.textContent = tickets > 0 ? "Play again (1 ticket)" : "No tickets left";
+    }
   }
 }
 
 function showCrabReward(finalScore) {
+  crabRewardSource = "crab";
   const tier = crabTierForScore(finalScore);
   crabRewardBundles = rollCrabBundles(tier);
   crabRewardClaimed = false;
+  if (crabRewardHeadline) crabRewardHeadline.textContent = "Crab Trap!";
   if (crabRewardSummary) {
     crabRewardSummary.innerHTML = `You trapped <strong>${finalScore}</strong> treasure crab${finalScore === 1 ? "" : "s"}`;
   }
@@ -11407,6 +11578,7 @@ function tryCatchFish(opts) {
     score += pts;
     const label = f.spec.name;
     catchLog.push({ label, pts });
+    noteDailyCatchFromSpec(f.spec);
   }
 
   scoreDisplay.textContent = String(score);
@@ -15921,6 +16093,7 @@ btnDuelPlayAgain?.addEventListener("click", () => openDuelFromResult(true));
 btnDuelBackEvents?.addEventListener("click", () => openDuelFromResult(false));
 
 btnStartCrab?.addEventListener("click", () => startCrabTrap());
+btnDailyCatchClaim?.addEventListener("click", () => showDailyCatchReward());
 btnCrabQuit?.addEventListener("click", () => quitCrabTrap());
 btnCrabRewardBack?.addEventListener("click", () => returnToEventsFromCrab());
 btnCrabPlayAgain?.addEventListener("click", () => crabPlayAgain());
@@ -16168,6 +16341,7 @@ window.addEventListener("resize", () => {
 });
 
 gameMeta = loadMeta();
+ensureDailyCatchChallenge();
 refreshDuelTicketsForToday();
 normalizeSelectedRod();
 buildReefUI();

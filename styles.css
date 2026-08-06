@@ -6806,6 +6806,66 @@ body {
   }
 }
 
+/* --- Daily Catch event --- */
+.event-card--daily-catch {
+  border-color: rgba(167, 139, 250, 0.45);
+  background: linear-gradient(165deg, rgba(36, 24, 62, 0.94), rgba(14, 20, 40, 0.97));
+}
+
+.event-card--daily-catch .event-card__title {
+  color: #c4b5fd;
+}
+
+.event-card__art--daily-catch {
+  background: #082f49;
+}
+
+.event-card__goal {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #f5f3ff;
+  letter-spacing: 0.01em;
+}
+
+.event-card__progress {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.event-card__progress-track {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(196, 181, 253, 0.28);
+  overflow: hidden;
+}
+
+.event-card__progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7c3aed, #a78bfa 55%, #ddd6fe);
+  box-shadow: 0 0 12px rgba(167, 139, 250, 0.45);
+  transition: width 0.35s ease;
+}
+
+.event-card__progress-text {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #ddd6fe;
+}
+
+.event-card--daily-catch .event-card__status {
+  color: rgba(226, 232, 240, 0.82);
+}
+
+.event-card--daily-catch .event-card__play:not([hidden]) {
+  margin-top: 4px;
+}
+
 /* --- Crab Trap event --- */
 .event-card--crab {
   border-color: rgba(255, 138, 76, 0.45);
