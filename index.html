@@ -589,6 +589,25 @@
           <div class="reef-picker reef-picker--map-first">
             <div class="reef-map-panel">
               <div class="reef-map-panel__title">World chart</div>
+              <div id="mapSeagullGuide" class="map-seagull" hidden aria-live="polite">
+                <div class="map-seagull__bird" aria-hidden="true">
+                  <span class="map-seagull__tail"></span>
+                  <span class="map-seagull__body"></span>
+                  <span class="map-seagull__wing map-seagull__wing--back"></span>
+                  <span class="map-seagull__wing map-seagull__wing--front"></span>
+                  <span class="map-seagull__head">
+                    <span class="map-seagull__eye"></span>
+                    <span class="map-seagull__beak"></span>
+                  </span>
+                  <span class="map-seagull__leg map-seagull__leg--left"></span>
+                  <span class="map-seagull__leg map-seagull__leg--right"></span>
+                </div>
+                <div class="map-seagull__bubble" role="dialog" aria-labelledby="mapSeagullTitle">
+                  <strong id="mapSeagullTitle" class="map-seagull__title">Ahoy!</strong>
+                  <div id="mapSeagullText" class="map-seagull__text"></div>
+                  <button type="button" id="btnMapSeagullDone" class="btn btn--secondary map-seagull__btn">Got it</button>
+                </div>
+              </div>
               <div class="reef-map" id="reefMap">
                 <img
                   class="reef-map__photo"

@@ -424,6 +424,8 @@ const BAITS = [
 const META_KEY = "reefRushMeta_v1";
 const INTRO_SEEN_KEY = "reefRushIntroSeen_v1";
 const SHOP_GUIDE_SEEN_KEY = "reefRushShopGuideSeen_v1";
+const SEAGULL_SHOP_HINT_KEY = "reefRushSeagullShopHint_v1";
+const SEAGULL_SHOP_PENDING_KEY = "reefRushSeagullShopPending_v1";
 
 const TREASURE_CHESTS_TO_UNLOCK_ADVENTURE = 20;
 const SECRET_TREASURE_CHEST_GRANT = 19;
@@ -7267,6 +7269,12 @@ const btnToggleMusic = document.getElementById("btnToggleMusic");
 const panelIntro = document.getElementById("panelIntro");
 const btnIntroDone = document.getElementById("btnIntroDone");
 const btnOpenIntro = document.getElementById("btnOpenIntro");
+const mapSeagullGuide = document.getElementById("mapSeagullGuide");
+const mapSeagullTitle = document.getElementById("mapSeagullTitle");
+const mapSeagullText = document.getElementById("mapSeagullText");
+const btnMapSeagullDone = document.getElementById("btnMapSeagullDone");
+let mapSeagullMode = null;
+let mapSeagullFlyTimer = 0;
 const btnResetProgress = document.getElementById("btnResetProgress");
 const btnStartSettings = document.getElementById("btnStartSettings");
 const startSettingsMenu = document.getElementById("startSettingsMenu");
@@ -7411,6 +7419,150 @@ function markIntroSeen() {
   }
 }
 
+function hasSeenSeagullShopHint() {
+  try {
+    return localStorage.getItem(SEAGULL_SHOP_HINT_KEY) === "yes";
+  } catch {
+    return true;
+  }
+}
+
+function markSeagullShopHintSeen() {
+  try {
+    localStorage.setItem(SEAGULL_SHOP_HINT_KEY, "yes");
+    localStorage.removeItem(SEAGULL_SHOP_PENDING_KEY);
+  } catch {
+    /* ignore quota */
+  }
+}
+
+function hasPendingSeagullShopHint() {
+  try {
+    return localStorage.getItem(SEAGULL_SHOP_PENDING_KEY) === "yes";
+  } catch {
+    return false;
+  }
+}
+
+function setPendingSeagullShopHint() {
+  if (hasSeenSeagullShopHint()) return;
+  try {
+    localStorage.setItem(SEAGULL_SHOP_PENDING_KEY, "yes");
+  } catch {
+    /* ignore quota */
+  }
+}
+
+function clearMapSeagullFlyTimer() {
+  if (mapSeagullFlyTimer) {
+    window.clearTimeout(mapSeagullFlyTimer);
+    mapSeagullFlyTimer = 0;
+  }
+}
+
+function hideMapSeagullGuide() {
+  clearMapSeagullFlyTimer();
+  if (!mapSeagullGuide) return;
+  mapSeagullGuide.hidden = true;
+  mapSeagullGuide.classList.remove("map-seagull--howto", "map-seagull--shop", "map-seagull--fly-away");
+  mapSeagullMode = null;
+}
+
+function fillMapSeagullHowto() {
+  if (mapSeagullTitle) mapSeagullTitle.textContent = "Squawk! Listen up, fisher";
+  if (mapSeagullText) {
+    mapSeagullText.innerHTML = `
+      <p>Pick a reef on this chart, choose bait and a rod, then hit <strong>Start Game</strong>.</p>
+      <ul>
+        <li>Move left and right to aim your line.</li>
+        <li>Press Enter to cast deep.</li>
+        <li>Press Space, tap, or lift to snag fish near the hook.</li>
+        <li>Watch out for the kraken — it can rip your net!</li>
+      </ul>
+      <p>Fill your net, earn coins, and bring your catch back to the store.</p>
+    `;
+  }
+  if (btnMapSeagullDone) {
+    btnMapSeagullDone.hidden = false;
+    btnMapSeagullDone.textContent = "Got it — let's fish";
+  }
+}
+
+function fillMapSeagullShopHint() {
+  if (mapSeagullTitle) mapSeagullTitle.textContent = "One more tip!";
+  if (mapSeagullText) {
+    mapSeagullText.innerHTML =
+      "<p>Nice first haul! Head to the <strong>Fishing shop</strong> and talk to the sailor — he can help you spend coins on bait and stronger rods.</p>";
+  }
+  if (btnMapSeagullDone) {
+    btnMapSeagullDone.hidden = false;
+    btnMapSeagullDone.textContent = "Thanks, seagull";
+  }
+}
+
+function showMapSeagullHowto() {
+  if (!mapSeagullGuide || hasSeenIntro()) return;
+  clearMapSeagullFlyTimer();
+  mapSeagullMode = "howto";
+  fillMapSeagullHowto();
+  mapSeagullGuide.classList.remove("map-seagull--shop", "map-seagull--fly-away");
+  mapSeagullGuide.classList.add("map-seagull--howto");
+  mapSeagullGuide.hidden = false;
+}
+
+function showMapSeagullShopHint() {
+  if (!mapSeagullGuide || hasSeenSeagullShopHint()) return;
+  clearMapSeagullFlyTimer();
+  mapSeagullMode = "shop";
+  fillMapSeagullShopHint();
+  mapSeagullGuide.classList.remove("map-seagull--howto", "map-seagull--fly-away");
+  mapSeagullGuide.classList.add("map-seagull--shop");
+  mapSeagullGuide.hidden = false;
+  // Auto fly-away after they have time to read, if they don't tap first.
+  mapSeagullFlyTimer = window.setTimeout(() => {
+    mapSeagullFlyTimer = 0;
+    flyAwayMapSeagull();
+  }, 6500);
+}
+
+function flyAwayMapSeagull() {
+  if (!mapSeagullGuide || mapSeagullGuide.hidden) return;
+  clearMapSeagullFlyTimer();
+  if (mapSeagullMode === "howto") markIntroSeen();
+  if (mapSeagullMode === "shop") markSeagullShopHintSeen();
+  const finish = () => {
+    hideMapSeagullGuide();
+    syncAdventureLaunchVisibility();
+  };
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    finish();
+    return;
+  }
+  mapSeagullGuide.classList.add("map-seagull--fly-away");
+  const bird = mapSeagullGuide.querySelector(".map-seagull__bird");
+  let done = false;
+  const onDone = (e) => {
+    if (e && e.animationName && e.animationName !== "mapSeagullFlyAway") return;
+    if (done) return;
+    done = true;
+    bird?.removeEventListener("animationend", onDone);
+    finish();
+  };
+  bird?.addEventListener("animationend", onDone);
+  window.setTimeout(() => onDone(), 1600);
+}
+
+function dismissMapSeagullGuide() {
+  if (!mapSeagullGuide || mapSeagullGuide.hidden) return;
+  if (mapSeagullMode === "shop") {
+    flyAwayMapSeagull();
+    return;
+  }
+  if (mapSeagullMode === "howto") markIntroSeen();
+  hideMapSeagullGuide();
+  syncAdventureLaunchVisibility();
+}
+
 function hasSeenShopGuide() {
   try {
     return localStorage.getItem(SHOP_GUIDE_SEEN_KEY) === "yes";
@@ -7442,12 +7594,17 @@ function closeShopGuide() {
 }
 
 function showIntroIfNeeded() {
-  if (!panelIntro || hasSeenIntro()) return;
-  panelIntro.hidden = false;
-  syncAdventureLaunchVisibility();
+  if (hasPendingSeagullShopHint() && !hasSeenSeagullShopHint()) {
+    showMapSeagullShopHint();
+    return;
+  }
+  if (!hasSeenIntro()) {
+    showMapSeagullHowto();
+  }
 }
 
 function openIntro() {
+  hideMapSeagullGuide();
   if (panelIntro) panelIntro.hidden = false;
   syncAdventureLaunchVisibility();
 }
@@ -7455,6 +7612,7 @@ function openIntro() {
 function closeIntro() {
   if (panelIntro) panelIntro.hidden = true;
   markIntroSeen();
+  hideMapSeagullGuide();
   syncAdventureLaunchVisibility();
   window.requestAnimationFrame(() => startAdventureHomeUnlockAnimation());
 }
@@ -7675,6 +7833,7 @@ function showHomePanel() {
   syncHomeLaunchButtons();
   if (musicEnabled) startHomeMusic();
   window.requestAnimationFrame(() => startAdventureHomeUnlockAnimation());
+  showIntroIfNeeded();
   void processDailyPrizePayouts().then(() => {
     window.setTimeout(tryStartDailyPrizeCelebration, 500);
   });
@@ -7690,7 +7849,6 @@ function dismissSplashScreen() {
   appRoot?.classList.remove("app--splash");
   unlockHomeAudio();
   showHomePanel();
-  showIntroIfNeeded();
   deferStartupWork();
 }
 
@@ -10819,6 +10977,15 @@ function initBubbles() {
 
 function startRound() {
   playing = true;
+  if (mapSeagullMode === "howto") {
+    markIntroSeen();
+    hideMapSeagullGuide();
+  } else if (mapSeagullMode === "shop") {
+    markSeagullShopHintSeen();
+    hideMapSeagullGuide();
+  } else {
+    hideMapSeagullGuide();
+  }
   normalizeSelectedRod();
   stopHomeMusic();
   stopEventsMusic();
@@ -10943,6 +11110,9 @@ function endRound() {
   if (duelSession) {
     endDuelRound();
     return;
+  }
+  if (hasSeenIntro() && !hasSeenSeagullShopHint()) {
+    setPendingSeagullShopHint();
   }
   panelOver.hidden = false;
   syncAdventureLaunchVisibility();
@@ -15784,6 +15954,7 @@ btnToggleMusic?.addEventListener("pointerdown", () => {
   unlockHomeAudio();
 });
 btnIntroDone?.addEventListener("click", closeIntro);
+btnMapSeagullDone?.addEventListener("click", dismissMapSeagullGuide);
 btnOpenIntro?.addEventListener("click", () => {
   setStartSettingsOpen(false);
   openIntro();
@@ -16025,6 +16196,14 @@ function deferStartupWork() {
 updateMusicButton();
 resize();
 initBubbles();
+(function migrateSeagullShopHintForVeterans() {
+  if (!hasSeenIntro() || hasSeenSeagullShopHint() || hasPendingSeagullShopHint()) return;
+  const veteran =
+    (gameMeta.coins || 0) > 0 ||
+    (gameMeta.totalTreasureChests || 0) > 0 ||
+    (gameMeta.adventureHighestLevel || 0) > 0;
+  if (veteran) markSeagullShopHintSeen();
+})();
 if (isSplashScreenActive()) {
   syncHomeLaunchButtons();
 } else {
