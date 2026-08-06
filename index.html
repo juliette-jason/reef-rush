@@ -501,33 +501,47 @@
 
       <section id="panelStart" class="panel panel--start" hidden>
         <div class="start-scene" aria-hidden="true">
+          <span class="start-scene__glow"></span>
+          <span class="start-scene__glow start-scene__glow--side"></span>
           <span class="start-scene__ray start-scene__ray--1"></span>
           <span class="start-scene__ray start-scene__ray--2"></span>
+          <span class="start-scene__ray start-scene__ray--3"></span>
+          <span class="start-scene__sparkle start-scene__sparkle--1"></span>
+          <span class="start-scene__sparkle start-scene__sparkle--2"></span>
+          <span class="start-scene__sparkle start-scene__sparkle--3"></span>
           <span class="start-scene__bubble start-scene__bubble--1"></span>
           <span class="start-scene__bubble start-scene__bubble--2"></span>
           <span class="start-scene__bubble start-scene__bubble--3"></span>
           <span class="start-scene__bubble start-scene__bubble--4"></span>
-          <span class="start-scene__glow"></span>
+          <span class="start-scene__bubble start-scene__bubble--5"></span>
+          <span class="start-scene__bubble start-scene__bubble--6"></span>
+          <span class="start-scene__coral start-scene__coral--left"></span>
+          <span class="start-scene__coral start-scene__coral--right"></span>
+          <span class="start-scene__bed"></span>
         </div>
         <h1 class="panel__headline panel__headline--brand">Reef Rush</h1>
         <div class="start-toolbar">
-          <p class="start-toolbar__coins">
-            <span class="start-toolbar__label">Your coins</span>
-            <strong id="coinDisplayStart" class="start-toolbar__value">0</strong>
-          </p>
-          <p class="start-toolbar__chests">
-            <span class="start-toolbar__label">Treasure chests</span>
-            <strong id="treasureChestDisplayStart" class="start-toolbar__value start-toolbar__value--chests">0 / 20</strong>
-          </p>
-          <button type="button" id="btnOpenIntro" class="btn btn--secondary btn--help">How to play</button>
-          <button type="button" id="btnToggleMusic" class="btn btn--secondary btn--music" aria-pressed="false">Music</button>
-          <button type="button" id="btnResetProgress" class="btn btn--secondary btn--reset">Reset progress</button>
+          <div class="start-toolbar__stats">
+            <p class="start-toolbar__coins">
+              <span class="start-toolbar__label">Coins</span>
+              <strong id="coinDisplayStart" class="start-toolbar__value">0</strong>
+            </p>
+            <p class="start-toolbar__chests">
+              <span class="start-toolbar__label">Chests</span>
+              <strong id="treasureChestDisplayStart" class="start-toolbar__value start-toolbar__value--chests">0 / 20</strong>
+            </p>
+          </div>
+          <div class="start-toolbar__actions">
+            <button type="button" id="btnOpenIntro" class="btn btn--secondary btn--help">How to play</button>
+            <button type="button" id="btnToggleMusic" class="btn btn--secondary btn--music" aria-pressed="false">Music</button>
+            <button type="button" id="btnResetProgress" class="btn btn--secondary btn--reset">Reset</button>
+          </div>
         </div>
         <fieldset class="rods rods--with-map rods--card">
-          <legend class="rods__legend">Choose your reef</legend>
+          <legend class="rods__legend"><span class="rods__step">1</span> Choose your reef</legend>
           <div class="reef-picker reef-picker--map-first">
             <div class="reef-map-panel">
-              <div class="reef-map-panel__title">World map</div>
+              <div class="reef-map-panel__title">World chart</div>
               <div class="reef-map" id="reefMap">
                 <img
                   class="reef-map__photo"
@@ -557,12 +571,12 @@
           </div>
         </fieldset>
         <fieldset class="rods rods--card">
-          <legend class="rods__legend">Choose your bait</legend>
-          <p class="rods__hint">Premium bait is used for one round when you start (stock shown on each option).</p>
+          <legend class="rods__legend"><span class="rods__step">2</span> Choose your bait</legend>
+          <p class="rods__hint">Premium bait lasts one round — stock shows on each option.</p>
           <div id="baitChoices" class="rods__grid"></div>
         </fieldset>
         <fieldset class="rods rods--card">
-          <legend class="rods__legend">Choose your rod</legend>
+          <legend class="rods__legend"><span class="rods__step">3</span> Choose your rod</legend>
           <div id="rodChoices" class="rods__grid"></div>
         </fieldset>
         <button type="button" id="btnStart" class="btn btn--primary btn--start">
