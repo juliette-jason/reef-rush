@@ -1873,374 +1873,163 @@ body {
 
 .shop-guide__sailor {
   position: relative;
-  flex: 0 0 min(38vw, 310px);
-  width: min(38vw, 310px);
-  height: min(70vh, 500px);
-  min-width: 190px;
-  filter: drop-shadow(0 18px 24px rgba(0, 0, 0, 0.5));
+  flex: 0 0 min(34vw, 260px);
+  width: min(34vw, 260px);
+  height: min(68vh, 460px);
+  min-width: 160px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  filter: drop-shadow(0 16px 20px rgba(0, 0, 0, 0.45));
   transform-origin: 50% 100%;
   animation: shopSailorIdle 3.6s ease-in-out infinite;
 }
 
-.shop-guide__hat,
-.shop-guide__hair,
-.shop-guide__ear,
-.shop-guide__face,
-.shop-guide__eyebrow,
-.shop-guide__nose,
-.shop-guide__mustache,
-.shop-guide__beard,
-.shop-guide__mouth,
-.shop-guide__neck,
-.shop-guide__arm,
-.shop-guide__leg,
-.shop-guide__body {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+.shop-guide__art {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
 }
 
-.shop-guide__hat {
-  top: 6%;
-  width: 48%;
-  height: 10.5%;
-  border-radius: 46% 46% 22% 22%;
-  background:
-    radial-gradient(ellipse at 32% 18%, rgba(255, 255, 255, 0.95), transparent 34%),
-    linear-gradient(180deg, #fffdf3, #e8eef4 55%, #b8c4d0);
-  border: 2px solid rgba(15, 23, 42, 0.72);
-  box-shadow: inset -10px -9px 0 rgba(15, 23, 42, 0.08), 0 3px 8px rgba(0, 0, 0, 0.25);
-  z-index: 6;
+.shop-guide__head {
+  transform-origin: 120px 148px;
+  animation: shopSailorHeadBob 3.6s ease-in-out infinite;
 }
 
-.shop-guide__hat::after {
-  content: "";
-  position: absolute;
-  left: 19%;
-  right: 19%;
-  bottom: 18%;
-  height: 17%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #1d4ed8, #2563eb, #1d4ed8);
+.shop-guide__brows {
+  transform-origin: 120px 94px;
+  animation: shopSailorBrow 2.4s ease-in-out infinite;
 }
 
-.shop-guide__hat::before {
-  content: "";
-  position: absolute;
-  left: -4%;
-  right: -4%;
-  bottom: -4%;
-  height: 18%;
-  border-radius: 999px;
-  background: #fff7ed;
-  border: 2px solid rgba(15, 23, 42, 0.72);
+.shop-guide__eye-l,
+.shop-guide__eye-r {
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
-.shop-guide__hair {
-  top: 15%;
-  width: 44%;
-  height: 19%;
-  border-radius: 42% 42% 35% 35%;
-  background:
-    repeating-linear-gradient(108deg, rgba(35, 22, 14, 0.4) 0 5%, transparent 5% 11%),
-    radial-gradient(ellipse at 30% 20%, #8a5a3c, transparent 45%),
-    linear-gradient(180deg, #6b422c, #2a1810 78%);
-  z-index: 3;
-  box-shadow: inset 0 -8px 10px rgba(20, 10, 6, 0.25);
+.shop-guide__eye-l {
+  animation: shopSailorBlink 4.8s ease-in-out infinite;
 }
 
-.shop-guide__face {
-  top: 16%;
-  width: 46%;
-  height: 28%;
-  border-radius: 47% 47% 43% 43% / 46% 46% 52% 52%;
-  background:
-    radial-gradient(circle at 28% 62%, rgba(196, 108, 78, 0.35), transparent 18%),
-    radial-gradient(circle at 72% 62%, rgba(196, 108, 78, 0.3), transparent 18%),
-    radial-gradient(circle at 50% 18%, rgba(255, 236, 214, 0.85), transparent 36%),
-    radial-gradient(circle at 50% 88%, rgba(110, 55, 38, 0.22), transparent 40%),
-    linear-gradient(185deg, #efc4a0 0%, #d9a07a 48%, #c48462 100%);
-  border: 2px solid rgba(84, 45, 32, 0.55);
-  box-shadow:
-    inset -12px -16px 0 rgba(120, 53, 15, 0.12),
-    inset 10px 4px 0 rgba(255, 255, 255, 0.12),
-    0 5px 8px rgba(0, 0, 0, 0.18);
-  z-index: 4;
-  overflow: hidden;
-}
-
-.shop-guide__ear {
-  top: 28%;
-  width: 7%;
-  height: 8.5%;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 55% 52%, rgba(145, 76, 50, 0.34), transparent 26%),
-    #d09972;
-  border: 2px solid rgba(15, 23, 42, 0.52);
-  z-index: 3;
-}
-
-.shop-guide__ear--left {
-  left: 28%;
-}
-
-.shop-guide__ear--right {
-  left: 72%;
-}
-
-.shop-guide__face::before,
-.shop-guide__face::after {
-  content: none;
-}
-
-.shop-guide__eye {
-  position: absolute;
-  top: 30%;
-  width: 13%;
-  height: 16%;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 58% 54%, #0b1220 0 26%, transparent 28%),
-    radial-gradient(circle at 42% 32%, #fff 0 11%, transparent 13%),
-    radial-gradient(circle at 50% 55%, #5b7c99 0 48%, transparent 50%),
-    #f4f7fb;
-  border: 1.5px solid rgba(15, 23, 42, 0.85);
-  box-shadow: inset 0 -2px 0 rgba(15, 23, 42, 0.12);
-  animation: shopSailorBlinkLeft 4.8s ease-in-out infinite;
-  transform-origin: 50% 50%;
-  z-index: 5;
-}
-
-.shop-guide__eye--left {
-  left: 24%;
-  transform: rotate(-4deg);
-  animation-delay: 0s;
-}
-
-.shop-guide__eye--right {
-  right: 24%;
-  left: auto;
-  transform: rotate(4deg);
-  animation: shopSailorBlinkRight 4.8s ease-in-out infinite;
+.shop-guide__eye-r {
+  animation: shopSailorBlink 4.8s ease-in-out infinite;
   animation-delay: 0.08s;
 }
 
-.shop-guide__eyebrow {
-  top: 23.2%;
-  width: 11%;
-  height: 3.8%;
-  border-top: 3px solid #3f2618;
-  border-radius: 50% 50% 0 0;
-  z-index: 7;
-  animation: shopSailorBrowLeft 2.4s ease-in-out infinite;
-}
-
-.shop-guide__eyebrow--left {
-  left: 42%;
-  transform: translateX(-50%) rotate(-3deg);
-}
-
-.shop-guide__eyebrow--right {
-  left: 58%;
-  transform: translateX(-50%) rotate(3deg);
-  animation: shopSailorBrowRight 2.4s ease-in-out infinite;
-  animation-delay: 0.12s;
-}
-
-.shop-guide__nose {
-  top: 31.5%;
-  width: 7.5%;
-  height: 7%;
-  border-radius: 48% 48% 54% 54%;
-  background:
-    radial-gradient(circle at 38% 28%, #ffe4c4, transparent 34%),
-    linear-gradient(180deg, #d9a07a, #b06a4c);
-  border: 1px solid rgba(90, 45, 32, 0.28);
-  box-shadow: 1px 2px 3px rgba(80, 36, 22, 0.22);
-  z-index: 6;
-}
-
-.shop-guide__mustache {
-  top: 36.4%;
-  width: 23%;
-  height: 4.2%;
-  z-index: 6;
+.shop-guide__stache {
+  transform-origin: 120px 128px;
   animation: shopSailorMustache 0.55s ease-in-out infinite;
 }
 
-.shop-guide__mustache::before,
-.shop-guide__mustache::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  width: 54%;
-  height: 100%;
-  border-radius: 55% 18% 50% 50%;
-  background:
-    repeating-linear-gradient(100deg, rgba(47, 29, 19, 0.45) 0 12%, transparent 12% 24%),
-    linear-gradient(180deg, #7b4a31, #2f1d13);
+.shop-guide__mouth-open,
+.shop-guide__teeth {
+  opacity: 0;
+  transform-origin: 120px 136px;
 }
 
-.shop-guide__mustache::before {
-  left: 0;
-  transform: rotate(-10deg);
+.shop-guide__lips {
+  opacity: 1;
 }
 
-.shop-guide__mustache::after {
-  right: 0;
-  transform: rotate(10deg) scaleX(-1);
+.shop-guide__mouth-g .shop-guide__lips {
+  animation: shopSailorLips 0.42s steps(2, end) infinite;
 }
 
-.shop-guide__beard {
-  top: 38.5%;
-  width: 28%;
-  height: 7%;
-  border-radius: 20% 20% 55% 55%;
-  background:
-    repeating-linear-gradient(95deg, rgba(40, 24, 14, 0.35) 0 8%, transparent 8% 16%),
-    linear-gradient(180deg, rgba(90, 55, 35, 0.55), rgba(45, 28, 18, 0.75));
-  z-index: 5;
-  opacity: 0.85;
-  pointer-events: none;
+.shop-guide__mouth-g .shop-guide__mouth-open,
+.shop-guide__mouth-g .shop-guide__teeth {
+  animation: shopSailorMouthOpen 0.42s steps(2, end) infinite;
 }
 
-.shop-guide__mouth {
-  display: block;
-  top: 39.6%;
-  width: 12%;
-  height: 3.2%;
-  border-radius: 40% 40% 55% 55%;
-  background: linear-gradient(180deg, #6a3030, #3a1818);
-  border: 1px solid rgba(60, 20, 20, 0.55);
-  overflow: hidden;
-  z-index: 7;
-  transform: translateX(-50%);
-  transform-origin: 50% 20%;
-  animation: shopSailorTalk 0.42s steps(2, end) infinite;
-  box-shadow: inset 0 2px 2px rgba(0, 0, 0, 0.35);
-}
-
-.shop-guide__mouth-inner {
-  display: block;
-  position: absolute;
-  left: 18%;
-  right: 18%;
-  top: 35%;
-  height: 55%;
-  border-radius: 40%;
-  background: linear-gradient(180deg, #c45a5a, #8a3030);
-}
-
-.shop-guide__mouth::after {
-  content: "";
-  position: absolute;
-  left: 22%;
-  right: 22%;
-  top: 0;
-  height: 38%;
-  border-radius: 0 0 40% 40%;
-  background: #f2ebe3;
-  opacity: 0.9;
+.shop-guide__arm-r {
+  transform-origin: 162px 176px;
+  animation: shopSailorArmTalk 1.1s ease-in-out infinite;
 }
 
 @keyframes shopSailorIdle {
   0%,
   100% {
-    transform: translateY(0) rotate(-0.7deg);
+    transform: translateY(0) rotate(-0.5deg);
   }
   50% {
-    transform: translateY(-5px) rotate(0.9deg);
+    transform: translateY(-4px) rotate(0.6deg);
   }
 }
 
-@keyframes shopSailorTalk {
+@keyframes shopSailorHeadBob {
   0%,
   100% {
-    height: 2%;
-    border-radius: 50% 50% 40% 40%;
+    transform: translateY(0);
   }
-  35% {
-    height: 5.8%;
-    border-radius: 36% 36% 58% 58%;
-  }
-  55% {
-    height: 3.4%;
-    border-radius: 42% 42% 50% 50%;
-  }
-  75% {
-    height: 6.2%;
-    border-radius: 34% 34% 60% 60%;
+  50% {
+    transform: translateY(1.5px);
   }
 }
 
-@keyframes shopSailorBlinkLeft {
+@keyframes shopSailorLips {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes shopSailorMouthOpen {
+  0%,
+  49% {
+    opacity: 0;
+  }
+  50%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes shopSailorBlink {
   0%,
   88%,
   100% {
-    transform: rotate(-4deg) scaleY(1);
+    transform: scaleY(1);
   }
   90%,
   93% {
-    transform: rotate(-4deg) scaleY(0.08);
+    transform: scaleY(0.08);
   }
 }
 
-@keyframes shopSailorBlinkRight {
-  0%,
-  88%,
-  100% {
-    transform: rotate(4deg) scaleY(1);
-  }
-  90%,
-  93% {
-    transform: rotate(4deg) scaleY(0.08);
-  }
-}
-
-@keyframes shopSailorBrowLeft {
+@keyframes shopSailorBrow {
   0%,
   100% {
-    transform: translateX(-50%) rotate(-3deg) translateY(0);
+    transform: translateY(0);
   }
   45% {
-    transform: translateX(-50%) rotate(-5deg) translateY(-2px);
+    transform: translateY(-1.5px);
   }
   70% {
-    transform: translateX(-50%) rotate(-2deg) translateY(1px);
-  }
-}
-
-@keyframes shopSailorBrowRight {
-  0%,
-  100% {
-    transform: translateX(-50%) rotate(3deg) translateY(0);
-  }
-  45% {
-    transform: translateX(-50%) rotate(5deg) translateY(-2px);
-  }
-  70% {
-    transform: translateX(-50%) rotate(2deg) translateY(1px);
+    transform: translateY(1px);
   }
 }
 
 @keyframes shopSailorMustache {
   0%,
   100% {
-    transform: translateX(-50%) translateY(0) scaleY(1);
+    transform: translateY(0) scaleY(1);
   }
   50% {
-    transform: translateX(-50%) translateY(1.5px) scaleY(0.92);
+    transform: translateY(1px) scaleY(0.94);
   }
 }
 
 @keyframes shopSailorArmTalk {
   0%,
   100% {
-    transform: rotate(-14deg);
+    transform: rotate(0deg);
   }
   50% {
-    transform: rotate(-20deg) translateY(-3px);
+    transform: rotate(-7deg) translateY(-2px);
   }
 }
 
@@ -2256,169 +2045,30 @@ body {
   }
 }
 
-.shop-guide__neck {
-  top: 39%;
-  width: 18%;
-  height: 12%;
-  border-radius: 0 0 12px 12px;
-  background: linear-gradient(180deg, #d9a07a, #b06a4c);
-  border-left: 3px solid rgba(15, 23, 42, 0.42);
-  border-right: 3px solid rgba(15, 23, 42, 0.42);
-  z-index: 2;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .shop-guide__sailor,
-  .shop-guide__eye,
-  .shop-guide__eyebrow,
-  .shop-guide__mustache,
-  .shop-guide__mouth,
-  .shop-guide__arm--right,
+  .shop-guide__head,
+  .shop-guide__brows,
+  .shop-guide__eye-l,
+  .shop-guide__eye-r,
+  .shop-guide__stache,
+  .shop-guide__mouth-g .shop-guide__lips,
+  .shop-guide__mouth-g .shop-guide__mouth-open,
+  .shop-guide__mouth-g .shop-guide__teeth,
+  .shop-guide__arm-r,
   .shop-guide-launch__face,
   .shop-guide-launch__face::after {
     animation: none !important;
   }
-}
 
-.shop-guide__body {
-  bottom: 11%;
-  width: 70%;
-  height: 53%;
-  border-radius: 34% 34% 12% 12% / 17% 17% 10% 10%;
-  background:
-    radial-gradient(ellipse at 35% 20%, rgba(255, 255, 255, 0.18), transparent 28%),
-    radial-gradient(ellipse at 18% 12%, rgba(255, 255, 255, 0.86), transparent 18%),
-    radial-gradient(ellipse at 82% 12%, rgba(255, 255, 255, 0.86), transparent 18%),
-    linear-gradient(100deg, rgba(0, 0, 0, 0.15), transparent 28% 72%, rgba(255, 255, 255, 0.08)),
-    linear-gradient(135deg, transparent 0 31%, rgba(255, 255, 255, 0.95) 32% 43%, transparent 44%),
-    linear-gradient(225deg, transparent 0 31%, rgba(255, 255, 255, 0.95) 32% 43%, transparent 44%),
-    linear-gradient(90deg, transparent 45%, rgba(255, 255, 255, 0.9) 46% 54%, transparent 55%),
-    repeating-linear-gradient(180deg, transparent 0 12%, rgba(255, 255, 255, 0.12) 12% 15%),
-    linear-gradient(180deg, #1d4ed8, #1e40af 62%, #111827);
-  border: 2px solid rgba(15, 23, 42, 0.68);
-  box-shadow: inset -14px 0 0 rgba(0, 0, 0, 0.13), inset 12px 0 0 rgba(255, 255, 255, 0.08);
-  z-index: 2;
-}
+  .shop-guide__mouth-open,
+  .shop-guide__teeth {
+    opacity: 0;
+  }
 
-.shop-guide__body::before {
-  content: "";
-  position: absolute;
-  left: 22%;
-  right: 22%;
-  top: 13%;
-  height: 18%;
-  clip-path: polygon(50% 100%, 0 0, 100% 0);
-  background: linear-gradient(180deg, #fb7185, #dc2626);
-}
-
-.shop-guide__body::after {
-  content: "";
-  position: absolute;
-  left: 44%;
-  top: 31%;
-  width: 12%;
-  height: 42%;
-  border-radius: 999px;
-  background:
-    radial-gradient(circle at 50% 12%, #f8fafc 0 16%, transparent 18%),
-    radial-gradient(circle at 50% 38%, #f8fafc 0 16%, transparent 18%),
-    radial-gradient(circle at 50% 64%, #f8fafc 0 16%, transparent 18%),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.18));
-  opacity: 0.9;
-}
-
-.shop-guide__arm {
-  top: 47%;
-  width: 14%;
-  height: 34%;
-  border-radius: 999px 999px 48% 48%;
-  background:
-    linear-gradient(180deg, transparent 0 66%, #d99b73 67% 100%),
-    linear-gradient(92deg, rgba(0, 0, 0, 0.14), transparent 36%),
-    linear-gradient(180deg, #2563eb, #1e3a8a);
-  border: 2px solid rgba(15, 23, 42, 0.62);
-  box-shadow: inset -7px 0 0 rgba(0, 0, 0, 0.1);
-  z-index: 1;
-}
-
-.shop-guide__arm--left {
-  left: 16%;
-  transform: rotate(11deg);
-}
-
-.shop-guide__arm--left::after {
-  content: "";
-  position: absolute;
-  left: -26%;
-  bottom: -9%;
-  width: 82%;
-  height: 25%;
-  border-radius: 50%;
-  background:
-    linear-gradient(90deg, transparent 0 18%, rgba(120, 53, 15, 0.24) 19% 23%, transparent 24% 38%, rgba(120, 53, 15, 0.2) 39% 43%, transparent 44%),
-    radial-gradient(circle at 35% 30%, #ffd9b0, #d99b73);
-  border: 2px solid rgba(15, 23, 42, 0.58);
-  box-shadow: inset -5px -4px 0 rgba(120, 53, 15, 0.14);
-}
-
-.shop-guide__arm--right {
-  left: auto;
-  right: 16%;
-  transform: rotate(-14deg);
-  transform-origin: 50% 8%;
-  animation: shopSailorArmTalk 1.1s ease-in-out infinite;
-}
-
-.shop-guide__arm--right::after {
-  content: "";
-  position: absolute;
-  right: -27%;
-  bottom: -9%;
-  width: 82%;
-  height: 25%;
-  border-radius: 50%;
-  background:
-    linear-gradient(90deg, transparent 0 18%, rgba(120, 53, 15, 0.24) 19% 23%, transparent 24% 38%, rgba(120, 53, 15, 0.2) 39% 43%, transparent 44%),
-    radial-gradient(circle at 35% 30%, #ffd9b0, #d99b73);
-  border: 2px solid rgba(15, 23, 42, 0.58);
-  box-shadow: inset -5px -4px 0 rgba(120, 53, 15, 0.14);
-}
-
-.shop-guide__leg {
-  bottom: 0;
-  width: 18%;
-  height: 20%;
-  border-radius: 0 0 12px 12px;
-  background: linear-gradient(95deg, rgba(0, 0, 0, 0.18), transparent 35%), linear-gradient(180deg, #1e3a8a, #111827);
-  border: 2px solid rgba(15, 23, 42, 0.72);
-  z-index: 1;
-}
-
-.shop-guide__leg::after {
-  content: "";
-  position: absolute;
-  bottom: -10%;
-  width: 135%;
-  height: 28%;
-  border-radius: 999px;
-  background: #020617;
-  border: 3px solid rgba(15, 23, 42, 0.88);
-}
-
-.shop-guide__leg--left {
-  left: 41%;
-}
-
-.shop-guide__leg--left::after {
-  right: -5%;
-}
-
-.shop-guide__leg--right {
-  left: 59%;
-}
-
-.shop-guide__leg--right::after {
-  left: -5%;
+  .shop-guide__lips {
+    opacity: 1;
+  }
 }
 
 .shop-guide__bubble {
