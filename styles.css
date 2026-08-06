@@ -1035,9 +1035,7 @@ body {
   padding-top: max(88px, env(safe-area-inset-top, 0px));
   padding-bottom: max(32px, env(safe-area-inset-bottom, 0px) + 24px);
   gap: 0;
-  background:
-    radial-gradient(ellipse at 50% 0%, rgba(56, 189, 248, 0.16), transparent 48%),
-    linear-gradient(180deg, #0a4d66 0%, #063548 42%, #031525 100%);
+  background: #04283a;
 }
 
 @media (prefers-reduced-motion: reduce) {
