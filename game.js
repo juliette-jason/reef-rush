@@ -11822,90 +11822,145 @@ function drawKraken() {
   if (!kraken || (kraken.state !== "active" && kraken.state !== "biting")) return;
   const L = kraken.len;
   const facing = kraken.state === "biting" ? kraken.biteFacing : kraken.face;
-  const ink = "#2d1b4e";
-  const mantle = "#5b3d8a";
-  const belly = "#7c5aad";
-  const glow = "#22d3ee";
+  const phase = kraken.phase;
+  const biting = kraken.state === "biting";
+
+  // Stylized-realistic: purple cephalopod, gradient skin, not photo-real mahogany.
+  const deep = "#241536";
+  const mid = "#4a3270";
+  const light = "#7b5aa8";
+  const glow = "#5eead4";
 
   ctx.save();
   ctx.translate(kraken.x, kraken.y);
-  ctx.rotate(Math.sin(kraken.phase) * 0.04);
+  ctx.rotate(Math.sin(phase) * 0.035);
   ctx.scale(facing, 1);
   ctx.globalAlpha = 0.97;
 
+  ctx.fillStyle = "rgba(10, 6, 24, 0.22)";
+  ctx.beginPath();
+  ctx.ellipse(0, L * 0.1, L * 0.4, L * 0.1, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Tentacles with soft gradient + a few sucker rings
   const tentacleCount = 7;
   for (let i = 0; i < tentacleCount; i++) {
     const u = i / (tentacleCount - 1 || 1);
-    const baseX = (u - 0.5) * L * 0.62;
-    const wob = Math.sin(kraken.phase * 1.2 + i * 0.9) * L * 0.05;
-    const tipX = baseX * 1.35 + wob + Math.sin(kraken.phase * 0.8 + i) * L * 0.09;
-    const tipY = L * 0.24 + Math.abs(baseX) * 0.14;
-    ctx.strokeStyle = i % 2 === 0 ? ink : mantle;
-    ctx.lineWidth = (0.1 - u * 0.028) * L;
+    const baseX = (u - 0.5) * L * 0.64;
+    const wob = Math.sin(phase * 1.25 + i * 0.9) * L * 0.05;
+    const tipX = baseX * 1.32 + wob + Math.sin(phase * 0.85 + i) * L * 0.09;
+    const tipY = L * 0.26 + Math.abs(baseX) * 0.14;
+    const midX = baseX * 0.55 + wob * 0.5;
+    const midY = -L * 0.02;
+    const thick = (0.095 - u * 0.024) * L;
+    const tg = ctx.createLinearGradient(baseX * 0.3, -L * 0.24, tipX, tipY);
+    tg.addColorStop(0, mid);
+    tg.addColorStop(0.55, light);
+    tg.addColorStop(1, deep);
+    ctx.strokeStyle = tg;
+    ctx.lineWidth = thick;
     ctx.lineCap = "round";
     ctx.beginPath();
-    ctx.moveTo(baseX * 0.35, -L * 0.22);
-    ctx.bezierCurveTo(baseX * 0.5 + wob * 0.5, -L * 0.05, tipX * 0.72, L * 0.02, tipX, tipY);
+    ctx.moveTo(baseX * 0.32, -L * 0.24);
+    ctx.bezierCurveTo(midX, midY, tipX * 0.75, tipY * 0.5, tipX, tipY);
     ctx.stroke();
-    // Simple cartoon sucker dots
-    ctx.fillStyle = belly;
-    for (let s = 1; s <= 3; s++) {
-      const t = s / 4;
-      const sx = baseX * 0.35 * (1 - t) + tipX * t;
-      const sy = -L * 0.22 * (1 - t) + tipY * t;
+    ctx.fillStyle = "rgba(160, 130, 200, 0.55)";
+    for (let s = 1; s <= 4; s++) {
+      const t = s / 5;
+      const sx = baseX * 0.32 * (1 - t) + tipX * t + L * 0.015;
+      const sy = -L * 0.24 * (1 - t) + tipY * t;
+      const sr = thick * (0.22 - t * 0.04);
       ctx.beginPath();
-      ctx.arc(sx + L * 0.02, sy, L * 0.018, 0, Math.PI * 2);
+      ctx.ellipse(sx, sy, sr, sr * 0.7, 0.15, 0, Math.PI * 2);
       ctx.fill();
     }
   }
 
-  ctx.fillStyle = mantle;
+  // Mantle — slightly elongated squid form with gradient
+  const mantleGrad = ctx.createRadialGradient(-L * 0.08, -L * 0.7, L * 0.04, 0, -L * 0.5, L * 0.42);
+  mantleGrad.addColorStop(0, light);
+  mantleGrad.addColorStop(0.45, mid);
+  mantleGrad.addColorStop(1, deep);
+  ctx.fillStyle = mantleGrad;
   ctx.beginPath();
-  ctx.ellipse(0, -L * 0.4, L * 0.36, L * 0.24, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = ink;
-  ctx.beginPath();
-  ctx.ellipse(0, -L * 0.55, L * 0.3, L * 0.22, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = belly;
-  ctx.beginPath();
-  ctx.moveTo(L * 0.1, -L * 0.62);
-  ctx.quadraticCurveTo(L * 0.24, -L * 0.8, L * 0.08, -L * 0.92);
-  ctx.quadraticCurveTo(0, -L * 0.84, -L * 0.08, -L * 0.92);
-  ctx.quadraticCurveTo(-L * 0.24, -L * 0.8, -L * 0.1, -L * 0.62);
-  ctx.quadraticCurveTo(0, -L * 0.58, L * 0.1, -L * 0.62);
+  ctx.moveTo(0, -L * 0.98);
+  ctx.bezierCurveTo(L * 0.2, -L * 0.9, L * 0.3, -L * 0.58, L * 0.26, -L * 0.34);
+  ctx.bezierCurveTo(L * 0.18, -L * 0.2, L * 0.1, -L * 0.16, 0, -L * 0.14);
+  ctx.bezierCurveTo(-L * 0.1, -L * 0.16, -L * 0.18, -L * 0.2, -L * 0.26, -L * 0.34);
+  ctx.bezierCurveTo(-L * 0.3, -L * 0.58, -L * 0.2, -L * 0.9, 0, -L * 0.98);
   ctx.closePath();
   ctx.fill();
 
-  // Big cartoon eyes
-  ctx.fillStyle = "#fff";
+  // Small mantle fins
+  ctx.fillStyle = mid;
   ctx.beginPath();
-  ctx.arc(-L * 0.12, -L * 0.58, L * 0.07, 0, Math.PI * 2);
-  ctx.arc(L * 0.12, -L * 0.58, L * 0.07, 0, Math.PI * 2);
+  ctx.moveTo(-L * 0.05, -L * 0.88);
+  ctx.quadraticCurveTo(-L * 0.28, -L * 0.94, -L * 0.22, -L * 0.76);
+  ctx.quadraticCurveTo(-L * 0.1, -L * 0.82, -L * 0.04, -L * 0.84);
+  ctx.closePath();
   ctx.fill();
-  ctx.fillStyle = glow;
-  ctx.globalAlpha = 0.65 + 0.25 * Math.sin(kraken.phase * 2.1);
   ctx.beginPath();
-  ctx.arc(-L * 0.12, -L * 0.58, L * 0.045, 0, Math.PI * 2);
-  ctx.arc(L * 0.12, -L * 0.58, L * 0.045, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.globalAlpha = 0.97;
-  ctx.fillStyle = "#0f172a";
-  ctx.beginPath();
-  ctx.arc(-L * 0.1, -L * 0.58, L * 0.022, 0, Math.PI * 2);
-  ctx.arc(L * 0.14, -L * 0.58, L * 0.022, 0, Math.PI * 2);
+  ctx.moveTo(L * 0.05, -L * 0.88);
+  ctx.quadraticCurveTo(L * 0.28, -L * 0.94, L * 0.22, -L * 0.76);
+  ctx.quadraticCurveTo(L * 0.1, -L * 0.82, L * 0.04, -L * 0.84);
+  ctx.closePath();
   ctx.fill();
 
-  if (kraken.state === "biting") {
+  // Head bulb
+  const headGrad = ctx.createRadialGradient(-L * 0.06, -L * 0.4, L * 0.02, 0, -L * 0.32, L * 0.28);
+  headGrad.addColorStop(0, light);
+  headGrad.addColorStop(1, deep);
+  ctx.fillStyle = headGrad;
+  ctx.beginPath();
+  ctx.ellipse(0, -L * 0.3, L * 0.28, L * 0.18, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Soft beak
+  ctx.fillStyle = "#1a1028";
+  ctx.beginPath();
+  ctx.moveTo(0, -L * 0.42);
+  ctx.lineTo(L * 0.045, -L * 0.52);
+  ctx.lineTo(0, -L * 0.58);
+  ctx.lineTo(-L * 0.045, -L * 0.52);
+  ctx.closePath();
+  ctx.fill();
+
+  // Eyes — cephalopod shape with a light teal iris (less cartoon, not photo-real)
+  function drawEye(ex, ey) {
+    ctx.fillStyle = "rgba(0,0,0,0.28)";
+    ctx.beginPath();
+    ctx.ellipse(ex, ey + L * 0.01, L * 0.08, L * 0.06, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#f0e8ff";
+    ctx.beginPath();
+    ctx.ellipse(ex, ey, L * 0.075, L * 0.055, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = glow;
+    ctx.globalAlpha = 0.55 + 0.2 * Math.sin(phase * 2);
+    ctx.beginPath();
+    ctx.ellipse(ex + L * 0.008, ey, L * 0.038, L * 0.042, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 0.97;
+    ctx.fillStyle = "#0c1220";
+    ctx.beginPath();
+    ctx.ellipse(ex + L * 0.012, ey, L * 0.018, L * 0.032, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,0.75)";
+    ctx.beginPath();
+    ctx.arc(ex - L * 0.02, ey - L * 0.015, L * 0.012, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  drawEye(-L * 0.13, -L * 0.36);
+  drawEye(L * 0.13, -L * 0.36);
+
+  if (biting) {
     const pulse = 0.3 + 0.7 * Math.abs(Math.sin(performance.now() * 0.028));
-    ctx.globalAlpha = 0.22 * pulse;
+    ctx.globalAlpha = 0.18 * pulse;
     ctx.fillStyle = "#ff1a0a";
     ctx.beginPath();
     ctx.ellipse(0, -L * 0.48, L * 0.55, L * 0.36, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.globalAlpha = 0.3 * pulse;
+    ctx.globalAlpha = 0.26 * pulse;
     ctx.fillStyle = "#ff6b4d";
     ctx.beginPath();
     ctx.ellipse(0, -L * 0.55, L * 0.32, L * 0.22, 0, 0, Math.PI * 2);
@@ -11915,7 +11970,7 @@ function drawKraken() {
 
   ctx.restore();
 
-  if (kraken.state === "biting" && kraken.netGrab) {
+  if (biting && kraken.netGrab) {
     const f = kraken.biteFacing || facing || 1;
     const pulse = 0.55 + 0.45 * Math.abs(Math.sin(performance.now() * 0.016));
     const startX = kraken.x + f * L * 0.1;
@@ -11926,19 +11981,22 @@ function drawKraken() {
     const midY = Math.min(startY, endY) - dpr * (34 + 12 * pulse);
     ctx.save();
     ctx.lineCap = "round";
-    ctx.strokeStyle = "rgba(45, 27, 78, 0.9)";
+    const armGrad = ctx.createLinearGradient(startX, startY, endX, endY);
+    armGrad.addColorStop(0, "rgba(74, 50, 112, 0.92)");
+    armGrad.addColorStop(1, "rgba(36, 21, 54, 0.9)");
+    ctx.strokeStyle = armGrad;
     ctx.lineWidth = L * 0.075;
     ctx.beginPath();
     ctx.moveTo(startX, startY);
     ctx.bezierCurveTo(midX, midY, endX - f * dpr * 18, endY - dpr * 10, endX, endY);
     ctx.stroke();
-    ctx.strokeStyle = "rgba(140, 105, 180, 0.45)";
+    ctx.strokeStyle = "rgba(160, 130, 200, 0.4)";
     ctx.lineWidth = L * 0.025;
     ctx.beginPath();
     ctx.moveTo(startX + f * dpr * 5, startY - dpr * 2);
     ctx.bezierCurveTo(midX + f * dpr * 6, midY + dpr * 4, endX - f * dpr * 10, endY - dpr * 7, endX, endY);
     ctx.stroke();
-    ctx.fillStyle = `rgba(107, 77, 143, ${0.45 + 0.25 * pulse})`;
+    ctx.fillStyle = `rgba(123, 90, 168, ${0.45 + 0.25 * pulse})`;
     ctx.beginPath();
     ctx.ellipse(endX, endY, dpr * 12, dpr * 7, 0.2, 0, Math.PI * 2);
     ctx.fill();
