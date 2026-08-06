@@ -7796,6 +7796,55 @@ function resetProgress() {
   showToast("Progress reset", 1500);
 }
 
+/** Dev/test: wipe progress + first-time tutorial flags so you can play as a new fisher. Ctrl+N */
+function resetAsNewPlayer() {
+  if (playing) {
+    playing = false;
+    stopReefMusic();
+    kraken = null;
+    jackpotCrab = null;
+    appRoot?.classList.remove("app--playing");
+  }
+  if (crabTrapSession) {
+    crabTrapSession.running = false;
+    if (crabTrapSession.rafId) cancelAnimationFrame(crabTrapSession.rafId);
+    crabTrapSession = null;
+    if (crabTrapStage) {
+      crabTrapStage.hidden = true;
+      crabTrapStage.setAttribute("aria-hidden", "true");
+    }
+  }
+  duelSession = null;
+  adventureSession = null;
+  try {
+    localStorage.removeItem(INTRO_SEEN_KEY);
+    localStorage.removeItem(SHOP_GUIDE_SEEN_KEY);
+    localStorage.removeItem(SEAGULL_SHOP_HINT_KEY);
+    localStorage.removeItem(SEAGULL_SHOP_PENDING_KEY);
+  } catch {
+    /* ignore */
+  }
+  gameMeta = defaultMeta();
+  selectedRod = rodSpecById(FREE_ROD_ID);
+  roundBait = { catchRadiusMult: 1, rareAssistAdd: 0, lightRadiusMult: 1 };
+  saveMeta();
+  normalizeSelectedBaitId();
+  normalizeSelectedRod();
+  refreshCoinDisplays();
+  buildBaitUI();
+  buildRodUI();
+  buildShopUI();
+  updateAdventureLaunchUI();
+  adventureMapUiProgress = -1;
+  adventureTrailDrawnCount = 0;
+  pendingAdventureTrailReveal = false;
+  cancelAdventureTrailReveal();
+  buildAdventureLevelUI(true);
+  hideMapSeagullGuide();
+  showHomePanel();
+  showToast("New player test mode — seagull tutorial reset", 2200);
+}
+
 function hideAllPanels() {
   if (panelSplash) panelSplash.hidden = true;
   if (panelStart) panelStart.hidden = true;
@@ -16041,6 +16090,13 @@ window.addEventListener("keydown", (e) => {
     if (tag === "INPUT" || tag === "TEXTAREA" || e.target?.isContentEditable) return;
     e.preventDefault();
     secretSimulateAdventureUnlock();
+    return;
+  }
+  if (e.ctrlKey && !e.metaKey && !e.altKey && e.code === "KeyN") {
+    const tag = e.target?.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || e.target?.isContentEditable) return;
+    e.preventDefault();
+    resetAsNewPlayer();
     return;
   }
   if (e.ctrlKey && e.shiftKey && e.code === "Digit3") {
