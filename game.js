@@ -4535,9 +4535,9 @@ const REEFS = [
       "sea_otter",
     ],
     visuals: {
-      gradient: ["#5ec8c0", "#1a8a8a", "#0d5c5c", "#043838"],
-      shaft: ["rgba(255, 253, 240, 0.18)", "rgba(255, 253, 240, 0)"],
-      silhouette: "rgba(8, 70, 68, 0.5)",
+      gradient: ["#6ebfd0", "#2a8f9c", "#126878", "#053848"],
+      shaft: ["rgba(255, 248, 220, 0.16)", "rgba(255, 248, 220, 0)"],
+      silhouette: "rgba(6, 55, 58, 0.48)",
       corals: [
         { x: 0.04, c: "#d4a574", h: 0.4 },
         { x: 0.1, c: "#2a9d8f", h: 0.34 },
@@ -4595,9 +4595,9 @@ const REEFS = [
       "atlantic_bluefin",
     ],
     visuals: {
-      gradient: ["#4db8d4", "#1a7fa0", "#0e5470", "#062838"],
-      shaft: ["rgba(255, 250, 220, 0.14)", "rgba(255, 250, 220, 0)"],
-      silhouette: "rgba(8, 40, 55, 0.52)",
+      gradient: ["#5eb4d0", "#2a88b0", "#145878", "#0a3048"],
+      shaft: ["rgba(255, 246, 210, 0.13)", "rgba(255, 246, 210, 0)"],
+      silhouette: "rgba(6, 36, 52, 0.5)",
       corals: [
         { x: 0.06, c: "#c45c5c", h: 0.34 },
         { x: 0.14, c: "#d4785a", h: 0.28 },
@@ -4644,9 +4644,9 @@ const REEFS = [
       "atlantic_bluefin",
     ],
     visuals: {
-      gradient: ["#5b7fa8", "#3a5678", "#243850", "#0c1828"],
-      shaft: ["rgba(200, 215, 235, 0.1)", "rgba(200, 215, 235, 0)"],
-      silhouette: "rgba(20, 32, 48, 0.55)",
+      gradient: ["#6a8eb0", "#3d5e80", "#243850", "#0c1828"],
+      shaft: ["rgba(210, 225, 240, 0.09)", "rgba(210, 225, 240, 0)"],
+      silhouette: "rgba(18, 30, 44, 0.52)",
       corals: [
         { x: 0.09, c: "#6b7c5e", h: 0.2 },
         { x: 0.2, c: "#8a9a72", h: 0.16 },
@@ -4690,9 +4690,9 @@ const REEFS = [
       "sea_otter",
     ],
     visuals: {
-      gradient: ["#4aa3c8", "#1a6a90", "#0c4568", "#031828"],
-      shaft: ["rgba(160, 220, 245, 0.1)", "rgba(160, 220, 245, 0)"],
-      silhouette: "rgba(4, 28, 48, 0.58)",
+      gradient: ["#4aa0c4", "#1f6e94", "#0e4568", "#031828"],
+      shaft: ["rgba(170, 225, 245, 0.09)", "rgba(170, 225, 245, 0)"],
+      silhouette: "rgba(4, 26, 44, 0.56)",
       corals: [
         { x: 0.1, c: "#4a7a68", h: 0.18 },
         { x: 0.22, c: "#5a8a78", h: 0.14 },
@@ -12159,104 +12159,183 @@ function drawKraken() {
 }
 
 function drawReefAmbience(reefId, waterTopY) {
-  const t = performance.now() * 0.0008;
+  const t = 0.35; // static sample — background is cached
   ctx.save();
 
-  // Depth haze near the seabed
-  const haze = ctx.createLinearGradient(0, waterTopY + waterH * 0.45, 0, h);
-  haze.addColorStop(0, "rgba(0, 20, 40, 0)");
-  haze.addColorStop(0.55, "rgba(0, 25, 45, 0.08)");
-  haze.addColorStop(1, "rgba(0, 18, 32, 0.22)");
+  // Vertical depth falloff (Beer's-law style darkening)
+  const haze = ctx.createLinearGradient(0, waterTopY, 0, h);
+  haze.addColorStop(0, "rgba(180, 230, 240, 0.05)");
+  haze.addColorStop(0.22, "rgba(40, 110, 140, 0.04)");
+  haze.addColorStop(0.55, "rgba(0, 35, 55, 0.12)");
+  haze.addColorStop(0.82, "rgba(0, 18, 36, 0.28)");
+  haze.addColorStop(1, "rgba(0, 10, 22, 0.42)");
   ctx.fillStyle = haze;
   ctx.fillRect(0, waterTopY, w, h - waterTopY);
 
-  if (reefId === "australia" || reefId === "caribbean") {
-    for (let i = 0; i < perfN(5); i++) {
-      const cx = ((i * 0.22 + t * 0.15) % 1.2) * w - w * 0.1;
-      const cy = waterTopY + waterH * (0.28 + (i % 3) * 0.12);
-      const g = ctx.createRadialGradient(cx, cy, 2, cx, cy, dpr * (70 + i * 18));
-      g.addColorStop(0, "rgba(220, 255, 245, 0.07)");
-      g.addColorStop(0.55, "rgba(180, 230, 240, 0.03)");
+  // Soft particulate / marine snow
+  ctx.fillStyle = "rgba(210, 235, 245, 0.07)";
+  for (let i = 0; i < perfN(28); i++) {
+    const x = ((i * 97 + 13) % 1000) / 1000 * w;
+    const y = waterTopY + (((i * 53 + 29) % 1000) / 1000) * (h - waterTopY);
+    ctx.beginPath();
+    ctx.arc(x, y, dpr * (0.5 + (i % 3) * 0.35), 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Soft static caustic patches in midwater
+  if (reefId !== "mariana_trench") {
+    for (let i = 0; i < perfN(6); i++) {
+      const cx = ((i * 0.19 + 0.08) % 1) * w;
+      const cy = waterTopY + waterH * (0.22 + (i % 4) * 0.14);
+      const g = ctx.createRadialGradient(cx, cy, 2, cx, cy, dpr * (80 + i * 16));
+      g.addColorStop(0, "rgba(220, 250, 255, 0.08)");
+      g.addColorStop(0.45, "rgba(160, 220, 235, 0.03)");
       g.addColorStop(1, "rgba(0, 0, 0, 0)");
       ctx.fillStyle = g;
       ctx.beginPath();
-      ctx.ellipse(cx, cy, dpr * (55 + i * 12), dpr * (28 + i * 6), i * 0.4, 0, Math.PI * 2);
+      ctx.ellipse(cx, cy, dpr * (60 + i * 10), dpr * (26 + i * 5), i * 0.35, 0, Math.PI * 2);
       ctx.fill();
     }
   }
 
   if (reefId === "australia") {
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
-    ctx.lineWidth = 1.2 * dpr;
-    for (let i = 0; i < perfN(9); i++) {
-      const x0 = (i / perfN(9)) * w + Math.sin(t + i) * dpr * 12;
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.045)";
+    ctx.lineWidth = 1.15 * dpr;
+    for (let i = 0; i < perfN(10); i++) {
+      const x0 = (i / perfN(10)) * w + Math.sin(t + i) * dpr * 10;
       ctx.beginPath();
-      ctx.moveTo(x0, waterTopY + dpr * 30);
-      ctx.bezierCurveTo(x0 + dpr * 40, waterTopY + waterH * 0.35, x0 - dpr * 30, waterTopY + waterH * 0.55, x0 + dpr * 20, h - dpr * 80);
+      ctx.moveTo(x0, waterTopY + dpr * 24);
+      ctx.bezierCurveTo(x0 + dpr * 36, waterTopY + waterH * 0.32, x0 - dpr * 28, waterTopY + waterH * 0.58, x0 + dpr * 18, h - dpr * 70);
       ctx.stroke();
     }
-    const g = ctx.createRadialGradient(w * 0.75, waterTopY + dpr * 40, 2, w * 0.55, waterTopY + waterH * 0.25, w * 0.5);
-    g.addColorStop(0, "rgba(180, 255, 230, 0.1)");
+    const g = ctx.createRadialGradient(w * 0.72, waterTopY + dpr * 30, 2, w * 0.52, waterTopY + waterH * 0.28, w * 0.55);
+    g.addColorStop(0, "rgba(190, 245, 235, 0.09)");
     g.addColorStop(1, "rgba(0, 0, 0, 0)");
     ctx.fillStyle = g;
     ctx.fillRect(0, waterTopY, w, waterH);
   } else if (reefId === "caribbean") {
-    const g = ctx.createRadialGradient(w * 0.2, h - dpr * 120, 10, w * 0.2, h, w * 0.55);
-    g.addColorStop(0, "rgba(80, 170, 190, 0.12)");
-    g.addColorStop(0.5, "rgba(200, 160, 100, 0.06)");
+    const g = ctx.createRadialGradient(w * 0.18, h - dpr * 110, 10, w * 0.22, h, w * 0.55);
+    g.addColorStop(0, "rgba(90, 175, 195, 0.11)");
+    g.addColorStop(0.5, "rgba(210, 175, 110, 0.05)");
     g.addColorStop(1, "rgba(0, 0, 0, 0)");
     ctx.fillStyle = g;
     ctx.fillRect(0, waterTopY, w, waterH);
-    const g2 = ctx.createRadialGradient(w * 0.88, h - dpr * 90, 8, w * 0.88, h, w * 0.45);
-    g2.addColorStop(0, "rgba(90, 140, 160, 0.1)");
+    const g2 = ctx.createRadialGradient(w * 0.86, h - dpr * 85, 8, w * 0.86, h, w * 0.42);
+    g2.addColorStop(0, "rgba(80, 150, 175, 0.1)");
     g2.addColorStop(1, "rgba(0, 0, 0, 0)");
     ctx.fillStyle = g2;
     ctx.fillRect(0, waterTopY, w, waterH);
   } else if (reefId === "mediterranean") {
-    ctx.fillStyle = "rgba(20, 30, 45, 0.16)";
-    ctx.fillRect(0, waterTopY + waterH * 0.15, w, waterH * 0.35);
-    ctx.fillStyle = "rgba(12, 20, 35, 0.2)";
-    ctx.fillRect(0, waterTopY + waterH * 0.45, w, waterH * 0.4);
+    ctx.fillStyle = "rgba(18, 28, 42, 0.14)";
+    ctx.fillRect(0, waterTopY + waterH * 0.18, w, waterH * 0.32);
+    ctx.fillStyle = "rgba(10, 18, 32, 0.2)";
+    ctx.fillRect(0, waterTopY + waterH * 0.48, w, waterH * 0.4);
     for (let i = 0; i < perfN(5); i++) {
-      const y = waterTopY + waterH * (0.2 + i * 0.14) + Math.sin(t + i) * dpr * 6;
-      ctx.strokeStyle = `rgba(150, 175, 200, ${0.04 + i * 0.015})`;
-      ctx.lineWidth = (3 + i) * dpr;
+      const y = waterTopY + waterH * (0.22 + i * 0.13);
+      ctx.strokeStyle = `rgba(150, 175, 200, ${0.035 + i * 0.012})`;
+      ctx.lineWidth = (2.5 + i) * dpr;
       ctx.beginPath();
       ctx.moveTo(0, y);
-      ctx.lineTo(w, y + dpr * 8);
+      ctx.lineTo(w, y + dpr * 6);
       ctx.stroke();
     }
   } else if (reefId === "japan_kuroshio") {
-    ctx.fillStyle = "rgba(0, 8, 24, 0.35)";
-    ctx.fillRect(0, waterTopY, w * 0.08, waterH);
-    ctx.fillRect(w * 0.92, waterTopY, w * 0.08, waterH);
-    ctx.strokeStyle = "rgba(120, 210, 255, 0.06)";
+    ctx.fillStyle = "rgba(0, 8, 24, 0.28)";
+    ctx.fillRect(0, waterTopY, w * 0.07, waterH);
+    ctx.fillRect(w * 0.93, waterTopY, w * 0.07, waterH);
+    ctx.strokeStyle = "rgba(120, 210, 255, 0.05)";
     ctx.lineWidth = dpr;
-    for (let i = 0; i < perfN(16); i++) {
-      const x = (i / perfN(16)) * w + (i % 2) * dpr * 20;
+    for (let i = 0; i < perfN(14); i++) {
+      const x = (i / perfN(14)) * w + (i % 2) * dpr * 18;
       ctx.beginPath();
       ctx.moveTo(x, waterTopY);
-      ctx.lineTo(x + dpr * 6, h - dpr * 40);
+      ctx.lineTo(x + dpr * 5, h - dpr * 40);
       ctx.stroke();
     }
     const sh = ctx.createLinearGradient(0, waterTopY, 0, waterTopY + waterH * 0.45);
-    sh.addColorStop(0, "rgba(0, 40, 80, 0.15)");
+    sh.addColorStop(0, "rgba(0, 40, 80, 0.14)");
     sh.addColorStop(1, "rgba(0, 0, 0, 0)");
     ctx.fillStyle = sh;
     ctx.fillRect(0, waterTopY, w, waterH * 0.45);
   } else if (reefId === "mariana_trench") {
     ctx.fillStyle = "rgba(0, 0, 0, 0.72)";
     ctx.fillRect(0, waterTopY, w, waterH);
-    ctx.strokeStyle = "rgba(60, 85, 120, 0.12)";
+    ctx.strokeStyle = "rgba(60, 85, 120, 0.1)";
     ctx.lineWidth = dpr * 2;
     for (let i = 0; i < perfN(8); i++) {
-      const x = (i / Math.max(1, perfN(7))) * w + Math.sin(t + i) * dpr * 12;
+      const x = (i / Math.max(1, perfN(7))) * w;
       ctx.beginPath();
       ctx.moveTo(x, waterTopY + waterH * 0.35);
       ctx.lineTo(x - dpr * (30 + i * 7), h);
       ctx.stroke();
     }
   }
+  ctx.restore();
+}
+
+/** Animated caustics + surface shimmer drawn each frame over the cached seabed. */
+function drawLiveAquaticOverlay() {
+  if (w <= 0 || h <= 0) return;
+  const reef = getReef();
+  const rid = reef.id;
+  if (rid === "mariana_trench") return;
+  const t = performance.now() * 0.001;
+  const sandTop = h - dpr * 92;
+  ctx.save();
+
+  // Surface shimmer band just under the waterline
+  const shimmer = ctx.createLinearGradient(0, waterTop, 0, waterTop + dpr * 48);
+  shimmer.addColorStop(0, `rgba(255, 255, 255, ${0.07 + Math.sin(t * 1.4) * 0.02})`);
+  shimmer.addColorStop(0.55, "rgba(200, 235, 255, 0.03)");
+  shimmer.addColorStop(1, "rgba(200, 235, 255, 0)");
+  ctx.fillStyle = shimmer;
+  ctx.fillRect(0, waterTop, w, dpr * 48);
+
+  // Moving god-ray shafts
+  ctx.globalCompositeOperation = "lighter";
+  const shaftCount = PERF_CHROMEBOOK ? 3 : 5;
+  for (let i = 0; i < shaftCount; i++) {
+    const sway = Math.sin(t * 0.55 + i * 1.3) * w * 0.035;
+    const x0 = w * (0.12 + i * 0.18) + sway;
+    const topW = dpr * (18 + (i % 3) * 8);
+    const botW = dpr * (55 + (i % 3) * 22);
+    const alpha = 0.028 + (i % 2) * 0.012;
+    ctx.fillStyle = `rgba(255, 245, 210, ${alpha})`;
+    ctx.beginPath();
+    ctx.moveTo(x0 - topW, waterTop);
+    ctx.lineTo(x0 + topW, waterTop);
+    ctx.lineTo(x0 + botW + sway * 0.4, h);
+    ctx.lineTo(x0 - botW + sway * 0.4, h);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Seabed caustic ripples
+  if (!PERF_CHROMEBOOK) {
+    ctx.globalCompositeOperation = "lighter";
+    ctx.strokeStyle = "rgba(220, 245, 255, 0.045)";
+    ctx.lineWidth = 1.2 * dpr;
+    for (let i = 0; i < 7; i++) {
+      const y = sandTop + dpr * (4 + i * 9) + Math.sin(t * 1.1 + i) * dpr * 2;
+      ctx.beginPath();
+      for (let x = 0; x <= w; x += dpr * 14) {
+        const yy = y + Math.sin(x * 0.012 + t * 1.6 + i * 0.7) * dpr * 3.5
+          + Math.cos(x * 0.021 - t * 1.2 + i) * dpr * 2;
+        if (x === 0) ctx.moveTo(x, yy);
+        else ctx.lineTo(x, yy);
+      }
+      ctx.stroke();
+    }
+  }
+
+  ctx.globalCompositeOperation = "source-over";
+  // Near-bottom blue-green contact fog
+  const fog = ctx.createLinearGradient(0, sandTop - dpr * 40, 0, h);
+  fog.addColorStop(0, "rgba(20, 70, 90, 0)");
+  fog.addColorStop(0.45, "rgba(10, 40, 55, 0.08)");
+  fog.addColorStop(1, "rgba(4, 18, 28, 0.16)");
+  ctx.fillStyle = fog;
+  ctx.fillRect(0, sandTop - dpr * 40, w, h - (sandTop - dpr * 40));
   ctx.restore();
 }
 
@@ -12630,25 +12709,30 @@ function drawBackground() {
   const rid = reef.id;
   const g = ctx.createLinearGradient(0, 0, 0, h);
   g.addColorStop(0, v.gradient[0]);
-  g.addColorStop(0.35, v.gradient[1]);
-  g.addColorStop(0.7, v.gradient[2]);
+  g.addColorStop(0.22, v.gradient[1]);
+  g.addColorStop(0.55, v.gradient[2]);
+  g.addColorStop(0.82, v.gradient[3]);
   g.addColorStop(1, v.gradient[3]);
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, w, h);
 
   drawReefAmbience(rid, waterTop);
 
-  const shaft = ctx.createLinearGradient(w * 0.35, waterTop, w * 0.55, h);
-  shaft.addColorStop(0, v.shaft[0]);
-  shaft.addColorStop(1, v.shaft[1]);
-  ctx.fillStyle = shaft;
-  ctx.beginPath();
-  ctx.moveTo(w * 0.38, waterTop);
-  ctx.lineTo(w * 0.62, waterTop);
-  ctx.lineTo(w * 0.72, h);
-  ctx.lineTo(w * 0.28, h);
-  ctx.closePath();
-  ctx.fill();
+  // Soft multi god-rays (static base layer; live overlay adds motion)
+  for (let s = 0; s < 3; s++) {
+    const x0 = w * (0.28 + s * 0.16);
+    const shaft = ctx.createLinearGradient(x0, waterTop, x0 + w * 0.05, h);
+    shaft.addColorStop(0, v.shaft[0]);
+    shaft.addColorStop(1, v.shaft[1]);
+    ctx.fillStyle = shaft;
+    ctx.beginPath();
+    ctx.moveTo(x0 - dpr * (10 + s * 4), waterTop);
+    ctx.lineTo(x0 + dpr * (14 + s * 5), waterTop);
+    ctx.lineTo(x0 + dpr * (48 + s * 14), h);
+    ctx.lineTo(x0 - dpr * (42 + s * 12), h);
+    ctx.closePath();
+    ctx.fill();
+  }
 
   ctx.fillStyle = v.silhouette;
   ctx.beginPath();
@@ -12671,18 +12755,19 @@ function drawBackground() {
   if (themeSand) {
     for (const [stop, color] of themeSand.stops) sand.addColorStop(stop, color);
   } else {
-    sand.addColorStop(0, "rgba(210, 180, 130, 0)");
-    sand.addColorStop(0.12, "rgba(198, 168, 118, 0.22)");
-    sand.addColorStop(0.35, "rgba(186, 152, 98, 0.42)");
-    sand.addColorStop(0.7, "rgba(158, 118, 72, 0.58)");
-    sand.addColorStop(1, "rgba(120, 82, 48, 0.72)");
+    sand.addColorStop(0, "rgba(210, 185, 140, 0)");
+    sand.addColorStop(0.08, "rgba(205, 178, 128, 0.18)");
+    sand.addColorStop(0.22, "rgba(190, 158, 108, 0.38)");
+    sand.addColorStop(0.48, "rgba(168, 132, 82, 0.55)");
+    sand.addColorStop(0.78, "rgba(128, 92, 55, 0.7)");
+    sand.addColorStop(1, "rgba(88, 60, 36, 0.82)");
   }
   ctx.fillStyle = sand;
   ctx.beginPath();
   ctx.moveTo(0, sandTop + dpr * 12);
-  for (let i = 0; i <= 18; i++) {
-    const x = (i / 18) * w;
-    const y = sandTop + dpr * (10 + Math.sin(i * 1.35) * 8 + Math.cos(i * 0.72) * 5);
+  for (let i = 0; i <= 24; i++) {
+    const x = (i / 24) * w;
+    const y = sandTop + dpr * (9 + Math.sin(i * 1.15) * 7 + Math.cos(i * 0.62) * 4.5 + Math.sin(i * 2.4) * 2);
     ctx.lineTo(x, y);
   }
   ctx.lineTo(w, h);
@@ -12690,38 +12775,75 @@ function drawBackground() {
   ctx.closePath();
   ctx.fill();
 
-  // Soft wet-sand sheen along the ridge
+  // Soft wet-sand sheen + secondary ripple ridges
   if (!themeSand) {
-    ctx.strokeStyle = "rgba(255, 240, 200, 0.14)";
-    ctx.lineWidth = Math.max(1, dpr * 1.4);
+    ctx.strokeStyle = "rgba(255, 242, 205, 0.16)";
+    ctx.lineWidth = Math.max(1, dpr * 1.5);
     ctx.beginPath();
-    for (let i = 0; i <= 18; i++) {
-      const x = (i / 18) * w;
-      const y = sandTop + dpr * (10 + Math.sin(i * 1.35) * 8 + Math.cos(i * 0.72) * 5);
+    for (let i = 0; i <= 24; i++) {
+      const x = (i / 24) * w;
+      const y = sandTop + dpr * (9 + Math.sin(i * 1.15) * 7 + Math.cos(i * 0.62) * 4.5 + Math.sin(i * 2.4) * 2);
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
     ctx.stroke();
+
+    ctx.strokeStyle = "rgba(160, 120, 70, 0.14)";
+    ctx.lineWidth = Math.max(1, dpr);
+    for (let r = 0; r < 3; r++) {
+      ctx.beginPath();
+      for (let i = 0; i <= 20; i++) {
+        const x = (i / 20) * w;
+        const y = sandTop + dpr * (22 + r * 16 + Math.sin(i * 1.4 + r) * 3.5);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
   }
 
-  ctx.fillStyle = themeSand ? themeSand.speck : "rgba(255, 236, 190, 0.2)";
-  for (let i = 0; i < perfN(52); i++) {
+  // Sand grain speckles
+  ctx.fillStyle = themeSand ? themeSand.speck : "rgba(255, 236, 190, 0.18)";
+  for (let i = 0; i < perfN(68); i++) {
     const x = ((i * 73) % 1000) / 1000 * w;
-    const y = sandTop + dpr * 18 + (((i * 41) % 100) / 100) * dpr * 62;
+    const y = sandTop + dpr * 16 + (((i * 41) % 100) / 100) * dpr * 68;
     ctx.beginPath();
-    ctx.ellipse(x, y, dpr * (0.6 + (i % 4) * 0.4), dpr * (0.45 + (i % 3) * 0.2), (i % 5) * 0.3, 0, Math.PI * 2);
+    ctx.ellipse(x, y, dpr * (0.55 + (i % 4) * 0.35), dpr * (0.4 + (i % 3) * 0.18), (i % 5) * 0.3, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // Small seabed pebbles
+  // Seabed pebbles, shell chips, darker wet patches
   if (!themeSand) {
-    ctx.fillStyle = "rgba(120, 95, 70, 0.35)";
-    for (let i = 0; i < perfN(14); i++) {
-      const x = ((i * 157) % 1000) / 1000 * w;
-      const y = sandTop + dpr * (22 + (i % 5) * 12);
+    for (let i = 0; i < perfN(8); i++) {
+      const x = ((i * 211) % 1000) / 1000 * w;
+      const y = sandTop + dpr * (28 + (i % 4) * 14);
+      const rg = ctx.createRadialGradient(x, y, 1, x, y, dpr * (14 + (i % 3) * 5));
+      rg.addColorStop(0, "rgba(90, 70, 45, 0.22)");
+      rg.addColorStop(1, "rgba(90, 70, 45, 0)");
+      ctx.fillStyle = rg;
       ctx.beginPath();
-      ctx.ellipse(x, y, dpr * (2.2 + (i % 3)), dpr * (1.4 + (i % 2) * 0.6), i * 0.4, 0, Math.PI * 2);
+      ctx.ellipse(x, y, dpr * (16 + (i % 3) * 6), dpr * (7 + (i % 2) * 3), i * 0.3, 0, Math.PI * 2);
       ctx.fill();
+    }
+
+    ctx.fillStyle = "rgba(120, 95, 70, 0.38)";
+    for (let i = 0; i < perfN(18); i++) {
+      const x = ((i * 157) % 1000) / 1000 * w;
+      const y = sandTop + dpr * (20 + (i % 6) * 11);
+      ctx.beginPath();
+      ctx.ellipse(x, y, dpr * (2 + (i % 4) * 0.9), dpr * (1.3 + (i % 3) * 0.5), i * 0.45, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Tiny shell fragments
+    ctx.strokeStyle = "rgba(245, 230, 200, 0.28)";
+    ctx.lineWidth = Math.max(1, dpr * 0.9);
+    for (let i = 0; i < perfN(10); i++) {
+      const x = ((i * 191) % 1000) / 1000 * w;
+      const y = sandTop + dpr * (24 + (i % 5) * 10);
+      ctx.beginPath();
+      ctx.arc(x, y, dpr * (2.5 + (i % 3)), Math.PI * 0.15, Math.PI * 1.05);
+      ctx.stroke();
     }
   }
 
@@ -14950,6 +15072,7 @@ function gameLoop(now) {
 
   ctx.clearRect(0, 0, w, h);
   drawCachedBackground();
+  drawLiveAquaticOverlay();
   if (adventureSession) drawAdventureThemeOverlay(now);
   const bubbleFrame = PERF_CHROMEBOOK ? 2 : 2;
   if (!PERF_CHROMEBOOK || gameLoopTick % bubbleFrame === 0) drawBubbles(treasureMapRevealPaused ? 0 : dt);
