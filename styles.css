@@ -1873,10 +1873,10 @@ body {
 
 .shop-guide__sailor {
   position: relative;
-  flex: 0 0 min(34vw, 260px);
-  width: min(34vw, 260px);
-  height: min(68vh, 460px);
-  min-width: 160px;
+  flex: 0 0 min(44vw, 360px);
+  width: min(44vw, 360px);
+  height: min(82vh, 620px);
+  min-width: 220px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -1893,12 +1893,12 @@ body {
 }
 
 .shop-guide__head {
-  transform-origin: 120px 148px;
+  transform-origin: 120px 150px;
   animation: shopSailorHeadBob 3.6s ease-in-out infinite;
 }
 
 .shop-guide__brows {
-  transform-origin: 120px 98px;
+  transform-origin: 120px 94px;
   animation: shopSailorBrow 2.8s ease-in-out infinite;
 }
 
@@ -1915,10 +1915,15 @@ body {
   animation: shopSailorBlink 4.5s ease-in-out infinite;
 }
 
+.shop-guide__stache {
+  transform-origin: 120px 128px;
+  animation: shopSailorMustache 0.55s ease-in-out infinite;
+}
+
 .shop-guide__mouth-open,
 .shop-guide__teeth {
   opacity: 0;
-  transform-origin: 120px 136px;
+  transform-origin: 120px 138px;
 }
 
 .shop-guide__lips {
@@ -2014,6 +2019,16 @@ body {
   }
 }
 
+@keyframes shopSailorMustache {
+  0%,
+  100% {
+    transform: translateY(0) scaleY(1);
+  }
+  50% {
+    transform: translateY(1px) scaleY(0.94);
+  }
+}
+
 @keyframes shopSailorArmTalk {
   0%,
   100% {
@@ -2041,6 +2056,7 @@ body {
   .shop-guide__head,
   .shop-guide__brows,
   .shop-guide__eyelid,
+  .shop-guide__stache,
   .shop-guide__mouth-g .shop-guide__lips,
   .shop-guide__mouth-g .shop-guide__mouth-open,
   .shop-guide__mouth-g .shop-guide__teeth,
@@ -2116,9 +2132,9 @@ body {
   }
 
   .shop-guide__sailor {
-    flex-basis: min(48vh, 330px);
-    width: min(58vw, 260px);
-    height: min(48vh, 330px);
+    flex-basis: min(52vh, 400px);
+    width: min(72vw, 320px);
+    height: min(52vh, 400px);
   }
 
   .shop-guide__bubble {

@@ -1545,8 +1545,9 @@
                   <stop offset="100%" stop-color="#b8c2d0"/>
                 </linearGradient>
                 <linearGradient id="shopSailorHair" x1="30%" y1="0%" x2="70%" y2="100%">
-                  <stop offset="0%" stop-color="#6b4428"/>
-                  <stop offset="100%" stop-color="#2a1810"/>
+                  <stop offset="0%" stop-color="#8b5a3c"/>
+                  <stop offset="55%" stop-color="#6b4428"/>
+                  <stop offset="100%" stop-color="#3f2418"/>
                 </linearGradient>
                 <radialGradient id="shopSailorCheek" cx="50%" cy="50%" r="50%">
                   <stop offset="0%" stop-color="#ff9aaa" stop-opacity="0.5"/>
@@ -1626,76 +1627,95 @@
               </g>
 
               <!-- neck -->
-              <path d="M109 146 L112 168 L128 168 L131 146 Z" fill="url(#shopSailorSkin)" stroke="#b88968" stroke-width="0.6"/>
+              <path d="M108 138 L112 168 L128 168 L132 138 Z" fill="url(#shopSailorSkin)" stroke="#b88968" stroke-width="0.6"/>
 
-              <!-- head group -->
+              <!-- head group (larger, cuter) -->
               <g class="shop-guide__head">
                 <!-- ears -->
-                <ellipse cx="87" cy="112" rx="6.5" ry="9" fill="url(#shopSailorSkin)" stroke="#b88968" stroke-width="0.7"/>
-                <ellipse cx="153" cy="112" rx="6.5" ry="9" fill="url(#shopSailorSkin)" stroke="#b88968" stroke-width="0.7"/>
-                <ellipse cx="87" cy="113" rx="2.6" ry="4.2" fill="#e0a888" opacity="0.5"/>
-                <ellipse cx="153" cy="113" rx="2.6" ry="4.2" fill="#e0a888" opacity="0.5"/>
+                <ellipse cx="82" cy="108" rx="7.5" ry="10" fill="url(#shopSailorSkin)" stroke="#b88968" stroke-width="0.7"/>
+                <ellipse cx="158" cy="108" rx="7.5" ry="10" fill="url(#shopSailorSkin)" stroke="#b88968" stroke-width="0.7"/>
+                <ellipse cx="82" cy="109" rx="3" ry="4.8" fill="#e8b898" opacity="0.5"/>
+                <ellipse cx="158" cy="109" rx="3" ry="4.8" fill="#e8b898" opacity="0.5"/>
 
-                <!-- soft hair under hat (no sideburns) -->
-                <path d="M100 88 C98 100 100 112 104 120 L136 120 C140 112 142 100 140 88 Z" fill="url(#shopSailorHair)"/>
+                <!-- soft hair mass behind face -->
+                <path d="M88 78 C84 98 86 124 94 142 L146 142 C154 124 156 98 152 78
+                  Q136 70 120 68 Q104 70 88 78 Z" fill="url(#shopSailorHair)"/>
 
-                <!-- rounder cute face -->
-                <ellipse cx="120" cy="116" rx="30" ry="34" fill="url(#shopSailorSkin)" stroke="#b88968" stroke-width="1"/>
-                <ellipse cx="120" cy="116" rx="30" ry="34" fill="url(#shopSailorSkinShade)"/>
-                <!-- rosy cute cheeks -->
-                <ellipse cx="102" cy="124" rx="10" ry="7" fill="url(#shopSailorCheek)"/>
-                <ellipse cx="138" cy="124" rx="10" ry="7" fill="url(#shopSailorCheek)"/>
+                <!-- bigger round face -->
+                <ellipse cx="120" cy="112" rx="38" ry="42" fill="url(#shopSailorSkin)" stroke="#b88968" stroke-width="1.1"/>
+                <ellipse cx="120" cy="112" rx="38" ry="42" fill="url(#shopSailorSkinShade)"/>
+                <!-- rosy cheeks -->
+                <ellipse cx="98" cy="122" rx="12" ry="8" fill="url(#shopSailorCheek)"/>
+                <ellipse cx="142" cy="122" rx="12" ry="8" fill="url(#shopSailorCheek)"/>
 
-                <!-- soft thin brows -->
-                <g class="shop-guide__brows">
-                  <path d="M100 100 Q108 95 116 98" fill="none" stroke="#8a5a3c" stroke-width="1.5" stroke-linecap="round"/>
-                  <path d="M124 98 Q132 95 140 100" fill="none" stroke="#8a5a3c" stroke-width="1.5" stroke-linecap="round"/>
+                <!-- cute soft bangs / fringe under hat -->
+                <g class="shop-guide__hair-front">
+                  <path d="M90 86 Q98 78 108 82 Q112 92 104 98 Q96 94 90 86 Z" fill="url(#shopSailorHair)"/>
+                  <path d="M108 80 Q120 74 132 80 Q128 92 120 96 Q112 92 108 80 Z" fill="url(#shopSailorHair)"/>
+                  <path d="M132 82 Q142 78 150 86 Q144 94 136 98 Q132 92 132 82 Z" fill="url(#shopSailorHair)"/>
+                  <path d="M96 90 Q102 100 100 108" fill="none" stroke="#4a2f1c" stroke-width="0.7" opacity="0.35"/>
+                  <path d="M120 86 Q122 96 120 104" fill="none" stroke="#4a2f1c" stroke-width="0.7" opacity="0.3"/>
+                  <path d="M144 90 Q138 100 140 108" fill="none" stroke="#4a2f1c" stroke-width="0.7" opacity="0.35"/>
                 </g>
 
-                <!-- big cute eyes (blink via eyelid overlay) -->
+                <!-- soft brows -->
+                <g class="shop-guide__brows">
+                  <path d="M96 96 Q108 90 118 94" fill="none" stroke="#8a5a3c" stroke-width="1.7" stroke-linecap="round"/>
+                  <path d="M122 94 Q132 90 144 96" fill="none" stroke="#8a5a3c" stroke-width="1.7" stroke-linecap="round"/>
+                </g>
+
+                <!-- big cute eyes -->
                 <g class="shop-guide__eyes">
                   <g class="shop-guide__eye-l">
-                    <ellipse cx="107" cy="112" rx="7.5" ry="6.4" fill="#fffef9" stroke="#5b4636" stroke-width="0.8"/>
-                    <circle cx="107.4" cy="112.4" r="3.6" fill="#6ba3c4"/>
-                    <circle cx="107.8" cy="112.6" r="1.85" fill="#1e293b"/>
-                    <circle cx="106.2" cy="111" r="1" fill="#fff"/>
-                    <ellipse class="shop-guide__eyelid" cx="107" cy="112" rx="8" ry="7" fill="url(#shopSailorSkin)"/>
+                    <ellipse cx="105" cy="108" rx="9" ry="7.6" fill="#fffef9" stroke="#5b4636" stroke-width="0.85"/>
+                    <circle cx="105.5" cy="108.5" r="4.2" fill="#6ba3c4"/>
+                    <circle cx="106" cy="108.8" r="2.15" fill="#1e293b"/>
+                    <circle cx="104" cy="107" r="1.15" fill="#fff"/>
+                    <ellipse class="shop-guide__eyelid" cx="105" cy="108" rx="9.5" ry="8.2" fill="url(#shopSailorSkin)"/>
                   </g>
                   <g class="shop-guide__eye-r">
-                    <ellipse cx="133" cy="112" rx="7.5" ry="6.4" fill="#fffef9" stroke="#5b4636" stroke-width="0.8"/>
-                    <circle cx="132.6" cy="112.4" r="3.6" fill="#6ba3c4"/>
-                    <circle cx="132.2" cy="112.6" r="1.85" fill="#1e293b"/>
-                    <circle cx="131.2" cy="111" r="1" fill="#fff"/>
-                    <ellipse class="shop-guide__eyelid" cx="133" cy="112" rx="8" ry="7" fill="url(#shopSailorSkin)"/>
+                    <ellipse cx="135" cy="108" rx="9" ry="7.6" fill="#fffef9" stroke="#5b4636" stroke-width="0.85"/>
+                    <circle cx="134.5" cy="108.5" r="4.2" fill="#6ba3c4"/>
+                    <circle cx="134" cy="108.8" r="2.15" fill="#1e293b"/>
+                    <circle cx="133" cy="107" r="1.15" fill="#fff"/>
+                    <ellipse class="shop-guide__eyelid" cx="135" cy="108" rx="9.5" ry="8.2" fill="url(#shopSailorSkin)"/>
                   </g>
                 </g>
 
-                <!-- tiny cute nose -->
-                <path d="M120 114 L118 123 Q120 125.5 122 123 Z" fill="#e8b898" stroke="#d4a07a" stroke-width="0.5"/>
+                <!-- soft nose -->
+                <path d="M120 110 L117.2 122 Q120 125.5 122.8 122 Z" fill="#e8b898" stroke="#d4a07a" stroke-width="0.55"/>
+                <path d="M118.2 121.5 Q120 123.2 121.8 121.5" fill="none" stroke="#b88968" stroke-width="0.6" opacity="0.45"/>
+
+                <!-- cute neat mustache -->
+                <g class="shop-guide__stache">
+                  <path d="M104 128
+                    Q110 122 120 126
+                    Q130 122 136 128
+                    Q130 134 120 132.5
+                    Q110 134 104 128 Z"
+                    fill="#7a4a30"/>
+                  <path d="M108 128 Q120 124 132 128" fill="none" stroke="#5a3420" stroke-width="0.6" opacity="0.35"/>
+                </g>
 
                 <!-- gentle smile / talking mouth -->
                 <g class="shop-guide__mouth-g">
-                  <path class="shop-guide__lips" d="M110 134 Q120 142 130 134" fill="none" stroke="#e07070" stroke-width="1.8" stroke-linecap="round"/>
-                  <ellipse class="shop-guide__mouth-open" cx="120" cy="137" rx="7" ry="3.8" fill="#c45a5a"/>
-                  <path class="shop-guide__teeth" d="M114.5 134.8 H125.5 V136.4 Q120 137.2 114.5 136.4 Z" fill="#fff8f0"/>
+                  <path class="shop-guide__lips" d="M108 136 Q120 145 132 136" fill="none" stroke="#e07070" stroke-width="1.9" stroke-linecap="round"/>
+                  <ellipse class="shop-guide__mouth-open" cx="120" cy="139" rx="8" ry="4.2" fill="#c45a5a"/>
+                  <path class="shop-guide__teeth" d="M113.5 136.5 H126.5 V138.4 Q120 139.3 113.5 138.4 Z" fill="#fff8f0"/>
                 </g>
 
-                <!-- sailor hat seated on the head -->
+                <!-- sailor hat on bigger head -->
                 <g class="shop-guide__cap">
-                  <!-- crown sits over the crown of the skull -->
-                  <path d="M92 78
-                    Q94 52 120 48
-                    Q146 52 148 78
-                    Q148 84 120 86
-                    Q92 84 92 78 Z"
+                  <path d="M86 72
+                    Q90 42 120 38
+                    Q150 42 154 72
+                    Q154 80 120 82
+                    Q86 80 86 72 Z"
                     fill="url(#shopSailorHat)" stroke="#94a3b8" stroke-width="1"/>
-                  <!-- brim wraps the forehead -->
-                  <ellipse cx="120" cy="80" rx="38" ry="7.5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
-                  <ellipse cx="120" cy="79" rx="34" ry="4.5" fill="#ffffff" opacity="0.35"/>
-                  <!-- navy band -->
-                  <path d="M100 66 Q120 62 140 66" fill="none" stroke="#1d4ed8" stroke-width="4" stroke-linecap="round"/>
-                  <!-- highlight -->
-                  <ellipse cx="108" cy="58" rx="9" ry="4.5" fill="#fff" opacity="0.55"/>
+                  <ellipse cx="120" cy="76" rx="44" ry="8.5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+                  <ellipse cx="120" cy="75" rx="38" ry="4.5" fill="#ffffff" opacity="0.35"/>
+                  <path d="M98 60 Q120 55 142 60" fill="none" stroke="#1d4ed8" stroke-width="4.2" stroke-linecap="round"/>
+                  <ellipse cx="108" cy="52" rx="10" ry="5" fill="#fff" opacity="0.55"/>
                 </g>
               </g>
             </svg>
