@@ -6367,7 +6367,10 @@ function duelExpectedOpponentScore(now) {
 function spawnFishInDuelHalf(side) {
   const spec = pickSpecies();
   const big = BIG_CRITTER_MORPHS.has(spec.morph);
-  const len = SIZE[spec.size].length * dpr * (big ? 1.4 : 1);
+  const len =
+    SIZE[spec.size].length *
+    dpr *
+    (spec.morph === "manta" ? 1.55 : spec.morph === "seal" ? 1.78 : big ? 1.4 : 1);
   const reef = getReef();
   const half = duelHalfW();
   const xMin = side === "player" ? 0 : half;
@@ -9826,20 +9829,21 @@ function crabTrapLoop(now) {
 function paintTreasureCrabBody(drawCtx, sc, leg) {
   const swing = (i, m) => Math.sin(leg * m + i * 1.1) * 0.22;
 
-  drawCtx.fillStyle = "rgba(8, 12, 18, 0.22)";
+  drawCtx.fillStyle = "rgba(8, 12, 18, 0.28)";
   drawCtx.beginPath();
-  drawCtx.ellipse(0, 8 * sc, 44 * sc, 11 * sc, 0.03, 0, Math.PI * 2);
+  drawCtx.ellipse(0, 20 * sc, 40 * sc, 8 * sc, 0.02, 0, Math.PI * 2);
   drawCtx.fill();
 
   const drawWalkingLeg = (side, idx) => {
-    const bx = side * (14 + idx * 5.8) * sc;
-    const by = idx * 2.4 * sc;
+    const bx = side * (12 + idx * 5.2) * sc;
+    const by = 4 * sc + idx * 1.8 * sc;
     const s1 = swing(idx + side * 2, 1.12);
     const s2 = swing(idx + side * 2 + 0.5, 0.92);
-    const a1 = (side > 0 ? 0.4 : Math.PI - 0.4) + s1;
-    const a2 = a1 + (side > 0 ? 0.55 : -0.55) + s2 * 0.8;
-    const l1 = 12 * sc;
-    const l2 = 14 * sc;
+    // Angle legs downward onto the seabed (not splayed flat).
+    const a1 = (side > 0 ? 0.95 : Math.PI - 0.95) + s1 * 0.85;
+    const a2 = a1 + (side > 0 ? 0.48 : -0.48) + s2 * 0.55;
+    const l1 = 11 * sc;
+    const l2 = 13 * sc;
     const j1x = bx + Math.cos(a1) * l1;
     const j1y = by + Math.sin(a1) * l1;
     const tipX = j1x + Math.cos(a2) * l2;
@@ -10706,7 +10710,10 @@ function spawnFish() {
   }
   const spec = pickSpecies();
   const big = BIG_CRITTER_MORPHS.has(spec.morph);
-  const len = SIZE[spec.size].length * dpr * (spec.morph === "manta" ? 1.55 : big ? 1.4 : 1);
+  const len =
+    SIZE[spec.size].length *
+    dpr *
+    (spec.morph === "manta" ? 1.55 : spec.morph === "seal" ? 1.78 : big ? 1.4 : 1);
   const fromLeft = Math.random() < 0.5;
   const reef = getReef();
   const trench = reef.id === "mariana_trench";
@@ -11207,7 +11214,12 @@ function tryCatchPearl(now) {
 }
 
 function jackpotCrabBaseY() {
-  return h - dpr * 54;
+  // Sand ridge sits near h - 92*dpr; plant feet on that surface.
+  const sandTop = h - dpr * 92;
+  const sc = dpr * 1.05;
+  const sandSurface = sandTop + dpr * 16;
+  const footBelowOrigin = 21 * sc;
+  return sandSurface - footBelowOrigin;
 }
 
 function updateJackpotCrab(now, dt) {
@@ -12007,8 +12019,32 @@ function drawKraken() {
 function drawReefAmbience(reefId, waterTopY) {
   const t = performance.now() * 0.0008;
   ctx.save();
+
+  // Depth haze near the seabed
+  const haze = ctx.createLinearGradient(0, waterTopY + waterH * 0.45, 0, h);
+  haze.addColorStop(0, "rgba(0, 20, 40, 0)");
+  haze.addColorStop(0.55, "rgba(0, 25, 45, 0.08)");
+  haze.addColorStop(1, "rgba(0, 18, 32, 0.22)");
+  ctx.fillStyle = haze;
+  ctx.fillRect(0, waterTopY, w, h - waterTopY);
+
+  if (reefId === "australia" || reefId === "caribbean") {
+    for (let i = 0; i < perfN(5); i++) {
+      const cx = ((i * 0.22 + t * 0.15) % 1.2) * w - w * 0.1;
+      const cy = waterTopY + waterH * (0.28 + (i % 3) * 0.12);
+      const g = ctx.createRadialGradient(cx, cy, 2, cx, cy, dpr * (70 + i * 18));
+      g.addColorStop(0, "rgba(220, 255, 245, 0.07)");
+      g.addColorStop(0.55, "rgba(180, 230, 240, 0.03)");
+      g.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, dpr * (55 + i * 12), dpr * (28 + i * 6), i * 0.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
   if (reefId === "australia") {
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.07)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
     ctx.lineWidth = 1.2 * dpr;
     for (let i = 0; i < perfN(9); i++) {
       const x0 = (i / perfN(9)) * w + Math.sin(t + i) * dpr * 12;
@@ -12018,7 +12054,7 @@ function drawReefAmbience(reefId, waterTopY) {
       ctx.stroke();
     }
     const g = ctx.createRadialGradient(w * 0.75, waterTopY + dpr * 40, 2, w * 0.55, waterTopY + waterH * 0.25, w * 0.5);
-    g.addColorStop(0, "rgba(180, 255, 230, 0.12)");
+    g.addColorStop(0, "rgba(180, 255, 230, 0.1)");
     g.addColorStop(1, "rgba(0, 0, 0, 0)");
     ctx.fillStyle = g;
     ctx.fillRect(0, waterTopY, w, waterH);
@@ -12493,17 +12529,18 @@ function drawBackground() {
   if (themeSand) {
     for (const [stop, color] of themeSand.stops) sand.addColorStop(stop, color);
   } else {
-    sand.addColorStop(0, "rgba(236, 205, 150, 0)");
-    sand.addColorStop(0.28, "rgba(226, 190, 132, 0.18)");
-    sand.addColorStop(0.72, "rgba(210, 169, 104, 0.36)");
-    sand.addColorStop(1, "rgba(174, 128, 70, 0.5)");
+    sand.addColorStop(0, "rgba(210, 180, 130, 0)");
+    sand.addColorStop(0.12, "rgba(198, 168, 118, 0.22)");
+    sand.addColorStop(0.35, "rgba(186, 152, 98, 0.42)");
+    sand.addColorStop(0.7, "rgba(158, 118, 72, 0.58)");
+    sand.addColorStop(1, "rgba(120, 82, 48, 0.72)");
   }
   ctx.fillStyle = sand;
   ctx.beginPath();
   ctx.moveTo(0, sandTop + dpr * 12);
-  for (let i = 0; i <= 14; i++) {
-    const x = (i / 14) * w;
-    const y = sandTop + dpr * (10 + Math.sin(i * 1.45) * 7 + Math.cos(i * 0.8) * 4);
+  for (let i = 0; i <= 18; i++) {
+    const x = (i / 18) * w;
+    const y = sandTop + dpr * (10 + Math.sin(i * 1.35) * 8 + Math.cos(i * 0.72) * 5);
     ctx.lineTo(x, y);
   }
   ctx.lineTo(w, h);
@@ -12511,13 +12548,39 @@ function drawBackground() {
   ctx.closePath();
   ctx.fill();
 
-  ctx.fillStyle = themeSand ? themeSand.speck : "rgba(255, 238, 190, 0.18)";
-  for (let i = 0; i < perfN(38); i++) {
-    const x = ((i * 73) % 1000) / 1000 * w;
-    const y = sandTop + dpr * 20 + (((i * 41) % 100) / 100) * dpr * 58;
+  // Soft wet-sand sheen along the ridge
+  if (!themeSand) {
+    ctx.strokeStyle = "rgba(255, 240, 200, 0.14)";
+    ctx.lineWidth = Math.max(1, dpr * 1.4);
     ctx.beginPath();
-    ctx.ellipse(x, y, dpr * (0.7 + (i % 3) * 0.35), dpr * 0.55, 0, 0, Math.PI * 2);
+    for (let i = 0; i <= 18; i++) {
+      const x = (i / 18) * w;
+      const y = sandTop + dpr * (10 + Math.sin(i * 1.35) * 8 + Math.cos(i * 0.72) * 5);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = themeSand ? themeSand.speck : "rgba(255, 236, 190, 0.2)";
+  for (let i = 0; i < perfN(52); i++) {
+    const x = ((i * 73) % 1000) / 1000 * w;
+    const y = sandTop + dpr * 18 + (((i * 41) % 100) / 100) * dpr * 62;
+    ctx.beginPath();
+    ctx.ellipse(x, y, dpr * (0.6 + (i % 4) * 0.4), dpr * (0.45 + (i % 3) * 0.2), (i % 5) * 0.3, 0, Math.PI * 2);
     ctx.fill();
+  }
+
+  // Small seabed pebbles
+  if (!themeSand) {
+    ctx.fillStyle = "rgba(120, 95, 70, 0.35)";
+    for (let i = 0; i < perfN(14); i++) {
+      const x = ((i * 157) % 1000) / 1000 * w;
+      const y = sandTop + dpr * (22 + (i % 5) * 12);
+      ctx.beginPath();
+      ctx.ellipse(x, y, dpr * (2.2 + (i % 3)), dpr * (1.4 + (i % 2) * 0.6), i * 0.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
 
   if (!advTheme && rid === "australia") drawGreatBarrierReefBed();
