@@ -9713,6 +9713,43 @@ function crabTrapSpawn(now) {
   crabTrapAddCrab();
 }
 
+function crabTrapCageLandingY(cageW) {
+  // Plant cages near the canvas bottom so bottom-of-sand crabs are reachable.
+  const ch = cageW * 0.72;
+  return crabTrapH - ch * 0.42;
+}
+
+function crabTrapTryCatchCrabs(cage, { playSound }) {
+  const s = crabTrapSession;
+  if (!s) return 0;
+  const half = cage.w * 0.58;
+  const ch = cage.w * 0.72;
+  const top = cage.y - ch * 0.55;
+  const bottom = cage.y + ch * 0.55;
+  let caught = 0;
+  for (let i = s.crabs.length - 1; i >= 0; i--) {
+    const c = s.crabs[i];
+    if (c.trapped) continue;
+    if (Math.abs(c.x - cage.x) > half) continue;
+    // Catch crabs the cage is covering now — including near the screen bottom.
+    if (c.y < top - 10 * crabTrapDpr || c.y > bottom + 18 * crabTrapDpr) continue;
+    c.trapped = true;
+    cage.trapped.push({
+      dx: Math.max(-half * 0.7, Math.min(half * 0.7, c.x - cage.x)),
+      sc: c.sc * 0.62,
+      legT: c.legT,
+      facing: c.facing,
+    });
+    s.crabs.splice(i, 1);
+    s.score += 1;
+    crabTrapAddSparkle(c.x, Math.min(c.y, cage.y) - cage.w * 0.15);
+    caught += 1;
+  }
+  if (caught > 0 && playSound) playCrabTrapSound(caught);
+  if (caught > 0) updateCrabTrapHud();
+  return caught;
+}
+
 function crabTrapDropCage(canvasX) {
   const s = crabTrapSession;
   if (!s || !s.running) return;
@@ -9733,11 +9770,12 @@ function crabTrapDropCage(canvasX) {
     y: crabTrapH * 0.03,
     vy: 0,
     w: cageW,
-    landingY: crabSandTopY() + 52 * crabTrapDpr,
+    landingY: crabTrapCageLandingY(cageW),
     state: "falling",
     landTimer: 0,
     alpha: 1,
     trapped: [],
+    catchSoundPlayed: false,
   });
   playCrabDropSound();
   if (s.cagesLeft <= 0) {
@@ -9749,25 +9787,32 @@ function crabTrapDropCage(canvasX) {
 function crabTrapLandCage(cage) {
   const s = crabTrapSession;
   if (!s) return;
-  const half = cage.w * 0.5;
+  // On land, sweep the full column under the cage so bottom crabs still count.
+  const half = cage.w * 0.58;
+  let caught = 0;
   for (let i = s.crabs.length - 1; i >= 0; i--) {
     const c = s.crabs[i];
     if (c.trapped) continue;
-    if (Math.abs(c.x - cage.x) <= half) {
-      c.trapped = true;
-      cage.trapped.push({
-        dx: Math.max(-half * 0.7, Math.min(half * 0.7, c.x - cage.x)),
-        sc: c.sc * 0.62,
-        legT: c.legT,
-        facing: c.facing,
-      });
-      s.crabs.splice(i, 1);
-      s.score += 1;
-      crabTrapAddSparkle(c.x, cage.landingY - cage.w * 0.4);
-    }
+    if (Math.abs(c.x - cage.x) > half) continue;
+    c.trapped = true;
+    cage.trapped.push({
+      dx: Math.max(-half * 0.7, Math.min(half * 0.7, c.x - cage.x)),
+      sc: c.sc * 0.62,
+      legT: c.legT,
+      facing: c.facing,
+    });
+    s.crabs.splice(i, 1);
+    s.score += 1;
+    crabTrapAddSparkle(c.x, cage.y - cage.w * 0.2);
+    caught += 1;
   }
-  if (cage.trapped.length) playCrabTrapSound(cage.trapped.length);
-  else playCrabThudSound();
+  const total = cage.trapped.length;
+  if (total && !cage.catchSoundPlayed) {
+    playCrabTrapSound(total);
+    cage.catchSoundPlayed = true;
+  } else if (!total) {
+    playCrabThudSound();
+  }
   updateCrabTrapHud();
 }
 
@@ -9801,6 +9846,12 @@ function crabTrapLoop(now) {
     if (cage.state === "falling") {
       cage.vy += 3800 * crabTrapDpr * dtSec;
       cage.y += cage.vy * dtSec;
+      // Scoop crabs at any sand depth while the cage falls through.
+      const midCaught = crabTrapTryCatchCrabs(cage, { playSound: false });
+      if (midCaught > 0 && !cage.catchSoundPlayed) {
+        playCrabTrapSound(midCaught);
+        cage.catchSoundPlayed = true;
+      }
       if (cage.y >= cage.landingY) {
         cage.y = cage.landingY;
         cage.state = "landed";
@@ -9829,9 +9880,9 @@ function crabTrapLoop(now) {
 function paintTreasureCrabBody(drawCtx, sc, leg) {
   const swing = (i, m) => Math.sin(leg * m + i * 1.1) * 0.22;
 
-  drawCtx.fillStyle = "rgba(8, 12, 18, 0.28)";
+  drawCtx.fillStyle = "rgba(8, 12, 18, 0.32)";
   drawCtx.beginPath();
-  drawCtx.ellipse(0, 20 * sc, 40 * sc, 8 * sc, 0.02, 0, Math.PI * 2);
+  drawCtx.ellipse(0, 28 * sc, 42 * sc, 7 * sc, 0.02, 0, Math.PI * 2);
   drawCtx.fill();
 
   const drawWalkingLeg = (side, idx) => {
@@ -11214,12 +11265,12 @@ function tryCatchPearl(now) {
 }
 
 function jackpotCrabBaseY() {
-  // Sand ridge sits near h - 92*dpr; plant feet on that surface.
-  const sandTop = h - dpr * 92;
+  // Visual seabed matches clam/coral bases near the canvas bottom (not the sand-gradient start).
   const sc = dpr * 1.05;
-  const sandSurface = sandTop + dpr * 16;
-  const footBelowOrigin = 21 * sc;
-  return sandSurface - footBelowOrigin;
+  const floorY = h - dpr * 24;
+  // Legs + dactyl tips reach ~28*sc below body origin in paintTreasureCrabBody.
+  const footBelowOrigin = 28 * sc;
+  return floorY - footBelowOrigin;
 }
 
 function updateJackpotCrab(now, dt) {
