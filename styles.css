@@ -5154,6 +5154,12 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .home-launch-stack > .shop-launch::before,
+  .home-launch-stack > .adventure-launch::before,
+  .home-launch-stack > .events-launch::before {
+    animation: none !important;
+  }
+
   .adventure-launch--flash,
   .adventure-launch--unlock-ready,
   .adventure-launch--centered.adventure-launch--unlock-ready {
