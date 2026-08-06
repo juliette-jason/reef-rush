@@ -587,30 +587,8 @@
         <fieldset class="rods rods--with-map rods--card">
           <legend class="rods__legend">Choose your reef</legend>
           <div class="reef-picker reef-picker--map-first">
-            <div class="reef-map-panel">
+              <div class="reef-map-panel">
               <div class="reef-map-panel__title">World chart</div>
-              <div class="reef-map-stage">
-              <div id="mapSeagullGuide" class="map-seagull" hidden aria-live="polite">
-                <div class="map-seagull__perch" aria-hidden="true">
-                  <div class="map-seagull__bird">
-                    <span class="map-seagull__tail"></span>
-                    <span class="map-seagull__body"></span>
-                    <span class="map-seagull__wing map-seagull__wing--back"></span>
-                    <span class="map-seagull__wing map-seagull__wing--front"></span>
-                    <span class="map-seagull__head">
-                      <span class="map-seagull__eye"></span>
-                      <span class="map-seagull__beak"></span>
-                    </span>
-                    <span class="map-seagull__leg map-seagull__leg--left"></span>
-                    <span class="map-seagull__leg map-seagull__leg--right"></span>
-                  </div>
-                </div>
-                <div class="map-seagull__bubble" role="dialog" aria-labelledby="mapSeagullTitle">
-                  <strong id="mapSeagullTitle" class="map-seagull__title">Ahoy!</strong>
-                  <div id="mapSeagullText" class="map-seagull__text"></div>
-                  <button type="button" id="btnMapSeagullDone" class="btn btn--secondary map-seagull__btn">Got it</button>
-                </div>
-              </div>
               <div class="reef-map" id="reefMap">
                 <img
                   class="reef-map__photo"
@@ -635,7 +613,6 @@
                   </svg>
                 </div>
               </div>
-              </div>
               <p id="reefMapCaption" class="reef-map-panel__caption">Tap a pin on the chart to choose your reef.</p>
             </div>
           </div>
@@ -649,11 +626,103 @@
           <legend class="rods__legend">Choose your rod</legend>
           <div id="rodChoices" class="rods__grid"></div>
         </fieldset>
-        <button type="button" id="btnStart" class="btn btn--primary btn--start">
-          <span class="btn--start__shine" aria-hidden="true"></span>
-          <span class="btn--start__label">Start Game</span>
-          <span id="btnStartSub" class="btn__sub">Round length depends on reef · tap to play</span>
-        </button>
+        <div class="start-game-wrap">
+          <div id="mapSeagullGuide" class="map-seagull" hidden aria-live="polite">
+            <div class="map-seagull__perch" aria-hidden="true">
+              <svg class="map-seagull__bird" viewBox="0 0 140 130" xmlns="http://www.w3.org/2000/svg" focusable="false">
+                <defs>
+                  <linearGradient id="mapSgBody" x1="30%" y1="10%" x2="70%" y2="95%">
+                    <stop offset="0%" stop-color="#ffffff"/>
+                    <stop offset="55%" stop-color="#e8eef4"/>
+                    <stop offset="100%" stop-color="#c5ced8"/>
+                  </linearGradient>
+                  <linearGradient id="mapSgWing" x1="50%" y1="0%" x2="50%" y2="100%">
+                    <stop offset="0%" stop-color="#f8fafc"/>
+                    <stop offset="45%" stop-color="#d1d9e3"/>
+                    <stop offset="100%" stop-color="#64748b"/>
+                  </linearGradient>
+                  <linearGradient id="mapSgHead" x1="35%" y1="15%" x2="70%" y2="90%">
+                    <stop offset="0%" stop-color="#ffffff"/>
+                    <stop offset="100%" stop-color="#dbe4ee"/>
+                  </linearGradient>
+                  <linearGradient id="mapSgBeak" x1="50%" y1="0%" x2="50%" y2="100%">
+                    <stop offset="0%" stop-color="#fbbf24"/>
+                    <stop offset="100%" stop-color="#d97706"/>
+                  </linearGradient>
+                  <radialGradient id="mapSgCheek" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#fda4af" stop-opacity="0.35"/>
+                    <stop offset="100%" stop-color="#fda4af" stop-opacity="0"/>
+                  </radialGradient>
+                </defs>
+                <!-- feet / legs perched -->
+                <g class="map-seagull__legs">
+                  <path d="M58 108 L56 122 L52 124" fill="none" stroke="#ea580c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M56 122 L60 125" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M56 122 L54 126" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M82 108 L84 122 L88 124" fill="none" stroke="#ea580c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M84 122 L80 125" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M84 122 L86 126" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round"/>
+                </g>
+                <!-- tail behind -->
+                <path d="M62 96 Q70 108 78 96 Q70 102 62 96 Z" fill="#94a3b8" stroke="#64748b" stroke-width="0.8"/>
+                <!-- body facing camera -->
+                <ellipse cx="70" cy="78" rx="28" ry="32" fill="url(#mapSgBody)" stroke="#94a3b8" stroke-width="1.1"/>
+                <ellipse cx="70" cy="84" rx="18" ry="20" fill="#fff" opacity="0.45"/>
+                <!-- folded wings -->
+                <g class="map-seagull__wing-l">
+                  <path d="M44 62
+                    C34 68 30 84 36 98
+                    C42 104 52 100 56 92
+                    C54 78 52 68 44 62 Z"
+                    fill="url(#mapSgWing)" stroke="#64748b" stroke-width="1"/>
+                  <path d="M40 78 C38 88 42 96 48 98" fill="none" stroke="#475569" stroke-width="0.7" opacity="0.55"/>
+                </g>
+                <g class="map-seagull__wing-r">
+                  <path d="M96 62
+                    C106 68 110 84 104 98
+                    C98 104 88 100 84 92
+                    C86 78 88 68 96 62 Z"
+                    fill="url(#mapSgWing)" stroke="#64748b" stroke-width="1"/>
+                  <path d="M100 78 C102 88 98 96 92 98" fill="none" stroke="#475569" stroke-width="0.7" opacity="0.55"/>
+                </g>
+                <!-- head facing you -->
+                <g class="map-seagull__head">
+                  <ellipse cx="70" cy="42" rx="22" ry="20" fill="url(#mapSgHead)" stroke="#94a3b8" stroke-width="1.1"/>
+                  <ellipse cx="62" cy="46" rx="6" ry="4" fill="url(#mapSgCheek)"/>
+                  <ellipse cx="78" cy="46" rx="6" ry="4" fill="url(#mapSgCheek)"/>
+                  <!-- eyes looking at you -->
+                  <g class="map-seagull__eyes">
+                    <g class="map-seagull__eye-l">
+                      <ellipse cx="61" cy="40" rx="5.2" ry="5.5" fill="#0f172a"/>
+                      <circle cx="62.2" cy="38.8" r="1.6" fill="#fff"/>
+                      <circle cx="59.8" cy="41.2" r="0.7" fill="#64748b" opacity="0.5"/>
+                    </g>
+                    <g class="map-seagull__eye-r">
+                      <ellipse cx="79" cy="40" rx="5.2" ry="5.5" fill="#0f172a"/>
+                      <circle cx="80.2" cy="38.8" r="1.6" fill="#fff"/>
+                      <circle cx="77.8" cy="41.2" r="0.7" fill="#64748b" opacity="0.5"/>
+                    </g>
+                  </g>
+                  <!-- front-facing beak -->
+                  <g class="map-seagull__beak-g">
+                    <path class="map-seagull__beak" d="M64 48 L70 62 L76 48 Q70 52 64 48 Z" fill="url(#mapSgBeak)" stroke="#b45309" stroke-width="0.7"/>
+                    <path d="M66 50 Q70 54 74 50" fill="none" stroke="#92400e" stroke-width="0.6" opacity="0.45"/>
+                  </g>
+                </g>
+              </svg>
+            </div>
+            <div class="map-seagull__bubble" role="dialog" aria-labelledby="mapSeagullTitle">
+              <strong id="mapSeagullTitle" class="map-seagull__title">Ahoy!</strong>
+              <div id="mapSeagullText" class="map-seagull__text"></div>
+              <button type="button" id="btnMapSeagullDone" class="btn btn--secondary map-seagull__btn">Got it</button>
+            </div>
+          </div>
+          <button type="button" id="btnStart" class="btn btn--primary btn--start">
+            <span class="btn--start__shine" aria-hidden="true"></span>
+            <span class="btn--start__label">Start Game</span>
+            <span id="btnStartSub" class="btn__sub">Round length depends on reef · tap to play</span>
+          </button>
+        </div>
       </section>
 
       <div id="adventureUnlockBanner" class="adventure-unlock-banner" hidden aria-hidden="true">
