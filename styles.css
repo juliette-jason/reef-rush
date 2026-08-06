@@ -2822,7 +2822,7 @@ body {
 }
 
 .rods--card {
-  padding: 16px 16px 18px;
+  padding: 14px 14px 18px;
   border-radius: 20px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 38%),
@@ -2832,6 +2832,10 @@ body {
     0 12px 32px rgba(0, 0, 0, 0.32),
     0 0 0 1px rgba(255, 255, 255, 0.04),
     inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.rods--card > .rods__legend {
+  margin: 0 0 14px;
 }
 
 .rods--with-map {
@@ -3006,20 +3010,40 @@ body {
 }
 
 .rods__legend {
+  display: block;
+  float: none;
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+  margin: 0 0 12px;
+}
+
+.rods__legend-box {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  float: none;
   width: 100%;
-  padding: 0;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 213, 74, 0.45);
+  background:
+    linear-gradient(180deg, rgba(255, 224, 138, 0.18), rgba(255, 213, 74, 0.06) 55%, transparent),
+    linear-gradient(180deg, rgba(12, 52, 72, 0.95), rgba(6, 28, 44, 0.98));
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.rods__legend-text {
   font-family: "Bebas Neue", sans-serif;
-  font-size: 1.18rem;
+  font-size: clamp(1.05rem, 4vw, 1.22rem);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: #fff4c8;
-  margin: 0 0 12px;
-  text-shadow: 0 0 14px rgba(255, 213, 74, 0.3);
+  text-shadow: 0 0 12px rgba(255, 213, 74, 0.28);
+  line-height: 1.1;
 }
 
 .rods__step {
