@@ -12096,14 +12096,13 @@ function drawCatchNetForSide(centerX) {
 
 function drawAdventureAnchorWithFish() {
   const lay = adventureAnchorLayout();
-  const { sackCx, sackCy, sackVy } = lay;
   drawAdventureAnchor(lay);
 
-  ctx.save();
-  // Adventure kraken steals by rocking the ship — no net-tear rip FX.
+  // Adventure haul is tracked by score only — don't pile fish on the anchor.
   if (kraken?.state === "biting" && kraken.boatRockSteal) {
     const g = getCharterBoatGeo(lay.boatCx);
     const pulse = 0.45 + 0.55 * Math.abs(Math.sin(performance.now() * 0.022));
+    ctx.save();
     ctx.strokeStyle = `rgba(180, 210, 240, ${0.25 * pulse})`;
     ctx.lineWidth = 2 * dpr;
     for (let i = 0; i < 5; i++) {
@@ -12113,44 +12112,8 @@ function drawAdventureAnchorWithFish() {
       ctx.quadraticCurveTo(x, g.wt + dpr * (10 + pulse * 8), x + dpr * 6, g.wt + dpr * 2);
       ctx.stroke();
     }
-  }
-
-  const fishEntries = getFishOnlyCatchEntries();
-  const maxShow = 24;
-  const list = fishEntries.slice(-maxShow);
-  for (let i = 0; i < list.length; i++) {
-    const row = Math.floor(i / 5);
-    const col = i % 5;
-    const fx = sackCx + (col - 2) * dpr * 11 + (row % 2) * dpr * 4;
-    const fy = sackCy - dpr * 18 + row * dpr * 10;
-    const hue = hashHueFromLabel(list[i].label);
-    const fsz = dpr * (4.8 + (i % 4) * 0.4);
-    ctx.save();
-    ctx.translate(fx, fy);
-    ctx.rotate((row * 0.1 + col * 0.05) * (col % 2 === 0 ? 1 : -1));
-    ctx.globalAlpha = 0.88;
-    ctx.fillStyle = `hsla(${hue}, 62%, 48%, 0.92)`;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, fsz * 0.55, fsz * 0.28, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = `hsla(${hue}, 48%, 28%, 0.95)`;
-    ctx.beginPath();
-    ctx.moveTo(-fsz * 0.48, 0);
-    ctx.lineTo(-fsz * 0.95, -fsz * 0.18);
-    ctx.lineTo(-fsz * 0.78, 0);
-    ctx.lineTo(-fsz * 0.95, fsz * 0.18);
-    ctx.closePath();
-    ctx.fill();
     ctx.restore();
   }
-  if (fishEntries.length > maxShow) {
-    ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
-    ctx.font = `${10 * dpr}px system-ui, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.fillText(`+${fishEntries.length - maxShow}`, sackCx, sackCy + sackVy * 0.35);
-    ctx.textAlign = "left";
-  }
-  ctx.restore();
 }
 
 function drawBoatHullAndCatchNetAt(centerX) {
