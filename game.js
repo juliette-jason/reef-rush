@@ -10512,12 +10512,13 @@ function buildRodUI() {
       (rod.id === selectedRod.id ? " rod-option--selected" : "");
     const stockLine =
       rod.id === MAGNET_ROD_ID
-        ? `<span class="rod-option__stock rod-option__stock--prize">Prize · expires tonight</span>`
+        ? `<span class="rod-option__stock rod-option__stock--prize">Prize · tonight</span>`
         : `<span class="rod-option__stock">Owned</span>`;
     b.innerHTML =
       `<span class="rod-option__art">${rodArtSvg(rod)}</span>` +
       `<span class="rod-option__copy">` +
       `<span class="rod-option__name">${rod.name}</span>` +
+      `<span class="rod-option__desc">${rod.desc}</span>` +
       `${stockLine}` +
       `</span>`;
     b.addEventListener("click", () => {
