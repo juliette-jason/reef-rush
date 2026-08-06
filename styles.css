@@ -1507,12 +1507,29 @@ body {
   .splash-copy__title { opacity: 1; }
 }
 
-.panel--start .start-toolbar {
+.panel--start .home-corner {
   position: absolute;
   top: max(12px, env(safe-area-inset-top, 0px));
   right: max(12px, env(safe-area-inset-right, 0px));
-  width: auto;
-  max-width: min(220px, 52vw);
+  z-index: 35;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  width: min(220px, 52vw);
+  pointer-events: none;
+}
+
+.panel--start .home-corner > * {
+  pointer-events: auto;
+}
+
+.panel--start .start-toolbar {
+  position: static;
+  top: auto;
+  right: auto;
+  width: 100%;
+  max-width: none;
   margin: 0;
   padding: 11px;
   flex-direction: column;
@@ -1520,7 +1537,7 @@ body {
   align-items: stretch;
   gap: 9px;
   text-align: right;
-  z-index: 2;
+  z-index: auto;
   border-radius: 20px;
   border: 2px solid rgba(255, 213, 74, 0.55);
   background:
@@ -1632,7 +1649,7 @@ body {
   box-shadow:
     0 14px 32px rgba(0, 0, 0, 0.45),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  z-index: 5;
+  z-index: 40;
 }
 
 .start-settings__menu[hidden] {
@@ -2277,10 +2294,14 @@ body {
 }
 
 @media (max-width: 560px) {
-  .panel--start .start-toolbar {
+  .panel--start .home-corner {
     top: max(8px, env(safe-area-inset-top, 0px));
     right: max(8px, env(safe-area-inset-right, 0px));
-    max-width: min(148px, 40vw);
+    width: min(148px, 40vw);
+    gap: 8px;
+  }
+
+  .panel--start .start-toolbar {
     padding: 8px;
     gap: 6px;
     border-radius: 14px;
@@ -3473,17 +3494,18 @@ body {
 }
 
 .adventure-launch__hint {
-  position: fixed;
-  right: max(14px, env(safe-area-inset-right, 0px));
-  bottom: max(132px, calc(env(safe-area-inset-bottom, 0px) + 122px));
+  position: static;
+  right: auto;
+  bottom: auto;
   left: auto;
   top: auto;
   transform: none;
-  z-index: 35;
+  z-index: auto;
   margin: 0;
   font-size: 0.72rem;
   color: var(--muted);
-  max-width: min(220px, 48vw);
+  max-width: none;
+  width: 100%;
   text-align: right;
   pointer-events: none;
   transition: color 0.4s ease, font-size 0.4s ease, text-shadow 0.4s ease;
@@ -3634,15 +3656,15 @@ body {
 }
 
 .home-launch-stack {
-  position: fixed;
-  right: max(14px, env(safe-area-inset-right, 0px));
-  bottom: max(14px, env(safe-area-inset-bottom, 0px));
-  z-index: 35;
+  position: static;
+  right: auto;
+  bottom: auto;
+  z-index: auto;
   display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: 11px;
-  width: min(232px, 48vw);
+  width: 100%;
   pointer-events: none;
 }
 
@@ -4614,7 +4636,6 @@ body {
 
 @media (max-width: 560px) {
   .home-launch-stack {
-    width: min(196px, 48vw);
     gap: 9px;
   }
 
@@ -4643,8 +4664,6 @@ body {
   }
 
   .adventure-launch__hint {
-    bottom: max(128px, calc(env(safe-area-inset-bottom, 0px) + 118px));
-    max-width: min(196px, 48vw);
     font-size: 0.62rem;
   }
 }
@@ -4737,11 +4756,11 @@ body {
 
 .adventure-launch--rise {
   position: fixed;
-  top: auto;
-  bottom: max(68px, calc(env(safe-area-inset-bottom, 0px) + 58px));
-  right: max(14px, env(safe-area-inset-right, 0px));
+  top: max(196px, calc(env(safe-area-inset-top, 0px) + 184px));
+  bottom: auto;
+  right: max(12px, env(safe-area-inset-right, 0px));
   left: auto;
-  width: min(232px, 48vw);
+  width: min(220px, 52vw);
   transform: none;
   z-index: 50;
   animation: adventureLaunchRiseToCenter 1.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
@@ -4786,9 +4805,9 @@ body {
 
 @keyframes adventureLaunchRiseToCenter {
   0% {
-    top: auto;
-    bottom: max(68px, calc(env(safe-area-inset-bottom, 0px) + 58px));
-    right: max(14px, env(safe-area-inset-right, 0px));
+    top: max(196px, calc(env(safe-area-inset-top, 0px) + 184px));
+    bottom: auto;
+    right: max(12px, env(safe-area-inset-right, 0px));
     left: auto;
     transform: none;
     font-size: 1.15rem;
@@ -4829,9 +4848,9 @@ body {
     filter: brightness(1.08);
   }
   100% {
-    top: auto;
-    bottom: max(68px, calc(env(safe-area-inset-bottom, 0px) + 58px));
-    right: max(14px, env(safe-area-inset-right, 0px));
+    top: max(196px, calc(env(safe-area-inset-top, 0px) + 184px));
+    bottom: auto;
+    right: max(12px, env(safe-area-inset-right, 0px));
     left: auto;
     transform: none;
     font-size: 1.15rem;
@@ -5024,9 +5043,9 @@ body {
   }
 
   .adventure-launch--centered.adventure-launch--return {
-    top: auto;
-    bottom: max(68px, calc(env(safe-area-inset-bottom, 0px) + 58px));
-    right: max(14px, env(safe-area-inset-right, 0px));
+    top: max(196px, calc(env(safe-area-inset-top, 0px) + 184px));
+    bottom: auto;
+    right: max(12px, env(safe-area-inset-right, 0px));
     left: auto;
     transform: none;
     font-size: 1.15rem;
