@@ -1939,8 +1939,8 @@ body {
 }
 
 .shop-guide__arm-r {
-  transform-origin: 96px 172px;
-  animation: shopSailorArmTalk 1.4s ease-in-out infinite;
+  transform-origin: 72px 200px;
+  animation: shopSailorArmTalk 2.2s ease-in-out infinite;
 }
 
 @keyframes shopSailorIdle {
@@ -2026,7 +2026,7 @@ body {
     transform: rotate(0deg);
   }
   50% {
-    transform: rotate(-3deg) translateY(-2px);
+    transform: rotate(2deg) translateY(1px);
   }
 }
 
