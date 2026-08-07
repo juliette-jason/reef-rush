@@ -7623,6 +7623,13 @@ function hideMapSeagullGuide() {
   if (!mapSeagullGuide) return;
   mapSeagullGuide.hidden = true;
   mapSeagullGuide.classList.remove("map-seagull--howto", "map-seagull--shop", "map-seagull--fly-away");
+  const perch = mapSeagullGuide.querySelector(".map-seagull__perch");
+  if (perch) {
+    perch.classList.remove("map-seagull__perch--flying");
+    perch.style.removeProperty("--fly-left");
+    perch.style.removeProperty("--fly-top");
+    perch.style.removeProperty("--fly-width");
+  }
   mapSeagullMode = null;
 }
 
@@ -7696,8 +7703,16 @@ function flyAwayMapSeagull() {
     finish();
     return;
   }
-  mapSeagullGuide.classList.add("map-seagull--fly-away");
+  const perch = mapSeagullGuide.querySelector(".map-seagull__perch");
   const bird = mapSeagullGuide.querySelector(".map-seagull__bird");
+  if (perch) {
+    const r = perch.getBoundingClientRect();
+    perch.style.setProperty("--fly-left", `${Math.round(r.left)}px`);
+    perch.style.setProperty("--fly-top", `${Math.round(r.top)}px`);
+    perch.style.setProperty("--fly-width", `${Math.round(r.width)}px`);
+    perch.classList.add("map-seagull__perch--flying");
+  }
+  mapSeagullGuide.classList.add("map-seagull--fly-away");
   let done = false;
   const onDone = (e) => {
     if (e && e.animationName && e.animationName !== "mapSeagullFlyAway") return;
@@ -7707,7 +7722,7 @@ function flyAwayMapSeagull() {
     finish();
   };
   bird?.addEventListener("animationend", onDone);
-  window.setTimeout(() => onDone(), 1600);
+  window.setTimeout(() => onDone(), 2300);
 }
 
 function dismissMapSeagullGuide() {
