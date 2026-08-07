@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=shop-seagull-1" />
+    <link rel="stylesheet" href="styles.css?v=more-options-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -515,7 +515,7 @@
 
       <section id="panelStart" class="panel panel--start" hidden>
         <h1 class="panel__headline panel__headline--brand">Reef Rush</h1>
-        <div class="home-corner">
+        <div id="homeCorner" class="home-corner">
           <div class="start-toolbar">
             <div class="start-toolbar__stats">
               <p class="start-toolbar__coins">
@@ -734,9 +734,17 @@
             </div>
           </div>
         </div>
+        <button
+          type="button"
+          id="btnStartMoreOptions"
+          class="start-more-options"
+          aria-expanded="false"
+          aria-controls="homeCorner"
+        >
+          <span class="start-more-options__label">More options</span>
+          <span class="start-more-options__arrow" aria-hidden="true"></span>
+        </button>
       </section>
-
-      <div id="adventureUnlockBanner" class="adventure-unlock-banner" hidden aria-hidden="true">
         <p class="adventure-unlock-banner__spark">✦ ✦ ✦</p>
         <p class="adventure-unlock-banner__title">Adventure Mode Unlocked!</p>
         <p class="adventure-unlock-banner__sub">Watch the button rise — then tap to chart your course</p>
@@ -1730,6 +1738,6 @@
       </section>
     </div>
 
-    <script src="game.js?v=shop-seagull-1" defer></script>
+    <script src="game.js?v=more-options-1" defer></script>
   </body>
 </html>

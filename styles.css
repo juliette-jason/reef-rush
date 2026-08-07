@@ -2131,12 +2131,90 @@ body {
   }
 }
 
+.start-more-options {
+  display: none;
+}
+
 @media (max-width: 560px) {
   .panel--start .home-corner {
-    top: max(8px, env(safe-area-inset-top, 0px));
-    right: max(8px, env(safe-area-inset-right, 0px));
-    width: min(148px, 40vw);
+    position: fixed;
+    top: auto;
+    right: max(12px, env(safe-area-inset-right, 0px));
+    left: max(12px, env(safe-area-inset-left, 0px));
+    bottom: max(64px, calc(env(safe-area-inset-bottom, 0px) + 56px));
+    z-index: 38;
+    width: auto;
+    max-width: none;
+    max-height: min(68vh, 540px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 18px;
+    border: 2px solid rgba(255, 213, 74, 0.45);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 34%),
+      linear-gradient(165deg, rgba(14, 58, 78, 0.97), rgba(5, 24, 40, 0.98));
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease, visibility 0.22s ease;
+  }
+
+  .panel--start.is-more-open .home-corner {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .panel--start .home-corner > * {
+    pointer-events: auto;
+  }
+
+  .panel--start .start-toolbar {
+    width: 100%;
+  }
+
+  .start-more-options {
+    position: fixed;
+    left: 50%;
+    bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    z-index: 39;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     gap: 8px;
+    transform: translateX(-50%);
+    padding: 10px 16px;
+    border-radius: 999px;
+    border: 2px solid rgba(255, 213, 74, 0.5);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 50%),
+      linear-gradient(180deg, rgba(14, 58, 78, 0.96), rgba(6, 30, 46, 0.98));
+    color: #ffe08a;
+    font-family: "Nunito", sans-serif;
+    font-size: 0.88rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .start-more-options__arrow {
+    width: 10px;
+    height: 10px;
+    border-right: 2.5px solid currentColor;
+    border-bottom: 2.5px solid currentColor;
+    transform: rotate(-135deg);
+    transition: transform 0.22s ease;
+    margin-top: 4px;
+  }
+
+  .start-more-options[aria-expanded="true"] .start-more-options__arrow {
+    transform: rotate(45deg);
+    margin-top: -2px;
   }
 
   .panel--start .start-toolbar {
@@ -2188,13 +2266,14 @@ body {
 
   .panel--start {
     padding-top: max(72px, env(safe-area-inset-top, 0px));
+    padding-bottom: max(72px, calc(env(safe-area-inset-bottom, 0px) + 64px));
   }
 
   .panel--start .panel__headline--brand {
     font-size: clamp(2.2rem, 9vw, 2.8rem);
-    padding-right: min(140px, 38vw);
-    text-align: left;
-    align-self: flex-start;
+    padding-right: 0;
+    text-align: center;
+    align-self: center;
     width: 100%;
   }
 }

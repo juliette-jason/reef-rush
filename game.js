@@ -7435,6 +7435,8 @@ let mapSeagullMode = null;
 let mapSeagullFlyTimer = 0;
 const btnResetProgress = document.getElementById("btnResetProgress");
 const btnStartSettings = document.getElementById("btnStartSettings");
+const btnStartMoreOptions = document.getElementById("btnStartMoreOptions");
+const homeCorner = document.getElementById("homeCorner");
 const startSettingsMenu = document.getElementById("startSettingsMenu");
 const startSettings = document.querySelector(".start-settings");
 const btnAdventureMode = document.getElementById("btnAdventureMode");
@@ -8120,6 +8122,7 @@ function startAdventureHomeUnlockAnimation() {
 
   showAdventureHomeUnlockBanner();
   appRoot?.classList.add("app--adventure-unlock-celebrate");
+  setStartMoreOptionsOpen(true);
   btnAdventureMode.classList.add("adventure-launch--celebrate");
   adventureUnlockHint?.classList.add("adventure-launch__hint--celebrate");
   adventureLock.hidden = false;
@@ -9939,6 +9942,7 @@ function buildShopUI() {
 
 function openShop() {
   if (!panelShop || !panelStart) return;
+  setStartMoreOptionsOpen(false);
   normalizeSelectedBaitId();
   refreshCoinDisplays();
   buildShopUI();
@@ -9962,6 +9966,7 @@ function closeShop() {
 
 function openEvents() {
   if (!panelEvents || !panelStart) return;
+  setStartMoreOptionsOpen(false);
   panelStart.hidden = true;
   panelEvents.hidden = false;
   if (eventsOcean) eventsOcean.hidden = false;
@@ -16330,6 +16335,22 @@ function setStartSettingsOpen(open) {
   btnStartSettings.setAttribute("aria-expanded", open ? "true" : "false");
 }
 
+function setStartMoreOptionsOpen(open) {
+  if (!panelStart || !btnStartMoreOptions) return;
+  panelStart.classList.toggle("is-more-open", open);
+  btnStartMoreOptions.setAttribute("aria-expanded", open ? "true" : "false");
+  if (!open) setStartSettingsOpen(false);
+}
+
+function isStartMoreOptionsOpen() {
+  return Boolean(panelStart?.classList.contains("is-more-open"));
+}
+
+btnStartMoreOptions?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  setStartMoreOptionsOpen(!isStartMoreOptionsOpen());
+});
+
 btnStartSettings?.addEventListener("click", (e) => {
   e.stopPropagation();
   const open = btnStartSettings.getAttribute("aria-expanded") !== "true";
@@ -16337,15 +16358,23 @@ btnStartSettings?.addEventListener("click", (e) => {
 });
 
 document.addEventListener("pointerdown", (e) => {
-  if (!btnStartSettings || !startSettingsMenu || startSettingsMenu.hidden) return;
-  if (startSettings?.contains(e.target)) return;
-  setStartSettingsOpen(false);
+  if (btnStartSettings && startSettingsMenu && !startSettingsMenu.hidden) {
+    if (!startSettings?.contains(e.target)) setStartSettingsOpen(false);
+  }
+  if (!isStartMoreOptionsOpen()) return;
+  if (btnStartMoreOptions?.contains(e.target)) return;
+  if (homeCorner?.contains(e.target)) return;
+  if (btnAdventureMode?.classList.contains("adventure-launch--centered")) return;
+  setStartMoreOptionsOpen(false);
 });
 
 window.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
-  if (!startSettingsMenu || startSettingsMenu.hidden) return;
-  setStartSettingsOpen(false);
+  if (startSettingsMenu && !startSettingsMenu.hidden) {
+    setStartSettingsOpen(false);
+    return;
+  }
+  if (isStartMoreOptionsOpen()) setStartMoreOptionsOpen(false);
 });
 
 panelStart?.addEventListener("pointerdown", unlockHomeAudio, { once: true });
