@@ -7657,7 +7657,7 @@ function fillMapSeagullShopHint() {
   if (mapSeagullTitle) mapSeagullTitle.textContent = "One more tip!";
   if (mapSeagullText) {
     mapSeagullText.innerHTML =
-      "<p>Nice first haul! Head to the <strong>Fishing shop</strong> and talk to the sailor — he can help you spend coins on bait and stronger rods.</p>";
+      "<p>Nice first haul! Head to the <strong>Fishing shop</strong> and talk to the seagull — he can help you spend coins on bait and stronger rods.</p>";
   }
   if (btnMapSeagullDone) {
     btnMapSeagullDone.hidden = false;
