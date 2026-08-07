@@ -11326,6 +11326,7 @@ function initBubbles() {
 
 function startRound() {
   playing = true;
+  setStartMoreOptionsOpen(false);
   if (mapSeagullMode === "howto") {
     markIntroSeen();
     hideMapSeagullGuide();
