@@ -1875,31 +1875,9 @@ body {
   white-space: nowrap;
 }
 
-.shop-guide__sailor {
-  position: relative;
-  flex: 0 0 min(48vw, 380px);
-  width: min(48vw, 380px);
-  height: min(70vh, 520px);
-  min-width: 220px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.42));
-  transform-origin: 50% 55%;
-  animation: shopSeagullFly 2.6s ease-in-out infinite;
-}
-
-.shop-guide__art {
-  width: min(100%, 340px);
-  height: auto;
-  max-height: 100%;
-  display: block;
-  overflow: visible;
-}
-
 .shop-guide__head {
-  transform-origin: 110px 90px;
-  animation: shopSailorHeadBob 2.6s ease-in-out infinite;
+  transform-origin: 130px 90px;
+  animation: shopSailorHeadBob 2.4s ease-in-out infinite;
 }
 
 .shop-guide__eye-l,
@@ -1916,38 +1894,62 @@ body {
 }
 
 .shop-guide__beak {
-  transform-origin: 110px 78px;
+  transform-origin: 130px 78px;
   animation: shopSeagullTalk 0.38s steps(2, end) infinite;
 }
 
 .shop-guide__wing-l,
 .shop-guide__wing-r {
-  transform-box: fill-box;
+  transform-box: view-box;
 }
 
 .shop-guide__wing-l {
-  transform-origin: 90% 80%;
-  animation: shopSeagullWingL 0.28s ease-in-out infinite;
+  transform-origin: 100px 118px;
+  animation: shopSeagullWingL 0.58s cubic-bezier(0.37, 0.02, 0.28, 1) infinite;
 }
 
 .shop-guide__wing-r {
-  transform-origin: 10% 80%;
-  animation: shopSeagullWingR 0.28s ease-in-out infinite;
-  animation-delay: 0.14s;
+  transform-origin: 160px 118px;
+  animation: shopSeagullWingR 0.58s cubic-bezier(0.37, 0.02, 0.28, 1) infinite;
 }
 
 .shop-guide__legs {
-  transform-origin: 110px 148px;
-  animation: shopSeagullLegs 2.6s ease-in-out infinite;
+  transform-origin: 130px 158px;
+  animation: shopSeagullLegs 0.58s cubic-bezier(0.37, 0.02, 0.28, 1) infinite;
+}
+
+.shop-guide__sailor {
+  position: relative;
+  flex: 0 0 min(48vw, 380px);
+  width: min(48vw, 380px);
+  height: min(70vh, 520px);
+  min-width: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.42));
+  transform-origin: 50% 55%;
+  animation: shopSeagullFly 0.58s cubic-bezier(0.37, 0.02, 0.28, 1) infinite;
+}
+
+.shop-guide__art {
+  width: min(100%, 360px);
+  height: auto;
+  max-height: 100%;
+  display: block;
+  overflow: visible;
 }
 
 @keyframes shopSeagullFly {
   0%,
   100% {
-    transform: translateY(0) rotate(-1.5deg);
+    transform: translateY(2px);
   }
-  50% {
-    transform: translateY(-14px) rotate(1.5deg);
+  32% {
+    transform: translateY(-12px);
+  }
+  58% {
+    transform: translateY(-5px);
   }
 }
 
@@ -1967,7 +1969,7 @@ body {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(2px);
+    transform: translateY(1.5px);
   }
 }
 
@@ -1977,27 +1979,32 @@ body {
     transform: scaleY(1);
   }
   50% {
-    transform: scaleY(1.22);
+    transform: scaleY(1.2);
   }
 }
 
+/* Synced flap: fast power downstroke, slower recovery up */
 @keyframes shopSeagullWingL {
-  0%,
-  100% {
-    transform: rotate(8deg);
+  0% {
+    transform: rotate(28deg) scaleY(0.88);
   }
-  50% {
-    transform: rotate(-42deg);
+  32% {
+    transform: rotate(-44deg) scaleY(1.06);
+  }
+  100% {
+    transform: rotate(28deg) scaleY(0.88);
   }
 }
 
 @keyframes shopSeagullWingR {
-  0%,
-  100% {
-    transform: rotate(-8deg);
+  0% {
+    transform: rotate(-28deg) scaleY(0.88);
   }
-  50% {
-    transform: rotate(42deg);
+  32% {
+    transform: rotate(44deg) scaleY(1.06);
+  }
+  100% {
+    transform: rotate(-28deg) scaleY(0.88);
   }
 }
 
@@ -2006,8 +2013,8 @@ body {
   100% {
     transform: translateY(0);
   }
-  50% {
-    transform: translateY(3px);
+  32% {
+    transform: translateY(5px);
   }
 }
 
@@ -2921,9 +2928,10 @@ body {
 .map-seagull--fly-away .map-seagull__wing-l,
 .map-seagull--fly-away .map-seagull__wing-r {
   transform-box: fill-box;
-  animation-duration: 0.13s;
-  animation-timing-function: ease-in-out;
+  animation-duration: 0.16s;
+  animation-timing-function: cubic-bezier(0.37, 0.02, 0.28, 1);
   animation-iteration-count: infinite;
+  animation-delay: 0s;
 }
 
 .map-seagull--fly-away .map-seagull__wing-l {
@@ -2934,7 +2942,6 @@ body {
 .map-seagull--fly-away .map-seagull__wing-r {
   transform-origin: 10% 35%;
   animation-name: mapSeagullWingFlapR;
-  animation-delay: 0.065s;
 }
 
 .map-seagull--fly-away .map-seagull__head {
@@ -3030,22 +3037,26 @@ body {
 }
 
 @keyframes mapSeagullWingFlapL {
-  0%,
-  100% {
-    transform: rotate(8deg) scale(1.05, 1.15);
+  0% {
+    transform: rotate(22deg) scale(1.08, 0.92);
   }
-  50% {
-    transform: rotate(-52deg) scale(1.35, 1.45);
+  32% {
+    transform: rotate(-55deg) scale(1.32, 1.2);
+  }
+  100% {
+    transform: rotate(22deg) scale(1.08, 0.92);
   }
 }
 
 @keyframes mapSeagullWingFlapR {
-  0%,
-  100% {
-    transform: rotate(-8deg) scale(1.05, 1.15);
+  0% {
+    transform: rotate(-22deg) scale(1.08, 0.92);
   }
-  50% {
-    transform: rotate(52deg) scale(1.35, 1.45);
+  32% {
+    transform: rotate(55deg) scale(1.32, 1.2);
+  }
+  100% {
+    transform: rotate(-22deg) scale(1.08, 0.92);
   }
 }
 
