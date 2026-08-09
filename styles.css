@@ -1885,7 +1885,7 @@ body {
 
 .shop-guide__head {
   transform-origin: 130px 90px;
-  animation: shopSailorHeadBob 2.4s ease-in-out infinite;
+  animation: shopSailorHeadBob 2.8s ease-in-out infinite;
 }
 
 .shop-guide__eye-l,
@@ -1897,13 +1897,13 @@ body {
 .shop-guide__eyelid {
   transform-box: fill-box;
   transform-origin: 50% 0%;
-  transform: scaleY(0.1);
-  animation: shopSailorBlink 4.2s ease-in-out infinite;
+  transform: scaleY(0.08);
+  animation: shopSailorBlink 4.6s ease-in-out infinite;
 }
 
 .shop-guide__beak {
-  transform-origin: 130px 78px;
-  animation: shopSeagullTalk 0.38s steps(2, end) infinite;
+  transform-origin: 130px 84px;
+  animation: shopSeagullTalk 0.42s steps(2, end) infinite;
 }
 
 .shop-guide__wing-l,
@@ -1912,18 +1912,33 @@ body {
 }
 
 .shop-guide__wing-l {
-  transform-origin: 100px 118px;
-  animation: shopSeagullWingL 0.58s cubic-bezier(0.37, 0.02, 0.28, 1) infinite;
+  transform-origin: 100px 120px;
+  animation: shopSeagullWingL 0.92s cubic-bezier(0.33, 0.08, 0.28, 1) infinite;
 }
 
 .shop-guide__wing-r {
-  transform-origin: 160px 118px;
-  animation: shopSeagullWingR 0.58s cubic-bezier(0.37, 0.02, 0.28, 1) infinite;
+  transform-origin: 160px 120px;
+  animation: shopSeagullWingR 0.92s cubic-bezier(0.33, 0.08, 0.28, 1) infinite;
+}
+
+.shop-guide__wing-l-sec,
+.shop-guide__wing-r-sec {
+  transform-box: view-box;
+}
+
+.shop-guide__wing-l-sec {
+  transform-origin: 98px 118px;
+  animation: shopSeagullWingSecL 0.92s cubic-bezier(0.33, 0.08, 0.28, 1) infinite;
+}
+
+.shop-guide__wing-r-sec {
+  transform-origin: 162px 118px;
+  animation: shopSeagullWingSecR 0.92s cubic-bezier(0.33, 0.08, 0.28, 1) infinite;
 }
 
 .shop-guide__legs {
-  transform-origin: 130px 158px;
-  animation: shopSeagullLegs 0.58s cubic-bezier(0.37, 0.02, 0.28, 1) infinite;
+  transform-origin: 130px 160px;
+  animation: shopSeagullLegs 0.92s cubic-bezier(0.33, 0.08, 0.28, 1) infinite;
 }
 
 .shop-guide__sailor {
@@ -1937,7 +1952,7 @@ body {
   justify-content: center;
   filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.42));
   transform-origin: 50% 55%;
-  animation: shopSeagullFly 0.58s cubic-bezier(0.37, 0.02, 0.28, 1) infinite;
+  animation: shopSeagullFly 0.92s cubic-bezier(0.33, 0.08, 0.28, 1) infinite;
 }
 
 .shop-guide__art {
@@ -1951,13 +1966,16 @@ body {
 @keyframes shopSeagullFly {
   0%,
   100% {
-    transform: translateY(2px);
+    transform: translateY(3px) rotate(-1deg);
   }
-  32% {
-    transform: translateY(-12px);
+  28% {
+    transform: translateY(-11px) rotate(1.2deg);
   }
-  58% {
-    transform: translateY(-5px);
+  52% {
+    transform: translateY(-2px) rotate(-0.4deg);
+  }
+  78% {
+    transform: translateY(-6px) rotate(0.6deg);
   }
 }
 
@@ -1974,10 +1992,10 @@ body {
 @keyframes shopSailorHeadBob {
   0%,
   100% {
-    transform: translateY(0);
+    transform: translateY(0) rotate(0deg);
   }
   50% {
-    transform: translateY(1.5px);
+    transform: translateY(1.2px) rotate(0.6deg);
   }
 }
 
@@ -1987,32 +2005,68 @@ body {
     transform: scaleY(1);
   }
   50% {
-    transform: scaleY(1.2);
+    transform: scaleY(1.16);
   }
 }
 
-/* Synced flap: fast power downstroke, slower recovery up */
+/* Natural flap: quick power downstroke, slower recovery, slight foreshortening */
 @keyframes shopSeagullWingL {
   0% {
-    transform: rotate(28deg) scaleY(0.88);
+    transform: rotate(22deg) scaleY(0.9);
   }
-  32% {
-    transform: rotate(-44deg) scaleY(1.06);
+  26% {
+    transform: rotate(-36deg) scaleY(1.05);
+  }
+  55% {
+    transform: rotate(-8deg) scaleY(0.98);
   }
   100% {
-    transform: rotate(28deg) scaleY(0.88);
+    transform: rotate(22deg) scaleY(0.9);
   }
 }
 
 @keyframes shopSeagullWingR {
   0% {
-    transform: rotate(-28deg) scaleY(0.88);
+    transform: rotate(-22deg) scaleY(0.9);
   }
-  32% {
-    transform: rotate(44deg) scaleY(1.06);
+  26% {
+    transform: rotate(36deg) scaleY(1.05);
+  }
+  55% {
+    transform: rotate(8deg) scaleY(0.98);
   }
   100% {
-    transform: rotate(-28deg) scaleY(0.88);
+    transform: rotate(-22deg) scaleY(0.9);
+  }
+}
+
+@keyframes shopSeagullWingSecL {
+  0% {
+    transform: rotate(8deg);
+  }
+  26% {
+    transform: rotate(-14deg);
+  }
+  55% {
+    transform: rotate(-2deg);
+  }
+  100% {
+    transform: rotate(8deg);
+  }
+}
+
+@keyframes shopSeagullWingSecR {
+  0% {
+    transform: rotate(-8deg);
+  }
+  26% {
+    transform: rotate(14deg);
+  }
+  55% {
+    transform: rotate(2deg);
+  }
+  100% {
+    transform: rotate(-8deg);
   }
 }
 
@@ -2021,31 +2075,25 @@ body {
   100% {
     transform: translateY(0);
   }
-  32% {
-    transform: translateY(5px);
+  26% {
+    transform: translateY(4px);
+  }
+  55% {
+    transform: translateY(1px);
   }
 }
 
 @keyframes shopSailorBlink {
   0%,
-  86%,
+  88%,
   100% {
-    transform: scaleY(0.1);
-  }
-  88% {
-    transform: scaleY(1);
+    transform: scaleY(0.08);
   }
   90% {
-    transform: scaleY(0.1);
-  }
-  94% {
-    transform: scaleY(0.1);
-  }
-  95.5% {
     transform: scaleY(1);
   }
-  97% {
-    transform: scaleY(0.1);
+  92% {
+    transform: scaleY(0.08);
   }
 }
 
