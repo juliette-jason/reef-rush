@@ -4629,7 +4629,7 @@ body {
   left: 0;
   top: calc(100% + 8px);
   z-index: 4;
-  width: min(260px, 72vw);
+  width: min(280px, 78vw);
   margin: 0;
   padding: 10px 12px;
   border-radius: 12px;
@@ -4640,6 +4640,21 @@ body {
   font-weight: 700;
   line-height: 1.4;
   color: rgba(240, 247, 255, 0.92);
+}
+
+.event-card__blurb--stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.event-card__blurb--stack .event-card__matchup,
+.event-card__blurb--stack .event-card__reef-pick {
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  color: inherit;
 }
 
 .event-card__reset {
