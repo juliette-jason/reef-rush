@@ -7434,7 +7434,6 @@ let mapSeagullMode = null;
 let mapSeagullFlyTimer = 0;
 const btnResetProgress = document.getElementById("btnResetProgress");
 const btnStartSettings = document.getElementById("btnStartSettings");
-const btnStartMoreOptions = document.getElementById("btnStartMoreOptions");
 const homeCorner = document.getElementById("homeCorner");
 const startSettingsMenu = document.getElementById("startSettingsMenu");
 const startSettings = document.querySelector(".start-settings");
@@ -16336,20 +16335,14 @@ function setStartSettingsOpen(open) {
 }
 
 function setStartMoreOptionsOpen(open) {
-  if (!panelStart || !btnStartMoreOptions) return;
-  panelStart.classList.toggle("is-more-open", open);
-  btnStartMoreOptions.setAttribute("aria-expanded", open ? "true" : "false");
+  /* Phone launch buttons stay visible under Start Game; no sheet to toggle. */
+  if (panelStart) panelStart.classList.remove("is-more-open");
   if (!open) setStartSettingsOpen(false);
 }
 
 function isStartMoreOptionsOpen() {
-  return Boolean(panelStart?.classList.contains("is-more-open"));
+  return false;
 }
-
-btnStartMoreOptions?.addEventListener("click", (e) => {
-  e.stopPropagation();
-  setStartMoreOptionsOpen(!isStartMoreOptionsOpen());
-});
 
 btnStartSettings?.addEventListener("click", (e) => {
   e.stopPropagation();
@@ -16361,20 +16354,11 @@ document.addEventListener("pointerdown", (e) => {
   if (btnStartSettings && startSettingsMenu && !startSettingsMenu.hidden) {
     if (!startSettings?.contains(e.target)) setStartSettingsOpen(false);
   }
-  if (!isStartMoreOptionsOpen()) return;
-  if (btnStartMoreOptions?.contains(e.target)) return;
-  if (homeCorner?.contains(e.target)) return;
-  if (btnAdventureMode?.classList.contains("adventure-launch--centered")) return;
-  setStartMoreOptionsOpen(false);
 });
 
 window.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
-  if (startSettingsMenu && !startSettingsMenu.hidden) {
-    setStartSettingsOpen(false);
-    return;
-  }
-  if (isStartMoreOptionsOpen()) setStartMoreOptionsOpen(false);
+  if (startSettingsMenu && !startSettingsMenu.hidden) setStartSettingsOpen(false);
 });
 
 panelStart?.addEventListener("pointerdown", unlockHomeAudio, { once: true });
