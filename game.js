@@ -5499,8 +5499,7 @@ function renderDailyLeaderboardOl(el, rows = dailyLeaderboardRows) {
     ini.textContent = r.initials;
     const pts = document.createElement("span");
     pts.className = "leaderboard__pts";
-    pts.textContent =
-      i < 3 ? `${r.score} · ${DAILY_PRIZES[i]}🪙${dailyPrizeExtrasLabel(i)}` : String(r.score);
+    pts.textContent = String(r.score);
     const reef = document.createElement("span");
     reef.className = "leaderboard__reef";
     const reefMeta = REEFS.find((x) => x.id === r.reefId);
@@ -5515,20 +5514,20 @@ function updateDailyEventPlayerHint(rows = dailyLeaderboardRows) {
   const ini = gameMeta.playerInitials;
   if (!ini) {
     dailyEventPlayerHint.textContent =
-      "Play a reef run and post your score with initials — today's best scores only, separate from the all-time top 10.";
+      "Play a reef run and post your score with initials — today's best only.";
     return;
   }
   const rank = rows.findIndex((r) => r.initials === ini);
   if (rank === 0) {
-    dailyEventPlayerHint.textContent = `${ini}, you're in 1st! Hold the lead until midnight to win 1,500 coins and the Magnet Rod for a day.`;
+    dailyEventPlayerHint.textContent = `${ini}, you're in 1st! Hold the lead until midnight.`;
   } else if (rank === 1) {
-    dailyEventPlayerHint.textContent = `${ini}, you're in 2nd — 1,000 coins and 3 Kraken Spray if you stay there at reset.`;
+    dailyEventPlayerHint.textContent = `${ini}, you're in 2nd — stay there until reset.`;
   } else if (rank === 2) {
-    dailyEventPlayerHint.textContent = `${ini}, you're in 3rd — 800 coins if you stay there at reset.`;
+    dailyEventPlayerHint.textContent = `${ini}, you're in 3rd — stay there until reset.`;
   } else if (rank >= 0) {
-    dailyEventPlayerHint.textContent = `${ini}, you're #${rank + 1} today. Climb into the top 3 before the board resets!`;
+    dailyEventPlayerHint.textContent = `${ini}, you're #${rank + 1} today. Climb into the top 3!`;
   } else {
-    dailyEventPlayerHint.textContent = `${ini}, play a reef run to post today's best score on this board.`;
+    dailyEventPlayerHint.textContent = `${ini}, play a reef run to post today's best score.`;
   }
 }
 

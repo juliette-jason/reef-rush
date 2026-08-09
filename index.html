@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=phone-kraken-lb-1" />
+    <link rel="stylesheet" href="styles.css?v=events-info-play-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -1247,10 +1247,17 @@
         <p class="panel__lede">Daily boards, catch challenges, duels &amp; crab hauls.</p>
         <article class="event-card event-card--global">
           <header class="event-card__head">
-            <h3 class="event-card__title">Top 10 global scores</h3>
+            <div class="event-card__title-row">
+              <h3 class="event-card__title">Top 10 global scores</h3>
+              <details class="event-card__about">
+                <summary class="event-card__info" aria-label="About Top 10 global scores">
+                  <span class="event-card__info-glyph" aria-hidden="true">i</span>
+                </summary>
+                <p class="event-card__blurb">All-time best reef runs from fishers worldwide.</p>
+              </details>
+            </div>
             <p class="event-card__reset">All-time</p>
           </header>
-          <p class="event-card__tagline">Best reef runs from fishers worldwide.</p>
           <div class="leaderboard-block leaderboard-block--compact">
             <ol id="leaderboardEvents" class="leaderboard" aria-label="Top 10 global scores"></ol>
           </div>
@@ -1286,15 +1293,17 @@
             </svg>
           </div>
           <header class="event-card__head">
-            <h3 class="event-card__title">Fisher of the Day</h3>
+            <div class="event-card__title-row">
+              <h3 class="event-card__title">Fisher of the Day</h3>
+              <details class="event-card__about">
+                <summary class="event-card__info" aria-label="About Fisher of the Day">
+                  <span class="event-card__info-glyph" aria-hidden="true">i</span>
+                </summary>
+                <p class="event-card__blurb">Post any reef run. Only your best score today counts toward the daily board.</p>
+              </details>
+            </div>
             <p id="dailyEventReset" class="event-card__reset">Resets tonight</p>
           </header>
-          <p class="event-card__tagline">Today's best score wins the podium.</p>
-          <ul class="event-card__prize-row" aria-label="Daily prizes">
-            <li class="event-card__chip event-card__chip--gold"><span>1st</span> 1,500 + Magnet Rod</li>
-            <li class="event-card__chip event-card__chip--silver"><span>2nd</span> 1,000 + Spray</li>
-            <li class="event-card__chip event-card__chip--bronze"><span>3rd</span> 800 coins</li>
-          </ul>
           <div class="leaderboard-block leaderboard-block--compact">
             <h4 id="dailyLeaderboardTitle" class="leaderboard-block__title">Today's standings</h4>
             <ol id="dailyLeaderboardEvents" class="leaderboard leaderboard--daily" aria-label="Fisher of the Day"></ol>
@@ -1334,14 +1343,17 @@
             </svg>
           </div>
           <header class="event-card__head">
-            <h3 class="event-card__title">Duel Fishing</h3>
+            <div class="event-card__title-row">
+              <h3 class="event-card__title">Duel Fishing</h3>
+              <details class="event-card__about">
+                <summary class="event-card__info" aria-label="About Duel Fishing">
+                  <span class="event-card__info-glyph" aria-hidden="true">i</span>
+                </summary>
+                <p class="event-card__blurb">One-minute showdown vs a rival. Uses 1 ticket. Desktop or tablet only.</p>
+              </details>
+            </div>
             <p class="event-card__reset">1 minute</p>
           </header>
-          <p class="event-card__tagline">You vs a rival. Highest score takes the coins.</p>
-          <ul class="event-card__prize-row" aria-label="Duel prize">
-            <li class="event-card__chip event-card__chip--win"><span>Win</span> 800 coins</li>
-            <li class="event-card__chip event-card__chip--ticket"><span>1</span> ticket</li>
-          </ul>
           <p id="duelEventUnavailable" class="event-card__unavailable" hidden>Desktop or tablet only — not available on phones.</p>
           <p id="duelEventTickets" class="event-card__tickets">Tickets: 5</p>
           <p id="duelEventMatchup" class="event-card__matchup">Lobby search · COM if nobody joins</p>
@@ -1352,7 +1364,7 @@
           </div>
           <p id="duelEventStatus" class="event-card__status" hidden></p>
           <p id="duelEventReef" class="event-card__reef-pick">Reef: —</p>
-          <button type="button" id="btnStartDuel" class="btn btn--secondary event-card__play">Find duel rival</button>
+          <button type="button" id="btnStartDuel" class="btn event-card__play">Find duel rival</button>
         </article>
         <article class="event-card event-card--daily-catch" id="eventCardDailyCatch">
           <div class="event-card__art event-card__art--daily-catch" aria-hidden="true">
@@ -1386,10 +1398,17 @@
             </svg>
           </div>
           <header class="event-card__head">
-            <h3 class="event-card__title">Daily Catch</h3>
+            <div class="event-card__title-row">
+              <h3 class="event-card__title">Daily Catch</h3>
+              <details class="event-card__about">
+                <summary class="event-card__info" aria-label="About Daily Catch">
+                  <span class="event-card__info-glyph" aria-hidden="true">i</span>
+                </summary>
+                <p class="event-card__blurb">Hit today's catch goal across your reef rounds, then claim a reward.</p>
+              </details>
+            </div>
             <p id="dailyCatchReset" class="event-card__reset">Resets tonight</p>
           </header>
-          <p class="event-card__tagline">Hit today's catch goal across your reef rounds.</p>
           <p id="dailyCatchGoal" class="event-card__goal">Catch 15 Moon Jellyfish</p>
           <div class="event-card__progress" aria-label="Daily Catch progress">
             <div class="event-card__progress-track">
@@ -1398,7 +1417,7 @@
             <p id="dailyCatchProgressText" class="event-card__progress-text">0 / 15</p>
           </div>
           <p id="dailyCatchStatus" class="event-card__status">Play any reef round — matching catches count.</p>
-          <button type="button" id="btnDailyCatchClaim" class="btn btn--secondary event-card__play" hidden>Claim your reward</button>
+          <button type="button" id="btnDailyCatchClaim" class="btn event-card__play" hidden>Claim your reward</button>
         </article>
         <article class="event-card event-card--crab" id="eventCardCrab">
           <div class="event-card__art event-card__art--crab" aria-hidden="true">
@@ -1459,17 +1478,19 @@
             </svg>
           </div>
           <header class="event-card__head">
-            <h3 class="event-card__title">Crab Trap</h3>
+            <div class="event-card__title-row">
+              <h3 class="event-card__title">Crab Trap</h3>
+              <details class="event-card__about">
+                <summary class="event-card__info" aria-label="About Crab Trap">
+                  <span class="event-card__info-glyph" aria-hidden="true">i</span>
+                </summary>
+                <p class="event-card__blurb">Cage treasure crabs in 60 seconds, then open a chest. Uses 1 ticket.</p>
+              </details>
+            </div>
             <p class="event-card__reset">60 seconds</p>
           </header>
-          <p class="event-card__tagline">Cage the treasure crabs. Open a chest.</p>
-          <ul class="event-card__prize-row" aria-label="Crab Trap rewards">
-            <li class="event-card__chip event-card__chip--bronze"><span>Low</span> Coins</li>
-            <li class="event-card__chip event-card__chip--silver"><span>Good</span> Coins + bait</li>
-            <li class="event-card__chip event-card__chip--gold"><span>Great</span> Coins, bait &amp; rods</li>
-          </ul>
           <p id="crabEventTickets" class="event-card__tickets">Tickets: 5</p>
-          <button type="button" id="btnStartCrab" class="btn btn--secondary event-card__play">Play Crab Trap</button>
+          <button type="button" id="btnStartCrab" class="btn event-card__play">Play Crab Trap</button>
         </article>
         <button type="button" id="btnCloseEvents" class="btn btn--primary">Back</button>
         </div>
@@ -1780,6 +1801,6 @@
       </section>
     </div>
 
-    <script src="game.js?v=phone-kraken-lb-1" defer></script>
+    <script src="game.js?v=events-info-play-1" defer></script>
   </body>
 </html>
