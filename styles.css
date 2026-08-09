@@ -2114,6 +2114,8 @@ body {
   .shop-guide__beak,
   .shop-guide__wing-l,
   .shop-guide__wing-r,
+  .shop-guide__wing-l-sec,
+  .shop-guide__wing-r-sec,
   .shop-guide__legs,
   .shop-guide-launch__face,
   .shop-guide-launch__face::after {
@@ -2121,7 +2123,7 @@ body {
   }
 
   .shop-guide__eyelid {
-    transform: scaleY(0.1);
+    transform: scaleY(0.08);
   }
 }
 
