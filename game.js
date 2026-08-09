@@ -12799,7 +12799,7 @@ function tryCatchKraken(opts) {
 function tickKraken(now, dt) {
   if (!playing || !kraken) return;
   if (kraken.state === "scheduled" && now >= kraken.spawnAt) {
-    const len = dpr * 218;
+    const len = dpr * (isPhoneDevice() ? 128 : 218);
     kraken.state = "active";
     kraken.len = len;
     kraken.pathStage = "rise";
