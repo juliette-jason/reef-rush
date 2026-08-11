@@ -573,33 +573,32 @@ function clothingLayerSvg(id) {
       </g>`;
     case "curly_top":
       return `<g class="sg-wear sg-wear--hair">
-        <path d="M102 64
-          Q108 48 120 52
-          Q128 40 138 48
-          Q150 42 158 60
-          Q150 70 130 72
-          Q110 70 102 64 Z" fill="#94a3b8" stroke="#64748b" stroke-width="0.9"/>
         <path d="M112 58
           C104 50 108 38 118 40
           C126 42 124 54 116 56
-          C112 58 112 58 112 58 Z" fill="#e2e8f0" stroke="#64748b" stroke-width="0.85"/>
+          C112 58 112 58 112 58 Z" fill="#e2e8f0" stroke="#94a3b8" stroke-width="0.85"/>
         <path d="M124 52
           C116 42 124 28 136 32
           C146 36 142 50 132 54
-          C128 56 126 54 124 52 Z" fill="#f8fafc" stroke="#64748b" stroke-width="0.85"/>
+          C128 56 126 54 124 52 Z" fill="#f8fafc" stroke="#94a3b8" stroke-width="0.85"/>
         <path d="M140 56
           C132 48 138 36 148 38
           C158 40 156 54 146 58
-          C142 60 142 58 140 56 Z" fill="#e2e8f0" stroke="#64748b" stroke-width="0.85"/>
+          C142 60 142 58 140 56 Z" fill="#e2e8f0" stroke="#94a3b8" stroke-width="0.85"/>
         <path d="M108 62
           C102 56 106 46 114 48
-          C120 50 118 60 112 62 Z" fill="#cbd5e1" stroke="#64748b" stroke-width="0.75"/>
+          C120 50 118 60 112 62 Z" fill="#f1f5f9" stroke="#94a3b8" stroke-width="0.75"/>
         <path d="M148 62
           C142 54 148 44 156 48
-          C162 52 158 62 150 64 Z" fill="#cbd5e1" stroke="#64748b" stroke-width="0.75"/>
-        <path d="M120 46 C116 40 122 34 128 38" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/>
-        <path d="M134 40 C130 34 138 28 144 34" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/>
-        <path d="M128 48 C124 44 130 40 134 44" fill="none" stroke="#64748b" stroke-width="1.2" stroke-linecap="round" opacity="0.55"/>
+          C162 52 158 62 150 64 Z" fill="#f1f5f9" stroke="#94a3b8" stroke-width="0.75"/>
+        <path d="M118 50
+          C112 44 118 36 126 38
+          C132 40 130 50 122 52 Z" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.7"/>
+        <path d="M132 46
+          C126 40 134 30 142 34
+          C148 38 144 48 136 50 Z" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.7"/>
+        <path d="M120 46 C116 40 122 34 128 38" fill="none" stroke="#cbd5e1" stroke-width="1.4" stroke-linecap="round" opacity="0.8"/>
+        <path d="M134 40 C130 34 138 28 144 34" fill="none" stroke="#cbd5e1" stroke-width="1.4" stroke-linecap="round" opacity="0.8"/>
       </g>`;
     case "sleek_slick":
       return `<g class="sg-wear sg-wear--hair">
