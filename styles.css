@@ -5111,13 +5111,10 @@ body {
   max-width: none;
   width: auto;
   height: auto;
-  background-color: #052e26;
-  background-image:
-    radial-gradient(ellipse at 50% -5%, rgba(255, 213, 74, 0.42), transparent 42%),
-    radial-gradient(ellipse at 12% 78%, rgba(52, 211, 153, 0.22), transparent 42%),
-    radial-gradient(ellipse at 90% 24%, rgba(251, 146, 60, 0.2), transparent 38%),
-    radial-gradient(ellipse at 50% 110%, rgba(15, 118, 110, 0.55), transparent 50%),
-    linear-gradient(180deg, #0f766e 0%, #065f46 38%, #022c22 72%, #031510 100%);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 213, 74, 0.18), transparent 46%),
+    radial-gradient(ellipse at 18% 85%, rgba(77, 255, 243, 0.1), transparent 42%),
+    linear-gradient(180deg, #0c5a78 0%, var(--ocean-mid) 48%, var(--ocean-deep) 100%);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   isolation: isolate;
@@ -5125,145 +5122,7 @@ body {
   z-index: 41;
 }
 
-.events-decor {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  overflow: hidden;
-}
-
-.events-decor__orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(2px);
-  opacity: 0.55;
-  animation: eventsOrbFloat 6.5s ease-in-out infinite;
-}
-
-.events-decor__orb--a {
-  width: 120px;
-  height: 120px;
-  top: 8%;
-  left: -30px;
-  background: radial-gradient(circle, rgba(253, 224, 71, 0.45), transparent 70%);
-}
-
-.events-decor__orb--b {
-  width: 90px;
-  height: 90px;
-  top: 42%;
-  right: -20px;
-  background: radial-gradient(circle, rgba(45, 212, 191, 0.4), transparent 70%);
-  animation-delay: -2s;
-}
-
-.events-decor__orb--c {
-  width: 70px;
-  height: 70px;
-  bottom: 18%;
-  left: 18%;
-  background: radial-gradient(circle, rgba(251, 146, 60, 0.35), transparent 70%);
-  animation-delay: -3.5s;
-}
-
-.events-decor__star {
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  background: #fff7c2;
-  clip-path: polygon(50% 0%, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0% 50%, 38% 38%);
-  animation: eventsStarTwinkle 2.8s ease-in-out infinite;
-}
-
-.events-decor__star--1 { top: 14%; left: 22%; }
-.events-decor__star--2 { top: 22%; right: 18%; animation-delay: -0.8s; }
-.events-decor__star--3 { top: 58%; left: 8%; animation-delay: -1.4s; width: 9px; height: 9px; }
-.events-decor__star--4 { top: 68%; right: 12%; animation-delay: -2.1s; width: 10px; height: 10px; }
-
-.events-decor__ribbon {
-  position: absolute;
-  top: 0;
-  width: 56px;
-  height: 160px;
-  opacity: 0.35;
-  background: repeating-linear-gradient(
-    -18deg,
-    rgba(255, 213, 74, 0.55) 0 10px,
-    rgba(255, 255, 255, 0.08) 10px 20px
-  );
-  transform-origin: top center;
-  animation: eventsRibbonSway 5.5s ease-in-out infinite;
-}
-
-.events-decor__ribbon--l {
-  left: 6%;
-  transform: skewX(-12deg);
-}
-
-.events-decor__ribbon--r {
-  right: 6%;
-  transform: skewX(12deg);
-  animation-delay: -2.4s;
-}
-
-@keyframes eventsOrbFloat {
-  0%, 100% { transform: translateY(0) scale(1); opacity: 0.4; }
-  50% { transform: translateY(-16px) scale(1.08); opacity: 0.7; }
-}
-
-@keyframes eventsStarTwinkle {
-  0%, 100% { transform: scale(0.7) rotate(0deg); opacity: 0.3; }
-  45% { transform: scale(1.2) rotate(16deg); opacity: 0.95; }
-}
-
-@keyframes eventsRibbonSway {
-  0%, 100% { transform: skewX(-12deg) translateY(0); }
-  50% { transform: skewX(-8deg) translateY(8px); }
-}
-
-.events-decor__ribbon--r {
-  animation-name: eventsRibbonSwayR;
-}
-
-@keyframes eventsRibbonSwayR {
-  0%, 100% { transform: skewX(12deg) translateY(0); }
-  50% { transform: skewX(8deg) translateY(8px); }
-}
-
-.panel--events > *:not(.events-decor) {
-  position: relative;
-  z-index: 1;
-}
-
-.events-hero {
-  width: 100%;
-  text-align: center;
-  padding: 2px 4px 10px;
-}
-
-.events-hero__eyebrow {
-  margin: 0 0 2px;
-  font-family: "Nunito", sans-serif;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: #fde68a;
-}
-
-.events-hero__title {
-  margin: 0 0 4px;
-}
-
-.events-hero__lede {
-  margin: 0 auto;
-  max-width: 30ch;
-  text-align: center;
-  color: rgba(209, 250, 229, 0.92);
-}
-
-/* Old sunset ocean stays unused while Events uses the arena panel backdrop. */
+/* Keep the old sunset ocean off — Events uses the World Adventures blue backdrop. */
 #app.app--events-mode .events-ocean {
   display: none !important;
 }
@@ -5281,12 +5140,10 @@ body {
   align-items: center;
   gap: 8px;
   padding: 9px 13px;
-  border-radius: 999px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 55%),
-    rgba(4, 47, 46, 0.92);
-  border: 2px solid rgba(253, 224, 71, 0.55);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: rgba(8, 28, 48, 0.9);
+  border: 1px solid rgba(255, 213, 74, 0.38);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   pointer-events: none;
 }
 
@@ -5303,19 +5160,18 @@ body {
   font-size: 1.35rem;
   letter-spacing: 0.06em;
   line-height: 1;
-  color: #fef9c3;
-  text-shadow: 0 0 10px rgba(253, 224, 71, 0.35);
+  color: var(--neon-cyan);
+  text-shadow: 0 0 10px rgba(77, 255, 243, 0.35);
 }
 
 .panel--events__inner {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: min(540px, 96vw);
+  max-width: min(520px, 94vw);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
 }
 
 .events-ocean {
@@ -5574,111 +5430,20 @@ body {
 }
 
 .panel--events .event-card {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 28%),
-    linear-gradient(165deg, rgba(6, 78, 59, 0.92), rgba(2, 44, 34, 0.96));
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border: 2px solid rgba(253, 224, 71, 0.42);
-  border-radius: 22px;
-  box-shadow:
-    0 14px 28px rgba(0, 0, 0, 0.38),
-    0 4px 0 rgba(2, 44, 34, 0.9),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  overflow: hidden;
-  transform: translateZ(0);
-  transition: transform 0.15s ease, border-color 0.15s ease;
-}
-
-.panel--events .event-card:hover {
-  border-color: rgba(253, 224, 71, 0.7);
-  transform: translateY(-2px);
-}
-
-.panel--events .event-card--global {
-  border-color: rgba(125, 211, 252, 0.45);
-}
-
-.panel--events .event-card--daily {
-  border-color: rgba(253, 224, 71, 0.55);
-}
-
-.panel--events .event-card--duel {
-  border-color: rgba(248, 113, 113, 0.5);
-}
-
-.panel--events .event-card--daily-catch {
-  border-color: rgba(52, 211, 153, 0.5);
-}
-
-.panel--events .event-card--crab {
-  border-color: rgba(251, 146, 60, 0.55);
+  background: linear-gradient(165deg, rgba(8, 28, 48, 0.9), rgba(12, 24, 38, 0.94));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .panel--events .leaderboard-block {
-  background: rgba(2, 44, 34, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  background: rgba(8, 28, 48, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .panel--events .btn--primary {
   max-width: min(320px, 88vw);
-}
-
-.panel--events .event-card__play {
-  margin: 8px 16px 4px;
-  width: calc(100% - 32px);
-  max-width: none;
-  min-height: 48px;
-  border-radius: 16px;
-  border: 2px solid rgba(255, 248, 220, 0.55);
-  background: linear-gradient(180deg, #fff6c2 0%, #ffd54a 45%, #f59e0b 100%);
-  color: #3b2208;
-  font-family: var(--font-brand);
-  font-size: 1.15rem;
-  letter-spacing: 0.04em;
-  box-shadow: 0 5px 0 #92400e, 0 10px 18px rgba(0, 0, 0, 0.28);
-}
-
-.panel--events .event-card__play:hover {
-  filter: brightness(1.05);
-}
-
-.panel--events .event-card__art {
-  height: 118px;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-}
-
-.panel--events .event-card__title {
-  font-size: 1.2rem;
-  letter-spacing: 0.04em;
-  color: #fff8e7;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
-}
-
-.panel--events .event-card__reset {
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: rgba(253, 224, 71, 0.16);
-  border: 1px solid rgba(253, 224, 71, 0.35);
-  color: #fde68a;
-  font-weight: 800;
-  font-size: 0.68rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .events-decor__orb,
-  .events-decor__star,
-  .events-decor__ribbon {
-    animation: none !important;
-  }
-
-  .panel--events .event-card {
-    transition: none;
-  }
 }
 
 .event-card {
