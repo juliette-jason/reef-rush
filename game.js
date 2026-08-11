@@ -7638,7 +7638,7 @@ async function startDuelFromEvents() {
 
   hideAllPanels();
   if (panelEvents) panelEvents.hidden = false;
-  if (eventsOcean) eventsOcean.hidden = false;
+  if (eventsOcean) eventsOcean.hidden = true;
   appRoot?.classList.add("app--events-mode");
   const matchmakingDeadline = Date.now() + DUEL_LOBBY_TIMEOUT_MS;
   setDuelMatchmakingUi(true, "Trying to find a rival…");
@@ -8703,7 +8703,8 @@ function showExclusiveMenu(which) {
   }
   if (which === "events") {
     if (panelEvents) panelEvents.hidden = false;
-    if (eventsOcean) eventsOcean.hidden = false;
+    /* Keep the old sunset ocean off — Events uses its own arena backdrop. */
+    if (eventsOcean) eventsOcean.hidden = true;
     appRoot?.classList.add("app--events-mode");
     return;
   }
