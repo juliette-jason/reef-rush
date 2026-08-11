@@ -5915,14 +5915,6 @@ body {
   color: var(--neon-cyan);
 }
 
-.event-card--daily {
-  /* accent set with global event card themes above */
-}
-
-.event-card--duel {
-  /* accent set with global event card themes above */
-}
-
 .event-card--duel-unavailable {
   opacity: 0.72;
 }
