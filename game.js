@@ -390,6 +390,320 @@ function rollSpecialChestPrize(tier) {
 }
 
 
+
+/** Seagull profile wardrobe — daily shop skins. */
+const CLOTHING_SLOTS = ["hat", "hair", "shirt", "pants", "accessory"];
+const CLOTHING_SLOT_LABELS = {
+  hat: "Hat",
+  hair: "Hair",
+  shirt: "Shirt",
+  pants: "Pants",
+  accessory: "Accessory",
+};
+const STARTER_CLOTHING_ID = "sailor_cap";
+
+const CLOTHING_DEFS = [
+  { id: "sailor_cap", name: "Sailor Cap", slot: "hat", price: 0, starter: true, icon: "🧢", blurb: "Your classic green shop cap." },
+  { id: "captain_hat", name: "Captain Hat", slot: "hat", price: 320, icon: "🎩", blurb: "Navy brass for a reef commander." },
+  { id: "red_beanie", name: "Red Beanie", slot: "hat", price: 180, icon: "🧶", blurb: "Cozy knit for chilly docks." },
+  { id: "straw_sun_hat", name: "Straw Sun Hat", slot: "hat", price: 220, icon: "👒", blurb: "Shade for long sunny voyages." },
+  { id: "pirate_bandana", name: "Pirate Bandana", slot: "hat", price: 260, icon: "🏴‍☠️", blurb: "Knotted red for salty swagger." },
+  { id: "spiky_tuft", name: "Spiky Tuft", slot: "hair", price: 140, icon: "🦔", blurb: "Wild crest that won't stay down." },
+  { id: "curly_top", name: "Curly Top", slot: "hair", price: 160, icon: "🌀", blurb: "Soft curls for a friendly look." },
+  { id: "sleek_slick", name: "Sleek Slick", slot: "hair", price: 150, icon: "✨", blurb: "Combed back, ready for photos." },
+  { id: "rainbow_mohawk", name: "Rainbow Mohawk", slot: "hair", price: 380, icon: "🌈", blurb: "Loud colors for festival tides." },
+  { id: "blue_vest", name: "Blue Vest", slot: "shirt", price: 200, icon: "🧥", blurb: "Smart layered chest feathers." },
+  { id: "stripe_sweater", name: "Stripe Sweater", slot: "shirt", price: 240, icon: "👕", blurb: "Nautical stripes never go out." },
+  { id: "life_vest", name: "Life Vest", slot: "shirt", price: 280, icon: "🦺", blurb: "Safety orange with reflective tape." },
+  { id: "hawaiian_shirt", name: "Hawaiian Shirt", slot: "shirt", price: 300, icon: "🌺", blurb: "Tropical flowers on every flap." },
+  { id: "yellow_raincoat", name: "Yellow Raincoat", slot: "shirt", price: 340, icon: "🌧️", blurb: "Keeps spray off your wings." },
+  { id: "blue_shorts", name: "Blue Shorts", slot: "pants", price: 160, icon: "🩳", blurb: "Casual dockside bottoms." },
+  { id: "cargo_pants", name: "Cargo Pants", slot: "pants", price: 240, icon: "👖", blurb: "Pockets for spare lures." },
+  { id: "swim_trunks", name: "Swim Trunks", slot: "pants", price: 170, icon: "🏊", blurb: "Bright for a dip after the haul." },
+  { id: "striped_socks", name: "Striped Socks", slot: "pants", price: 120, icon: "🧦", blurb: "Cozy bands for orange legs." },
+  { id: "red_scarf", name: "Red Scarf", slot: "accessory", price: 190, icon: "🧣", blurb: "Wrapped snug around the neck." },
+  { id: "gold_chain", name: "Gold Chain", slot: "accessory", price: 420, icon: "🪙", blurb: "Flashy treasure from the cove." },
+  { id: "monocle", name: "Monocle", slot: "accessory", price: 350, icon: "🧐", blurb: "For spotting rare fish in style." },
+  { id: "bow_tie", name: "Bow Tie", slot: "accessory", price: 210, icon: "🎀", blurb: "Formal wear for prize nights." },
+];
+
+const CLOTHING_BY_ID = Object.fromEntries(CLOTHING_DEFS.map((c) => [c.id, c]));
+
+function emptyEquippedClothes() {
+  const o = {};
+  for (const slot of CLOTHING_SLOTS) o[slot] = null;
+  return o;
+}
+
+function normalizeOwnedClothes(raw) {
+  const ids = new Set(CLOTHING_DEFS.map((c) => c.id));
+  const out = [];
+  const seen = new Set();
+  if (Array.isArray(raw)) {
+    for (const id of raw) {
+      if (typeof id !== "string" || !ids.has(id) || seen.has(id)) continue;
+      seen.add(id);
+      out.push(id);
+    }
+  }
+  if (!seen.has(STARTER_CLOTHING_ID)) out.unshift(STARTER_CLOTHING_ID);
+  return out;
+}
+
+function normalizeEquippedClothes(raw, ownedIds) {
+  const owned = new Set(ownedIds || []);
+  const out = emptyEquippedClothes();
+  if (raw && typeof raw === "object") {
+    for (const slot of CLOTHING_SLOTS) {
+      const id = raw[slot];
+      if (typeof id !== "string") continue;
+      const def = CLOTHING_BY_ID[id];
+      if (!def || def.slot !== slot || !owned.has(id)) continue;
+      out[slot] = id;
+    }
+  } else if (owned.has(STARTER_CLOTHING_ID)) {
+    out.hat = STARTER_CLOTHING_ID;
+  }
+  return out;
+}
+
+function normalizeDailyClothesShop(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const dayKey = String(raw.dayKey || "");
+  const itemIds = Array.isArray(raw.itemIds)
+    ? raw.itemIds.filter((id) => typeof id === "string" && CLOTHING_BY_ID[id] && !CLOTHING_BY_ID[id].starter).slice(0, 5)
+    : [];
+  if (!dayKey || itemIds.length !== 5) return null;
+  return { dayKey, itemIds };
+}
+
+function isClothesOwned(id) {
+  return Array.isArray(gameMeta.ownedClothes) && gameMeta.ownedClothes.includes(id);
+}
+
+function rollDailyClothesForDay(dayKey) {
+  const pool = CLOTHING_DEFS.filter((c) => !c.starter);
+  let seed = hashDailyCatchSeed(`clothes:${dayKey}`);
+  const arr = pool.slice();
+  for (let i = arr.length - 1; i > 0; i--) {
+    seed = (Math.imul(seed, 1103515245) + 12345) >>> 0;
+    const j = seed % (i + 1);
+    const t = arr[i];
+    arr[i] = arr[j];
+    arr[j] = t;
+  }
+  return { dayKey, itemIds: arr.slice(0, 5).map((c) => c.id) };
+}
+
+function ensureDailyClothesShop() {
+  const today = getDailyDayKey();
+  const cur = normalizeDailyClothesShop(gameMeta.dailyClothesShop);
+  if (cur && cur.dayKey === today) {
+    gameMeta.dailyClothesShop = cur;
+    return cur;
+  }
+  gameMeta.dailyClothesShop = rollDailyClothesForDay(today);
+  saveMeta();
+  return gameMeta.dailyClothesShop;
+}
+
+function clothingLayerSvg(id) {
+  switch (id) {
+    case "sailor_cap":
+      return `<g class="sg-wear sg-wear--hat">
+        <path d="M100 52 L104 18 Q130 6 156 18 L160 52 Q154 60 130 62 Q106 60 100 52 Z" fill="#ffffff" stroke="#0f172a" stroke-width="1.7" stroke-linejoin="round"/>
+        <path d="M102 46 Q110 36 130 34 Q150 36 158 46 L158 56 Q150 64 130 66 Q110 64 102 56 Z" fill="#16a34a" stroke="#0f172a" stroke-width="1.3"/>
+        <path d="M112 50 H148" fill="none" stroke="#86efac" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/>
+        <ellipse cx="118" cy="26" rx="9" ry="3.5" fill="#fff" opacity="0.4"/>
+      </g>`;
+    case "captain_hat":
+      return `<g class="sg-wear sg-wear--hat">
+        <ellipse cx="130" cy="54" rx="40" ry="8" fill="#0f172a"/>
+        <path d="M108 52 L112 28 Q130 16 148 28 L152 52 Z" fill="#1e3a5f" stroke="#0f172a" stroke-width="1.4"/>
+        <path d="M118 34 H142" stroke="#fbbf24" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="130" cy="40" r="4" fill="#fbbf24" stroke="#92400e" stroke-width="0.8"/>
+      </g>`;
+    case "red_beanie":
+      return `<g class="sg-wear sg-wear--hat">
+        <path d="M102 58 Q104 28 130 24 Q156 28 158 58 Q150 66 130 68 Q110 66 102 58 Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="1.3"/>
+        <path d="M104 54 Q130 48 156 54" fill="none" stroke="#fca5a5" stroke-width="2" opacity="0.55"/>
+        <circle cx="130" cy="22" r="5" fill="#fecaca" stroke="#7f1d1d" stroke-width="0.8"/>
+      </g>`;
+    case "straw_sun_hat":
+      return `<g class="sg-wear sg-wear--hat">
+        <ellipse cx="130" cy="56" rx="48" ry="10" fill="#f59e0b" stroke="#92400e" stroke-width="1.2"/>
+        <ellipse cx="130" cy="52" rx="28" ry="12" fill="#fbbf24" stroke="#b45309" stroke-width="1.1"/>
+        <path d="M110 48 Q130 42 150 48" fill="none" stroke="#fff7ed" stroke-width="1.4" opacity="0.55"/>
+      </g>`;
+    case "pirate_bandana":
+      return `<g class="sg-wear sg-wear--hat">
+        <path d="M100 60 Q108 34 130 32 Q152 34 160 60 Q148 70 130 72 Q112 70 100 60 Z" fill="#b91c1c" stroke="#7f1d1d" stroke-width="1.2"/>
+        <path d="M156 58 L172 70 L160 66 Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="0.8"/>
+        <path d="M112 48 L120 56 M124 44 L128 54 M136 44 L140 54 M144 48 L148 56" stroke="#fff" stroke-width="1.2" opacity="0.8"/>
+      </g>`;
+    case "spiky_tuft":
+      return `<g class="sg-wear sg-wear--hair">
+        <path d="M118 58 L122 34 L128 54 L132 30 L138 54 L144 36 L148 58 Z" fill="#e2e8f0" stroke="#64748b" stroke-width="1"/>
+        <path d="M124 50 L128 38 L132 50" fill="#94a3b8"/>
+      </g>`;
+    case "curly_top":
+      return `<g class="sg-wear sg-wear--hair">
+        <circle cx="118" cy="48" r="8" fill="#cbd5e1" stroke="#64748b" stroke-width="0.9"/>
+        <circle cx="130" cy="42" r="9" fill="#e2e8f0" stroke="#64748b" stroke-width="0.9"/>
+        <circle cx="142" cy="48" r="8" fill="#cbd5e1" stroke="#64748b" stroke-width="0.9"/>
+        <circle cx="124" cy="40" r="5" fill="#f8fafc"/>
+      </g>`;
+    case "sleek_slick":
+      return `<g class="sg-wear sg-wear--hair">
+        <path d="M104 62 Q118 40 150 44 Q156 56 148 64 Q130 58 104 62 Z" fill="#334155" stroke="#0f172a" stroke-width="1.1"/>
+        <path d="M112 56 Q130 48 146 52" fill="none" stroke="#94a3b8" stroke-width="1.2" opacity="0.55"/>
+      </g>`;
+    case "rainbow_mohawk":
+      return `<g class="sg-wear sg-wear--hair">
+        <path d="M124 60 L128 18 L132 60 Z" fill="#ef4444"/>
+        <path d="M128 60 L132 16 L136 60 Z" fill="#f59e0b"/>
+        <path d="M132 60 L136 18 L140 60 Z" fill="#22c55e"/>
+        <path d="M136 60 L140 20 L144 60 Z" fill="#3b82f6"/>
+        <path d="M140 60 L144 22 L148 60 Z" fill="#a855f7"/>
+      </g>`;
+    case "blue_vest":
+      return `<g class="sg-wear sg-wear--shirt">
+        <path d="M108 118 Q130 108 152 118 L148 156 Q130 164 112 156 Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1.3"/>
+        <path d="M130 112 V158" stroke="#93c5fd" stroke-width="1.4"/>
+        <circle cx="124" cy="130" r="2.2" fill="#fde68a"/><circle cx="136" cy="142" r="2.2" fill="#fde68a"/>
+      </g>`;
+    case "stripe_sweater":
+      return `<g class="sg-wear sg-wear--shirt">
+        <path d="M106 116 Q130 106 154 116 L150 158 Q130 168 110 158 Z" fill="#f8fafc" stroke="#334155" stroke-width="1.2"/>
+        <path d="M108 128 H152 M110 140 H150 M112 152 H148" stroke="#0ea5e9" stroke-width="4" stroke-linecap="round"/>
+      </g>`;
+    case "life_vest":
+      return `<g class="sg-wear sg-wear--shirt">
+        <path d="M108 114 Q130 104 152 114 L156 150 Q130 168 104 150 Z" fill="#f97316" stroke="#9a3412" stroke-width="1.3"/>
+        <path d="M116 126 H144 M116 140 H144" stroke="#fde68a" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M130 112 V156" stroke="#9a3412" stroke-width="1.2"/>
+      </g>`;
+    case "hawaiian_shirt":
+      return `<g class="sg-wear sg-wear--shirt">
+        <path d="M106 116 Q130 106 154 116 L150 160 Q130 170 110 160 Z" fill="#14b8a6" stroke="#0f766e" stroke-width="1.2"/>
+        <circle cx="118" cy="132" r="5" fill="#fb7185"/><circle cx="140" cy="146" r="4.5" fill="#fbbf24"/>
+        <circle cx="134" cy="128" r="3.5" fill="#f472b6"/><path d="M122 148 Q126 142 130 148" fill="#4ade80"/>
+      </g>`;
+    case "yellow_raincoat":
+      return `<g class="sg-wear sg-wear--shirt">
+        <path d="M104 112 Q130 100 156 112 L158 158 Q130 172 102 158 Z" fill="#facc15" stroke="#a16207" stroke-width="1.3"/>
+        <path d="M130 108 V162" stroke="#a16207" stroke-width="1.2"/>
+        <path d="M112 124 Q130 132 148 124" fill="none" stroke="#fef9c3" stroke-width="2" opacity="0.7"/>
+      </g>`;
+    case "blue_shorts":
+      return `<g class="sg-wear sg-wear--pants">
+        <path d="M112 158 H148 L152 178 H132 L130 168 L128 178 H108 Z" fill="#2563eb" stroke="#1e3a8a" stroke-width="1.1"/>
+        <path d="M130 160 V170" stroke="#93c5fd" stroke-width="1.2"/>
+      </g>`;
+    case "cargo_pants":
+      return `<g class="sg-wear sg-wear--pants">
+        <path d="M110 156 H150 L154 196 H134 L130 176 L126 196 H106 Z" fill="#78716c" stroke="#44403c" stroke-width="1.1"/>
+        <rect x="112" y="168" width="10" height="8" rx="1.5" fill="#57534e"/>
+        <rect x="138" y="168" width="10" height="8" rx="1.5" fill="#57534e"/>
+      </g>`;
+    case "swim_trunks":
+      return `<g class="sg-wear sg-wear--pants">
+        <path d="M112 158 H148 L150 176 H132 L130 168 L128 176 H110 Z" fill="#ec4899" stroke="#9d174d" stroke-width="1.1"/>
+        <path d="M114 166 H146" stroke="#f9a8d4" stroke-width="2"/>
+      </g>`;
+    case "striped_socks":
+      return `<g class="sg-wear sg-wear--pants">
+        <path d="M108 176 L106 196" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+        <path d="M108 176 L106 196" stroke="#0ea5e9" stroke-width="5" stroke-linecap="round" stroke-dasharray="4 4"/>
+        <path d="M152 176 L154 196" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+        <path d="M152 176 L154 196" stroke="#0ea5e9" stroke-width="5" stroke-linecap="round" stroke-dasharray="4 4"/>
+      </g>`;
+    case "red_scarf":
+      return `<g class="sg-wear sg-wear--accessory">
+        <path d="M108 100 Q130 118 152 100 Q148 112 130 120 Q112 112 108 100 Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="1.1"/>
+        <path d="M138 114 L158 138 L146 124 Z" fill="#ef4444" stroke="#7f1d1d" stroke-width="0.8"/>
+      </g>`;
+    case "gold_chain":
+      return `<g class="sg-wear sg-wear--accessory">
+        <path d="M112 104 Q130 126 148 104" fill="none" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="130" cy="122" r="5" fill="#f59e0b" stroke="#92400e" stroke-width="1"/>
+        <circle cx="130" cy="122" r="2.2" fill="#fde68a"/>
+      </g>`;
+    case "monocle":
+      return `<g class="sg-wear sg-wear--accessory">
+        <circle cx="144" cy="76" r="10" fill="none" stroke="#fbbf24" stroke-width="2.2"/>
+        <path d="M154 76 Q168 84 166 100" fill="none" stroke="#fbbf24" stroke-width="1.4"/>
+      </g>`;
+    case "bow_tie":
+      return `<g class="sg-wear sg-wear--accessory">
+        <path d="M118 108 L130 114 L118 120 Z" fill="#7c3aed" stroke="#4c1d95" stroke-width="0.9"/>
+        <path d="M142 108 L130 114 L142 120 Z" fill="#7c3aed" stroke="#4c1d95" stroke-width="0.9"/>
+        <rect x="126" y="110" width="8" height="8" rx="1.5" fill="#a78bfa"/>
+      </g>`;
+    default:
+      return "";
+  }
+}
+
+function fillSeagullWearSlots(root) {
+  if (!root) return;
+  const equipped = gameMeta.equippedClothes || emptyEquippedClothes();
+  for (const slot of CLOTHING_SLOTS) {
+    const el = root.querySelector(`[data-wear-slot="${slot}"]`);
+    if (!el) continue;
+    const id = equipped[slot];
+    el.innerHTML = id ? clothingLayerSvg(id) : "";
+  }
+}
+
+function syncSeagullOutfit() {
+  if (!gameMeta.ownedClothes) gameMeta.ownedClothes = normalizeOwnedClothes([]);
+  if (!gameMeta.equippedClothes) {
+    gameMeta.equippedClothes = normalizeEquippedClothes(null, gameMeta.ownedClothes);
+  }
+  document.querySelectorAll("[data-seagull-outfit]").forEach((root) => fillSeagullWearSlots(root));
+}
+
+function equipClothingItem(id) {
+  const def = CLOTHING_BY_ID[id];
+  if (!def || !isClothesOwned(id)) return false;
+  if (!gameMeta.equippedClothes) gameMeta.equippedClothes = emptyEquippedClothes();
+  const cur = gameMeta.equippedClothes[def.slot];
+  gameMeta.equippedClothes[def.slot] = cur === id ? null : id;
+  if (def.slot === "hat" && !gameMeta.equippedClothes.hat && isClothesOwned(STARTER_CLOTHING_ID)) {
+    /* allow bare head */
+  }
+  saveMeta();
+  syncSeagullOutfit();
+  refreshCollectablesUI();
+  return true;
+}
+
+function buyClothingItem(id) {
+  const def = CLOTHING_BY_ID[id];
+  if (!def || def.starter) return;
+  if (isClothesOwned(id)) {
+    showToast("Already owned", 1400);
+    return;
+  }
+  if (gameMeta.coins < def.price) {
+    showToast("Not enough coins", 1600);
+    return;
+  }
+  gameMeta.coins -= def.price;
+  if (!Array.isArray(gameMeta.ownedClothes)) gameMeta.ownedClothes = normalizeOwnedClothes([]);
+  gameMeta.ownedClothes.push(id);
+  if (!gameMeta.equippedClothes) gameMeta.equippedClothes = emptyEquippedClothes();
+  gameMeta.equippedClothes[def.slot] = id;
+  saveMeta();
+  refreshCoinDisplays();
+  buildShopUI();
+  syncSeagullOutfit();
+  refreshCollectablesUI();
+  showToast(`${def.name} unlocked!`, 1800);
+}
+
+
 /** Compact SVG portrait of a full fishing rod for shop + home picker. */
 function rodArtSvg(rod) {
   const v = rod.visual || {};
@@ -4469,6 +4783,9 @@ function defaultMeta() {
     pendingLuckyLure: false,
     pendingDoubleHaul: false,
     pendingMysteryReef: false,
+    ownedClothes: normalizeOwnedClothes([STARTER_CLOTHING_ID]),
+    equippedClothes: normalizeEquippedClothes({ hat: STARTER_CLOTHING_ID }, [STARTER_CLOTHING_ID]),
+    dailyClothesShop: null,
   };
 }
 
@@ -4521,6 +4838,9 @@ function loadMeta() {
       pendingLuckyLure: Boolean(o.pendingLuckyLure),
       pendingDoubleHaul: Boolean(o.pendingDoubleHaul),
       pendingMysteryReef: Boolean(o.pendingMysteryReef),
+      ownedClothes: normalizeOwnedClothes(o.ownedClothes),
+      equippedClothes: normalizeEquippedClothes(o.equippedClothes, normalizeOwnedClothes(o.ownedClothes)),
+      dailyClothesShop: normalizeDailyClothesShop(o.dailyClothesShop),
     };
   } catch {
     return defaultMeta();
@@ -7506,6 +7826,8 @@ const collectablesArmed = document.getElementById("collectablesArmed");
 const collectablesItems = document.getElementById("collectablesItems");
 const collectablesStamps = document.getElementById("collectablesStamps");
 const collectablesStampCount = document.getElementById("collectablesStampCount");
+const collectablesWardrobe = document.getElementById("collectablesWardrobe");
+const collectablesWardrobeCount = document.getElementById("collectablesWardrobeCount");
 const btnCloseCollectables = document.getElementById("btnCloseCollectables");
 const eventsOcean = document.getElementById("eventsOcean");
 const btnCloseEvents = document.getElementById("btnCloseEvents");
@@ -8114,6 +8436,9 @@ function loadMetaFromObject(o) {
       pendingLuckyLure: Boolean(o.pendingLuckyLure),
       pendingDoubleHaul: Boolean(o.pendingDoubleHaul),
       pendingMysteryReef: Boolean(o.pendingMysteryReef),
+      ownedClothes: normalizeOwnedClothes(o.ownedClothes),
+      equippedClothes: normalizeEquippedClothes(o.equippedClothes, normalizeOwnedClothes(o.ownedClothes)),
+      dailyClothesShop: normalizeDailyClothesShop(o.dailyClothesShop),
     };
   } catch {
     return defaultMeta();
@@ -10098,6 +10423,48 @@ function buildShopUI() {
     rodSec.list.appendChild(li);
   }
   shopList.appendChild(rodSec.section);
+
+  const dailyFits = ensureDailyClothesShop();
+  const clothesSec = shopSection("Daily fits", "TODAY");
+  const resetNote = document.createElement("p");
+  resetNote.className = "shop-section__note";
+  resetNote.textContent = `5 seagull skins today · ${formatDailyResetCountdown(msUntilDailyReset())}`;
+  clothesSec.section.insertBefore(resetNote, clothesSec.list);
+  for (const id of dailyFits.itemIds) {
+    const def = CLOTHING_BY_ID[id];
+    if (!def) continue;
+    const owned = isClothesOwned(id);
+    const li = document.createElement("li");
+    li.className = `shop-item shop-item--clothes${owned ? " shop-item--owned" : ""}`;
+    const art = document.createElement("div");
+    art.className = "shop-item__icon shop-item__icon--clothes";
+    art.setAttribute("aria-hidden", "true");
+    art.textContent = def.icon;
+    const body = document.createElement("div");
+    body.className = "shop-item__body";
+    const title = document.createElement("h3");
+    title.className = "shop-item__title";
+    title.textContent = def.name;
+    const desc = document.createElement("p");
+    desc.className = "shop-item__desc";
+    desc.textContent = def.blurb;
+    const meta = document.createElement("div");
+    meta.className = "shop-item__meta";
+    meta.innerHTML = owned
+      ? `<span class="shop-item__stock shop-item__stock--owned">${CLOTHING_SLOT_LABELS[def.slot]} · Owned</span>`
+      : `<span class="shop-item__stock">${CLOTHING_SLOT_LABELS[def.slot]} · Daily pick</span>`;
+    body.append(title, desc, meta);
+    const buy = shopBuyButton({
+      owned,
+      price: def.price,
+      disabled: owned || gameMeta.coins < def.price,
+      label: owned ? "Owned" : "Buy",
+    });
+    buy.addEventListener("click", () => buyClothingItem(id));
+    li.append(art, body, buy);
+    clothesSec.list.appendChild(li);
+  }
+  shopList.appendChild(clothesSec.section);
 }
 
 function openShop() {
@@ -10106,6 +10473,7 @@ function openShop() {
   normalizeSelectedBaitId();
   refreshCoinDisplays();
   buildShopUI();
+  syncSeagullOutfit();
   showShopGuideIfNeeded();
   panelStart.hidden = true;
   panelShop.hidden = false;
@@ -10220,12 +10588,54 @@ function refreshCollectablesUI() {
       collectablesStampCount.textContent = `${owned} / ${FISH_SPECIES.length} collected`;
     }
   }
+  if (collectablesWardrobe) {
+    collectablesWardrobe.replaceChildren();
+    const ownedIds = new Set(gameMeta.ownedClothes || []);
+    const equipped = gameMeta.equippedClothes || emptyEquippedClothes();
+    for (const def of CLOTHING_DEFS) {
+      const have = ownedIds.has(def.id);
+      const card = document.createElement("article");
+      card.className = `collectables-item collectables-item--clothes${have ? "" : " collectables-item--empty"}`;
+      const icon = document.createElement("div");
+      icon.className = "collectables-item__icon";
+      icon.textContent = have ? def.icon : "🔒";
+      const body = document.createElement("div");
+      body.className = "collectables-item__body";
+      const name = document.createElement("p");
+      name.className = "collectables-item__name";
+      name.textContent = have ? def.name : "???";
+      const blurb = document.createElement("p");
+      blurb.className = "collectables-item__blurb";
+      blurb.textContent = have
+        ? `${CLOTHING_SLOT_LABELS[def.slot]} · ${def.blurb}`
+        : `${CLOTHING_SLOT_LABELS[def.slot]} · Buy from Daily fits in the shop`;
+      body.append(name, blurb);
+      card.append(icon, body);
+      if (have) {
+        const on = equipped[def.slot] === def.id;
+        const useBtn = document.createElement("button");
+        useBtn.type = "button";
+        useBtn.className = "btn btn--secondary collectables-item__use";
+        useBtn.dataset.equipClothes = def.id;
+        useBtn.textContent = on ? "Remove" : "Wear";
+        useBtn.disabled = false;
+        card.appendChild(useBtn);
+      }
+      collectablesWardrobe.appendChild(card);
+    }
+  }
+  if (collectablesWardrobeCount) {
+    const n = (gameMeta.ownedClothes || []).length;
+    collectablesWardrobeCount.textContent = `${n} / ${CLOTHING_DEFS.length} owned`;
+  }
+  syncSeagullOutfit();
 }
 
 function openCollectables() {
   if (!panelCollectables || !panelStart) return;
   setStartMoreOptionsOpen(false);
   refreshCollectablesUI();
+  syncSeagullOutfit();
   panelStart.hidden = true;
   panelCollectables.hidden = false;
   syncHomeLaunchButtons();
@@ -16760,6 +17170,11 @@ collectablesItems?.addEventListener("click", (e) => {
   if (!btn) return;
   armChestBoost(btn.dataset.armItem);
 });
+collectablesWardrobe?.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-equip-clothes]");
+  if (!btn) return;
+  equipClothingItem(btn.dataset.equipClothes);
+});
 btnCloseEvents?.addEventListener("click", closeEvents);
 btnStartDuel?.addEventListener("click", () => {
   void startDuelFromEvents();
@@ -17030,6 +17445,7 @@ window.addEventListener("resize", () => {
 
 gameMeta = loadMeta();
 refreshCollectablesUI();
+syncSeagullOutfit();
 (function keepProgressBackupFresh() {
   try {
     const hasProgress =
