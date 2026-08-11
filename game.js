@@ -832,6 +832,7 @@ function syncSeagullOutfit() {
   }
   ensureSeagullAvatars();
   document.querySelectorAll("[data-seagull-outfit]").forEach((root) => fillSeagullWearSlots(root));
+  /* Shop guide uses a fixed merchant seagull — never sync player clothes onto it. */
 }
 
 function equipClothingItem(id) {

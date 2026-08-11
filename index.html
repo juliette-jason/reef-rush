@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=shirt-over-belly-1" />
+    <link rel="stylesheet" href="styles.css?v=shop-merchant-seagull-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -1712,50 +1712,54 @@
         <p class="shop-tagline">Score big on the reef, cash in here — bait, rods, tickets, and daily seagull fits.</p>
         <div id="shopGuide" class="shop-guide" hidden>
           <div class="shop-guide__sailor" aria-hidden="true">
-            <svg class="shop-guide__art" viewBox="0 0 260 220" xmlns="http://www.w3.org/2000/svg" data-seagull-outfit focusable="false">
+            <svg class="shop-guide__art shop-guide__art--merchant" viewBox="0 0 260 220" xmlns="http://www.w3.org/2000/svg" focusable="false" aria-hidden="true">
               <defs>
                 <linearGradient id="shopSgBody" x1="40%" y1="0%" x2="60%" y2="100%">
-                  <stop offset="0%" stop-color="#f8fafc"/>
-                  <stop offset="35%" stop-color="#e2e8f0"/>
-                  <stop offset="72%" stop-color="#94a3b8"/>
-                  <stop offset="100%" stop-color="#64748b"/>
+                  <stop offset="0%" stop-color="#fff7ed"/>
+                  <stop offset="40%" stop-color="#fde68a"/>
+                  <stop offset="78%" stop-color="#d6b25e"/>
+                  <stop offset="100%" stop-color="#a16207"/>
                 </linearGradient>
                 <linearGradient id="shopSgBelly" x1="50%" y1="0%" x2="50%" y2="100%">
-                  <stop offset="0%" stop-color="#ffffff"/>
-                  <stop offset="100%" stop-color="#e2e8f0"/>
+                  <stop offset="0%" stop-color="#fffbeb"/>
+                  <stop offset="100%" stop-color="#fef3c7"/>
                 </linearGradient>
                 <linearGradient id="shopSgMantle" x1="50%" y1="0%" x2="50%" y2="100%">
-                  <stop offset="0%" stop-color="#cbd5e1"/>
-                  <stop offset="55%" stop-color="#94a3b8"/>
-                  <stop offset="100%" stop-color="#64748b"/>
+                  <stop offset="0%" stop-color="#fcd34d"/>
+                  <stop offset="55%" stop-color="#d97706"/>
+                  <stop offset="100%" stop-color="#92400e"/>
                 </linearGradient>
                 <linearGradient id="shopSgWing" x1="15%" y1="10%" x2="90%" y2="90%">
-                  <stop offset="0%" stop-color="#f1f5f9"/>
-                  <stop offset="28%" stop-color="#cbd5e1"/>
-                  <stop offset="62%" stop-color="#64748b"/>
-                  <stop offset="100%" stop-color="#1e293b"/>
+                  <stop offset="0%" stop-color="#fef3c7"/>
+                  <stop offset="28%" stop-color="#fbbf24"/>
+                  <stop offset="62%" stop-color="#b45309"/>
+                  <stop offset="100%" stop-color="#451a03"/>
                 </linearGradient>
                 <linearGradient id="shopSgWingTip" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#475569"/>
-                  <stop offset="100%" stop-color="#0f172a"/>
+                  <stop offset="0%" stop-color="#78350f"/>
+                  <stop offset="100%" stop-color="#1c1917"/>
                 </linearGradient>
                 <linearGradient id="shopSgHead" x1="35%" y1="5%" x2="65%" y2="100%">
-                  <stop offset="0%" stop-color="#ffffff"/>
-                  <stop offset="70%" stop-color="#f1f5f9"/>
-                  <stop offset="100%" stop-color="#dbe4ee"/>
+                  <stop offset="0%" stop-color="#fffbeb"/>
+                  <stop offset="70%" stop-color="#fde68a"/>
+                  <stop offset="100%" stop-color="#fcd34d"/>
                 </linearGradient>
                 <linearGradient id="shopSgBeak" x1="50%" y1="0%" x2="50%" y2="100%">
-                  <stop offset="0%" stop-color="#fcd34d"/>
-                  <stop offset="45%" stop-color="#f59e0b"/>
-                  <stop offset="100%" stop-color="#b45309"/>
+                  <stop offset="0%" stop-color="#fb923c"/>
+                  <stop offset="45%" stop-color="#ea580c"/>
+                  <stop offset="100%" stop-color="#9a3412"/>
+                </linearGradient>
+                <linearGradient id="shopSgApron" x1="50%" y1="0%" x2="50%" y2="100%">
+                  <stop offset="0%" stop-color="#166534"/>
+                  <stop offset="100%" stop-color="#14532d"/>
                 </linearGradient>
                 <radialGradient id="shopSgCheek" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stop-color="#fda4af" stop-opacity="0.22"/>
-                  <stop offset="100%" stop-color="#fda4af" stop-opacity="0"/>
+                  <stop offset="0%" stop-color="#fb7185" stop-opacity="0.28"/>
+                  <stop offset="100%" stop-color="#fb7185" stop-opacity="0"/>
                 </radialGradient>
                 <radialGradient id="shopSgEyeWhite" cx="40%" cy="35%" r="65%">
                   <stop offset="0%" stop-color="#ffffff"/>
-                  <stop offset="100%" stop-color="#e2e8f0"/>
+                  <stop offset="100%" stop-color="#fef3c7"/>
                 </radialGradient>
               </defs>
 
@@ -1771,16 +1775,28 @@
               </g>
 
               <g class="shop-guide__tail">
-                <path d="M116 150 Q130 178 144 150 Q130 162 116 150 Z" fill="#64748b" stroke="#475569" stroke-width="1"/>
-                <path d="M120 152 Q130 168 140 152" fill="none" stroke="#334155" stroke-width="0.9" opacity="0.55"/>
-                <path d="M124 154 Q130 164 136 154" fill="none" stroke="#1e293b" stroke-width="0.7" opacity="0.35"/>
+                <path d="M116 150 Q130 178 144 150 Q130 162 116 150 Z" fill="#92400e" stroke="#78350f" stroke-width="1"/>
+                <path d="M120 152 Q130 168 140 152" fill="none" stroke="#451a03" stroke-width="0.9" opacity="0.55"/>
               </g>
 
-              <ellipse cx="130" cy="132" rx="38" ry="42" fill="url(#shopSgBody)" stroke="#94a3b8" stroke-width="1.4"/>
-              <ellipse cx="130" cy="124" rx="34" ry="18" fill="url(#shopSgMantle)" opacity="0.85"/>
+              <ellipse cx="130" cy="132" rx="38" ry="42" fill="url(#shopSgBody)" stroke="#b45309" stroke-width="1.4"/>
+              <ellipse cx="130" cy="124" rx="34" ry="18" fill="url(#shopSgMantle)" opacity="0.75"/>
               <ellipse cx="130" cy="140" rx="24" ry="26" fill="url(#shopSgBelly)"/>
               <ellipse cx="118" cy="120" rx="9" ry="7" fill="#fff" opacity="0.28"/>
-              <g data-wear-slot="shirt"></g>
+
+              <!-- Fixed merchant apron (not player clothes) -->
+              <g class="shop-guide__apron">
+                <path d="M96 118
+                  C88 132 90 154 104 166
+                  Q130 178 156 166
+                  C170 154 172 132 164 118
+                  Q148 128 130 126
+                  Q112 128 96 118 Z" fill="url(#shopSgApron)" stroke="#052e16" stroke-width="1.2"/>
+                <path d="M108 132 H152" stroke="#86efac" stroke-width="2.2" stroke-linecap="round" opacity="0.55"/>
+                <path d="M110 146 H150" stroke="#86efac" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+                <circle cx="130" cy="138" r="5" fill="#fbbf24" stroke="#92400e" stroke-width="0.9"/>
+                <path d="M128.2 135.2 H131.8 M130 135.2 V141 M128.2 140.8 H131.8" fill="none" stroke="#78350f" stroke-width="1.1" stroke-linecap="round"/>
+              </g>
 
               <g class="shop-guide__wing-l">
                 <g class="shop-guide__wing-l-sec">
@@ -1789,23 +1805,19 @@
                     C34 90 28 78 32 68
                     C36 60 48 62 58 72
                     C72 86 86 102 98 114 Z"
-                    fill="url(#shopSgWing)" stroke="#475569" stroke-width="1.2"/>
+                    fill="url(#shopSgWing)" stroke="#92400e" stroke-width="1.2"/>
                 </g>
                 <path d="M98 116
                   C74 108 48 96 28 78
                   C16 66 12 50 22 42
                   C30 36 42 42 54 56
                   C70 74 86 96 98 110 Z"
-                  fill="url(#shopSgWing)" stroke="#334155" stroke-width="1.35"/>
+                  fill="url(#shopSgWing)" stroke="#78350f" stroke-width="1.35"/>
                 <path d="M96 112
                   C70 98 44 78 26 58
                   C18 48 24 40 36 46
                   C52 60 74 86 94 106 Z"
                   fill="url(#shopSgWingTip)" opacity="0.72"/>
-                <path d="M40 54 C54 72 74 96 92 112" fill="none" stroke="#0f172a" stroke-width="1.05" opacity="0.4"/>
-                <path d="M50 64 C64 82 80 102 94 114" fill="none" stroke="#0f172a" stroke-width="0.85" opacity="0.32"/>
-                <path d="M60 76 C72 92 86 108 96 116" fill="none" stroke="#0f172a" stroke-width="0.7" opacity="0.28"/>
-                <path d="M70 88 C80 100 90 110 98 118" fill="none" stroke="#020617" stroke-width="0.55" opacity="0.22"/>
               </g>
 
               <g class="shop-guide__wing-r">
@@ -1815,68 +1827,65 @@
                     C226 90 232 78 228 68
                     C224 60 212 62 202 72
                     C188 86 174 102 162 114 Z"
-                    fill="url(#shopSgWing)" stroke="#475569" stroke-width="1.2"/>
+                    fill="url(#shopSgWing)" stroke="#92400e" stroke-width="1.2"/>
                 </g>
                 <path d="M162 116
                   C186 108 212 96 232 78
                   C244 66 248 50 238 42
                   C230 36 218 42 206 56
                   C190 74 174 96 162 110 Z"
-                  fill="url(#shopSgWing)" stroke="#334155" stroke-width="1.35"/>
+                  fill="url(#shopSgWing)" stroke="#78350f" stroke-width="1.35"/>
                 <path d="M164 112
                   C190 98 216 78 234 58
                   C242 48 236 40 224 46
                   C208 60 186 86 166 106 Z"
                   fill="url(#shopSgWingTip)" opacity="0.72"/>
-                <path d="M220 54 C206 72 186 96 168 112" fill="none" stroke="#0f172a" stroke-width="1.05" opacity="0.4"/>
-                <path d="M210 64 C196 82 180 102 166 114" fill="none" stroke="#0f172a" stroke-width="0.85" opacity="0.32"/>
-                <path d="M200 76 C188 92 174 108 164 116" fill="none" stroke="#0f172a" stroke-width="0.7" opacity="0.28"/>
-                <path d="M190 88 C180 100 170 110 162 118" fill="none" stroke="#020617" stroke-width="0.55" opacity="0.22"/>
               </g>
 
-              <g data-wear-slot="pants"></g>
-
               <g class="shop-guide__head">
-                <ellipse cx="130" cy="78" rx="32" ry="28" fill="url(#shopSgHead)" stroke="#94a3b8" stroke-width="1.4"/>
+                <ellipse cx="130" cy="78" rx="32" ry="28" fill="url(#shopSgHead)" stroke="#b45309" stroke-width="1.4"/>
                 <ellipse cx="116" cy="86" rx="7" ry="4.5" fill="url(#shopSgCheek)"/>
                 <ellipse cx="144" cy="86" rx="7" ry="4.5" fill="url(#shopSgCheek)"/>
 
-                <g data-wear-slot="hair"></g>
-                <g data-wear-slot="hat"></g>
+                <!-- Green shopkeeper visor -->
+                <g class="shop-guide__visor">
+                  <ellipse cx="130" cy="58" rx="38" ry="7" fill="#14532d"/>
+                  <path d="M102 56 L108 34 Q130 22 152 34 L158 56 Z" fill="#16a34a" stroke="#052e16" stroke-width="1.2"/>
+                  <path d="M112 44 H148" stroke="#fbbf24" stroke-width="2.2" stroke-linecap="round"/>
+                  <circle cx="130" cy="40" r="3.2" fill="#fde68a" stroke="#92400e" stroke-width="0.7"/>
+                </g>
 
-                <!-- Eyes drawn after the hat so the brim never hides them -->
                 <g class="shop-guide__eyes">
                   <g class="shop-guide__eye-l">
-                    <ellipse cx="116" cy="76" rx="7.4" ry="7.8" fill="url(#shopSgEyeWhite)" stroke="#94a3b8" stroke-width="0.8"/>
+                    <ellipse cx="116" cy="76" rx="7.4" ry="7.8" fill="url(#shopSgEyeWhite)" stroke="#b45309" stroke-width="0.8"/>
                     <ellipse cx="116.6" cy="76.4" rx="4.4" ry="4.6" fill="#1e293b"/>
                     <ellipse cx="116.6" cy="76.4" rx="2.2" ry="2.4" fill="#020617"/>
                     <circle cx="118.4" cy="74.4" r="1.7" fill="#fff"/>
-                    <circle cx="114.6" cy="78.4" r="0.7" fill="#94a3b8" opacity="0.55"/>
                     <ellipse class="shop-guide__eyelid" cx="116" cy="76" rx="7.8" ry="8.2" fill="url(#shopSgHead)"/>
                   </g>
                   <g class="shop-guide__eye-r">
-                    <ellipse cx="144" cy="76" rx="7.4" ry="7.8" fill="url(#shopSgEyeWhite)" stroke="#94a3b8" stroke-width="0.8"/>
+                    <ellipse cx="144" cy="76" rx="7.4" ry="7.8" fill="url(#shopSgEyeWhite)" stroke="#b45309" stroke-width="0.8"/>
                     <ellipse cx="144.6" cy="76.4" rx="4.4" ry="4.6" fill="#1e293b"/>
                     <ellipse cx="144.6" cy="76.4" rx="2.2" ry="2.4" fill="#020617"/>
                     <circle cx="146.4" cy="74.4" r="1.7" fill="#fff"/>
-                    <circle cx="142.6" cy="78.4" r="0.7" fill="#94a3b8" opacity="0.55"/>
                     <ellipse class="shop-guide__eyelid" cx="144" cy="76" rx="7.8" ry="8.2" fill="url(#shopSgHead)"/>
+                    <!-- Merchant monocle stays above the blink -->
+                    <circle cx="144" cy="76" r="9" fill="none" stroke="#fbbf24" stroke-width="2"/>
+                    <path d="M153 76 Q164 84 162 100" fill="none" stroke="#fbbf24" stroke-width="1.2"/>
                   </g>
                 </g>
 
                 <g class="shop-guide__beak-g">
-                  <path class="shop-guide__beak" d="M122 84 L130 108 L138 84 Q130 92 122 84 Z" fill="url(#shopSgBeak)" stroke="#92400e" stroke-width="1"/>
-                  <ellipse cx="130" cy="88" rx="3.4" ry="1.5" fill="#b45309" opacity="0.5"/>
+                  <path class="shop-guide__beak" d="M122 84 L130 108 L138 84 Q130 92 122 84 Z" fill="url(#shopSgBeak)" stroke="#7c2d12" stroke-width="1"/>
+                  <ellipse cx="130" cy="88" rx="3.4" ry="1.5" fill="#9a3412" opacity="0.5"/>
                   <circle cx="130" cy="98" r="2.1" fill="#dc2626"/>
-                  <path d="M124 88 Q130 96 136 88" fill="none" stroke="#92400e" stroke-width="0.7" opacity="0.4"/>
                 </g>
-                <g data-wear-slot="accessory"></g>
               </g>
             </svg>
           </div>
           <div class="shop-guide__bubble">
             <strong>Ahoy, fisher!</strong>
-            <p>I'm the shop seagull! Spend coins from your catches on bait for one-round boosts, or save up for stronger rods. Better gear helps you bring more fish back to the store before the kraken finds your net.</p>
+            <p>I'm the shopkeeper seagull — not your deckhand! Spend coins from your catches on bait for one-round boosts, or save up for stronger rods. Better gear helps you bring more fish back to the store before the kraken finds your net.</p>
             <button type="button" id="btnShopGuideDone" class="btn btn--secondary shop-guide__btn">Thanks, seagull</button>
           </div>
         </div>
