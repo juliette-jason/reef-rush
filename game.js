@@ -392,16 +392,24 @@ function rollSpecialChestPrize(tier) {
 
 
 /** Seagull profile wardrobe — daily shop skins. */
-const CLOTHING_SLOTS = ["hat", "hair", "shirt", "pants", "accessory"];
+const CLOTHING_SLOTS = ["hat", "hair", "shirt", "shoes", "accessory"];
 const CLOTHING_SLOT_LABELS = {
   hat: "Hat",
   hair: "Hair",
   shirt: "Shirt",
-  pants: "Pants",
+  shoes: "Shoes",
   accessory: "Accessory",
 };
 const STARTER_CLOTHING_ID = "sailor_cap";
-const STARTER_CLOTHING_IDS = ["sailor_cap", "sleek_slick", "stripe_sweater", "blue_shorts"];
+const STARTER_CLOTHING_IDS = ["sailor_cap", "sleek_slick", "stripe_sweater", "blue_sneakers"];
+
+/** Old pants inventory ids → shoes replacements. */
+const CLOTHING_ID_MIGRATIONS = {
+  blue_shorts: "blue_sneakers",
+  cargo_pants: "work_boots",
+  swim_trunks: "flip_flops",
+  striped_socks: "striped_kicks",
+};
 
 const CLOTHING_DEFS = [
   { id: "sailor_cap", name: "Sailor Cap", slot: "hat", price: 0, starter: true, icon: "🧢", blurb: "Your classic green shop cap." },
@@ -418,10 +426,10 @@ const CLOTHING_DEFS = [
   { id: "life_vest", name: "Life Vest", slot: "shirt", price: 280, icon: "🦺", blurb: "Safety orange with reflective tape." },
   { id: "hawaiian_shirt", name: "Hawaiian Shirt", slot: "shirt", price: 300, icon: "🌺", blurb: "Tropical flowers on every flap." },
   { id: "yellow_raincoat", name: "Yellow Raincoat", slot: "shirt", price: 340, icon: "🌧️", blurb: "Keeps spray off your wings." },
-  { id: "blue_shorts", name: "Blue Shorts", slot: "pants", price: 0, starter: true, icon: "🩳", blurb: "Casual starter dockside shorts." },
-  { id: "cargo_pants", name: "Cargo Pants", slot: "pants", price: 240, icon: "👖", blurb: "Pockets for spare lures." },
-  { id: "swim_trunks", name: "Swim Trunks", slot: "pants", price: 170, icon: "🏊", blurb: "Bright for a dip after the haul." },
-  { id: "striped_socks", name: "Striped Socks", slot: "pants", price: 120, icon: "🧦", blurb: "Cozy bands for orange legs." },
+  { id: "blue_sneakers", name: "Blue Sneakers", slot: "shoes", price: 0, starter: true, icon: "👟", blurb: "Comfy starter kicks for the pier." },
+  { id: "work_boots", name: "Work Boots", slot: "shoes", price: 240, icon: "🥾", blurb: "Sturdy soles for slippery docks." },
+  { id: "flip_flops", name: "Flip Flops", slot: "shoes", price: 170, icon: "🩴", blurb: "Beach-ready after a hot haul." },
+  { id: "striped_kicks", name: "Striped Kicks", slot: "shoes", price: 120, icon: "🧦", blurb: "Blue-stripe sneakers with pep." },
   { id: "red_scarf", name: "Red Scarf", slot: "accessory", price: 190, icon: "🧣", blurb: "Wrapped snug around the neck." },
   { id: "gold_chain", name: "Gold Chain", slot: "accessory", price: 420, icon: "🪙", blurb: "Flashy treasure from the cove." },
   { id: "monocle", name: "Monocle", slot: "accessory", price: 350, icon: "🧐", blurb: "For spotting rare fish in style." },
@@ -435,7 +443,7 @@ function defaultEquippedClothes() {
     hat: "sailor_cap",
     hair: "sleek_slick",
     shirt: "stripe_sweater",
-    pants: "blue_shorts",
+    shoes: "blue_sneakers",
     accessory: null,
   };
 }
@@ -446,12 +454,18 @@ function emptyEquippedClothes() {
   return o;
 }
 
+function migrateClothingId(id) {
+  if (typeof id !== "string") return id;
+  return CLOTHING_ID_MIGRATIONS[id] || id;
+}
+
 function normalizeOwnedClothes(raw) {
   const ids = new Set(CLOTHING_DEFS.map((c) => c.id));
   const out = [];
   const seen = new Set();
   if (Array.isArray(raw)) {
-    for (const id of raw) {
+    for (const rawId of raw) {
+      const id = migrateClothingId(rawId);
       if (typeof id !== "string" || !ids.has(id) || seen.has(id)) continue;
       seen.add(id);
       out.push(id);
@@ -471,7 +485,8 @@ function normalizeEquippedClothes(raw, ownedIds) {
   const out = emptyEquippedClothes();
   if (raw && typeof raw === "object") {
     for (const slot of CLOTHING_SLOTS) {
-      const id = raw[slot];
+      const legacySlot = slot === "shoes" ? "pants" : slot;
+      const id = migrateClothingId(raw[slot] ?? raw[legacySlot]);
       if (typeof id !== "string") continue;
       const def = CLOTHING_BY_ID[id];
       if (!def || def.slot !== slot || !owned.has(id)) continue;
@@ -491,7 +506,11 @@ function normalizeDailyClothesShop(raw) {
   if (!raw || typeof raw !== "object") return null;
   const dayKey = String(raw.dayKey || "");
   const itemIds = Array.isArray(raw.itemIds)
-    ? raw.itemIds.filter((id) => typeof id === "string" && CLOTHING_BY_ID[id] && !CLOTHING_BY_ID[id].starter).slice(0, 5)
+    ? raw.itemIds
+        .map((id) => migrateClothingId(id))
+        .filter((id) => typeof id === "string" && CLOTHING_BY_ID[id] && !CLOTHING_BY_ID[id].starter)
+        .filter((id, i, arr) => arr.indexOf(id) === i)
+        .slice(0, 5)
     : [];
   if (!dayKey || itemIds.length !== 5) return null;
   return { dayKey, itemIds };
@@ -693,53 +712,71 @@ function clothingLayerSvg(id) {
         <path d="M98 112 Q106 130 108 150" fill="none" stroke="#eab308" stroke-width="9" stroke-linecap="round" opacity="0.4"/>
         <path d="M162 112 Q154 130 152 150" fill="none" stroke="#eab308" stroke-width="9" stroke-linecap="round" opacity="0.4"/>
       </g>`;
-    case "blue_shorts":
-      return `<g class="sg-wear sg-wear--pants">
-        <path d="M102 148
-          Q130 156 158 148
-          C164 154 162 166 154 172
-          Q142 180 134 172
-          L130 164
-          L126 172
-          Q118 180 106 172
-          C98 166 96 154 102 148 Z" fill="#2563eb" stroke="#1e3a8a" stroke-width="1.15"/>
-        <path d="M106 150 Q130 158 154 150" fill="none" stroke="#1e40af" stroke-width="6" stroke-linecap="round" opacity="0.4"/>
-        <path d="M112 151 Q130 158 148 151" fill="none" stroke="#60a5fa" stroke-width="1.6" opacity="0.85"/>
-        <path d="M130 152 V166" stroke="#93c5fd" stroke-width="1.15"/>
+    case "blue_sneakers":
+      return `<g class="sg-wear sg-wear--shoes">
+        <path d="M98 188
+          Q101 182 110 182
+          L118 184
+          Q122 190 118 194
+          L102 194
+          Q96 192 98 188 Z" fill="#2563eb" stroke="#1e3a8a" stroke-width="1.1"/>
+        <path d="M100 188 H116" stroke="#93c5fd" stroke-width="1.2" stroke-linecap="round"/>
+        <ellipse cx="104" cy="193" rx="5" ry="1.6" fill="#1e3a8a" opacity="0.45"/>
+        <path d="M142 188
+          Q149 182 158 182
+          L162 184
+          Q166 190 162 194
+          L146 194
+          Q140 192 142 188 Z" fill="#2563eb" stroke="#1e3a8a" stroke-width="1.1"/>
+        <path d="M144 188 H160" stroke="#93c5fd" stroke-width="1.2" stroke-linecap="round"/>
+        <ellipse cx="156" cy="193" rx="5" ry="1.6" fill="#1e3a8a" opacity="0.45"/>
       </g>`;
-    case "cargo_pants":
-      return `<g class="sg-wear sg-wear--pants">
-        <path d="M100 146
-          Q130 156 160 146
-          C168 156 166 178 158 190
-          Q146 200 136 190
-          L130 168
-          L124 190
-          Q114 200 102 190
-          C94 178 92 156 100 146 Z" fill="#78716c" stroke="#44403c" stroke-width="1.15"/>
-        <path d="M106 148 Q130 158 154 148" fill="none" stroke="#57534e" stroke-width="6" stroke-linecap="round" opacity="0.45"/>
-        <rect x="108" y="166" width="10" height="8" rx="1.5" fill="#57534e"/>
-        <rect x="142" y="166" width="10" height="8" rx="1.5" fill="#57534e"/>
+    case "work_boots":
+      return `<g class="sg-wear sg-wear--shoes">
+        <path d="M97 176
+          L101 176
+          L104 188
+          L118 190
+          Q122 194 116 196
+          L100 196
+          Q94 194 97 176 Z" fill="#78716c" stroke="#44403c" stroke-width="1.15"/>
+        <path d="M100 180 H108" stroke="#a8a29e" stroke-width="1.1" stroke-linecap="round"/>
+        <path d="M143 176
+          L147 176
+          L150 188
+          L162 190
+          Q166 194 160 196
+          L144 196
+          Q138 194 143 176 Z" fill="#78716c" stroke="#44403c" stroke-width="1.15"/>
+        <path d="M146 180 H154" stroke="#a8a29e" stroke-width="1.1" stroke-linecap="round"/>
       </g>`;
-    case "swim_trunks":
-      return `<g class="sg-wear sg-wear--pants">
-        <path d="M102 148
-          Q130 156 158 148
-          C164 154 162 164 154 170
-          Q142 178 134 170
-          L130 162
-          L126 170
-          Q118 178 106 170
-          C98 164 96 154 102 148 Z" fill="#ec4899" stroke="#9d174d" stroke-width="1.15"/>
-        <path d="M106 150 Q130 158 154 150" fill="none" stroke="#be185d" stroke-width="5.5" stroke-linecap="round" opacity="0.4"/>
-        <path d="M112 160 H148" stroke="#f9a8d4" stroke-width="2.2" stroke-linecap="round"/>
+    case "flip_flops":
+      return `<g class="sg-wear sg-wear--shoes">
+        <ellipse cx="108" cy="192" rx="11" ry="4.5" fill="#ec4899" stroke="#9d174d" stroke-width="1"/>
+        <path d="M108 188 Q104 184 101 190" fill="none" stroke="#f9a8d4" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M108 188 Q112 184 115 190" fill="none" stroke="#f9a8d4" stroke-width="1.8" stroke-linecap="round"/>
+        <ellipse cx="152" cy="192" rx="11" ry="4.5" fill="#ec4899" stroke="#9d174d" stroke-width="1"/>
+        <path d="M152 188 Q148 184 145 190" fill="none" stroke="#f9a8d4" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M152 188 Q156 184 159 190" fill="none" stroke="#f9a8d4" stroke-width="1.8" stroke-linecap="round"/>
       </g>`;
-    case "striped_socks":
-      return `<g class="sg-wear sg-wear--pants">
-        <path d="M110 168 L108 194" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
-        <path d="M110 168 L108 194" stroke="#0ea5e9" stroke-width="5" stroke-linecap="round" stroke-dasharray="3.4 3.4"/>
-        <path d="M150 168 L152 194" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
-        <path d="M150 168 L152 194" stroke="#0ea5e9" stroke-width="5" stroke-linecap="round" stroke-dasharray="3.4 3.4"/>
+    case "striped_kicks":
+      return `<g class="sg-wear sg-wear--shoes">
+        <path d="M98 186
+          Q102 180 112 180
+          L120 184
+          Q122 190 116 194
+          L100 194
+          Q96 191 98 186 Z" fill="#ffffff" stroke="#0ea5e9" stroke-width="1.1"/>
+        <path d="M102 184 H116" stroke="#0ea5e9" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M103 188 H115" stroke="#38bdf8" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M142 186
+          Q148 180 158 180
+          L164 184
+          Q166 190 160 194
+          L144 194
+          Q140 191 142 186 Z" fill="#ffffff" stroke="#0ea5e9" stroke-width="1.1"/>
+        <path d="M146 184 H160" stroke="#0ea5e9" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M147 188 H159" stroke="#38bdf8" stroke-width="1.4" stroke-linecap="round"/>
       </g>`;
     case "red_scarf":
       return `<g class="sg-wear sg-wear--accessory">
@@ -776,7 +813,7 @@ function clothingSlotViewBox(slot) {
     hat: "95 12 70 70",
     hair: "100 22 60 55",
     shirt: "82 90 96 100",
-    pants: "92 140 76 70",
+    shoes: "98 172 64 30",
     accessory: "105 68 50 60",
   };
   return views[slot] || "90 40 80 140";
@@ -790,8 +827,8 @@ function clothingPreviewSilhouette(slot) {
   if (slot === "accessory") {
     return `<ellipse cx="130" cy="78" rx="26" ry="22" fill="#94a3b8" opacity="0.22"/><ellipse cx="130" cy="120" rx="22" ry="20" fill="#94a3b8" opacity="0.18"/>`;
   }
-  if (slot === "pants") {
-    return `<ellipse cx="130" cy="150" rx="30" ry="28" fill="#94a3b8" opacity="0.22"/>`;
+  if (slot === "shoes") {
+    return `<ellipse cx="108" cy="190" rx="12" ry="5" fill="#94a3b8" opacity="0.18"/><ellipse cx="152" cy="190" rx="12" ry="5" fill="#94a3b8" opacity="0.18"/>`;
   }
   return `<ellipse cx="130" cy="132" rx="34" ry="36" fill="#94a3b8" opacity="0.22"/>`;
 }
@@ -838,7 +875,7 @@ function seagullAvatarSvg(uid) {
     `<g data-wear-slot="shirt"></g>` +
     `<path d="M100 112 C78 108 58 98 46 84 C38 74 42 64 54 70 C70 82 88 100 100 110 Z" fill="url(#${g("wing")})"/>` +
     `<path d="M160 112 C182 108 202 98 214 84 C222 74 218 64 206 70 C190 82 172 100 160 110 Z" fill="url(#${g("wing")})"/>` +
-    `<g data-wear-slot="pants"></g>` +
+    `<g data-wear-slot="shoes"></g>` +
     `<ellipse cx="130" cy="68" rx="28" ry="24" fill="url(#${g("head")})" stroke="#94a3b8" stroke-width="1.1"/>` +
     `<g data-wear-slot="hair"></g>` +
     `<g data-wear-slot="hat"></g>` +
