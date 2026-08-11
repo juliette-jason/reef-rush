@@ -5822,6 +5822,7 @@ function endDailyPrizeCelebration() {
     dailyPrizeReveal.setAttribute("aria-hidden", "true");
   }
   if (panelStart) panelStart.hidden = false;
+  if (homeLaunchDock) homeLaunchDock.hidden = !isHomeScreenActive();
   if (homeLaunchStack) homeLaunchStack.hidden = !isHomeScreenActive();
   applyPendingDailyPrizeRewards();
   if (prize) {
@@ -5837,6 +5838,7 @@ function startDailyPrizeChestCinematic(prize) {
   treasureMapRevealPaused = true;
   appRoot?.classList.add("app--daily-prize-cinematic");
   if (panelStart) panelStart.hidden = true;
+  if (homeLaunchDock) homeLaunchDock.hidden = true;
   if (homeLaunchStack) homeLaunchStack.hidden = true;
 
   const prefersReducedMotion =
@@ -7496,6 +7498,7 @@ const btnOpenShop = document.getElementById("btnOpenShop");
 const btnShopLaunch = document.getElementById("btnShopLaunch");
 const btnEvents = document.getElementById("btnEvents");
 const btnCollectables = document.getElementById("btnCollectables");
+const homeLaunchDock = document.getElementById("homeLaunchDock");
 const homeLaunchStack = document.getElementById("homeLaunchStack");
 const panelEvents = document.getElementById("panelEvents");
 const panelCollectables = document.getElementById("panelCollectables");
@@ -8346,6 +8349,7 @@ function isHomeScreenActive() {
 function syncHomeLaunchButtons() {
   const onHome = isHomeScreenActive();
   appRoot.classList.toggle("app--home-screen", onHome);
+  if (homeLaunchDock) homeLaunchDock.hidden = !onHome;
   if (homeLaunchStack) homeLaunchStack.hidden = !onHome;
   if (adventureUnlockHint) {
     const showChestHint =

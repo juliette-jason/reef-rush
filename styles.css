@@ -1033,7 +1033,7 @@ body {
 
 .panel--start {
   padding-top: max(88px, env(safe-area-inset-top, 0px));
-  padding-bottom: max(32px, env(safe-area-inset-bottom, 0px) + 24px);
+  padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px));
   gap: 0;
 }
 
@@ -1046,6 +1046,7 @@ body {
 /* --- Opening splash: animated coral reef --- */
 .app--splash .hud,
 .app--splash .hint,
+.app--splash .home-launch-dock,
 .app--splash .home-launch-stack,
 .app--splash .adventure-launch__hint {
   opacity: 0;
@@ -1525,11 +1526,31 @@ body {
 }
 
 .home-launch-dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 46;
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 10px;
+  gap: 6px;
   width: 100%;
+  margin: 0;
+  padding:
+    8px 10px
+    max(10px, calc(env(safe-area-inset-bottom, 0px) + 8px));
+  border-top: 1px solid rgba(255, 213, 74, 0.28);
+  background:
+    linear-gradient(180deg, rgba(8, 36, 54, 0.92), rgba(3, 16, 28, 0.98));
+  box-shadow:
+    0 -10px 28px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+.home-launch-dock[hidden] {
+  display: none !important;
 }
 
 .panel--start .start-toolbar {
@@ -2266,23 +2287,6 @@ body {
     flex: 0 0 auto;
   }
 
-  .panel--start .home-launch-dock {
-    order: 40;
-    width: min(420px, 92vw);
-    margin: 10px auto 14px;
-    gap: 9px;
-    pointer-events: auto;
-  }
-
-  .panel--start .start-game-wrap {
-    order: 30;
-    width: min(420px, 92vw);
-  }
-
-  .panel--start .rods {
-    order: 20;
-  }
-
   .start-settings__toggle {
     width: 36px;
     height: 36px;
@@ -2309,9 +2313,26 @@ body {
     min-height: 0;
   }
 
+  .panel--start .home-launch-dock {
+    order: unset;
+    width: 100%;
+    margin: 0;
+    gap: 6px;
+    pointer-events: none;
+  }
+
+  .panel--start .start-game-wrap {
+    order: 30;
+    width: min(420px, 92vw);
+  }
+
+  .panel--start .rods {
+    order: 20;
+  }
+
   .panel--start {
     padding-top: max(12px, env(safe-area-inset-top, 0px));
-    padding-bottom: max(28px, calc(env(safe-area-inset-bottom, 0px) + 20px));
+    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
   }
 
   .panel--start .panel__headline--brand {
@@ -3864,11 +3885,11 @@ body {
   transform: none;
   z-index: auto;
   margin: 0;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   color: var(--muted);
   max-width: none;
   width: 100%;
-  text-align: right;
+  text-align: center;
   pointer-events: none;
   transition: color 0.4s ease, font-size 0.4s ease, text-shadow 0.4s ease;
 }
@@ -3904,6 +3925,7 @@ body {
 }
 
 .adventure-launch__hint--centered {
+  position: fixed;
   bottom: auto;
   right: auto;
   left: 50%;
@@ -4012,6 +4034,7 @@ body {
   display: none;
 }
 
+#app:not(.app--home-screen) .home-launch-dock,
 #app:not(.app--home-screen) .home-launch-stack,
 #app:not(.app--home-screen) .adventure-launch__hint {
   display: none !important;
@@ -4023,10 +4046,12 @@ body {
   bottom: auto;
   z-index: auto;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: stretch;
-  gap: 11px;
-  width: 100%;
+  justify-content: space-between;
+  gap: 6px;
+  width: min(560px, 100%);
+  margin: 0 auto;
   pointer-events: none;
 }
 
@@ -4037,11 +4062,23 @@ body {
   position: relative;
   right: auto;
   bottom: auto;
-  width: 100%;
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
   pointer-events: auto;
   isolation: isolate;
   overflow: hidden;
-  min-height: 48px;
+  min-height: 58px;
+  padding: 7px 4px 6px;
+  border-radius: 14px;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  box-shadow:
+    0 3px 0 rgba(0, 0, 0, 0.35),
+    0 8px 16px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
   transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
 }
 
@@ -4056,7 +4093,7 @@ body {
   background: linear-gradient(
     110deg,
     transparent 28%,
-    rgba(255, 255, 255, 0.28) 48%,
+    rgba(255, 255, 255, 0.22) 48%,
     transparent 64%
   );
   transform: translateX(-120%);
@@ -4081,52 +4118,47 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
-  padding: 13px 18px;
-  border-radius: 18px;
+  gap: 3px;
+  padding: 7px 4px 6px;
+  border-radius: 14px;
   border: 2px solid rgba(94, 234, 212, 0.65);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 40%),
     linear-gradient(180deg, #12907a 0%, #0b5f52 48%, #064038 100%);
   color: #eafff8;
   font-family: "Bebas Neue", sans-serif;
-  font-size: 1.18rem;
-  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
   cursor: pointer;
   box-shadow:
-    0 6px 0 #04352e,
-    0 12px 26px rgba(0, 0, 0, 0.42),
-    0 0 20px rgba(45, 212, 191, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    0 3px 0 #04352e,
+    0 8px 16px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
 .shop-launch:hover {
   filter: brightness(1.08);
-  transform: translateY(-2px);
-  box-shadow:
-    0 8px 0 #04352e,
-    0 16px 30px rgba(0, 0, 0, 0.45),
-    0 0 24px rgba(45, 212, 191, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  transform: translateY(-1px);
 }
 
 .shop-launch:active {
-  transform: translateY(3px);
+  transform: translateY(2px);
   box-shadow:
-    0 3px 0 #04352e,
-    0 8px 16px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    0 1px 0 #04352e,
+    0 4px 10px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
 .shop-launch__glyph,
 .adventure-launch__glyph,
-.events-launch__glyph {
+.events-launch__glyph,
+.collectables-launch__glyph {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
   background: rgba(3, 21, 37, 0.28);
   border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
@@ -4135,8 +4167,22 @@ body {
 
 .shop-launch__glyph svg,
 .adventure-launch__glyph svg,
-.events-launch__glyph svg {
+.events-launch__glyph svg,
+.collectables-launch__glyph svg {
   display: block;
+  width: 15px;
+  height: 15px;
+}
+
+.shop-launch__label,
+.adventure-launch__label,
+.events-launch__label,
+.collectables-launch__label {
+  line-height: 1.05;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .shop-launch__icon {
@@ -4149,99 +4195,70 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
-  padding: 13px 18px;
-  border-radius: 18px;
+  gap: 3px;
+  padding: 7px 4px 6px;
+  border-radius: 14px;
   border: 2px solid rgba(251, 191, 36, 0.7);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 40%),
     linear-gradient(180deg, #d97706 0%, #b45309 48%, #7c2d12 100%);
   color: #fff8e7;
   font-family: "Bebas Neue", sans-serif;
-  font-size: 1.22rem;
-  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
   cursor: pointer;
   box-shadow:
-    0 6px 0 #5c1a08,
-    0 12px 26px rgba(0, 0, 0, 0.42),
-    0 0 20px rgba(251, 146, 60, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    0 3px 0 #5c1a08,
+    0 8px 16px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
 .events-launch:hover {
   filter: brightness(1.08);
-  transform: translateY(-2px);
-  box-shadow:
-    0 8px 0 #5c1a08,
-    0 16px 30px rgba(0, 0, 0, 0.45),
-    0 0 24px rgba(251, 146, 60, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  transform: translateY(-1px);
 }
 
 .events-launch:active {
-  transform: translateY(3px);
+  transform: translateY(2px);
   box-shadow:
-    0 3px 0 #5c1a08,
-    0 8px 16px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    0 1px 0 #5c1a08,
+    0 4px 10px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
 .collectables-launch {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
-  padding: 13px 18px;
-  border-radius: 18px;
+  gap: 3px;
+  padding: 7px 4px 6px;
+  border-radius: 14px;
   border: 2px solid rgba(253, 224, 71, 0.7);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 40%),
     linear-gradient(180deg, #0f766e 0%, #115e59 48%, #134e4a 100%);
   color: #fffbeb;
   font-family: "Bebas Neue", sans-serif;
-  font-size: 1.22rem;
-  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
   cursor: pointer;
   box-shadow:
-    0 6px 0 #042f2e,
-    0 12px 26px rgba(0, 0, 0, 0.42),
-    0 0 20px rgba(45, 212, 191, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    0 3px 0 #042f2e,
+    0 8px 16px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
 .collectables-launch:hover {
   filter: brightness(1.08);
-  transform: translateY(-2px);
-  box-shadow:
-    0 8px 0 #042f2e,
-    0 16px 30px rgba(0, 0, 0, 0.45),
-    0 0 24px rgba(45, 212, 191, 0.32),
-    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  transform: translateY(-1px);
 }
 
 .collectables-launch:active {
-  transform: translateY(3px);
+  transform: translateY(2px);
   box-shadow:
-    0 3px 0 #042f2e,
-    0 8px 16px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.collectables-launch__glyph {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.22);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
-}
-
-.collectables-launch__glyph svg {
-  width: 18px;
-  height: 18px;
-  display: block;
+    0 1px 0 #042f2e,
+    0 4px 10px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
 .panel.panel--collectables {
@@ -5398,38 +5415,38 @@ body {
 
 @media (max-width: 560px) {
   .home-launch-stack {
-    gap: 9px;
+    gap: 5px;
   }
 
   .home-launch-stack .events-launch,
   .home-launch-stack .adventure-launch,
   .home-launch-stack .shop-launch,
   .home-launch-stack .collectables-launch {
-    padding: 11px 14px;
-    font-size: 1.05rem;
-    min-height: 44px;
-    border-radius: 16px;
+    padding: 6px 2px 5px;
+    font-size: 0.66rem;
+    min-height: 54px;
+    border-radius: 12px;
   }
 
   .shop-launch__glyph,
   .adventure-launch__glyph,
   .events-launch__glyph,
   .collectables-launch__glyph {
-    width: 24px;
-    height: 24px;
-    border-radius: 8px;
+    width: 22px;
+    height: 22px;
+    border-radius: 7px;
   }
 
   .shop-launch__glyph svg,
   .adventure-launch__glyph svg,
   .events-launch__glyph svg,
   .collectables-launch__glyph svg {
-    width: 15px;
-    height: 15px;
+    width: 14px;
+    height: 14px;
   }
 
   .adventure-launch__hint {
-    font-size: 0.62rem;
+    font-size: 0.6rem;
   }
 }
 
@@ -5456,48 +5473,42 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 13px 18px;
-  border-radius: 18px;
+  gap: 3px;
+  padding: 7px 4px 6px;
+  border-radius: 14px;
   border: 2px solid rgba(125, 211, 252, 0.65);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 40%),
     linear-gradient(180deg, #1d7eb0 0%, #0e5a86 48%, #073b5c 100%);
   color: var(--text);
   font-family: "Bebas Neue", sans-serif;
-  font-size: 1.18rem;
-  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
   cursor: pointer;
   box-shadow:
-    0 6px 0 #04263d,
-    0 12px 28px rgba(0, 0, 0, 0.45),
-    0 0 20px rgba(56, 189, 248, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    0 3px 0 #04263d,
+    0 8px 16px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
   pointer-events: auto;
 }
 
 .home-launch-stack .adventure-launch:hover {
   filter: brightness(1.08);
-  transform: translateY(-2px);
-  box-shadow:
-    0 8px 0 #04263d,
-    0 16px 30px rgba(0, 0, 0, 0.45),
-    0 0 24px rgba(56, 189, 248, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  transform: translateY(-1px);
 }
 
 .home-launch-stack .adventure-launch:active {
-  transform: translateY(3px);
+  transform: translateY(2px);
   box-shadow:
-    0 3px 0 #04263d,
-    0 8px 16px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    0 1px 0 #04263d,
+    0 4px 10px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
 .home-launch-stack .adventure-launch {
-  padding: 13px 18px;
-  font-size: 1.15rem;
-  border-radius: 18px;
+  padding: 7px 4px 6px;
+  font-size: 0.72rem;
+  border-radius: 14px;
 }
 
 .adventure-launch--locked .adventure-launch__glyph {
@@ -5521,12 +5532,12 @@ body {
 
 .adventure-launch--rise {
   position: fixed;
-  top: max(196px, calc(env(safe-area-inset-top, 0px) + 184px));
-  bottom: auto;
-  right: max(12px, env(safe-area-inset-right, 0px));
-  left: auto;
-  width: min(220px, 52vw);
-  transform: none;
+  top: auto;
+  bottom: max(18px, calc(env(safe-area-inset-bottom, 0px) + 14px));
+  right: auto;
+  left: 50%;
+  width: min(160px, 42vw);
+  transform: translateX(-50%);
   z-index: 50;
   animation: adventureLaunchRiseToCenter 1.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
@@ -5570,14 +5581,14 @@ body {
 
 @keyframes adventureLaunchRiseToCenter {
   0% {
-    top: max(196px, calc(env(safe-area-inset-top, 0px) + 184px));
-    bottom: auto;
-    right: max(12px, env(safe-area-inset-right, 0px));
-    left: auto;
-    transform: none;
-    font-size: 1.15rem;
-    padding: 12px 18px;
-    gap: 10px;
+    top: auto;
+    bottom: max(18px, calc(env(safe-area-inset-bottom, 0px) + 14px));
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.72rem;
+    padding: 7px 10px 6px;
+    gap: 3px;
     filter: brightness(1);
   }
   55% {
@@ -5613,14 +5624,14 @@ body {
     filter: brightness(1.08);
   }
   100% {
-    top: max(196px, calc(env(safe-area-inset-top, 0px) + 184px));
-    bottom: auto;
-    right: max(12px, env(safe-area-inset-right, 0px));
-    left: auto;
-    transform: none;
-    font-size: 1.15rem;
-    padding: 12px 18px;
-    gap: 10px;
+    top: auto;
+    bottom: max(18px, calc(env(safe-area-inset-bottom, 0px) + 14px));
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.72rem;
+    padding: 7px 10px 6px;
+    gap: 3px;
     filter: brightness(1);
   }
 }
