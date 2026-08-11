@@ -5197,7 +5197,7 @@ body {
   }
 }
 
-.panel--start > *:not(.ocean-bubbles) {
+.panel--start > *:not(.ocean-bubbles):not(.home-corner) {
   position: relative;
   z-index: 1;
 }
