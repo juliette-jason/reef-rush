@@ -5092,25 +5092,22 @@ body {
   max-width: none;
   width: auto;
   height: auto;
-  background-color: #0b1428;
-  background-image:
-    radial-gradient(ellipse 55% 28% at 50% 62%, rgba(255, 200, 110, 0.55) 0%, rgba(255, 140, 70, 0.22) 45%, transparent 72%),
-    linear-gradient(
-      180deg,
-      #0b1428 0%,
-      #1a2a4a 16%,
-      #4a4a78 34%,
-      #b86858 48%,
-      #e88848 60%,
-      #f0b060 72%,
-      #d89868 84%,
-      #1a3048 100%
-    );
+  /* Transparent so the animated sunset ocean in .events-ocean shows through. */
+  background: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   isolation: isolate;
   overflow-x: hidden;
   z-index: 41;
+}
+
+/* Keep the moving ocean/sunset above the playfield while Events is open. */
+#app.app--events-mode .events-ocean {
+  z-index: 38;
+}
+
+#app.app--events-mode .canvas-wrap {
+  z-index: 38;
 }
 
 .events-ticket-badge {
