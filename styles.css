@@ -4538,18 +4538,8 @@ body {
 }
 
 .collectables-decor__bubble {
-  position: absolute;
-  border-radius: 50%;
-  border: 1.5px solid rgba(186, 230, 253, 0.45);
-  background: radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.55), rgba(125, 211, 252, 0.12) 55%, transparent 70%);
-  animation: collectablesBubble 7.5s ease-in-out infinite;
-  opacity: 0.55;
+  display: none;
 }
-
-.collectables-decor__bubble--a { width: 18px; height: 18px; left: 8%; bottom: 12%; animation-delay: 0s; }
-.collectables-decor__bubble--b { width: 12px; height: 12px; left: 18%; bottom: 8%; animation-delay: -2.1s; animation-duration: 6.4s; }
-.collectables-decor__bubble--c { width: 22px; height: 22px; right: 10%; bottom: 18%; animation-delay: -3.4s; animation-duration: 8.2s; }
-.collectables-decor__bubble--d { width: 10px; height: 10px; right: 22%; bottom: 6%; animation-delay: -1.2s; animation-duration: 5.8s; }
 
 .collectables-decor__glint {
   position: absolute;
@@ -5161,7 +5151,8 @@ body {
   z-index: 41;
 }
 
-.events-decor {
+.events-decor,
+.ocean-bubbles {
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -5169,7 +5160,12 @@ body {
   overflow: hidden;
 }
 
-.events-decor__bubble {
+.ocean-bubbles--nested {
+  position: absolute;
+  inset: 0;
+}
+
+.ocean-bubbles__bubble {
   position: absolute;
   bottom: -8%;
   border-radius: 50%;
@@ -5177,23 +5173,23 @@ body {
   background:
     radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.65), rgba(125, 211, 252, 0.14) 52%, transparent 72%);
   box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.2);
-  animation: eventsBubbleRise 11s linear infinite;
+  animation: oceanBubbleRise 11s linear infinite;
   opacity: 0.5;
   will-change: transform, opacity;
 }
 
-.events-decor__bubble--1 { width: 14px; height: 14px; left: 6%; animation-duration: 10.5s; animation-delay: 0s; }
-.events-decor__bubble--2 { width: 9px; height: 9px; left: 16%; animation-duration: 8.8s; animation-delay: -2.4s; }
-.events-decor__bubble--3 { width: 18px; height: 18px; left: 28%; animation-duration: 12.2s; animation-delay: -5.1s; }
-.events-decor__bubble--4 { width: 11px; height: 11px; left: 42%; animation-duration: 9.6s; animation-delay: -1.3s; }
-.events-decor__bubble--5 { width: 7px; height: 7px; left: 55%; animation-duration: 7.9s; animation-delay: -3.8s; }
-.events-decor__bubble--6 { width: 16px; height: 16px; left: 68%; animation-duration: 11.4s; animation-delay: -6.2s; }
-.events-decor__bubble--7 { width: 10px; height: 10px; left: 78%; animation-duration: 9.1s; animation-delay: -0.7s; }
-.events-decor__bubble--8 { width: 22px; height: 22px; left: 88%; animation-duration: 13s; animation-delay: -4.4s; }
-.events-decor__bubble--9 { width: 8px; height: 8px; left: 12%; animation-duration: 8.2s; animation-delay: -7.1s; }
-.events-decor__bubble--10 { width: 13px; height: 13px; left: 50%; animation-duration: 10.8s; animation-delay: -8.6s; }
+.ocean-bubbles__bubble--1 { width: 14px; height: 14px; left: 6%; animation-duration: 10.5s; animation-delay: 0s; }
+.ocean-bubbles__bubble--2 { width: 9px; height: 9px; left: 16%; animation-duration: 8.8s; animation-delay: -2.4s; }
+.ocean-bubbles__bubble--3 { width: 18px; height: 18px; left: 28%; animation-duration: 12.2s; animation-delay: -5.1s; }
+.ocean-bubbles__bubble--4 { width: 11px; height: 11px; left: 42%; animation-duration: 9.6s; animation-delay: -1.3s; }
+.ocean-bubbles__bubble--5 { width: 7px; height: 7px; left: 55%; animation-duration: 7.9s; animation-delay: -3.8s; }
+.ocean-bubbles__bubble--6 { width: 16px; height: 16px; left: 68%; animation-duration: 11.4s; animation-delay: -6.2s; }
+.ocean-bubbles__bubble--7 { width: 10px; height: 10px; left: 78%; animation-duration: 9.1s; animation-delay: -0.7s; }
+.ocean-bubbles__bubble--8 { width: 22px; height: 22px; left: 88%; animation-duration: 13s; animation-delay: -4.4s; }
+.ocean-bubbles__bubble--9 { width: 8px; height: 8px; left: 12%; animation-duration: 8.2s; animation-delay: -7.1s; }
+.ocean-bubbles__bubble--10 { width: 13px; height: 13px; left: 50%; animation-duration: 10.8s; animation-delay: -8.6s; }
 
-@keyframes eventsBubbleRise {
+@keyframes oceanBubbleRise {
   0% {
     transform: translate3d(0, 0, 0) scale(0.85);
     opacity: 0;
@@ -5211,23 +5207,28 @@ body {
   }
 }
 
+.panel--start > *:not(.ocean-bubbles) {
+  position: relative;
+  z-index: 1;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .events-decor__bubble {
+  .ocean-bubbles__bubble {
     animation: none;
     opacity: 0.28;
     bottom: auto;
   }
 
-  .events-decor__bubble--1 { top: 18%; }
-  .events-decor__bubble--2 { top: 62%; }
-  .events-decor__bubble--3 { top: 34%; }
-  .events-decor__bubble--4 { top: 72%; }
-  .events-decor__bubble--5 { top: 48%; }
-  .events-decor__bubble--6 { top: 22%; }
-  .events-decor__bubble--7 { top: 58%; }
-  .events-decor__bubble--8 { top: 40%; }
-  .events-decor__bubble--9 { top: 78%; }
-  .events-decor__bubble--10 { top: 28%; }
+  .ocean-bubbles__bubble--1 { top: 18%; }
+  .ocean-bubbles__bubble--2 { top: 62%; }
+  .ocean-bubbles__bubble--3 { top: 34%; }
+  .ocean-bubbles__bubble--4 { top: 72%; }
+  .ocean-bubbles__bubble--5 { top: 48%; }
+  .ocean-bubbles__bubble--6 { top: 22%; }
+  .ocean-bubbles__bubble--7 { top: 58%; }
+  .ocean-bubbles__bubble--8 { top: 40%; }
+  .ocean-bubbles__bubble--9 { top: 78%; }
+  .ocean-bubbles__bubble--10 { top: 28%; }
 }
 
 /* Keep the old sunset ocean off — Events uses the World Adventures blue backdrop. */
