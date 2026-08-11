@@ -564,28 +564,64 @@ function clothingLayerSvg(id) {
       </g>`;
     case "spiky_tuft":
       return `<g class="sg-wear sg-wear--hair">
-        <path d="M116 56 L120 34 L126 52 L130 30 L136 52 L142 34 L146 56 Z" fill="#e2e8f0" stroke="#64748b" stroke-width="0.9"/>
-        <path d="M124 50 L130 38 L136 50" fill="#94a3b8"/>
+        <path d="M104 62 Q112 48 118 58 Q122 42 128 56 Q132 36 136 56 Q142 40 146 58 Q152 48 156 62 Q146 66 130 68 Q114 66 104 62 Z" fill="#cbd5e1" stroke="#64748b" stroke-width="0.9"/>
+        <path d="M118 58 Q122 28 126 56" fill="none" stroke="#e2e8f0" stroke-width="3.2" stroke-linecap="round"/>
+        <path d="M126 56 Q130 22 134 56" fill="none" stroke="#f8fafc" stroke-width="3.6" stroke-linecap="round"/>
+        <path d="M134 56 Q138 26 142 56" fill="none" stroke="#e2e8f0" stroke-width="3.2" stroke-linecap="round"/>
+        <path d="M112 60 Q116 34 120 58" fill="none" stroke="#94a3b8" stroke-width="2.6" stroke-linecap="round"/>
+        <path d="M142 58 Q146 32 150 60" fill="none" stroke="#94a3b8" stroke-width="2.6" stroke-linecap="round"/>
       </g>`;
     case "curly_top":
       return `<g class="sg-wear sg-wear--hair">
-        <circle cx="116" cy="50" r="7" fill="#cbd5e1" stroke="#64748b" stroke-width="0.8"/>
-        <circle cx="130" cy="44" r="8" fill="#e2e8f0" stroke="#64748b" stroke-width="0.8"/>
-        <circle cx="144" cy="50" r="7" fill="#cbd5e1" stroke="#64748b" stroke-width="0.8"/>
-        <circle cx="124" cy="42" r="4.5" fill="#f8fafc"/>
+        <path d="M102 64
+          Q108 48 120 52
+          Q128 40 138 48
+          Q150 42 158 60
+          Q150 70 130 72
+          Q110 70 102 64 Z" fill="#94a3b8" stroke="#64748b" stroke-width="0.9"/>
+        <path d="M112 58
+          C104 50 108 38 118 40
+          C126 42 124 54 116 56
+          C112 58 112 58 112 58 Z" fill="#e2e8f0" stroke="#64748b" stroke-width="0.85"/>
+        <path d="M124 52
+          C116 42 124 28 136 32
+          C146 36 142 50 132 54
+          C128 56 126 54 124 52 Z" fill="#f8fafc" stroke="#64748b" stroke-width="0.85"/>
+        <path d="M140 56
+          C132 48 138 36 148 38
+          C158 40 156 54 146 58
+          C142 60 142 58 140 56 Z" fill="#e2e8f0" stroke="#64748b" stroke-width="0.85"/>
+        <path d="M108 62
+          C102 56 106 46 114 48
+          C120 50 118 60 112 62 Z" fill="#cbd5e1" stroke="#64748b" stroke-width="0.75"/>
+        <path d="M148 62
+          C142 54 148 44 156 48
+          C162 52 158 62 150 64 Z" fill="#cbd5e1" stroke="#64748b" stroke-width="0.75"/>
+        <path d="M120 46 C116 40 122 34 128 38" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/>
+        <path d="M134 40 C130 34 138 28 144 34" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/>
+        <path d="M128 48 C124 44 130 40 134 44" fill="none" stroke="#64748b" stroke-width="1.2" stroke-linecap="round" opacity="0.55"/>
       </g>`;
     case "sleek_slick":
       return `<g class="sg-wear sg-wear--hair">
-        <path d="M102 60 Q116 40 148 44 Q154 56 146 64 Q130 58 102 60 Z" fill="#334155" stroke="#0f172a" stroke-width="1"/>
-        <path d="M110 56 Q128 48 144 52" fill="none" stroke="#94a3b8" stroke-width="1.1" opacity="0.55"/>
+        <path d="M100 64
+          Q108 42 128 38
+          Q148 36 158 52
+          Q160 62 152 66
+          Q140 58 128 56
+          Q114 58 104 66
+          Q100 66 100 64 Z" fill="#1e293b" stroke="#0f172a" stroke-width="1"/>
+        <path d="M108 58 Q126 46 148 50" fill="none" stroke="#64748b" stroke-width="1.4" stroke-linecap="round" opacity="0.55"/>
+        <path d="M112 62 Q130 52 150 56" fill="none" stroke="#94a3b8" stroke-width="1.1" stroke-linecap="round" opacity="0.4"/>
+        <path d="M118 50 Q134 44 146 48" fill="none" stroke="#cbd5e1" stroke-width="1" stroke-linecap="round" opacity="0.35"/>
       </g>`;
     case "rainbow_mohawk":
       return `<g class="sg-wear sg-wear--hair">
-        <path d="M122 58 L126 20 L130 58 Z" fill="#ef4444"/>
-        <path d="M126 58 L130 18 L134 58 Z" fill="#f59e0b"/>
-        <path d="M130 58 L134 20 L138 58 Z" fill="#22c55e"/>
-        <path d="M134 58 L138 22 L142 58 Z" fill="#3b82f6"/>
-        <path d="M138 58 L142 24 L146 58 Z" fill="#a855f7"/>
+        <path d="M118 60 Q122 24 128 58 Z" fill="#ef4444" stroke="#991b1b" stroke-width="0.5"/>
+        <path d="M122 58 Q128 18 134 58 Z" fill="#f59e0b" stroke="#b45309" stroke-width="0.5"/>
+        <path d="M128 58 Q134 16 140 58 Z" fill="#22c55e" stroke="#15803d" stroke-width="0.5"/>
+        <path d="M134 58 Q140 20 146 58 Z" fill="#3b82f6" stroke="#1d4ed8" stroke-width="0.5"/>
+        <path d="M140 58 Q146 26 150 60 Z" fill="#a855f7" stroke="#6b21a8" stroke-width="0.5"/>
+        <path d="M120 56 Q134 50 148 56" fill="none" stroke="#0f172a" stroke-width="1.2" stroke-linecap="round" opacity="0.35"/>
       </g>`;
     case "blue_vest":
       return `<g class="sg-wear sg-wear--shirt">
