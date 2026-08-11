@@ -714,69 +714,89 @@ function clothingLayerSvg(id) {
       </g>`;
     case "blue_sneakers":
       return `<g class="sg-wear sg-wear--shoes">
-        <path d="M98 188
-          Q101 182 110 182
-          L118 184
-          Q122 190 118 194
-          L102 194
-          Q96 192 98 188 Z" fill="#2563eb" stroke="#1e3a8a" stroke-width="1.1"/>
-        <path d="M100 188 H116" stroke="#93c5fd" stroke-width="1.2" stroke-linecap="round"/>
-        <ellipse cx="104" cy="193" rx="5" ry="1.6" fill="#1e3a8a" opacity="0.45"/>
-        <path d="M142 188
-          Q149 182 158 182
-          L162 184
-          Q166 190 162 194
-          L146 194
-          Q140 192 142 188 Z" fill="#2563eb" stroke="#1e3a8a" stroke-width="1.1"/>
-        <path d="M144 188 H160" stroke="#93c5fd" stroke-width="1.2" stroke-linecap="round"/>
-        <ellipse cx="156" cy="193" rx="5" ry="1.6" fill="#1e3a8a" opacity="0.45"/>
+        <path d="M95 186
+          C96 176 103 172 110 172
+          C117 172 124 176 125 186
+          L126 192
+          C125 201 117 204 110 204
+          C103 204 95 201 94 192
+          Z" fill="#2563eb" stroke="#1e3a8a" stroke-width="1.2"/>
+        <path d="M101 178 Q110 175 119 178" fill="none" stroke="#93c5fd" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M104 184 H116" stroke="#bfdbfe" stroke-width="1.3" stroke-linecap="round"/>
+        <ellipse cx="110" cy="200" rx="10" ry="2.4" fill="#1e3a8a" opacity="0.55"/>
+        <path d="M135 186
+          C136 176 143 172 150 172
+          C157 172 164 176 165 186
+          L166 192
+          C165 201 157 204 150 204
+          C143 204 135 201 134 192
+          Z" fill="#2563eb" stroke="#1e3a8a" stroke-width="1.2"/>
+        <path d="M141 178 Q150 175 159 178" fill="none" stroke="#93c5fd" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M144 184 H156" stroke="#bfdbfe" stroke-width="1.3" stroke-linecap="round"/>
+        <ellipse cx="150" cy="200" rx="10" ry="2.4" fill="#1e3a8a" opacity="0.55"/>
       </g>`;
     case "work_boots":
       return `<g class="sg-wear sg-wear--shoes">
-        <path d="M97 176
-          L101 176
-          L104 188
-          L118 190
-          Q122 194 116 196
-          L100 196
-          Q94 194 97 176 Z" fill="#78716c" stroke="#44403c" stroke-width="1.15"/>
-        <path d="M100 180 H108" stroke="#a8a29e" stroke-width="1.1" stroke-linecap="round"/>
-        <path d="M143 176
-          L147 176
-          L150 188
-          L162 190
-          Q166 194 160 196
-          L144 196
-          Q138 194 143 176 Z" fill="#78716c" stroke="#44403c" stroke-width="1.15"/>
-        <path d="M146 180 H154" stroke="#a8a29e" stroke-width="1.1" stroke-linecap="round"/>
+        <path d="M100 166
+          L118 166
+          L120 178
+          C126 182 126 192 124 198
+          C122 204 116 206 110 206
+          C104 206 98 204 96 198
+          C94 192 96 182 100 178
+          Z" fill="#78716c" stroke="#44403c" stroke-width="1.2"/>
+        <path d="M104 170 H116" stroke="#a8a29e" stroke-width="1.3" stroke-linecap="round"/>
+        <path d="M106 177 H118" stroke="#57534e" stroke-width="1.15" stroke-linecap="round"/>
+        <ellipse cx="110" cy="202" rx="11" ry="2.4" fill="#292524" opacity="0.55"/>
+        <path d="M142 166
+          L160 166
+          L160 178
+          C164 182 166 192 164 198
+          C162 204 156 206 150 206
+          C144 206 138 204 136 198
+          C134 192 136 182 140 178
+          Z" fill="#78716c" stroke="#44403c" stroke-width="1.2"/>
+        <path d="M144 170 H156" stroke="#a8a29e" stroke-width="1.3" stroke-linecap="round"/>
+        <path d="M142 177 H154" stroke="#57534e" stroke-width="1.15" stroke-linecap="round"/>
+        <ellipse cx="150" cy="202" rx="11" ry="2.4" fill="#292524" opacity="0.55"/>
       </g>`;
     case "flip_flops":
       return `<g class="sg-wear sg-wear--shoes">
-        <ellipse cx="108" cy="192" rx="11" ry="4.5" fill="#ec4899" stroke="#9d174d" stroke-width="1"/>
-        <path d="M108 188 Q104 184 101 190" fill="none" stroke="#f9a8d4" stroke-width="1.8" stroke-linecap="round"/>
-        <path d="M108 188 Q112 184 115 190" fill="none" stroke="#f9a8d4" stroke-width="1.8" stroke-linecap="round"/>
-        <ellipse cx="152" cy="192" rx="11" ry="4.5" fill="#ec4899" stroke="#9d174d" stroke-width="1"/>
-        <path d="M152 188 Q148 184 145 190" fill="none" stroke="#f9a8d4" stroke-width="1.8" stroke-linecap="round"/>
-        <path d="M152 188 Q156 184 159 190" fill="none" stroke="#f9a8d4" stroke-width="1.8" stroke-linecap="round"/>
+        <ellipse cx="110" cy="196" rx="15" ry="7.2" fill="#9d174d"/>
+        <ellipse cx="110" cy="194" rx="14.2" ry="6.2" fill="#ec4899" stroke="#9d174d" stroke-width="1.1"/>
+        <path d="M110 186 L104 194" fill="none" stroke="#fbcfe8" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M110 186 L116 194" fill="none" stroke="#fbcfe8" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="110" cy="186" r="2.1" fill="#f9a8d4" stroke="#9d174d" stroke-width="0.7"/>
+        <ellipse cx="150" cy="196" rx="15" ry="7.2" fill="#9d174d"/>
+        <ellipse cx="150" cy="194" rx="14.2" ry="6.2" fill="#ec4899" stroke="#9d174d" stroke-width="1.1"/>
+        <path d="M150 186 L144 194" fill="none" stroke="#fbcfe8" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M150 186 L156 194" fill="none" stroke="#fbcfe8" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="150" cy="186" r="2.1" fill="#f9a8d4" stroke="#9d174d" stroke-width="0.7"/>
       </g>`;
     case "striped_kicks":
       return `<g class="sg-wear sg-wear--shoes">
-        <path d="M98 186
-          Q102 180 112 180
-          L120 184
-          Q122 190 116 194
-          L100 194
-          Q96 191 98 186 Z" fill="#ffffff" stroke="#0ea5e9" stroke-width="1.1"/>
-        <path d="M102 184 H116" stroke="#0ea5e9" stroke-width="1.6" stroke-linecap="round"/>
-        <path d="M103 188 H115" stroke="#38bdf8" stroke-width="1.4" stroke-linecap="round"/>
-        <path d="M142 186
-          Q148 180 158 180
-          L164 184
-          Q166 190 160 194
-          L144 194
-          Q140 191 142 186 Z" fill="#ffffff" stroke="#0ea5e9" stroke-width="1.1"/>
-        <path d="M146 184 H160" stroke="#0ea5e9" stroke-width="1.6" stroke-linecap="round"/>
-        <path d="M147 188 H159" stroke="#38bdf8" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M95 186
+          C96 176 103 172 110 172
+          C117 172 124 176 125 186
+          L126 192
+          C125 201 117 204 110 204
+          C103 204 95 201 94 192
+          Z" fill="#ffffff" stroke="#0284c7" stroke-width="1.2"/>
+        <path d="M101 178 Q110 175 119 178" fill="none" stroke="#0ea5e9" stroke-width="1.7" stroke-linecap="round"/>
+        <path d="M103 184 H117" stroke="#0ea5e9" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M104 189 H116" stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round"/>
+        <ellipse cx="110" cy="200" rx="10" ry="2.4" fill="#0369a1" opacity="0.45"/>
+        <path d="M135 186
+          C136 176 143 172 150 172
+          C157 172 164 176 165 186
+          L166 192
+          C165 201 157 204 150 204
+          C143 204 135 201 134 192
+          Z" fill="#ffffff" stroke="#0284c7" stroke-width="1.2"/>
+        <path d="M141 178 Q150 175 159 178" fill="none" stroke="#0ea5e9" stroke-width="1.7" stroke-linecap="round"/>
+        <path d="M143 184 H157" stroke="#0ea5e9" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M144 189 H156" stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round"/>
+        <ellipse cx="150" cy="200" rx="10" ry="2.4" fill="#0369a1" opacity="0.45"/>
       </g>`;
     case "red_scarf":
       return `<g class="sg-wear sg-wear--accessory">
@@ -813,7 +833,7 @@ function clothingSlotViewBox(slot) {
     hat: "95 12 70 70",
     hair: "100 22 60 55",
     shirt: "82 90 96 100",
-    shoes: "98 172 64 30",
+    shoes: "88 166 84 46",
     accessory: "105 68 50 60",
   };
   return views[slot] || "90 40 80 140";
@@ -828,7 +848,7 @@ function clothingPreviewSilhouette(slot) {
     return `<ellipse cx="130" cy="78" rx="26" ry="22" fill="#94a3b8" opacity="0.22"/><ellipse cx="130" cy="120" rx="22" ry="20" fill="#94a3b8" opacity="0.18"/>`;
   }
   if (slot === "shoes") {
-    return `<ellipse cx="108" cy="190" rx="12" ry="5" fill="#94a3b8" opacity="0.18"/><ellipse cx="152" cy="190" rx="12" ry="5" fill="#94a3b8" opacity="0.18"/>`;
+    return `<ellipse cx="110" cy="194" rx="14" ry="7" fill="#94a3b8" opacity="0.2"/><ellipse cx="150" cy="194" rx="14" ry="7" fill="#94a3b8" opacity="0.2"/>`;
   }
   return `<ellipse cx="130" cy="132" rx="34" ry="36" fill="#94a3b8" opacity="0.22"/>`;
 }
@@ -910,6 +930,8 @@ function fillSeagullWearSlots(root) {
     const id = equipped[slot];
     el.innerHTML = id ? clothingLayerSvg(id) : "";
   }
+  const bareFeet = root.querySelector("[data-bare-feet]");
+  if (bareFeet) bareFeet.style.display = equipped.shoes ? "none" : "";
 }
 
 function syncSeagullOutfit() {
