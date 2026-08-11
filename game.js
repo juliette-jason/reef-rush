@@ -6265,8 +6265,7 @@ function endDailyPrizeCelebration() {
     dailyPrizeReveal.setAttribute("aria-hidden", "true");
   }
   if (panelStart) panelStart.hidden = false;
-  if (homeLaunchDock) homeLaunchDock.hidden = !isHomeScreenActive();
-  if (homeLaunchStack) homeLaunchStack.hidden = !isHomeScreenActive();
+  syncHomeLaunchButtons();
   applyPendingDailyPrizeRewards();
   if (prize) {
     const extras = dailyPrizeExtrasLabel(prize.rank);
@@ -7939,6 +7938,7 @@ const shopGuide = document.getElementById("shopGuide");
 const btnOpenShopGuide = document.getElementById("btnOpenShopGuide");
 const btnOpenShop = document.getElementById("btnOpenShop");
 const btnShopLaunch = document.getElementById("btnShopLaunch");
+const btnWorldAdventures = document.getElementById("btnWorldAdventures");
 const btnEvents = document.getElementById("btnEvents");
 const btnCollectables = document.getElementById("btnCollectables");
 const homeLaunchDock = document.getElementById("homeLaunchDock");
@@ -8796,16 +8796,51 @@ function isHomeScreenActive() {
   return true;
 }
 
+function getActiveTabId() {
+  if (playing || isSplashScreenActive()) return "";
+  if (panelShop && !panelShop.hidden) return "shop";
+  if (panelEvents && !panelEvents.hidden) return "events";
+  if (panelCollectables && !panelCollectables.hidden) return "collectables";
+  if (panelAdventure && !panelAdventure.hidden) return "adventure";
+  if (panelAdventureFail && !panelAdventureFail.hidden) return "adventure";
+  if (panelAdventureWin && !panelAdventureWin.hidden) return "adventure";
+  if (isHomeScreenActive()) return "world";
+  return "";
+}
+
+function shouldShowTabBar() {
+  if (playing || isSplashScreenActive()) return false;
+  if (panelOver && !panelOver.hidden) return false;
+  if (panelIntro && !panelIntro.hidden) return false;
+  if (panelDuelOver && !panelDuelOver.hidden) return false;
+  if (panelCrabReward && !panelCrabReward.hidden) return false;
+  if (crabTrapSession) return false;
+  const tab = getActiveTabId();
+  return Boolean(tab);
+}
+
+function syncActiveTabButton() {
+  const active = getActiveTabId();
+  homeLaunchStack?.querySelectorAll("[data-tab]").forEach((btn) => {
+    const on = btn.dataset.tab === active;
+    btn.classList.toggle("is-active", on);
+    btn.setAttribute("aria-current", on ? "page" : "false");
+  });
+}
+
 function syncHomeLaunchButtons() {
   const onHome = isHomeScreenActive();
+  const showTabs = shouldShowTabBar();
   appRoot.classList.toggle("app--home-screen", onHome);
-  if (homeLaunchDock) homeLaunchDock.hidden = !onHome;
-  if (homeLaunchStack) homeLaunchStack.hidden = !onHome;
+  appRoot.classList.toggle("app--show-tabs", showTabs);
+  if (homeLaunchDock) homeLaunchDock.hidden = !showTabs;
+  if (homeLaunchStack) homeLaunchStack.hidden = !showTabs;
   if (adventureUnlockHint) {
     const showChestHint =
       onHome && (!isAdventureUnlocked() || isAdventureHomeCelebrationActive());
     adventureUnlockHint.hidden = !showChestHint;
   }
+  syncActiveTabButton();
 }
 
 function syncAdventureLaunchVisibility() {
@@ -17294,6 +17329,11 @@ btnStart.addEventListener("click", startRound);
 
 btnOpenShop?.addEventListener("click", openShop);
 btnShopLaunch?.addEventListener("click", openShop);
+btnWorldAdventures?.addEventListener("click", () => {
+  stopAdventureMusic();
+  showHomePanel();
+  if (homeAudioUnlocked) startHomeWaves();
+});
 btnEvents?.addEventListener("click", openEvents);
 btnCollectables?.addEventListener("click", openCollectables);
 btnCloseCollectables?.addEventListener("click", closeCollectables);

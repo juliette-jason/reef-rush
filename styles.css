@@ -3895,11 +3895,28 @@ body {
 }
 
 .panel--start .panel__headline--brand {
-  margin: 4px 0 18px;
+  margin: 4px 0 4px;
   font-size: clamp(2.7rem, 10vw, 3.8rem);
   filter:
     drop-shadow(0 0 16px rgba(255, 213, 74, 0.5))
     drop-shadow(0 4px 0 rgba(120, 53, 15, 0.25));
+}
+
+.panel__world-title {
+  margin: 0 0 16px;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(1.15rem, 4.2vw, 1.55rem);
+  letter-spacing: 0.12em;
+  color: #7dd3fc;
+  text-shadow: 0 0 14px rgba(56, 189, 248, 0.35);
+}
+
+.app--show-tabs .panel--shop,
+.app--show-tabs .panel--events,
+.app--show-tabs .panel--collectables,
+.app--show-tabs .panel--adventure,
+.app--show-tabs .panel--adventure-result {
+  padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
 }
 
 .panel--start .rods {
@@ -4123,9 +4140,9 @@ body {
   display: none;
 }
 
-#app:not(.app--home-screen) .home-launch-dock,
-#app:not(.app--home-screen) .home-launch-stack,
-#app:not(.app--home-screen) .adventure-launch__hint {
+#app:not(.app--show-tabs) .home-launch-dock,
+#app:not(.app--show-tabs) .home-launch-stack,
+#app:not(.app--show-tabs) .adventure-launch__hint {
   display: none !important;
 }
 
@@ -4138,12 +4155,13 @@ body {
   flex-direction: row;
   align-items: stretch;
   justify-content: space-between;
-  gap: 6px;
-  width: min(560px, 100%);
+  gap: 5px;
+  width: min(620px, 100%);
   margin: 0 auto;
   pointer-events: none;
 }
 
+.home-launch-stack > .world-launch,
 .home-launch-stack > .shop-launch,
 .home-launch-stack > .adventure-launch,
 .home-launch-stack > .events-launch,
@@ -4158,19 +4176,20 @@ body {
   isolation: isolate;
   overflow: hidden;
   min-height: 58px;
-  padding: 7px 4px 6px;
+  padding: 7px 3px 6px;
   border-radius: 14px;
   flex-direction: column;
   gap: 3px;
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
+  font-size: 0.66rem;
+  letter-spacing: 0.03em;
   box-shadow:
     0 3px 0 rgba(0, 0, 0, 0.35),
     0 8px 16px rgba(0, 0, 0, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.22);
-  transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
+  transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease, outline-color 0.12s ease;
 }
 
+.home-launch-stack > .world-launch::before,
 .home-launch-stack > .shop-launch::before,
 .home-launch-stack > .adventure-launch::before,
 .home-launch-stack > .events-launch::before,
@@ -4190,12 +4209,46 @@ body {
   pointer-events: none;
 }
 
+.home-launch-stack > .world-launch > *,
 .home-launch-stack > .shop-launch > *,
 .home-launch-stack > .adventure-launch > *,
 .home-launch-stack > .events-launch > *,
 .home-launch-stack > .collectables-launch > * {
   position: relative;
   z-index: 1;
+}
+
+.home-launch-stack > .is-active {
+  filter: brightness(1.14) saturate(1.08);
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 0 2px rgba(255, 224, 138, 0.95),
+    0 0 18px rgba(255, 213, 74, 0.55),
+    0 8px 18px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.home-launch-stack > .is-active::after {
+  content: "";
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 4px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, #ffe08a, transparent);
+  box-shadow: 0 0 10px rgba(255, 213, 74, 0.8);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.home-launch-stack > button:active {
+  filter: brightness(1.2);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.55),
+    0 0 22px rgba(125, 211, 252, 0.55),
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 @keyframes homeLaunchShine {
@@ -4241,7 +4294,8 @@ body {
 .shop-launch__glyph,
 .adventure-launch__glyph,
 .events-launch__glyph,
-.collectables-launch__glyph {
+.collectables-launch__glyph,
+.world-launch__glyph {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -4257,7 +4311,8 @@ body {
 .shop-launch__glyph svg,
 .adventure-launch__glyph svg,
 .events-launch__glyph svg,
-.collectables-launch__glyph svg {
+.collectables-launch__glyph svg,
+.world-launch__glyph svg {
   display: block;
   width: 15px;
   height: 15px;
@@ -4266,12 +4321,44 @@ body {
 .shop-launch__label,
 .adventure-launch__label,
 .events-launch__label,
-.collectables-launch__label {
+.collectables-launch__label,
+.world-launch__label {
   line-height: 1.05;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+}
+
+.world-launch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 7px 3px 6px;
+  border-radius: 14px;
+  border: 2px solid rgba(56, 189, 248, 0.7);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 40%),
+    linear-gradient(180deg, #0284c7 0%, #0369a1 48%, #0c4a6e 100%);
+  color: #e0f2fe;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 0.66rem;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  box-shadow:
+    0 3px 0 #082f49,
+    0 8px 16px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.world-launch:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.world-launch:active {
+  transform: translateY(2px);
 }
 
 .shop-launch__icon {
@@ -5644,17 +5731,19 @@ body {
   .home-launch-stack .events-launch,
   .home-launch-stack .adventure-launch,
   .home-launch-stack .shop-launch,
-  .home-launch-stack .collectables-launch {
+  .home-launch-stack .collectables-launch,
+  .home-launch-stack .world-launch {
     padding: 6px 2px 5px;
-    font-size: 0.66rem;
-    min-height: 54px;
+    font-size: 0.58rem;
+    min-height: 52px;
     border-radius: 12px;
   }
 
   .shop-launch__glyph,
   .adventure-launch__glyph,
   .events-launch__glyph,
-  .collectables-launch__glyph {
+  .collectables-launch__glyph,
+  .world-launch__glyph {
     width: 22px;
     height: 22px;
     border-radius: 7px;
@@ -5663,9 +5752,10 @@ body {
   .shop-launch__glyph svg,
   .adventure-launch__glyph svg,
   .events-launch__glyph svg,
-  .collectables-launch__glyph svg {
-    width: 14px;
-    height: 14px;
+  .collectables-launch__glyph svg,
+  .world-launch__glyph svg {
+    width: 13px;
+    height: 13px;
   }
 
   .adventure-launch__hint {
@@ -6015,6 +6105,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .home-launch-stack > .world-launch::before,
   .home-launch-stack > .shop-launch::before,
   .home-launch-stack > .adventure-launch::before,
   .home-launch-stack > .events-launch::before,

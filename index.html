@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=wardrobe-fit-1" />
+    <link rel="stylesheet" href="styles.css?v=tab-bar-world-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -525,6 +525,7 @@
 
       <section id="panelStart" class="panel panel--start" hidden>
         <h1 class="panel__headline panel__headline--brand">Reef Rush</h1>
+        <p class="panel__world-title">World Adventures</p>
         <div id="homeCorner" class="home-corner">
           <div class="start-toolbar">
             <div class="start-toolbar__stats">
@@ -574,7 +575,7 @@
           <legend class="rods__legend">Choose your reef</legend>
           <div class="reef-picker reef-picker--map-first">
               <div class="reef-map-panel">
-              <div class="reef-map-panel__title">World chart</div>
+              <div class="reef-map-panel__title">World Adventures</div>
               <div class="reef-map" id="reefMap">
                 <img
                   class="reef-map__photo"
@@ -720,57 +721,68 @@
             </div>
           </div>
         </div>
-        <div id="homeLaunchDock" class="home-launch-dock" hidden>
-          <p id="adventureUnlockHint" class="adventure-launch__hint" hidden>Treasure chests: 0 / 20</p>
-          <nav id="homeLaunchStack" class="home-launch-stack" aria-label="Home destinations">
-            <button type="button" id="btnShopLaunch" class="shop-launch" aria-label="Fishing shop">
-              <span class="shop-launch__glyph" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                  <path d="M4 8h16l-1.2 11.2a2 2 0 0 1-2 1.8H7.2a2 2 0 0 1-2-1.8L4 8Z" fill="#ffe08a" stroke="#b45309" stroke-width="1.2"/>
-                  <path d="M8 8V6.5A4 4 0 0 1 12 2.5 4 4 0 0 1 16 6.5V8" stroke="#ffe08a" stroke-width="1.6" stroke-linecap="round"/>
-                  <circle cx="12" cy="14" r="2.2" fill="#f59e0b" stroke="#7c2d12" stroke-width="0.9"/>
-                </svg>
-              </span>
-              <span class="shop-launch__label">Shop</span>
-            </button>
-            <button type="button" id="btnAdventureMode" class="adventure-launch" aria-label="Adventure Mode">
-              <span id="adventureLock" class="adventure-launch__lock" aria-hidden="true"></span>
-              <span class="adventure-launch__glyph" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                  <path d="M12 3l2.4 5.2L20 9.2l-4 4.1.9 5.7L12 16.4 7.1 19l.9-5.7-4-4.1 5.6-1L12 3Z" fill="#ffe08a" stroke="#b45309" stroke-width="1"/>
-                </svg>
-              </span>
-              <span class="adventure-launch__label">Adventure</span>
-            </button>
-            <button type="button" id="btnEvents" class="events-launch" aria-label="Events">
-              <span class="events-launch__glyph" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                  <path d="M5 8.5c0-2.4 3.1-4.5 7-4.5s7 2.1 7 4.5-3.1 4.5-7 4.5S5 10.9 5 8.5Z" fill="#7dd3fc" stroke="#0369a1" stroke-width="1.1"/>
-                  <path d="M5 8.5v5c0 2.4 3.1 4.5 7 4.5s7-2.1 7-4.5v-5" stroke="#bae6fd" stroke-width="1.4" stroke-linecap="round"/>
-                  <path d="M8.2 10.2c1.1.7 2.4 1.1 3.8 1.1s2.7-.4 3.8-1.1" stroke="#e0f2fe" stroke-width="1.2" stroke-linecap="round"/>
-                </svg>
-              </span>
-              <span class="events-launch__label">Events</span>
-            </button>
-            <button type="button" id="btnCollectables" class="collectables-launch" aria-label="Collectables">
-              <span class="collectables-launch__glyph" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                  <rect x="4" y="5" width="16" height="14" rx="2.5" fill="#fde68a" stroke="#b45309" stroke-width="1.2"/>
-                  <path d="M4 9.5h16" stroke="#b45309" stroke-width="1.1"/>
-                  <circle cx="9" cy="14.2" r="2.2" fill="#f59e0b" stroke="#7c2d12" stroke-width="0.8"/>
-                  <circle cx="15" cy="14.2" r="2.2" fill="#38bdf8" stroke="#0369a1" stroke-width="0.8"/>
-                </svg>
-              </span>
-              <span class="collectables-launch__label">Collect</span>
-            </button>
-          </nav>
-        </div>
         <div id="adventureUnlockBanner" class="adventure-unlock-banner" hidden aria-hidden="true">
           <p class="adventure-unlock-banner__spark">✦ ✦ ✦</p>
           <p class="adventure-unlock-banner__title">Adventure Mode Unlocked!</p>
           <p class="adventure-unlock-banner__sub">Watch the button rise — then tap to chart your course</p>
         </div>
       </section>
+
+      <div id="homeLaunchDock" class="home-launch-dock" hidden>
+        <p id="adventureUnlockHint" class="adventure-launch__hint" hidden>Treasure chests: 0 / 20</p>
+        <nav id="homeLaunchStack" class="home-launch-stack" aria-label="Main destinations">
+          <button type="button" id="btnWorldAdventures" class="world-launch" data-tab="world" aria-label="World Adventures">
+            <span class="world-launch__glyph" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                <circle cx="12" cy="12" r="8.5" fill="#38bdf8" stroke="#0369a1" stroke-width="1.2"/>
+                <path d="M4.5 12h15M12 3.5c2.4 2.2 3.6 5.2 3.6 8.5s-1.2 6.3-3.6 8.5c-2.4-2.2-3.6-5.2-3.6-8.5S9.6 5.7 12 3.5Z" stroke="#e0f2fe" stroke-width="1.2" fill="none"/>
+                <path d="M5.2 8.2h13.6M5.2 15.8h13.6" stroke="#bae6fd" stroke-width="1" opacity="0.85"/>
+              </svg>
+            </span>
+            <span class="world-launch__label">World</span>
+          </button>
+          <button type="button" id="btnShopLaunch" class="shop-launch" data-tab="shop" aria-label="Fishing shop">
+            <span class="shop-launch__glyph" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                <path d="M4 8h16l-1.2 11.2a2 2 0 0 1-2 1.8H7.2a2 2 0 0 1-2-1.8L4 8Z" fill="#ffe08a" stroke="#b45309" stroke-width="1.2"/>
+                <path d="M8 8V6.5A4 4 0 0 1 12 2.5 4 4 0 0 1 16 6.5V8" stroke="#ffe08a" stroke-width="1.6" stroke-linecap="round"/>
+                <circle cx="12" cy="14" r="2.2" fill="#f59e0b" stroke="#7c2d12" stroke-width="0.9"/>
+              </svg>
+            </span>
+            <span class="shop-launch__label">Shop</span>
+          </button>
+          <button type="button" id="btnAdventureMode" class="adventure-launch" data-tab="adventure" aria-label="Adventure Mode">
+            <span id="adventureLock" class="adventure-launch__lock" aria-hidden="true"></span>
+            <span class="adventure-launch__glyph" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                <path d="M12 3l2.4 5.2L20 9.2l-4 4.1.9 5.7L12 16.4 7.1 19l.9-5.7-4-4.1 5.6-1L12 3Z" fill="#ffe08a" stroke="#b45309" stroke-width="1"/>
+              </svg>
+            </span>
+            <span class="adventure-launch__label">Adventure</span>
+          </button>
+          <button type="button" id="btnEvents" class="events-launch" data-tab="events" aria-label="Events">
+            <span class="events-launch__glyph" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                <path d="M5 8.5c0-2.4 3.1-4.5 7-4.5s7 2.1 7 4.5-3.1 4.5-7 4.5S5 10.9 5 8.5Z" fill="#7dd3fc" stroke="#0369a1" stroke-width="1.1"/>
+                <path d="M5 8.5v5c0 2.4 3.1 4.5 7 4.5s7-2.1 7-4.5v-5" stroke="#bae6fd" stroke-width="1.4" stroke-linecap="round"/>
+                <path d="M8.2 10.2c1.1.7 2.4 1.1 3.8 1.1s2.7-.4 3.8-1.1" stroke="#e0f2fe" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <span class="events-launch__label">Events</span>
+          </button>
+          <button type="button" id="btnCollectables" class="collectables-launch" data-tab="collectables" aria-label="Collectables">
+            <span class="collectables-launch__glyph" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                <rect x="4" y="5" width="16" height="14" rx="2.5" fill="#fde68a" stroke="#b45309" stroke-width="1.2"/>
+                <path d="M4 9.5h16" stroke="#b45309" stroke-width="1.1"/>
+                <circle cx="9" cy="14.2" r="2.2" fill="#f59e0b" stroke="#7c2d12" stroke-width="0.8"/>
+                <circle cx="15" cy="14.2" r="2.2" fill="#38bdf8" stroke="#0369a1" stroke-width="0.8"/>
+              </svg>
+            </span>
+            <span class="collectables-launch__label">Collect</span>
+          </button>
+        </nav>
+      </div>
 
       <section id="panelAdventure" class="panel panel--adventure" hidden>
         <div id="adventureMapScroll" class="adventure-map-scroll">
@@ -1901,6 +1913,6 @@
       </section>
     </div>
 
-    <script src="game.js?v=wardrobe-fit-1" defer></script>
+    <script src="game.js?v=tab-bar-world-1" defer></script>
   </body>
 </html>
