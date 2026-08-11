@@ -10675,14 +10675,14 @@ function buildShopUI() {
 }
 
 function openShop() {
-  if (!panelShop || !panelStart) return;
+  if (!panelShop) return;
   setStartMoreOptionsOpen(false);
   normalizeSelectedBaitId();
   refreshCoinDisplays();
   buildShopUI();
   syncSeagullOutfit();
   showShopGuideIfNeeded();
-  panelStart.hidden = true;
+  hideAllPanels();
   panelShop.hidden = false;
   syncHomeLaunchButtons();
 }
@@ -10859,11 +10859,11 @@ function refreshCollectablesUI() {
 }
 
 function openCollectables() {
-  if (!panelCollectables || !panelStart) return;
+  if (!panelCollectables) return;
   setStartMoreOptionsOpen(false);
   refreshCollectablesUI();
   syncSeagullOutfit();
-  panelStart.hidden = true;
+  hideAllPanels();
   panelCollectables.hidden = false;
   syncHomeLaunchButtons();
 }
@@ -11003,12 +11003,11 @@ function useAdventureSkipRope() {
 }
 
 function openEvents() {
-  if (!panelEvents || !panelStart) return;
+  if (!panelEvents) return;
   setStartMoreOptionsOpen(false);
-  panelStart.hidden = true;
+  hideAllPanels();
   panelEvents.hidden = false;
   if (eventsOcean) eventsOcean.hidden = false;
-  if (panelDuelOver) panelDuelOver.hidden = true;
   appRoot?.classList.add("app--events-mode");
   refreshDuelTicketsForToday();
   syncHomeLaunchButtons();
