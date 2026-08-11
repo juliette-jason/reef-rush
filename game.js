@@ -401,6 +401,7 @@ const CLOTHING_SLOT_LABELS = {
   accessory: "Accessory",
 };
 const STARTER_CLOTHING_ID = "sailor_cap";
+const STARTER_CLOTHING_IDS = ["sailor_cap", "sleek_slick", "stripe_sweater", "blue_shorts"];
 
 const CLOTHING_DEFS = [
   { id: "sailor_cap", name: "Sailor Cap", slot: "hat", price: 0, starter: true, icon: "🧢", blurb: "Your classic green shop cap." },
@@ -410,14 +411,14 @@ const CLOTHING_DEFS = [
   { id: "pirate_bandana", name: "Pirate Bandana", slot: "hat", price: 260, icon: "🏴‍☠️", blurb: "Knotted red for salty swagger." },
   { id: "spiky_tuft", name: "Spiky Tuft", slot: "hair", price: 140, icon: "🦔", blurb: "Wild crest that won't stay down." },
   { id: "curly_top", name: "Curly Top", slot: "hair", price: 160, icon: "🌀", blurb: "Soft curls for a friendly look." },
-  { id: "sleek_slick", name: "Sleek Slick", slot: "hair", price: 150, icon: "✨", blurb: "Combed back, ready for photos." },
+  { id: "sleek_slick", name: "Sleek Slick", slot: "hair", price: 0, starter: true, icon: "✨", blurb: "Combed back starter look." },
   { id: "rainbow_mohawk", name: "Rainbow Mohawk", slot: "hair", price: 380, icon: "🌈", blurb: "Loud colors for festival tides." },
   { id: "blue_vest", name: "Blue Vest", slot: "shirt", price: 200, icon: "🧥", blurb: "Smart layered chest feathers." },
-  { id: "stripe_sweater", name: "Stripe Sweater", slot: "shirt", price: 240, icon: "👕", blurb: "Nautical stripes never go out." },
+  { id: "stripe_sweater", name: "Stripe Sweater", slot: "shirt", price: 0, starter: true, icon: "👕", blurb: "Nautical starter stripes." },
   { id: "life_vest", name: "Life Vest", slot: "shirt", price: 280, icon: "🦺", blurb: "Safety orange with reflective tape." },
   { id: "hawaiian_shirt", name: "Hawaiian Shirt", slot: "shirt", price: 300, icon: "🌺", blurb: "Tropical flowers on every flap." },
   { id: "yellow_raincoat", name: "Yellow Raincoat", slot: "shirt", price: 340, icon: "🌧️", blurb: "Keeps spray off your wings." },
-  { id: "blue_shorts", name: "Blue Shorts", slot: "pants", price: 160, icon: "🩳", blurb: "Casual dockside bottoms." },
+  { id: "blue_shorts", name: "Blue Shorts", slot: "pants", price: 0, starter: true, icon: "🩳", blurb: "Casual starter dockside shorts." },
   { id: "cargo_pants", name: "Cargo Pants", slot: "pants", price: 240, icon: "👖", blurb: "Pockets for spare lures." },
   { id: "swim_trunks", name: "Swim Trunks", slot: "pants", price: 170, icon: "🏊", blurb: "Bright for a dip after the haul." },
   { id: "striped_socks", name: "Striped Socks", slot: "pants", price: 120, icon: "🧦", blurb: "Cozy bands for orange legs." },
@@ -428,6 +429,16 @@ const CLOTHING_DEFS = [
 ];
 
 const CLOTHING_BY_ID = Object.fromEntries(CLOTHING_DEFS.map((c) => [c.id, c]));
+
+function defaultEquippedClothes() {
+  return {
+    hat: "sailor_cap",
+    hair: "sleek_slick",
+    shirt: "stripe_sweater",
+    pants: "blue_shorts",
+    accessory: null,
+  };
+}
 
 function emptyEquippedClothes() {
   const o = {};
@@ -446,7 +457,12 @@ function normalizeOwnedClothes(raw) {
       out.push(id);
     }
   }
-  if (!seen.has(STARTER_CLOTHING_ID)) out.unshift(STARTER_CLOTHING_ID);
+  for (const id of STARTER_CLOTHING_IDS) {
+    if (!seen.has(id) && ids.has(id)) {
+      seen.add(id);
+      out.unshift(id);
+    }
+  }
   return out;
 }
 
@@ -461,8 +477,12 @@ function normalizeEquippedClothes(raw, ownedIds) {
       if (!def || def.slot !== slot || !owned.has(id)) continue;
       out[slot] = id;
     }
-  } else if (owned.has(STARTER_CLOTHING_ID)) {
-    out.hat = STARTER_CLOTHING_ID;
+  }
+  const defaults = defaultEquippedClothes();
+  for (const slot of CLOTHING_SLOTS) {
+    if (!out[slot] && defaults[slot] && owned.has(defaults[slot])) {
+      out[slot] = defaults[slot];
+    }
   }
   return out;
 }
@@ -4835,8 +4855,8 @@ function defaultMeta() {
     pendingLuckyLure: false,
     pendingDoubleHaul: false,
     pendingMysteryReef: false,
-    ownedClothes: normalizeOwnedClothes([STARTER_CLOTHING_ID]),
-    equippedClothes: normalizeEquippedClothes({ hat: STARTER_CLOTHING_ID }, [STARTER_CLOTHING_ID]),
+    ownedClothes: normalizeOwnedClothes([...STARTER_CLOTHING_IDS]),
+    equippedClothes: normalizeEquippedClothes(defaultEquippedClothes(), [...STARTER_CLOTHING_IDS]),
     dailyClothesShop: null,
   };
 }
