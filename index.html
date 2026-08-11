@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=seagull-wings-wardrobe-1" />
+    <link rel="stylesheet" href="styles.css?v=collectables-polish-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -1555,14 +1555,28 @@
       </section>
 
       <section id="panelCollectables" class="panel panel--collectables" hidden>
-        <h2 class="panel__headline">Collectables</h2>
-        <p class="panel__lede">Dress your seagull, claim chest prizes &amp; stamps.</p>
+        <div class="collectables-decor" aria-hidden="true">
+          <span class="collectables-decor__bubble collectables-decor__bubble--a"></span>
+          <span class="collectables-decor__bubble collectables-decor__bubble--b"></span>
+          <span class="collectables-decor__bubble collectables-decor__bubble--c"></span>
+          <span class="collectables-decor__bubble collectables-decor__bubble--d"></span>
+          <span class="collectables-decor__glint collectables-decor__glint--1"></span>
+          <span class="collectables-decor__glint collectables-decor__glint--2"></span>
+          <span class="collectables-decor__glint collectables-decor__glint--3"></span>
+          <span class="collectables-decor__ray collectables-decor__ray--1"></span>
+          <span class="collectables-decor__ray collectables-decor__ray--2"></span>
+        </div>
+        <header class="collectables-hero">
+          <p class="collectables-hero__eyebrow">Treasure locker</p>
+          <h2 class="panel__headline collectables-hero__title">Collectables</h2>
+          <p class="panel__lede collectables-hero__lede">Dress your seagull, claim chest prizes &amp; stamps.</p>
+        </header>
         <div class="collectables-armed" id="collectablesArmed" hidden></div>
 
-        <section class="wardrobe-stage" aria-label="Seagull clothes inventory">
+        <section class="wardrobe-stage collectables-stage" aria-label="Seagull clothes inventory">
           <div class="wardrobe-stage__head">
             <h3 class="collectables-section__title">Clothes inventory</h3>
-            <p id="collectablesWardrobeCount" class="collectables-stamp-count">0 / 0 owned</p>
+            <p id="collectablesWardrobeCount" class="collectables-count-pill">0 / 0 owned</p>
           </div>
           <div class="collectables-seagull-preview" aria-hidden="true">
             <svg class="collectables-seagull-preview__art" viewBox="0 0 260 220" xmlns="http://www.w3.org/2000/svg" data-seagull-outfit focusable="false">
@@ -1637,12 +1651,26 @@
           <div id="collectablesWardrobe" class="wardrobe-grid" role="listbox" aria-label="Your clothes inventory"></div>
         </section>
 
-        <h3 class="collectables-section__title">Chest items</h3>
-        <div id="collectablesItems" class="collectables-items" aria-label="Chest items"></div>
-        <h3 class="collectables-section__title">Catch stamps</h3>
-        <p id="collectablesStampCount" class="collectables-stamp-count">0 / 0 collected</p>
-        <div id="collectablesStamps" class="collectables-stamps" aria-label="Catch stamp collection"></div>
-        <button type="button" id="btnCloseCollectables" class="btn btn--primary">Back</button>
+        <section class="collectables-stage collectables-stage--chest" aria-label="Chest items">
+          <div class="wardrobe-stage__head">
+            <h3 class="collectables-section__title">Chest items</h3>
+            <span class="collectables-section__mark" aria-hidden="true">✦</span>
+          </div>
+          <div id="collectablesItems" class="collectables-items" aria-label="Chest items"></div>
+        </section>
+
+        <section class="collectables-stage collectables-stage--stamps" aria-label="Catch stamps">
+          <div class="wardrobe-stage__head">
+            <h3 class="collectables-section__title">Catch stamps</h3>
+            <p id="collectablesStampCount" class="collectables-count-pill">0 / 0 collected</p>
+          </div>
+          <div class="collectables-stamp-track" aria-hidden="true">
+            <div id="collectablesStampFill" class="collectables-stamp-track__fill"></div>
+          </div>
+          <div id="collectablesStamps" class="collectables-stamps" aria-label="Catch stamp collection"></div>
+        </section>
+
+        <button type="button" id="btnCloseCollectables" class="btn btn--primary collectables-back">Back</button>
       </section>
 
       <section id="panelShop" class="panel panel--shop" hidden>
@@ -1940,6 +1968,6 @@
       </section>
     </div>
 
-    <script src="game.js?v=seagull-wings-wardrobe-1" defer></script>
+    <script src="game.js?v=collectables-polish-1" defer></script>
   </body>
 </html>

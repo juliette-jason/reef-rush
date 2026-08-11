@@ -10794,6 +10794,11 @@ function refreshCollectablesUI() {
     if (collectablesStampCount) {
       collectablesStampCount.textContent = `${owned} / ${FISH_SPECIES.length} collected`;
     }
+    const stampFill = document.getElementById("collectablesStampFill");
+    if (stampFill) {
+      const pct = FISH_SPECIES.length ? Math.round((owned / FISH_SPECIES.length) * 100) : 0;
+      stampFill.style.width = `${pct}%`;
+    }
   }
   if (collectablesWardrobe) {
     collectablesWardrobe.replaceChildren();
