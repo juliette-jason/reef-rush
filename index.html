@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=phone-toolbar-above-1" />
+    <link rel="stylesheet" href="styles.css?v=collectables-chests-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -582,6 +582,17 @@
                   </svg>
                 </span>
                 <span class="events-launch__label">Events</span>
+              </button>
+              <button type="button" id="btnCollectables" class="collectables-launch" aria-label="Collectables">
+                <span class="collectables-launch__glyph" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                    <rect x="4" y="5" width="16" height="14" rx="2.5" fill="#fde68a" stroke="#b45309" stroke-width="1.2"/>
+                    <path d="M4 9.5h16" stroke="#b45309" stroke-width="1.1"/>
+                    <circle cx="9" cy="14.2" r="2.2" fill="#f59e0b" stroke="#7c2d12" stroke-width="0.8"/>
+                    <circle cx="15" cy="14.2" r="2.2" fill="#38bdf8" stroke="#0369a1" stroke-width="0.8"/>
+                  </svg>
+                </span>
+                <span class="collectables-launch__label">Collectables</span>
               </button>
             </div>
           </div>
@@ -1209,6 +1220,7 @@
         <div id="adventureFailTheme" class="adventure-result-theme" hidden aria-hidden="true"></div>
         <h2 class="panel__headline panel__headline--fail">Not enough fish caught.</h2>
         <p class="panel__lede"><span id="adventureFailScore">Your score: 0</span> · <span id="adventureFailGoal">Needed: 3000</span></p>
+        <button type="button" id="btnAdventureSkipRope" class="btn btn--skip-rope" hidden>Use Adventure Skip Rope</button>
         <button type="button" id="btnAdventureRetry" class="btn btn--primary">Try again</button>
         <button type="button" id="btnAdventureFailBack" class="btn btn--secondary">Back to map</button>
       </section>
@@ -1510,6 +1522,18 @@
           <button type="button" id="btnCrabPlayAgain" class="btn btn--primary" hidden>Play again (1 ticket)</button>
           <button type="button" id="btnCrabRewardBack" class="btn btn--secondary">Back to Events</button>
         </div>
+      </section>
+
+      <section id="panelCollectables" class="panel panel--collectables" hidden>
+        <h2 class="panel__headline">Collectables</h2>
+        <p class="panel__lede">Chest prizes &amp; catch stamps — view your collection.</p>
+        <div class="collectables-armed" id="collectablesArmed" hidden></div>
+        <h3 class="collectables-section__title">Chest items</h3>
+        <div id="collectablesItems" class="collectables-items" aria-label="Chest items"></div>
+        <h3 class="collectables-section__title">Catch stamps</h3>
+        <p id="collectablesStampCount" class="collectables-stamp-count">0 / 0 collected</p>
+        <div id="collectablesStamps" class="collectables-stamps" aria-label="Catch stamp collection"></div>
+        <button type="button" id="btnCloseCollectables" class="btn btn--primary">Back</button>
       </section>
 
       <section id="panelShop" class="panel panel--shop" hidden>
@@ -1819,6 +1843,6 @@
       </section>
     </div>
 
-    <script src="game.js?v=phone-toolbar-above-1" defer></script>
+    <script src="game.js?v=collectables-chests-1" defer></script>
   </body>
 </html>

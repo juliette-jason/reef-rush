@@ -272,6 +272,124 @@ const MAGNET_ROD_ID = "magnet";
 const KRAKEN_SPRAY_BAIT_ID = "kraken_spray";
 const DAILY_SECOND_PLACE_KRAKEN_SPRAY = 3;
 
+/** Special chest prizes (inventory + catch stamps). */
+const CHEST_ITEM_DEFS = {
+  adventure_skip_rope: {
+    id: "adventure_skip_rope",
+    name: "Adventure Skip Rope",
+    icon: "🪢",
+    blurb: "Very rare. On a failed adventure voyage, use it to clear the level anyway.",
+  },
+  golden_net: {
+    id: "golden_net",
+    name: "Golden Net",
+    icon: "✨",
+    blurb: "When the kraken bites, your catch stays safe (uses 1 automatically).",
+  },
+  mystery_reef: {
+    id: "mystery_reef",
+    name: "Mystery Reef Key",
+    icon: "🗝️",
+    blurb: "Arm it, then Start Game — you'll sail a random reef for that round.",
+  },
+  lucky_lure: {
+    id: "lucky_lure",
+    name: "Lucky Lure",
+    icon: "🍀",
+    blurb: "Arm it for your next reef round: better rare hook luck and a wider catch window.",
+  },
+  double_haul: {
+    id: "double_haul",
+    name: "Double Haul",
+    icon: "💰",
+    blurb: "Arm it for your next reef round: double the coins you earn from the score.",
+  },
+};
+
+const CHEST_ITEM_IDS = Object.keys(CHEST_ITEM_DEFS);
+
+function emptyChestItems() {
+  const o = {};
+  for (const id of CHEST_ITEM_IDS) o[id] = 0;
+  return o;
+}
+
+function normalizeChestItems(raw) {
+  const out = emptyChestItems();
+  if (!raw || typeof raw !== "object") return out;
+  for (const id of CHEST_ITEM_IDS) {
+    out[id] = Math.max(0, Math.floor(Number(raw[id]) || 0));
+  }
+  return out;
+}
+
+function normalizeCatchStamps(raw) {
+  if (!Array.isArray(raw)) return [];
+  const ids = new Set(FISH_SPECIES.map((s) => s.id));
+  const out = [];
+  const seen = new Set();
+  for (const id of raw) {
+    if (typeof id !== "string" || !ids.has(id) || seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
+  }
+  return out;
+}
+
+function getChestItemCount(id) {
+  return Math.max(0, Math.floor(Number(gameMeta.chestItems?.[id]) || 0));
+}
+
+function addChestItem(id, qty = 1) {
+  if (!CHEST_ITEM_DEFS[id]) return;
+  if (!gameMeta.chestItems) gameMeta.chestItems = emptyChestItems();
+  gameMeta.chestItems[id] = getChestItemCount(id) + Math.max(0, Math.floor(qty));
+}
+
+function spendChestItem(id, qty = 1) {
+  const need = Math.max(1, Math.floor(qty));
+  if (getChestItemCount(id) < need) return false;
+  gameMeta.chestItems[id] = getChestItemCount(id) - need;
+  return true;
+}
+
+function hasCatchStamp(speciesId) {
+  return Array.isArray(gameMeta.catchStamps) && gameMeta.catchStamps.includes(speciesId);
+}
+
+function rollCatchStampPrize() {
+  const owned = new Set(gameMeta.catchStamps || []);
+  const pool = FISH_SPECIES.filter((s) => !owned.has(s.id));
+  if (!pool.length) return { kind: "catch_stamp", consolCoins: 180, speciesId: "", speciesName: "" };
+  const spec = pool[Math.floor(Math.random() * pool.length)];
+  return { kind: "catch_stamp", speciesId: spec.id, speciesName: spec.name, consolCoins: 0 };
+}
+
+function rollSpecialChestPrize(tier) {
+  const roll = Math.random();
+  if (tier === "great") {
+    if (roll < 0.035) return { kind: "adventure_skip_rope", qty: 1 };
+    if (roll < 0.12) return { kind: "golden_net", qty: 1 };
+    if (roll < 0.22) return { kind: "mystery_reef", qty: 1 };
+    if (roll < 0.38) return rollCatchStampPrize();
+    if (roll < 0.52) return { kind: "double_haul", qty: 1 };
+    if (roll < 0.68) return { kind: "lucky_lure", qty: 1 };
+    return null;
+  }
+  if (tier === "medium") {
+    if (roll < 0.1) return rollCatchStampPrize();
+    if (roll < 0.22) return { kind: "lucky_lure", qty: 1 };
+    if (roll < 0.32) return { kind: "double_haul", qty: 1 };
+    if (roll < 0.38) return { kind: "mystery_reef", qty: 1 };
+    if (roll < 0.42) return { kind: "golden_net", qty: 1 };
+    return null;
+  }
+  if (roll < 0.06) return { kind: "lucky_lure", qty: 1 };
+  if (roll < 0.1) return rollCatchStampPrize();
+  return null;
+}
+
+
 /** Compact SVG portrait of a full fishing rod for shop + home picker. */
 function rodArtSvg(rod) {
   const v = rod.visual || {};
@@ -4346,6 +4464,11 @@ function defaultMeta() {
     duelTickets: 0,
     duelTicketsDayKey: "",
     dailyCatch: null,
+    chestItems: emptyChestItems(),
+    catchStamps: [],
+    pendingLuckyLure: false,
+    pendingDoubleHaul: false,
+    pendingMysteryReef: false,
   };
 }
 
@@ -4393,6 +4516,11 @@ function loadMeta() {
       duelTickets: Math.max(0, Math.floor(Number(o.duelTickets) || 0)),
       duelTicketsDayKey: String(o.duelTicketsDayKey || ""),
       dailyCatch: normalizeDailyCatchState(o.dailyCatch),
+      chestItems: normalizeChestItems(o.chestItems),
+      catchStamps: normalizeCatchStamps(o.catchStamps),
+      pendingLuckyLure: Boolean(o.pendingLuckyLure),
+      pendingDoubleHaul: Boolean(o.pendingDoubleHaul),
+      pendingMysteryReef: Boolean(o.pendingMysteryReef),
     };
   } catch {
     return defaultMeta();
@@ -5004,6 +5132,10 @@ function getAdventureLevel(index) {
 function getReef() {
   if (duelSession) {
     return REEFS.find((r) => r.id === duelSession.reefId) || REEFS[0];
+  }
+  if (roundOverrideReefId && !adventureSession) {
+    const mystery = REEFS.find((r) => r.id === roundOverrideReefId);
+    if (mystery) return mystery;
   }
   const base = REEFS.find((r) => r.id === selectedReefId) || REEFS[0];
   if (!adventureSession) return base;
@@ -7363,8 +7495,15 @@ const btnOpenShopGuide = document.getElementById("btnOpenShopGuide");
 const btnOpenShop = document.getElementById("btnOpenShop");
 const btnShopLaunch = document.getElementById("btnShopLaunch");
 const btnEvents = document.getElementById("btnEvents");
+const btnCollectables = document.getElementById("btnCollectables");
 const homeLaunchStack = document.getElementById("homeLaunchStack");
 const panelEvents = document.getElementById("panelEvents");
+const panelCollectables = document.getElementById("panelCollectables");
+const collectablesArmed = document.getElementById("collectablesArmed");
+const collectablesItems = document.getElementById("collectablesItems");
+const collectablesStamps = document.getElementById("collectablesStamps");
+const collectablesStampCount = document.getElementById("collectablesStampCount");
+const btnCloseCollectables = document.getElementById("btnCloseCollectables");
 const eventsOcean = document.getElementById("eventsOcean");
 const btnCloseEvents = document.getElementById("btnCloseEvents");
 const dailyLeaderboardEvents = document.getElementById("dailyLeaderboardEvents");
@@ -7451,6 +7590,7 @@ const btnAdventureBack = document.getElementById("btnAdventureBack");
 const panelAdventureFail = document.getElementById("panelAdventureFail");
 const adventureFailScore = document.getElementById("adventureFailScore");
 const adventureFailGoal = document.getElementById("adventureFailGoal");
+const btnAdventureSkipRope = document.getElementById("btnAdventureSkipRope");
 const btnAdventureRetry = document.getElementById("btnAdventureRetry");
 const btnAdventureFailBack = document.getElementById("btnAdventureFailBack");
 const panelAdventureWin = document.getElementById("panelAdventureWin");
@@ -7471,6 +7611,8 @@ const adventureFailTheme = document.getElementById("adventureFailTheme");
 
 let selectedRod = RODS[0];
 let selectedReefId = "australia";
+/** Classic-round override from a Mystery Reef Key (cleared when the round ends). */
+let roundOverrideReefId = null;
 let dpr = 1;
 let w = 0;
 let h = 0;
@@ -7805,6 +7947,7 @@ function resetProgress() {
   buildRodUI();
   buildShopUI();
   updateAdventureLaunchUI();
+  refreshCollectablesUI();
   adventureMapUiProgress = -1;
   adventureTrailDrawnCount = 0;
   pendingAdventureTrailReveal = false;
@@ -7963,6 +8106,11 @@ function loadMetaFromObject(o) {
       duelTickets: Math.max(0, Math.floor(Number(o.duelTickets) || 0)),
       duelTicketsDayKey: String(o.duelTicketsDayKey || ""),
       dailyCatch: normalizeDailyCatchState(o.dailyCatch),
+      chestItems: normalizeChestItems(o.chestItems),
+      catchStamps: normalizeCatchStamps(o.catchStamps),
+      pendingLuckyLure: Boolean(o.pendingLuckyLure),
+      pendingDoubleHaul: Boolean(o.pendingDoubleHaul),
+      pendingMysteryReef: Boolean(o.pendingMysteryReef),
     };
   } catch {
     return defaultMeta();
@@ -7982,6 +8130,7 @@ function hideAllPanels() {
   if (panelAdventureWin) panelAdventureWin.hidden = true;
   if (panelDuelOver) panelDuelOver.hidden = true;
   if (panelCrabReward) panelCrabReward.hidden = true;
+  if (panelCollectables) panelCollectables.hidden = true;
   appRoot?.classList.remove("app--events-mode", "app--splash");
   stopDailyEventCountdown();
 }
@@ -8187,7 +8336,7 @@ function isHomeScreenActive() {
   if (playing) return false;
   if (isSplashScreenActive()) return false;
   if (!panelStart || panelStart.hidden) return false;
-  const blocking = [panelOver, panelShop, panelEvents, panelIntro, panelAdventure, panelAdventureFail, panelAdventureWin, panelDuelOver];
+  const blocking = [panelOver, panelShop, panelEvents, panelCollectables, panelIntro, panelAdventure, panelAdventureFail, panelAdventureWin, panelDuelOver];
   for (const panel of blocking) {
     if (panel && !panel.hidden) return false;
   }
@@ -8807,13 +8956,21 @@ function endAdventureRound() {
     adventureMapUiProgress = -1;
     pendingAdventureTrailReveal = true;
   }
-  const earned = coinsAwardedForScore(score);
+  const earnedBase = coinsAwardedForScore(score);
+  let earned = earnedBase;
+  if (gameMeta.pendingDoubleHaul && earned > 0) {
+    earned *= 2;
+    gameMeta.pendingDoubleHaul = false;
+    showToast("Double Haul — coins ×2!", 2200);
+  }
   if (earned > 0) {
     gameMeta.coins += earned;
     saveMeta();
     refreshCoinDisplays();
   }
   roundBait = { catchRadiusMult: 1, rareAssistAdd: 0, lightRadiusMult: 1 };
+  roundOverrideReefId = null;
+  refreshCollectablesUI();
   adventureSession = null;
   clearAdventurePlayTheme();
   hideAllPanels();
@@ -8868,6 +9025,7 @@ function endAdventureRound() {
     if (adventureWinTheme) adventureWinTheme.hidden = true;
     if (adventureFailScore) adventureFailScore.textContent = `Your score: ${score}`;
     if (adventureFailGoal) adventureFailGoal.textContent = `Needed: ${lvl.passScore}`;
+    syncAdventureSkipRopeButton();
     if (panelAdventureFail) panelAdventureFail.hidden = false;
   }
   syncAdventureLaunchVisibility();
@@ -9962,6 +10120,247 @@ function closeShop() {
   if (musicEnabled) startHomeMusic();
 }
 
+function armedBoostLabels() {
+  const labels = [];
+  if (gameMeta.pendingLuckyLure) labels.push("Lucky Lure");
+  if (gameMeta.pendingDoubleHaul) labels.push("Double Haul");
+  if (gameMeta.pendingMysteryReef) labels.push("Mystery Reef");
+  return labels;
+}
+
+function syncAdventureSkipRopeButton() {
+  if (!btnAdventureSkipRope) return;
+  const n = getChestItemCount("adventure_skip_rope");
+  btnAdventureSkipRope.hidden = n < 1;
+  btnAdventureSkipRope.textContent =
+    n > 1 ? `Use Adventure Skip Rope (${n})` : "Use Adventure Skip Rope";
+}
+
+function refreshCollectablesUI() {
+  syncAdventureSkipRopeButton();
+  if (collectablesArmed) {
+    const labels = armedBoostLabels();
+    if (labels.length) {
+      collectablesArmed.hidden = false;
+      collectablesArmed.textContent = `Armed for next reef round: ${labels.join(" · ")}`;
+    } else {
+      collectablesArmed.hidden = true;
+      collectablesArmed.textContent = "";
+    }
+  }
+  if (collectablesItems) {
+    collectablesItems.replaceChildren();
+    for (const id of CHEST_ITEM_IDS) {
+      const def = CHEST_ITEM_DEFS[id];
+      const qty = getChestItemCount(id);
+      const card = document.createElement("article");
+      card.className = `collectables-item${qty < 1 ? " collectables-item--empty" : ""}`;
+      const icon = document.createElement("div");
+      icon.className = "collectables-item__icon";
+      icon.textContent = def.icon;
+      const body = document.createElement("div");
+      body.className = "collectables-item__body";
+      const name = document.createElement("p");
+      name.className = "collectables-item__name";
+      name.textContent = def.name;
+      const blurb = document.createElement("p");
+      blurb.className = "collectables-item__blurb";
+      blurb.textContent = def.blurb;
+      const qtyEl = document.createElement("p");
+      qtyEl.className = "collectables-item__qty";
+      qtyEl.textContent = `Owned: ${qty}`;
+      body.append(name, blurb, qtyEl);
+      card.append(icon, body);
+      const armable = id === "lucky_lure" || id === "double_haul" || id === "mystery_reef";
+      if (armable) {
+        const useBtn = document.createElement("button");
+        useBtn.type = "button";
+        useBtn.className = "btn btn--secondary collectables-item__use";
+        useBtn.dataset.armItem = id;
+        const pending =
+          (id === "lucky_lure" && gameMeta.pendingLuckyLure) ||
+          (id === "double_haul" && gameMeta.pendingDoubleHaul) ||
+          (id === "mystery_reef" && gameMeta.pendingMysteryReef);
+        useBtn.textContent = pending ? "Armed" : "Use";
+        useBtn.disabled = qty < 1 || pending;
+        card.appendChild(useBtn);
+      }
+      collectablesItems.appendChild(card);
+    }
+  }
+  if (collectablesStamps) {
+    collectablesStamps.replaceChildren();
+    let owned = 0;
+    for (const spec of FISH_SPECIES) {
+      const have = hasCatchStamp(spec.id);
+      if (have) owned += 1;
+      const colors = Array.isArray(spec.colors) ? spec.colors : ["#64748b", "#1e293b", "#e2e8f0"];
+      const cell = document.createElement("article");
+      cell.className = `collectables-stamp${have ? " collectables-stamp--owned" : " collectables-stamp--locked"}`;
+      cell.title = have ? spec.name : "Locked stamp";
+      const swatch = document.createElement("div");
+      swatch.className = "collectables-stamp__swatch";
+      if (have) {
+        swatch.style.background = `linear-gradient(135deg, ${colors[0]}, ${colors[1] || colors[0]})`;
+      }
+      const name = document.createElement("p");
+      name.className = "collectables-stamp__name";
+      name.textContent = have ? spec.name : "???";
+      const rarity = document.createElement("p");
+      rarity.className = "collectables-stamp__rarity";
+      rarity.textContent = have ? spec.rarity : "unknown";
+      cell.append(swatch, name, rarity);
+      collectablesStamps.appendChild(cell);
+    }
+    if (collectablesStampCount) {
+      collectablesStampCount.textContent = `${owned} / ${FISH_SPECIES.length} collected`;
+    }
+  }
+}
+
+function openCollectables() {
+  if (!panelCollectables || !panelStart) return;
+  setStartMoreOptionsOpen(false);
+  refreshCollectablesUI();
+  panelStart.hidden = true;
+  panelCollectables.hidden = false;
+  syncHomeLaunchButtons();
+}
+
+function closeCollectables() {
+  if (!panelCollectables || !panelStart) return;
+  panelCollectables.hidden = true;
+  panelStart.hidden = false;
+  syncHomeLaunchButtons();
+  if (musicEnabled) startHomeMusic();
+}
+
+function armChestBoost(itemId) {
+  if (itemId === "lucky_lure") {
+    if (gameMeta.pendingLuckyLure) {
+      showToast("Lucky Lure already armed", 1800);
+      return;
+    }
+    if (!spendChestItem("lucky_lure", 1)) {
+      showToast("No Lucky Lure left", 1800);
+      return;
+    }
+    gameMeta.pendingLuckyLure = true;
+    saveMeta();
+    refreshCollectablesUI();
+    showToast("Lucky Lure armed for your next reef round", 2200);
+    return;
+  }
+  if (itemId === "double_haul") {
+    if (gameMeta.pendingDoubleHaul) {
+      showToast("Double Haul already armed", 1800);
+      return;
+    }
+    if (!spendChestItem("double_haul", 1)) {
+      showToast("No Double Haul left", 1800);
+      return;
+    }
+    gameMeta.pendingDoubleHaul = true;
+    saveMeta();
+    refreshCollectablesUI();
+    showToast("Double Haul armed for your next reef round", 2200);
+    return;
+  }
+  if (itemId === "mystery_reef") {
+    if (gameMeta.pendingMysteryReef) {
+      showToast("Mystery Reef already armed", 1800);
+      return;
+    }
+    if (!spendChestItem("mystery_reef", 1)) {
+      showToast("No Mystery Reef Key left", 1800);
+      return;
+    }
+    gameMeta.pendingMysteryReef = true;
+    saveMeta();
+    refreshCollectablesUI();
+    showToast("Mystery Reef armed — Start Game for a random reef", 2400);
+  }
+}
+
+function showAdventureWinForLevel(levelIndex, scoreForCopy) {
+  const lvl = getAdventureLevel(levelIndex);
+  const clearedTreasureCove = levelIndex === TREASURE_COVE_INDEX;
+  const clearedLegendsGate = levelIndex === LEGENDS_GATE_INDEX;
+  const clearedAuroraReach = levelIndex === AURORA_REACH_INDEX;
+  if (clearedTreasureCove) playTreasureCoveVictorySound();
+  fillAdventureResultTheme(adventureWinTheme, levelIndex);
+  if (adventureFailTheme) adventureFailTheme.hidden = true;
+  if (adventureWinLevel) {
+    adventureWinLevel.textContent = clearedTreasureCove
+      ? "Treasure Cove conquered!"
+      : clearedLegendsGate
+        ? "Legend's Gate cleared!"
+        : clearedAuroraReach
+          ? "Aurora Reach cleared!"
+          : `Level ${lvl.level} cleared!`;
+  }
+  if (adventureWinScore) {
+    adventureWinScore.textContent = clearedTreasureCove
+      ? `Skip Rope cleared the cove (score ${scoreForCopy}). ${ADVENTURE_SECTION_GOLD_QUEST} voyages await beyond the cove!`
+      : clearedLegendsGate
+        ? `Skip Rope cleared the gate (score ${scoreForCopy}). ${ADVENTURE_SECTION_FROZEN_SEA} voyages now appear on the map!`
+        : clearedAuroraReach
+          ? `Skip Rope cleared Aurora Reach (score ${scoreForCopy}). ${ADVENTURE_SECTION_LOST_CITY} voyages now appear on the map!`
+          : `Adventure Skip Rope cleared level ${lvl.level} (score ${scoreForCopy}).`;
+  }
+  if (adventureWinTreasureCelebrate) {
+    adventureWinTreasureCelebrate.hidden = !clearedTreasureCove;
+    if (clearedTreasureCove) {
+      adventureWinTreasureCelebrate.setAttribute("aria-hidden", "false");
+      panelAdventureWin?.classList.add("panel--treasure-cove-celebrate");
+    } else {
+      adventureWinTreasureCelebrate.setAttribute("aria-hidden", "true");
+      panelAdventureWin?.classList.remove("panel--treasure-cove-celebrate");
+    }
+  }
+  const hasNext = lvl.level < ADVENTURE_LEVEL_COUNT;
+  if (btnAdventureNext) {
+    btnAdventureNext.hidden = !hasNext;
+    btnAdventureNext.textContent = clearedTreasureCove
+      ? `Start ${ADVENTURE_SECTION_GOLD_QUEST} voyage 1`
+      : clearedLegendsGate
+        ? `Start ${ADVENTURE_SECTION_FROZEN_SEA} voyage 1`
+        : clearedAuroraReach
+          ? `Start ${ADVENTURE_SECTION_LOST_CITY} voyage 1`
+          : hasNext
+            ? `Start level ${lvl.level + 1}`
+            : "Back to map";
+  }
+  if (panelAdventureFail) panelAdventureFail.hidden = true;
+  if (panelAdventureWin) panelAdventureWin.hidden = false;
+  syncAdventureLaunchVisibility();
+}
+
+function useAdventureSkipRope() {
+  if (!panelAdventureFail || panelAdventureFail.hidden) return;
+  if (!spendChestItem("adventure_skip_rope", 1)) {
+    showToast("No Adventure Skip Rope left", 1800);
+    syncAdventureSkipRopeButton();
+    return;
+  }
+  const levelIndex = pendingAdventureLevelIndex;
+  const lvl = getAdventureLevel(levelIndex);
+  const clearedTreasureCove = levelIndex === TREASURE_COVE_INDEX;
+  const clearedLegendsGate = levelIndex === LEGENDS_GATE_INDEX;
+  const clearedAuroraReach = levelIndex === AURORA_REACH_INDEX;
+  gameMeta.adventureHighestLevel = Math.max(gameMeta.adventureHighestLevel || 0, lvl.level);
+  if (clearedTreasureCove) gameMeta.pendingBonusVoyagesCelebration = true;
+  if (clearedLegendsGate) gameMeta.pendingIceVoyagesCelebration = true;
+  if (clearedAuroraReach) gameMeta.pendingLostCityCelebration = true;
+  saveMeta();
+  adventureMapUiProgress = -1;
+  pendingAdventureTrailReveal = true;
+  refreshCollectablesUI();
+  showAdventureWinForLevel(levelIndex, score);
+  showToast("Adventure Skip Rope — voyage cleared!", 2400);
+  if (musicEnabled) startAdventureMusic();
+}
+
 function openEvents() {
   if (!panelEvents || !panelStart) return;
   setStartMoreOptionsOpen(false);
@@ -10009,6 +10408,7 @@ const CRAB_TRAP_MEDIUM_MIN = 35;
 const CRAB_TRAP_GREAT_MIN = 55;
 const CRAB_TRAP_MED_BAIT = ["nightcrawler", "shrimp", "glow_jelly", "squid_ink"];
 const CRAB_TRAP_GREAT_BAIT = ["squid_ink", "golden_chum", "glow_jelly"];
+
 /** Cages you can drop before a reload. */
 const CRAB_TRAP_CLIP_SIZE = 3;
 /** Forced wait after emptying the clip. */
@@ -10816,22 +11216,27 @@ function crabUnownedRods() {
 
 function rollCrabBundles(tier) {
   const bundles = [];
-  for (let i = 0; i < 3; i++) bundles.push({ coins: 0, bait: null, rodId: null, rodName: null });
+  for (let i = 0; i < 3; i++) {
+    bundles.push({ coins: 0, bait: null, rodId: null, rodName: null, special: null });
+  }
   if (tier === "common") {
     bundles.forEach((b) => {
       b.coins = crabRandInt(25, 75);
+      b.special = rollSpecialChestPrize("common");
     });
   } else if (tier === "medium") {
     bundles.forEach((b) => {
       b.coins = crabRandInt(120, 280);
       const id = crabPick(CRAB_TRAP_MED_BAIT);
       b.bait = { id, name: baitSpecById(id).name, qty: crabRandInt(2, 4) };
+      b.special = rollSpecialChestPrize("medium");
     });
   } else {
     bundles.forEach((b) => {
       b.coins = crabRandInt(400, 850);
       const id = crabPick(CRAB_TRAP_GREAT_BAIT);
       b.bait = { id, name: baitSpecById(id).name, qty: crabRandInt(3, 6) };
+      b.special = rollSpecialChestPrize("great");
     });
     const unowned = crabShuffle(crabUnownedRods());
     if (unowned.length > 0) {
@@ -10852,11 +11257,26 @@ function rollCrabBundles(tier) {
   return bundles;
 }
 
+function specialPrizeLabel(special) {
+  if (!special) return "";
+  if (special.kind === "catch_stamp") {
+    if (special.speciesName) return `Catch stamp: ${special.speciesName}`;
+    if (special.consolCoins) return `+${special.consolCoins} coins (stamps complete)`;
+    return "Catch stamp";
+  }
+  const def = CHEST_ITEM_DEFS[special.kind];
+  if (!def) return "Bonus prize";
+  const qty = special.qty > 1 ? ` ×${special.qty}` : "";
+  return `${def.icon} ${def.name}${qty}`;
+}
+
 function crabBundleRewardLines(bundle) {
   const lines = [];
   if (bundle.coins) lines.push(`+${bundle.coins} coins`);
   if (bundle.bait) lines.push(`${bundle.bait.qty}× ${bundle.bait.name}`);
   if (bundle.rodName) lines.push(`${bundle.rodName}`);
+  const specialLine = specialPrizeLabel(bundle.special);
+  if (specialLine) lines.push(specialLine);
   if (!lines.length) lines.push("A pinch of sand");
   return lines;
 }
@@ -10958,11 +11378,25 @@ function grantCrabReward(bundle) {
     if (!Array.isArray(gameMeta.ownedRodIds)) gameMeta.ownedRodIds = [FREE_ROD_ID];
     gameMeta.ownedRodIds.push(bundle.rodId);
   }
+  if (bundle.special) {
+    const sp = bundle.special;
+    if (sp.kind === "catch_stamp") {
+      if (sp.speciesId && !hasCatchStamp(sp.speciesId)) {
+        if (!Array.isArray(gameMeta.catchStamps)) gameMeta.catchStamps = [];
+        gameMeta.catchStamps.push(sp.speciesId);
+      } else if (sp.consolCoins) {
+        gameMeta.coins += sp.consolCoins;
+      }
+    } else if (CHEST_ITEM_DEFS[sp.kind]) {
+      addChestItem(sp.kind, sp.qty || 1);
+    }
+  }
   saveMeta();
   refreshCoinDisplays();
   buildBaitUI();
   buildRodUI();
   buildShopUI();
+  refreshCollectablesUI();
 }
 
 function onCrabChestPick(idx) {
@@ -11366,6 +11800,30 @@ function startRound() {
       lightRadiusMult: chosen.lightRadiusMult || 1,
     };
   }
+
+  roundOverrideReefId = null;
+  const boostNotes = [];
+  if (!adventureSession && !duelSession && gameMeta.pendingMysteryReef) {
+    gameMeta.pendingMysteryReef = false;
+    const pick = REEFS[Math.floor(Math.random() * REEFS.length)] || REEFS[0];
+    roundOverrideReefId = pick.id;
+    boostNotes.push(`Mystery Reef: ${pick.name}`);
+  }
+  if (gameMeta.pendingLuckyLure) {
+    gameMeta.pendingLuckyLure = false;
+    roundBait = {
+      catchRadiusMult: roundBait.catchRadiusMult * 1.18,
+      rareAssistAdd: Math.min(0.42, roundBait.rareAssistAdd + 0.2),
+      lightRadiusMult: (roundBait.lightRadiusMult || 1) * 1.1,
+    };
+    boostNotes.push("Lucky Lure");
+  }
+  if (boostNotes.length) {
+    saveMeta();
+    refreshCollectablesUI();
+    showToast(boostNotes.join(" · "), 2400);
+  }
+
   score = 0;
   fishList = [];
   catchLog = [];
@@ -11466,14 +11924,21 @@ function endRound() {
   syncAdventureLaunchVisibility();
   finalScore.textContent = String(score);
   lastRoundScore = score;
-  lastRoundReefId = selectedReefId;
+  lastRoundReefId = roundOverrideReefId || selectedReefId;
   lastRoundCoinsEarned = coinsAwardedForScore(score);
+  if (gameMeta.pendingDoubleHaul && lastRoundCoinsEarned > 0) {
+    lastRoundCoinsEarned *= 2;
+    gameMeta.pendingDoubleHaul = false;
+    showToast("Double Haul — coins ×2!", 2200);
+  }
+  roundOverrideReefId = null;
   const coinsBeforeRoundAward = gameMeta.coins;
   if (lastRoundCoinsEarned > 0) {
     gameMeta.coins += lastRoundCoinsEarned;
     saveMeta();
   }
   roundBait = { catchRadiusMult: 1, rareAssistAdd: 0, lightRadiusMult: 1 };
+  refreshCollectablesUI();
   if (coinsEarnedLine) {
     if (lastRoundCoinsEarned > 0) {
       animateCoinAward(coinsBeforeRoundAward, gameMeta.coins, lastRoundCoinsEarned);
@@ -12696,6 +13161,12 @@ function drawBoatHullAndCatchNet() {
 }
 
 function releaseHalfCatchToKraken() {
+  if (spendChestItem("golden_net", 1)) {
+    saveMeta();
+    refreshCollectablesUI();
+    showToast("Golden Net held your catch!", 2200);
+    return { count: 0, pts: 0, freed: [], blockedByGoldenNet: true };
+  }
   const removable = [];
   for (let i = 0; i < catchLog.length; i++) {
     if (isFishCatchLogEntry(catchLog[i])) removable.push(i);
@@ -12784,7 +13255,9 @@ function tryCatchKraken(opts) {
   }
   catchFlash = Math.min(0.62, catchFlash + 0.22);
 
-  if (lost.count === 0) {
+  if (lost.blockedByGoldenNet) {
+    showToast("The kraken bit — Golden Net saved your catch!", 2800);
+  } else if (lost.count === 0) {
     showToast(adventureSession ? "The kraken seizes the hull!" : "The kraken seized the line!", 2200);
   } else if (adventureSession) {
     showToast(`The kraken rocks the ship — ${lost.count} fish stolen (−${lost.pts} pts)`, 3600);
@@ -16276,6 +16749,13 @@ btnStart.addEventListener("click", startRound);
 btnOpenShop?.addEventListener("click", openShop);
 btnShopLaunch?.addEventListener("click", openShop);
 btnEvents?.addEventListener("click", openEvents);
+btnCollectables?.addEventListener("click", openCollectables);
+btnCloseCollectables?.addEventListener("click", closeCollectables);
+collectablesItems?.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-arm-item]");
+  if (!btn) return;
+  armChestBoost(btn.dataset.armItem);
+});
 btnCloseEvents?.addEventListener("click", closeEvents);
 btnStartDuel?.addEventListener("click", () => {
   void startDuelFromEvents();
@@ -16517,6 +16997,10 @@ btnAdventureRetry?.addEventListener("click", () => {
   startAdventureLevel(pendingAdventureLevelIndex);
 });
 
+btnAdventureSkipRope?.addEventListener("click", () => {
+  useAdventureSkipRope();
+});
+
 btnAdventureFailBack?.addEventListener("click", () => {
   openAdventureHub();
 });
@@ -16541,6 +17025,7 @@ window.addEventListener("resize", () => {
 });
 
 gameMeta = loadMeta();
+refreshCollectablesUI();
 (function keepProgressBackupFresh() {
   try {
     const hasProgress =

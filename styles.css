@@ -4032,7 +4032,8 @@ body {
 
 .home-launch-stack > .shop-launch,
 .home-launch-stack > .adventure-launch,
-.home-launch-stack > .events-launch {
+.home-launch-stack > .events-launch,
+.home-launch-stack > .collectables-launch {
   position: relative;
   right: auto;
   bottom: auto;
@@ -4046,7 +4047,8 @@ body {
 
 .home-launch-stack > .shop-launch::before,
 .home-launch-stack > .adventure-launch::before,
-.home-launch-stack > .events-launch::before {
+.home-launch-stack > .events-launch::before,
+.home-launch-stack > .collectables-launch::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -4064,7 +4066,8 @@ body {
 
 .home-launch-stack > .shop-launch > *,
 .home-launch-stack > .adventure-launch > *,
-.home-launch-stack > .events-launch > * {
+.home-launch-stack > .events-launch > *,
+.home-launch-stack > .collectables-launch > * {
   position: relative;
   z-index: 1;
 }
@@ -4181,6 +4184,246 @@ body {
     0 3px 0 #5c1a08,
     0 8px 16px rgba(0, 0, 0, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.collectables-launch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 13px 18px;
+  border-radius: 18px;
+  border: 2px solid rgba(253, 224, 71, 0.7);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 40%),
+    linear-gradient(180deg, #0f766e 0%, #115e59 48%, #134e4a 100%);
+  color: #fffbeb;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.22rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  box-shadow:
+    0 6px 0 #042f2e,
+    0 12px 26px rgba(0, 0, 0, 0.42),
+    0 0 20px rgba(45, 212, 191, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.collectables-launch:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 0 #042f2e,
+    0 16px 30px rgba(0, 0, 0, 0.45),
+    0 0 24px rgba(45, 212, 191, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+}
+
+.collectables-launch:active {
+  transform: translateY(3px);
+  box-shadow:
+    0 3px 0 #042f2e,
+    0 8px 16px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.collectables-launch__glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.collectables-launch__glyph svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.panel.panel--collectables {
+  max-width: min(520px, 94vw);
+  width: 100%;
+  gap: 12px;
+  overflow-y: auto;
+  max-height: min(92vh, 900px);
+  padding-bottom: max(20px, env(safe-area-inset-bottom, 0px));
+}
+
+.collectables-section__title {
+  margin: 8px 0 0;
+  width: 100%;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.35rem;
+  letter-spacing: 0.08em;
+  color: #ffe08a;
+  text-align: left;
+}
+
+.collectables-armed {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(94, 234, 212, 0.45);
+  background: rgba(6, 48, 56, 0.72);
+  color: #ccfbf1;
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.collectables-items {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.collectables-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px 12px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(8, 28, 48, 0.72);
+}
+
+.collectables-item__icon {
+  font-size: 1.55rem;
+  line-height: 1;
+}
+
+.collectables-item__body {
+  min-width: 0;
+}
+
+.collectables-item__name {
+  margin: 0;
+  font-weight: 700;
+  color: #fff8e7;
+  font-size: 0.95rem;
+}
+
+.collectables-item__blurb {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  color: rgba(226, 232, 240, 0.78);
+  line-height: 1.35;
+}
+
+.collectables-item__qty {
+  margin: 4px 0 0;
+  font-size: 0.78rem;
+  color: #7dd3fc;
+}
+
+.collectables-item__use {
+  align-self: center;
+  padding: 8px 12px;
+  min-height: 0;
+  font-size: 0.78rem;
+}
+
+.collectables-item__use[hidden] {
+  display: none;
+}
+
+.collectables-item--empty {
+  opacity: 0.55;
+}
+
+.collectables-stamp-count {
+  width: 100%;
+  margin: 0;
+  text-align: left;
+  font-size: 0.82rem;
+  color: rgba(226, 232, 240, 0.8);
+}
+
+.collectables-stamps {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.collectables-stamp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(4, 18, 32, 0.7);
+  text-align: center;
+  min-height: 108px;
+}
+
+.collectables-stamp--owned {
+  border-color: rgba(253, 224, 71, 0.45);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 40%),
+    rgba(20, 48, 72, 0.85);
+  box-shadow: inset 0 0 0 1px rgba(253, 224, 71, 0.12);
+}
+
+.collectables-stamp__swatch {
+  width: 42px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #1e293b;
+}
+
+.collectables-stamp--owned .collectables-stamp__swatch {
+  box-shadow: 0 0 10px rgba(255, 213, 74, 0.25);
+}
+
+.collectables-stamp--locked .collectables-stamp__swatch {
+  background: repeating-linear-gradient(
+    -45deg,
+    #1e293b,
+    #1e293b 4px,
+    #0f172a 4px,
+    #0f172a 8px
+  );
+  opacity: 0.7;
+}
+
+.collectables-stamp__name {
+  margin: 0;
+  font-size: 0.68rem;
+  line-height: 1.25;
+  color: #e2e8f0;
+}
+
+.collectables-stamp--locked .collectables-stamp__name {
+  color: rgba(148, 163, 184, 0.85);
+}
+
+.collectables-stamp__rarity {
+  margin: 0;
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.9);
+}
+
+.btn--skip-rope {
+  background: linear-gradient(180deg, #0d9488, #0f766e);
+  border: 1px solid rgba(94, 234, 212, 0.55);
+  color: #ecfeff;
+  box-shadow: 0 4px 0 #134e4a, 0 8px 18px rgba(0, 0, 0, 0.35);
+}
+
+.btn--skip-rope:hover {
+  filter: brightness(1.06);
 }
 
 .panel.panel--events {
@@ -5160,7 +5403,8 @@ body {
 
   .home-launch-stack .events-launch,
   .home-launch-stack .adventure-launch,
-  .home-launch-stack .shop-launch {
+  .home-launch-stack .shop-launch,
+  .home-launch-stack .collectables-launch {
     padding: 11px 14px;
     font-size: 1.05rem;
     min-height: 44px;
@@ -5169,7 +5413,8 @@ body {
 
   .shop-launch__glyph,
   .adventure-launch__glyph,
-  .events-launch__glyph {
+  .events-launch__glyph,
+  .collectables-launch__glyph {
     width: 24px;
     height: 24px;
     border-radius: 8px;
@@ -5177,7 +5422,8 @@ body {
 
   .shop-launch__glyph svg,
   .adventure-launch__glyph svg,
-  .events-launch__glyph svg {
+  .events-launch__glyph svg,
+  .collectables-launch__glyph svg {
     width: 15px;
     height: 15px;
   }
@@ -5537,7 +5783,8 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .home-launch-stack > .shop-launch::before,
   .home-launch-stack > .adventure-launch::before,
-  .home-launch-stack > .events-launch::before {
+  .home-launch-stack > .events-launch::before,
+  .home-launch-stack > .collectables-launch::before {
     animation: none !important;
   }
 
