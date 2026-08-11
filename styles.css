@@ -443,9 +443,13 @@ body {
 
 /* --- Fishing shop (mobile casual / Pocket Champs vibe) --- */
 .panel--shop {
+  position: absolute;
+  inset: 0;
+  z-index: 41;
   padding-top: max(18px, env(safe-area-inset-top, 0px));
   padding-bottom: max(28px, env(safe-area-inset-bottom, 0px) + 18px);
-  background:
+  background-color: #042536;
+  background-image:
     radial-gradient(ellipse at 18% 8%, rgba(255, 213, 74, 0.22), transparent 42%),
     radial-gradient(ellipse at 88% 12%, rgba(56, 189, 248, 0.2), transparent 40%),
     radial-gradient(ellipse at 50% 100%, rgba(14, 116, 144, 0.45), transparent 55%),
@@ -2590,8 +2594,14 @@ body {
   -webkit-backdrop-filter: none;
 }
 
-.panel[hidden] {
-  display: none;
+.panel[hidden],
+.panel.panel--shop[hidden],
+.panel.panel--events[hidden],
+.panel.panel--collectables[hidden],
+.panel.panel--start[hidden],
+.panel.panel--adventure[hidden],
+.panel.panel--adventure-result[hidden] {
+  display: none !important;
 }
 
 .panel__headline {
@@ -4449,9 +4459,10 @@ body {
   gap: 14px;
   overflow-y: auto;
   overflow-x: hidden;
-  z-index: 40;
+  z-index: 41;
   padding: 18px 14px max(28px, env(safe-area-inset-bottom, 0px) + 18px);
-  background:
+  background-color: var(--ocean-deep);
+  background-image:
     radial-gradient(ellipse at 50% -8%, rgba(255, 213, 74, 0.28), transparent 42%),
     radial-gradient(ellipse at 12% 70%, rgba(56, 189, 248, 0.16), transparent 40%),
     radial-gradient(ellipse at 92% 28%, rgba(45, 212, 191, 0.14), transparent 36%),
@@ -5081,7 +5092,8 @@ body {
   max-width: none;
   width: auto;
   height: auto;
-  background:
+  background-color: #0b1428;
+  background-image:
     radial-gradient(ellipse 55% 28% at 50% 62%, rgba(255, 200, 110, 0.55) 0%, rgba(255, 140, 70, 0.22) 45%, transparent 72%),
     linear-gradient(
       180deg,
@@ -5098,7 +5110,7 @@ body {
   -webkit-backdrop-filter: none;
   isolation: isolate;
   overflow-x: hidden;
-  z-index: 40;
+  z-index: 41;
 }
 
 .events-ticket-badge {

@@ -7586,6 +7586,8 @@ async function startDuelFromEvents() {
 
   hideAllPanels();
   if (panelEvents) panelEvents.hidden = false;
+  if (eventsOcean) eventsOcean.hidden = false;
+  appRoot?.classList.add("app--events-mode");
   const matchmakingDeadline = Date.now() + DUEL_LOBBY_TIMEOUT_MS;
   setDuelMatchmakingUi(true, "Trying to find a rival…");
   startDuelLobbyCountdown(matchmakingDeadline, "Trying to find a rival");
@@ -8633,6 +8635,29 @@ function hideAllPanels() {
   if (panelCollectables) panelCollectables.hidden = true;
   appRoot?.classList.remove("app--events-mode", "app--splash");
   stopDailyEventCountdown();
+  stopEventsMusic();
+}
+
+/** Show exactly one home menu surface; every other overlay stays hidden. */
+function showExclusiveMenu(which) {
+  hideAllPanels();
+  if (which === "start") {
+    if (panelStart) panelStart.hidden = false;
+    return;
+  }
+  if (which === "shop") {
+    if (panelShop) panelShop.hidden = false;
+    return;
+  }
+  if (which === "events") {
+    if (panelEvents) panelEvents.hidden = false;
+    if (eventsOcean) eventsOcean.hidden = false;
+    appRoot?.classList.add("app--events-mode");
+    return;
+  }
+  if (which === "collectables") {
+    if (panelCollectables) panelCollectables.hidden = false;
+  }
 }
 
 function isAdventureHomeCelebrationActive() {
@@ -10682,8 +10707,7 @@ function openShop() {
   buildShopUI();
   syncSeagullOutfit();
   showShopGuideIfNeeded();
-  hideAllPanels();
-  panelShop.hidden = false;
+  showExclusiveMenu("shop");
   syncHomeLaunchButtons();
 }
 
@@ -10863,8 +10887,7 @@ function openCollectables() {
   setStartMoreOptionsOpen(false);
   refreshCollectablesUI();
   syncSeagullOutfit();
-  hideAllPanels();
-  panelCollectables.hidden = false;
+  showExclusiveMenu("collectables");
   syncHomeLaunchButtons();
 }
 
@@ -11005,10 +11028,7 @@ function useAdventureSkipRope() {
 function openEvents() {
   if (!panelEvents) return;
   setStartMoreOptionsOpen(false);
-  hideAllPanels();
-  panelEvents.hidden = false;
-  if (eventsOcean) eventsOcean.hidden = false;
-  appRoot?.classList.add("app--events-mode");
+  showExclusiveMenu("events");
   refreshDuelTicketsForToday();
   syncHomeLaunchButtons();
   void processDailyPrizePayouts().then(() => refreshEventsPanel());
