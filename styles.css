@@ -4393,6 +4393,11 @@ body {
   max-width: 100%;
 }
 
+.collectables-launch__label {
+  white-space: normal;
+  line-height: 1.05;
+}
+
 .world-launch {
   display: inline-flex;
   align-items: center;

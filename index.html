@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=events-bubbles-1" />
+    <link rel="stylesheet" href="styles.css?v=my-loot-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -744,12 +744,15 @@
           <button type="button" id="btnShopLaunch" class="shop-launch" data-tab="shop" aria-label="Fishing shop">
             <span class="shop-launch__glyph" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                <path d="M4.5 11.5h15v7.2a1.8 1.8 0 0 1-1.8 1.8H6.3a1.8 1.8 0 0 1-1.8-1.8v-7.2Z" fill="#b45309" stroke="#78350f" stroke-width="1.1"/>
-                <path d="M3.8 8.2 5.2 5.4A1.6 1.6 0 0 1 6.6 4.5h10.8a1.6 1.6 0 0 1 1.4.9l1.4 2.8Z" fill="#f59e0b" stroke="#92400e" stroke-width="1.1"/>
-                <path d="M3.8 8.2h16.4v3.3H3.8Z" fill="#fbbf24" stroke="#92400e" stroke-width="1"/>
-                <path d="M12 11.5v4.2" stroke="#fde68a" stroke-width="1.2" stroke-linecap="round"/>
-                <rect x="10.2" y="13.2" width="3.6" height="3.2" rx="0.7" fill="#ffe08a" stroke="#78350f" stroke-width="0.9"/>
-                <circle cx="12" cy="14.8" r="0.7" fill="#78350f"/>
+                <ellipse cx="8.5" cy="16.2" rx="4.2" ry="3.4" fill="#f59e0b" stroke="#92400e" stroke-width="1"/>
+                <ellipse cx="15.8" cy="16.6" rx="4.4" ry="3.5" fill="#fbbf24" stroke="#b45309" stroke-width="1"/>
+                <ellipse cx="12" cy="12.2" rx="4.6" ry="3.7" fill="#fde68a" stroke="#b45309" stroke-width="1.05"/>
+                <ellipse cx="12" cy="11.4" rx="2.6" ry="2" fill="#fff7c2" opacity="0.55"/>
+                <path d="M10.4 11.6h3.2" stroke="#b45309" stroke-width="0.9" stroke-linecap="round"/>
+                <circle cx="7.2" cy="15.4" r="0.7" fill="#92400e" opacity="0.55"/>
+                <circle cx="16.8" cy="15.8" r="0.7" fill="#92400e" opacity="0.45"/>
+                <path d="M12 7.2c.9-1.6 2.8-1.7 3.5-.2" stroke="#fde68a" stroke-width="1.1" stroke-linecap="round"/>
+                <circle cx="16.2" cy="6.4" r="1.5" fill="#ffe08a" stroke="#b45309" stroke-width="0.8"/>
               </svg>
             </span>
             <span class="shop-launch__label">Shop</span>
@@ -773,7 +776,7 @@
             </span>
             <span class="events-launch__label">Events</span>
           </button>
-          <button type="button" id="btnCollectables" class="collectables-launch" data-tab="collectables" aria-label="Collectables">
+          <button type="button" id="btnCollectables" class="collectables-launch" data-tab="collectables" aria-label="My Loot">
             <span class="collectables-launch__glyph" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
                 <rect x="4" y="5" width="16" height="14" rx="2.5" fill="#fde68a" stroke="#b45309" stroke-width="1.2"/>
@@ -782,7 +785,7 @@
                 <circle cx="15" cy="14.2" r="2.2" fill="#38bdf8" stroke="#0369a1" stroke-width="0.8"/>
               </svg>
             </span>
-            <span class="collectables-launch__label">Collect</span>
+            <span class="collectables-launch__label">My Loot</span>
           </button>
         </nav>
       </div>
@@ -1716,7 +1719,7 @@
         </div>
         <header class="collectables-hero">
           <p class="collectables-hero__eyebrow">Treasure locker</p>
-          <h2 class="panel__headline collectables-hero__title">Collectables</h2>
+          <h2 class="panel__headline collectables-hero__title">My Loot</h2>
           <p class="panel__lede collectables-hero__lede">Dress your seagull, claim chest prizes &amp; stamps.</p>
         </header>
         <div class="collectables-armed" id="collectablesArmed" hidden></div>
@@ -2127,6 +2130,6 @@
       </section>
     </div>
 
-    <script src="game.js?v=events-bubbles-1" defer></script>
+    <script src="game.js?v=my-loot-1" defer></script>
   </body>
 </html>
