@@ -784,10 +784,10 @@ function seagullAvatarSvg(uid) {
     `<g clip-path="url(#${g("clip")})">` +
     `<rect x="78" y="18" width="104" height="104" fill="#0c5a78"/>` +
     `<ellipse cx="130" cy="120" rx="36" ry="38" fill="url(#${g("body")})"/>` +
+    `<ellipse cx="130" cy="126" rx="20" ry="22" fill="url(#${g("belly")})"/>` +
     `<g data-wear-slot="shirt"></g>` +
     `<path d="M100 112 C78 108 58 98 46 84 C38 74 42 64 54 70 C70 82 88 100 100 110 Z" fill="url(#${g("wing")})"/>` +
     `<path d="M160 112 C182 108 202 98 214 84 C222 74 218 64 206 70 C190 82 172 100 160 110 Z" fill="url(#${g("wing")})"/>` +
-    `<ellipse cx="130" cy="126" rx="20" ry="22" fill="url(#${g("belly")})"/>` +
     `<g data-wear-slot="pants"></g>` +
     `<ellipse cx="130" cy="68" rx="28" ry="24" fill="url(#${g("head")})" stroke="#94a3b8" stroke-width="1.1"/>` +
     `<g data-wear-slot="hair"></g>` +
