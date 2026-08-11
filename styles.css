@@ -1071,7 +1071,8 @@ body {
 
 .panel--start {
   padding-top: max(88px, env(safe-area-inset-top, 0px));
-  padding-bottom: calc(168px + env(safe-area-inset-bottom, 0px));
+  /* Extra room so Start Game clears the fixed bottom tab bar when scrolled down. */
+  padding-bottom: calc(220px + env(safe-area-inset-bottom, 0px));
   gap: 0;
 }
 
@@ -2371,7 +2372,7 @@ body {
 
   .panel--start {
     padding-top: max(12px, env(safe-area-inset-top, 0px));
-    padding-bottom: calc(180px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(240px + env(safe-area-inset-bottom, 0px));
   }
 
   .panel--start .panel__headline--brand {
@@ -3939,13 +3940,21 @@ body {
   padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
 }
 
+.app--show-tabs .panel--start {
+  padding-bottom: calc(240px + env(safe-area-inset-bottom, 0px));
+}
+
 .panel--start .rods {
   margin-bottom: 16px;
 }
 
 .panel--start .start-game-wrap {
   margin-top: 8px;
-  margin-bottom: 28px;
+  margin-bottom: 48px;
+}
+
+.app--show-tabs .panel--start .start-game-wrap {
+  margin-bottom: 64px;
 }
 
 .panel--start .start-game-wrap .btn--start {
