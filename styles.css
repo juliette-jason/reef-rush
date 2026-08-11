@@ -1058,7 +1058,7 @@ body {
 
 .panel--start {
   padding-top: max(88px, env(safe-area-inset-top, 0px));
-  padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(168px + env(safe-area-inset-bottom, 0px));
   gap: 0;
 }
 
@@ -2357,7 +2357,7 @@ body {
 
   .panel--start {
     padding-top: max(12px, env(safe-area-inset-top, 0px));
-    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(180px + env(safe-area-inset-bottom, 0px));
   }
 
   .panel--start .panel__headline--brand {
