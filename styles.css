@@ -5156,6 +5156,75 @@ body {
   z-index: 41;
 }
 
+.events-decor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.events-decor__bubble {
+  position: absolute;
+  bottom: -8%;
+  border-radius: 50%;
+  border: 1.5px solid rgba(186, 230, 253, 0.42);
+  background:
+    radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.65), rgba(125, 211, 252, 0.14) 52%, transparent 72%);
+  box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.2);
+  animation: eventsBubbleRise 11s linear infinite;
+  opacity: 0.5;
+  will-change: transform, opacity;
+}
+
+.events-decor__bubble--1 { width: 14px; height: 14px; left: 6%; animation-duration: 10.5s; animation-delay: 0s; }
+.events-decor__bubble--2 { width: 9px; height: 9px; left: 16%; animation-duration: 8.8s; animation-delay: -2.4s; }
+.events-decor__bubble--3 { width: 18px; height: 18px; left: 28%; animation-duration: 12.2s; animation-delay: -5.1s; }
+.events-decor__bubble--4 { width: 11px; height: 11px; left: 42%; animation-duration: 9.6s; animation-delay: -1.3s; }
+.events-decor__bubble--5 { width: 7px; height: 7px; left: 55%; animation-duration: 7.9s; animation-delay: -3.8s; }
+.events-decor__bubble--6 { width: 16px; height: 16px; left: 68%; animation-duration: 11.4s; animation-delay: -6.2s; }
+.events-decor__bubble--7 { width: 10px; height: 10px; left: 78%; animation-duration: 9.1s; animation-delay: -0.7s; }
+.events-decor__bubble--8 { width: 22px; height: 22px; left: 88%; animation-duration: 13s; animation-delay: -4.4s; }
+.events-decor__bubble--9 { width: 8px; height: 8px; left: 12%; animation-duration: 8.2s; animation-delay: -7.1s; }
+.events-decor__bubble--10 { width: 13px; height: 13px; left: 50%; animation-duration: 10.8s; animation-delay: -8.6s; }
+
+@keyframes eventsBubbleRise {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.85);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.55;
+  }
+  50% {
+    transform: translate3d(10px, -55vh, 0) scale(1);
+    opacity: 0.48;
+  }
+  100% {
+    transform: translate3d(-8px, -112vh, 0) scale(1.12);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .events-decor__bubble {
+    animation: none;
+    opacity: 0.28;
+    bottom: auto;
+  }
+
+  .events-decor__bubble--1 { top: 18%; }
+  .events-decor__bubble--2 { top: 62%; }
+  .events-decor__bubble--3 { top: 34%; }
+  .events-decor__bubble--4 { top: 72%; }
+  .events-decor__bubble--5 { top: 48%; }
+  .events-decor__bubble--6 { top: 22%; }
+  .events-decor__bubble--7 { top: 58%; }
+  .events-decor__bubble--8 { top: 40%; }
+  .events-decor__bubble--9 { top: 78%; }
+  .events-decor__bubble--10 { top: 28%; }
+}
+
 /* Keep the old sunset ocean off — Events uses the World Adventures blue backdrop. */
 #app.app--events-mode .events-ocean {
   display: none !important;
