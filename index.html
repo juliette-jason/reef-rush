@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=seagull-skins-1" />
+    <link rel="stylesheet" href="styles.css?v=seagull-avatar-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -28,19 +28,29 @@
           <span class="hud__title">Reef Rush</span>
           <span class="hud__subtitle">Catch &amp; score</span>
         </div>
-        <div class="hud__stats">
-          <div class="stat stat--coins" title="Spend in the fishing shop">
-            <span class="stat__label">Coins</span>
-            <span id="coinDisplay" class="stat__value">0</span>
+        <div class="hud__trail">
+          <div class="hud__stats">
+            <div class="stat stat--coins" title="Spend in the fishing shop">
+              <span class="stat__label">Coins</span>
+              <span id="coinDisplay" class="stat__value">0</span>
+            </div>
+            <div class="stat stat--score">
+              <span class="stat__label">Score</span>
+              <span id="scoreDisplay" class="stat__value">0</span>
+            </div>
+            <div class="stat stat--time">
+              <span class="stat__label">Time</span>
+              <span id="timeDisplay" class="stat__value">1:00</span>
+            </div>
           </div>
-          <div class="stat stat--score">
-            <span class="stat__label">Score</span>
-            <span id="scoreDisplay" class="stat__value">0</span>
-          </div>
-          <div class="stat stat--time">
-            <span class="stat__label">Time</span>
-            <span id="timeDisplay" class="stat__value">1:00</span>
-          </div>
+          <div
+            id="seagullAvatarHud"
+            class="seagull-avatar seagull-avatar--hud"
+            data-seagull-avatar
+            role="img"
+            aria-label="Your seagull"
+            title="Your seagull"
+          ></div>
         </div>
         <div id="adventurePlayTheme" class="adventure-play-theme" hidden>
           <div id="adventurePlayScene" class="adventure-play-theme__scene" aria-hidden="true"></div>
@@ -527,6 +537,14 @@
                 <strong id="treasureChestDisplayStart" class="start-toolbar__value start-toolbar__value--chests">0 / 20</strong>
               </p>
             </div>
+            <div
+              id="seagullAvatarStart"
+              class="seagull-avatar seagull-avatar--start"
+              data-seagull-avatar
+              role="img"
+              aria-label="Your seagull"
+              title="Your seagull"
+            ></div>
             <div class="start-settings">
               <button
                 type="button"
@@ -1874,6 +1892,6 @@
       </section>
     </div>
 
-    <script src="game.js?v=seagull-skins-1" defer></script>
+    <script src="game.js?v=seagull-avatar-1" defer></script>
   </body>
 </html>

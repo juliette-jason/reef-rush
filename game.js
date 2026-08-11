@@ -645,6 +645,57 @@ function clothingLayerSvg(id) {
   }
 }
 
+function seagullAvatarSvg(uid) {
+  const g = (name) => `${uid}${name}`;
+  return (
+    `<svg class="seagull-avatar__art" viewBox="82 22 96 96" xmlns="http://www.w3.org/2000/svg" data-seagull-outfit focusable="false" aria-hidden="true">` +
+    `<defs>` +
+    `<clipPath id="${g("clip")}"><circle cx="130" cy="70" r="44"/></clipPath>` +
+    `<linearGradient id="${g("body")}" x1="40%" y1="0%" x2="60%" y2="100%">` +
+    `<stop offset="0%" stop-color="#f8fafc"/><stop offset="55%" stop-color="#94a3b8"/><stop offset="100%" stop-color="#64748b"/>` +
+    `</linearGradient>` +
+    `<linearGradient id="${g("belly")}" x1="50%" y1="0%" x2="50%" y2="100%">` +
+    `<stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#e2e8f0"/>` +
+    `</linearGradient>` +
+    `<linearGradient id="${g("head")}" x1="35%" y1="5%" x2="65%" y2="100%">` +
+    `<stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#dbe4ee"/>` +
+    `</linearGradient>` +
+    `<linearGradient id="${g("beak")}" x1="50%" y1="0%" x2="50%" y2="100%">` +
+    `<stop offset="0%" stop-color="#fcd34d"/><stop offset="100%" stop-color="#b45309"/>` +
+    `</linearGradient>` +
+    `</defs>` +
+    `<circle class="seagull-avatar__disc" cx="130" cy="70" r="46" fill="#0b3a4a"/>` +
+    `<g clip-path="url(#${g("clip")})">` +
+    `<rect x="82" y="22" width="96" height="96" fill="#0c5a78"/>` +
+    `<ellipse cx="130" cy="118" rx="34" ry="36" fill="url(#${g("body")})"/>` +
+    `<ellipse cx="130" cy="124" rx="20" ry="22" fill="url(#${g("belly")})"/>` +
+    `<g data-wear-slot="shirt"></g>` +
+    `<g data-wear-slot="pants"></g>` +
+    `<ellipse cx="130" cy="70" rx="28" ry="24" fill="url(#${g("head")})" stroke="#94a3b8" stroke-width="1.1"/>` +
+    `<g data-wear-slot="hair"></g>` +
+    `<g data-wear-slot="hat"></g>` +
+    `<ellipse cx="118" cy="68" rx="5.8" ry="6.1" fill="#fff" stroke="#94a3b8" stroke-width="0.6"/>` +
+    `<ellipse cx="118.5" cy="68.4" rx="3.1" ry="3.3" fill="#020617"/>` +
+    `<circle cx="119.8" cy="66.8" r="1.1" fill="#fff"/>` +
+    `<ellipse cx="142" cy="68" rx="5.8" ry="6.1" fill="#fff" stroke="#94a3b8" stroke-width="0.6"/>` +
+    `<ellipse cx="142.5" cy="68.4" rx="3.1" ry="3.3" fill="#020617"/>` +
+    `<circle cx="143.8" cy="66.8" r="1.1" fill="#fff"/>` +
+    `<path d="M123 74 L130 94 L137 74 Q130 80 123 74 Z" fill="url(#${g("beak")})" stroke="#92400e" stroke-width="0.8"/>` +
+    `<g data-wear-slot="accessory"></g>` +
+    `</g>` +
+    `<circle class="seagull-avatar__ring" cx="130" cy="70" r="46" fill="none"/>` +
+    `</svg>`
+  );
+}
+
+function ensureSeagullAvatars() {
+  document.querySelectorAll("[data-seagull-avatar]").forEach((host, i) => {
+    if (host.dataset.avatarReady === "1") return;
+    host.innerHTML = seagullAvatarSvg(`sgAv${i}`);
+    host.dataset.avatarReady = "1";
+  });
+}
+
 function fillSeagullWearSlots(root) {
   if (!root) return;
   const equipped = gameMeta.equippedClothes || emptyEquippedClothes();
@@ -661,6 +712,7 @@ function syncSeagullOutfit() {
   if (!gameMeta.equippedClothes) {
     gameMeta.equippedClothes = normalizeEquippedClothes(null, gameMeta.ownedClothes);
   }
+  ensureSeagullAvatars();
   document.querySelectorAll("[data-seagull-outfit]").forEach((root) => fillSeagullWearSlots(root));
 }
 
