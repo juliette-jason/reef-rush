@@ -2218,15 +2218,52 @@ body {
   }
 
   .panel--start .start-toolbar {
-    position: absolute;
-    top: max(12px, env(safe-area-inset-top, 0px));
-    right: max(12px, env(safe-area-inset-right, 0px));
-    z-index: 35;
-    width: min(158px, 42vw);
+    position: static;
+    order: -1;
+    z-index: 2;
+    width: min(420px, 92vw);
+    margin: 0 auto 10px;
     pointer-events: auto;
-    padding: 8px;
-    gap: 6px;
+    padding: 8px 10px;
+    gap: 8px;
     border-radius: 14px;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+  }
+
+  .panel--start .start-toolbar__stats {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 8px;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .panel--start .start-toolbar__coins,
+  .panel--start .start-toolbar__chests {
+    flex: 1 1 0;
+    text-align: left;
+    padding: 4px 8px;
+    border-radius: 9px;
+  }
+
+  .panel--start .start-toolbar__value {
+    justify-content: flex-start;
+    font-size: 1.05rem;
+  }
+
+  .panel--start .start-toolbar__label {
+    font-size: 0.5rem;
+    letter-spacing: 0.1em;
+  }
+
+  .panel--start .start-settings {
+    justify-content: flex-end;
+    flex: 0 0 auto;
   }
 
   .panel--start .home-launch-dock {
@@ -2244,25 +2281,6 @@ body {
 
   .panel--start .rods {
     order: 20;
-  }
-
-  .panel--start .panel__headline--brand {
-    order: 0;
-  }
-
-  .panel--start .start-toolbar__coins,
-  .panel--start .start-toolbar__chests {
-    padding: 4px 6px;
-    border-radius: 9px;
-  }
-
-  .panel--start .start-toolbar__label {
-    font-size: 0.5rem;
-    letter-spacing: 0.1em;
-  }
-
-  .panel--start .start-toolbar__value {
-    font-size: 1.05rem;
   }
 
   .start-settings__toggle {
@@ -2292,16 +2310,18 @@ body {
   }
 
   .panel--start {
-    padding-top: max(72px, env(safe-area-inset-top, 0px));
+    padding-top: max(12px, env(safe-area-inset-top, 0px));
     padding-bottom: max(28px, calc(env(safe-area-inset-bottom, 0px) + 20px));
   }
 
   .panel--start .panel__headline--brand {
+    order: 0;
     font-size: clamp(2.2rem, 9vw, 2.8rem);
     padding-right: 0;
     text-align: center;
     align-self: center;
     width: 100%;
+    margin-top: 4px;
   }
 }
 
