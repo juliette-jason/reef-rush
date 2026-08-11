@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=tab-bar-world-1" />
+    <link rel="stylesheet" href="styles.css?v=seagull-wings-wardrobe-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -1556,61 +1556,87 @@
 
       <section id="panelCollectables" class="panel panel--collectables" hidden>
         <h2 class="panel__headline">Collectables</h2>
-        <p class="panel__lede">Chest prizes, seagull skins &amp; catch stamps.</p>
+        <p class="panel__lede">Dress your seagull, claim chest prizes &amp; stamps.</p>
         <div class="collectables-armed" id="collectablesArmed" hidden></div>
-        <h3 class="collectables-section__title">Clothes inventory</h3>
-        <p id="collectablesWardrobeCount" class="collectables-stamp-count">0 / 0 owned</p>
-        <div class="collectables-seagull-preview" aria-hidden="true">
-          <svg class="collectables-seagull-preview__art" viewBox="0 0 260 220" xmlns="http://www.w3.org/2000/svg" data-seagull-outfit focusable="false">
-            <defs>
-              <linearGradient id="colSgBody" x1="40%" y1="0%" x2="60%" y2="100%">
-                <stop offset="0%" stop-color="#f8fafc"/>
-                <stop offset="35%" stop-color="#e2e8f0"/>
-                <stop offset="72%" stop-color="#94a3b8"/>
-                <stop offset="100%" stop-color="#64748b"/>
-              </linearGradient>
-              <linearGradient id="colSgBelly" x1="50%" y1="0%" x2="50%" y2="100%">
-                <stop offset="0%" stop-color="#ffffff"/>
-                <stop offset="100%" stop-color="#e2e8f0"/>
-              </linearGradient>
-              <linearGradient id="colSgHead" x1="35%" y1="5%" x2="65%" y2="100%">
-                <stop offset="0%" stop-color="#ffffff"/>
-                <stop offset="100%" stop-color="#dbe4ee"/>
-              </linearGradient>
-              <linearGradient id="colSgBeak" x1="50%" y1="0%" x2="50%" y2="100%">
-                <stop offset="0%" stop-color="#fcd34d"/>
-                <stop offset="100%" stop-color="#b45309"/>
-              </linearGradient>
-            </defs>
-            <path d="M114 160 L110 188" fill="none" stroke="#c2410c" stroke-width="3" stroke-linecap="round"/>
-            <path d="M110 188 L101 194" fill="none" stroke="#ea580c" stroke-width="2.4" stroke-linecap="round"/>
-            <path d="M110 188 L110 196" fill="none" stroke="#ea580c" stroke-width="2.4" stroke-linecap="round"/>
-            <path d="M110 188 L118 194" fill="none" stroke="#f97316" stroke-width="2.4" stroke-linecap="round"/>
-            <path d="M146 160 L150 188" fill="none" stroke="#c2410c" stroke-width="3" stroke-linecap="round"/>
-            <path d="M150 188 L142 194" fill="none" stroke="#ea580c" stroke-width="2.4" stroke-linecap="round"/>
-            <path d="M150 188 L150 196" fill="none" stroke="#ea580c" stroke-width="2.4" stroke-linecap="round"/>
-            <path d="M150 188 L158 194" fill="none" stroke="#f97316" stroke-width="2.4" stroke-linecap="round"/>
-            <ellipse cx="130" cy="132" rx="38" ry="42" fill="url(#colSgBody)" stroke="#94a3b8" stroke-width="1.4"/>
-            <ellipse cx="130" cy="124" rx="34" ry="18" fill="#94a3b8" opacity="0.35"/>
-            <ellipse cx="130" cy="140" rx="24" ry="26" fill="url(#colSgBelly)"/>
-            <g data-wear-slot="shirt"></g>
-            <g data-wear-slot="pants"></g>
-            <ellipse cx="130" cy="78" rx="32" ry="28" fill="url(#colSgHead)" stroke="#94a3b8" stroke-width="1.4"/>
-            <g data-wear-slot="hair"></g>
-            <g data-wear-slot="hat"></g>
-            <ellipse cx="116" cy="76" rx="7" ry="7.4" fill="#fff" stroke="#94a3b8" stroke-width="0.7"/>
-            <ellipse cx="116.6" cy="76.4" rx="3.8" ry="4" fill="#020617"/>
-            <circle cx="118.2" cy="74.6" r="1.3" fill="#fff"/>
-            <ellipse cx="144" cy="76" rx="7" ry="7.4" fill="#fff" stroke="#94a3b8" stroke-width="0.7"/>
-            <ellipse cx="144.6" cy="76.4" rx="3.8" ry="4" fill="#020617"/>
-            <circle cx="146.2" cy="74.6" r="1.3" fill="#fff"/>
-            <path d="M122 84 L130 108 L138 84 Q130 92 122 84 Z" fill="url(#colSgBeak)" stroke="#92400e" stroke-width="1"/>
-            <g data-wear-slot="accessory"></g>
-          </svg>
-        </div>
-        <div id="wardrobeSlotTabs" class="wardrobe-slot-tabs" role="tablist" aria-label="Clothes slots"></div>
-        <div id="collectablesWardrobe" class="wardrobe-grid" role="listbox" aria-label="Your clothes inventory"></div>
-        <p class="wardrobe-hint">Tap an owned item to wear it. Tap again to remove.</p>
+
+        <section class="wardrobe-stage" aria-label="Seagull clothes inventory">
+          <div class="wardrobe-stage__head">
+            <h3 class="collectables-section__title">Clothes inventory</h3>
+            <p id="collectablesWardrobeCount" class="collectables-stamp-count">0 / 0 owned</p>
+          </div>
+          <div class="collectables-seagull-preview" aria-hidden="true">
+            <svg class="collectables-seagull-preview__art" viewBox="0 0 260 220" xmlns="http://www.w3.org/2000/svg" data-seagull-outfit focusable="false">
+              <defs>
+                <linearGradient id="colSgBody" x1="40%" y1="0%" x2="60%" y2="100%">
+                  <stop offset="0%" stop-color="#f8fafc"/>
+                  <stop offset="35%" stop-color="#e2e8f0"/>
+                  <stop offset="72%" stop-color="#94a3b8"/>
+                  <stop offset="100%" stop-color="#64748b"/>
+                </linearGradient>
+                <linearGradient id="colSgBelly" x1="50%" y1="0%" x2="50%" y2="100%">
+                  <stop offset="0%" stop-color="#ffffff"/>
+                  <stop offset="100%" stop-color="#e2e8f0"/>
+                </linearGradient>
+                <linearGradient id="colSgWing" x1="15%" y1="10%" x2="90%" y2="90%">
+                  <stop offset="0%" stop-color="#f1f5f9"/>
+                  <stop offset="28%" stop-color="#cbd5e1"/>
+                  <stop offset="62%" stop-color="#64748b"/>
+                  <stop offset="100%" stop-color="#1e293b"/>
+                </linearGradient>
+                <linearGradient id="colSgWingTip" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#475569"/>
+                  <stop offset="100%" stop-color="#0f172a"/>
+                </linearGradient>
+                <linearGradient id="colSgHead" x1="35%" y1="5%" x2="65%" y2="100%">
+                  <stop offset="0%" stop-color="#ffffff"/>
+                  <stop offset="100%" stop-color="#dbe4ee"/>
+                </linearGradient>
+                <linearGradient id="colSgBeak" x1="50%" y1="0%" x2="50%" y2="100%">
+                  <stop offset="0%" stop-color="#fcd34d"/>
+                  <stop offset="100%" stop-color="#b45309"/>
+                </linearGradient>
+              </defs>
+              <path d="M114 160 L110 188" fill="none" stroke="#c2410c" stroke-width="3" stroke-linecap="round"/>
+              <path d="M110 188 L101 194" fill="none" stroke="#ea580c" stroke-width="2.4" stroke-linecap="round"/>
+              <path d="M110 188 L110 196" fill="none" stroke="#ea580c" stroke-width="2.4" stroke-linecap="round"/>
+              <path d="M110 188 L118 194" fill="none" stroke="#f97316" stroke-width="2.4" stroke-linecap="round"/>
+              <path d="M146 160 L150 188" fill="none" stroke="#c2410c" stroke-width="3" stroke-linecap="round"/>
+              <path d="M150 188 L142 194" fill="none" stroke="#ea580c" stroke-width="2.4" stroke-linecap="round"/>
+              <path d="M150 188 L150 196" fill="none" stroke="#ea580c" stroke-width="2.4" stroke-linecap="round"/>
+              <path d="M150 188 L158 194" fill="none" stroke="#f97316" stroke-width="2.4" stroke-linecap="round"/>
+              <ellipse cx="130" cy="132" rx="38" ry="42" fill="url(#colSgBody)" stroke="#94a3b8" stroke-width="1.4"/>
+              <g data-wear-slot="shirt"></g>
+              <g class="collectables-seagull-wing collectables-seagull-wing--l">
+                <path d="M100 122 C82 118 62 112 46 100 C34 90 28 78 32 68 C36 60 48 62 58 72 C72 86 86 102 98 114 Z" fill="url(#colSgWing)" stroke="#475569" stroke-width="1.1"/>
+                <path d="M98 116 C74 108 48 96 28 78 C16 66 12 50 22 42 C30 36 42 42 54 56 C70 74 86 96 98 110 Z" fill="url(#colSgWing)" stroke="#334155" stroke-width="1.2"/>
+                <path d="M96 112 C70 98 44 78 26 58 C18 48 24 40 36 46 C52 60 74 86 94 106 Z" fill="url(#colSgWingTip)" opacity="0.72"/>
+              </g>
+              <g class="collectables-seagull-wing collectables-seagull-wing--r">
+                <path d="M160 122 C178 118 198 112 214 100 C226 90 232 78 228 68 C224 60 212 62 202 72 C188 86 174 102 162 114 Z" fill="url(#colSgWing)" stroke="#475569" stroke-width="1.1"/>
+                <path d="M162 116 C186 108 212 96 232 78 C244 66 248 50 238 42 C230 36 218 42 206 56 C190 74 174 96 162 110 Z" fill="url(#colSgWing)" stroke="#334155" stroke-width="1.2"/>
+                <path d="M164 112 C190 98 216 78 234 58 C242 48 236 40 224 46 C208 60 186 86 166 106 Z" fill="url(#colSgWingTip)" opacity="0.72"/>
+              </g>
+              <ellipse cx="130" cy="124" rx="34" ry="18" fill="#94a3b8" opacity="0.28"/>
+              <ellipse cx="130" cy="140" rx="24" ry="26" fill="url(#colSgBelly)"/>
+              <g data-wear-slot="pants"></g>
+              <ellipse cx="130" cy="78" rx="32" ry="28" fill="url(#colSgHead)" stroke="#94a3b8" stroke-width="1.4"/>
+              <g data-wear-slot="hair"></g>
+              <g data-wear-slot="hat"></g>
+              <ellipse cx="116" cy="76" rx="7" ry="7.4" fill="#fff" stroke="#94a3b8" stroke-width="0.7"/>
+              <ellipse cx="116.6" cy="76.4" rx="3.8" ry="4" fill="#020617"/>
+              <circle cx="118.2" cy="74.6" r="1.3" fill="#fff"/>
+              <ellipse cx="144" cy="76" rx="7" ry="7.4" fill="#fff" stroke="#94a3b8" stroke-width="0.7"/>
+              <ellipse cx="144.6" cy="76.4" rx="3.8" ry="4" fill="#020617"/>
+              <circle cx="146.2" cy="74.6" r="1.3" fill="#fff"/>
+              <path d="M122 84 L130 108 L138 84 Q130 92 122 84 Z" fill="url(#colSgBeak)" stroke="#92400e" stroke-width="1"/>
+              <g data-wear-slot="accessory"></g>
+            </svg>
+          </div>
+          <p class="wardrobe-hint">Pick a slot, then tap a clothing tile to put it on.</p>
+          <div id="wardrobeSlotTabs" class="wardrobe-slot-tabs" role="tablist" aria-label="Clothes slots"></div>
+          <div id="collectablesWardrobe" class="wardrobe-grid" role="listbox" aria-label="Your clothes inventory"></div>
+        </section>
+
         <h3 class="collectables-section__title">Chest items</h3>
         <div id="collectablesItems" class="collectables-items" aria-label="Chest items"></div>
         <h3 class="collectables-section__title">Catch stamps</h3>
@@ -1723,11 +1749,7 @@
               </g>
 
               <ellipse cx="130" cy="132" rx="38" ry="42" fill="url(#shopSgBody)" stroke="#94a3b8" stroke-width="1.4"/>
-              <ellipse cx="130" cy="124" rx="34" ry="18" fill="url(#shopSgMantle)" opacity="0.85"/>
-              <ellipse cx="130" cy="140" rx="24" ry="26" fill="url(#shopSgBelly)"/>
-              <ellipse cx="118" cy="120" rx="9" ry="7" fill="#fff" opacity="0.28"/>
               <g data-wear-slot="shirt"></g>
-              <g data-wear-slot="pants"></g>
 
               <g class="shop-guide__wing-l">
                 <g class="shop-guide__wing-l-sec">
@@ -1780,6 +1802,11 @@
                 <path d="M200 76 C188 92 174 108 164 116" fill="none" stroke="#0f172a" stroke-width="0.7" opacity="0.28"/>
                 <path d="M190 88 C180 100 170 110 162 118" fill="none" stroke="#020617" stroke-width="0.55" opacity="0.22"/>
               </g>
+
+              <ellipse cx="130" cy="124" rx="34" ry="18" fill="url(#shopSgMantle)" opacity="0.85"/>
+              <ellipse cx="130" cy="140" rx="24" ry="26" fill="url(#shopSgBelly)"/>
+              <ellipse cx="118" cy="120" rx="9" ry="7" fill="#fff" opacity="0.28"/>
+              <g data-wear-slot="pants"></g>
 
               <g class="shop-guide__head">
                 <ellipse cx="130" cy="78" rx="32" ry="28" fill="url(#shopSgHead)" stroke="#94a3b8" stroke-width="1.4"/>
@@ -1913,6 +1940,6 @@
       </section>
     </div>
 
-    <script src="game.js?v=tab-bar-world-1" defer></script>
+    <script src="game.js?v=seagull-wings-wardrobe-1" defer></script>
   </body>
 </html>
