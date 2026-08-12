@@ -10985,13 +10985,19 @@ function refreshCollectablesUI() {
   syncSeagullOutfit();
 }
 
-function openCollectables() {
+function openCollectables({ focusWardrobe = false } = {}) {
   if (!panelCollectables) return;
   setStartMoreOptionsOpen(false);
   refreshCollectablesUI();
   syncSeagullOutfit();
   showExclusiveMenu("collectables");
   syncHomeLaunchButtons();
+  if (focusWardrobe) {
+    requestAnimationFrame(() => {
+      const stage = document.querySelector(".wardrobe-stage");
+      stage?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
 }
 
 function closeCollectables() {
@@ -17518,6 +17524,9 @@ btnWorldAdventures?.addEventListener("click", () => {
 });
 btnEvents?.addEventListener("click", openEvents);
 btnCollectables?.addEventListener("click", openCollectables);
+document.getElementById("seagullAvatarStart")?.addEventListener("click", () => {
+  openCollectables({ focusWardrobe: true });
+});
 btnCloseCollectables?.addEventListener("click", closeCollectables);
 collectablesItems?.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-arm-item]");
