@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=unequip-hair-1" />
+    <link rel="stylesheet" href="styles.css?v=profile-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -1719,38 +1719,24 @@
         </div>
       </section>
 
-      <section id="panelCollectables" class="panel panel--collectables" hidden>
-        <div class="collectables-decor" aria-hidden="true">
-          <div class="ocean-bubbles ocean-bubbles--nested">
-            <span class="ocean-bubbles__bubble ocean-bubbles__bubble--1"></span>
-            <span class="ocean-bubbles__bubble ocean-bubbles__bubble--2"></span>
-            <span class="ocean-bubbles__bubble ocean-bubbles__bubble--3"></span>
-            <span class="ocean-bubbles__bubble ocean-bubbles__bubble--4"></span>
-            <span class="ocean-bubbles__bubble ocean-bubbles__bubble--5"></span>
-            <span class="ocean-bubbles__bubble ocean-bubbles__bubble--6"></span>
-            <span class="ocean-bubbles__bubble ocean-bubbles__bubble--7"></span>
-            <span class="ocean-bubbles__bubble ocean-bubbles__bubble--8"></span>
-            <span class="ocean-bubbles__bubble ocean-bubbles__bubble--9"></span>
-            <span class="ocean-bubbles__bubble ocean-bubbles__bubble--10"></span>
-          </div>
-          <span class="collectables-decor__glint collectables-decor__glint--1"></span>
-          <span class="collectables-decor__glint collectables-decor__glint--2"></span>
-          <span class="collectables-decor__glint collectables-decor__glint--3"></span>
-          <span class="collectables-decor__ray collectables-decor__ray--1"></span>
-          <span class="collectables-decor__ray collectables-decor__ray--2"></span>
+      <section id="panelProfile" class="panel panel--profile" hidden>
+        <div class="ocean-bubbles" aria-hidden="true">
+          <span class="ocean-bubbles__bubble ocean-bubbles__bubble--1"></span>
+          <span class="ocean-bubbles__bubble ocean-bubbles__bubble--2"></span>
+          <span class="ocean-bubbles__bubble ocean-bubbles__bubble--3"></span>
+          <span class="ocean-bubbles__bubble ocean-bubbles__bubble--4"></span>
+          <span class="ocean-bubbles__bubble ocean-bubbles__bubble--5"></span>
+          <span class="ocean-bubbles__bubble ocean-bubbles__bubble--6"></span>
+          <span class="ocean-bubbles__bubble ocean-bubbles__bubble--7"></span>
+          <span class="ocean-bubbles__bubble ocean-bubbles__bubble--8"></span>
+          <span class="ocean-bubbles__bubble ocean-bubbles__bubble--9"></span>
+          <span class="ocean-bubbles__bubble ocean-bubbles__bubble--10"></span>
         </div>
-        <header class="collectables-hero">
-          <p class="collectables-hero__eyebrow">Treasure locker</p>
-          <h2 class="panel__headline collectables-hero__title">My Loot</h2>
-          <p class="panel__lede collectables-hero__lede">Dress your seagull, claim chest prizes &amp; stamps.</p>
+        <header class="profile-hero">
+          <p class="profile-hero__eyebrow">Captain card</p>
+          <h2 class="panel__headline profile-hero__title">Your Profile</h2>
+          <p class="panel__lede profile-hero__lede">Name your fisher &amp; dress your seagull.</p>
         </header>
-        <div class="collectables-armed" id="collectablesArmed" hidden></div>
-
-        <section class="wardrobe-stage collectables-stage" aria-label="Seagull clothes inventory">
-          <div class="wardrobe-stage__head">
-            <h3 class="collectables-section__title">Clothes inventory</h3>
-            <p id="collectablesWardrobeCount" class="collectables-count-pill">0 / 0 owned</p>
-          </div>
           <div class="collectables-seagull-preview" aria-hidden="true">
             <svg class="collectables-seagull-preview__art" viewBox="0 0 260 220" xmlns="http://www.w3.org/2000/svg" data-seagull-outfit focusable="false">
               <defs>
@@ -1830,10 +1816,58 @@
               </g>
             </svg>
           </div>
+        <label class="profile-name">
+          <span class="profile-name__label">Your name</span>
+          <input
+            id="profileNameInput"
+            class="profile-name__input"
+            type="text"
+            maxlength="16"
+            autocomplete="nickname"
+            placeholder="Enter a name"
+            spellcheck="false"
+          />
+        </label>
+        <p id="profileNameHint" class="profile-name__hint">Used on boards as your 3-letter tag.</p>
+        <section class="wardrobe-stage profile-wardrobe" aria-label="Seagull clothes inventory">
+          <div class="wardrobe-stage__head">
+            <h3 class="collectables-section__title">Clothes inventory</h3>
+            <p id="collectablesWardrobeCount" class="collectables-count-pill">0 / 0 owned</p>
+          </div>
           <p class="wardrobe-hint">Pick a slot, then tap a clothing tile to put it on.</p>
           <div id="wardrobeSlotTabs" class="wardrobe-slot-tabs" role="tablist" aria-label="Clothes slots"></div>
           <div id="collectablesWardrobe" class="wardrobe-grid" role="listbox" aria-label="Your clothes inventory"></div>
         </section>
+
+        <button type="button" id="btnCloseProfile" class="btn btn--primary profile-back">Back</button>
+      </section>
+
+      <section id="panelCollectables" class="panel panel--collectables" hidden>
+        <div class="collectables-decor" aria-hidden="true">
+          <div class="ocean-bubbles ocean-bubbles--nested">
+            <span class="ocean-bubbles__bubble ocean-bubbles__bubble--1"></span>
+            <span class="ocean-bubbles__bubble ocean-bubbles__bubble--2"></span>
+            <span class="ocean-bubbles__bubble ocean-bubbles__bubble--3"></span>
+            <span class="ocean-bubbles__bubble ocean-bubbles__bubble--4"></span>
+            <span class="ocean-bubbles__bubble ocean-bubbles__bubble--5"></span>
+            <span class="ocean-bubbles__bubble ocean-bubbles__bubble--6"></span>
+            <span class="ocean-bubbles__bubble ocean-bubbles__bubble--7"></span>
+            <span class="ocean-bubbles__bubble ocean-bubbles__bubble--8"></span>
+            <span class="ocean-bubbles__bubble ocean-bubbles__bubble--9"></span>
+            <span class="ocean-bubbles__bubble ocean-bubbles__bubble--10"></span>
+          </div>
+          <span class="collectables-decor__glint collectables-decor__glint--1"></span>
+          <span class="collectables-decor__glint collectables-decor__glint--2"></span>
+          <span class="collectables-decor__glint collectables-decor__glint--3"></span>
+          <span class="collectables-decor__ray collectables-decor__ray--1"></span>
+          <span class="collectables-decor__ray collectables-decor__ray--2"></span>
+        </div>
+        <header class="collectables-hero">
+          <p class="collectables-hero__eyebrow">Treasure locker</p>
+          <h2 class="panel__headline collectables-hero__title">My Loot</h2>
+          <p class="panel__lede collectables-hero__lede">Claim chest prizes &amp; catch stamps.</p>
+        </header>
+        <div class="collectables-armed" id="collectablesArmed" hidden></div>
 
         <section class="collectables-stage collectables-stage--chest" aria-label="Chest items">
           <div class="wardrobe-stage__head">
@@ -2161,6 +2195,6 @@
       </section>
     </div>
 
-    <script src="game.js?v=unequip-hair-1" defer></script>
+    <script src="game.js?v=profile-1" defer></script>
   </body>
 </html>

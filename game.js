@@ -5061,6 +5061,7 @@ function defaultMeta() {
     pendingLostCityCelebration: false,
     pendingDailyPrizeCelebration: null,
     playerInitials: "",
+    playerName: "",
     dailyPrizeCheckedDay: "",
     magnetRodDayKey: "",
     duelTickets: 0,
@@ -5116,6 +5117,7 @@ function loadMeta() {
         .toUpperCase()
         .replace(/[^A-Z]/g, "")
         .slice(0, 3),
+      playerName: String(o.playerName || "").replace(/\s+/g, " ").trim().slice(0, 16),
       dailyPrizeCheckedDay: String(o.dailyPrizeCheckedDay || ""),
       magnetRodDayKey: String(o.magnetRodDayKey || ""),
       duelTickets: Math.max(0, Math.floor(Number(o.duelTickets) || 0)),
@@ -8112,6 +8114,10 @@ const homeLaunchDock = document.getElementById("homeLaunchDock");
 const homeLaunchStack = document.getElementById("homeLaunchStack");
 const panelEvents = document.getElementById("panelEvents");
 const panelCollectables = document.getElementById("panelCollectables");
+const panelProfile = document.getElementById("panelProfile");
+const profileNameInput = document.getElementById("profileNameInput");
+const profileNameHint = document.getElementById("profileNameHint");
+const btnCloseProfile = document.getElementById("btnCloseProfile");
 const collectablesArmed = document.getElementById("collectablesArmed");
 const collectablesItems = document.getElementById("collectablesItems");
 const collectablesStamps = document.getElementById("collectablesStamps");
@@ -8718,6 +8724,7 @@ function loadMetaFromObject(o) {
         .toUpperCase()
         .replace(/[^A-Z]/g, "")
         .slice(0, 3),
+      playerName: String(o.playerName || "").replace(/\s+/g, " ").trim().slice(0, 16),
       dailyPrizeCheckedDay: String(o.dailyPrizeCheckedDay || ""),
       magnetRodDayKey: String(o.magnetRodDayKey || ""),
       duelTickets: Math.max(0, Math.floor(Number(o.duelTickets) || 0)),
@@ -8751,6 +8758,7 @@ function hideAllPanels() {
   if (panelDuelOver) panelDuelOver.hidden = true;
   if (panelCrabReward) panelCrabReward.hidden = true;
   if (panelCollectables) panelCollectables.hidden = true;
+  if (panelProfile) panelProfile.hidden = true;
   appRoot?.classList.remove("app--events-mode", "app--splash");
   stopDailyEventCountdown();
   stopEventsMusic();
@@ -8776,6 +8784,10 @@ function showExclusiveMenu(which) {
   }
   if (which === "collectables") {
     if (panelCollectables) panelCollectables.hidden = false;
+    return;
+  }
+  if (which === "profile") {
+    if (panelProfile) panelProfile.hidden = false;
   }
 }
 
@@ -8980,7 +8992,7 @@ function isHomeScreenActive() {
   if (playing) return false;
   if (isSplashScreenActive()) return false;
   if (!panelStart || panelStart.hidden) return false;
-  const blocking = [panelOver, panelShop, panelEvents, panelCollectables, panelIntro, panelAdventure, panelAdventureFail, panelAdventureWin, panelDuelOver];
+  const blocking = [panelOver, panelShop, panelEvents, panelCollectables, panelProfile, panelIntro, panelAdventure, panelAdventureFail, panelAdventureWin, panelDuelOver];
   for (const panel of blocking) {
     if (panel && !panel.hidden) return false;
   }
@@ -9006,6 +9018,7 @@ function shouldShowTabBar() {
   if (panelDuelOver && !panelDuelOver.hidden) return false;
   if (panelCrabReward && !panelCrabReward.hidden) return false;
   if (crabTrapSession) return false;
+  if (panelProfile && !panelProfile.hidden) return true;
   const tab = getActiveTabId();
   return Boolean(tab);
 }
@@ -10993,24 +11006,78 @@ function refreshCollectablesUI() {
   syncSeagullOutfit();
 }
 
-function openCollectables({ focusWardrobe = false } = {}) {
+function openCollectables() {
   if (!panelCollectables) return;
   setStartMoreOptionsOpen(false);
   refreshCollectablesUI();
   syncSeagullOutfit();
   showExclusiveMenu("collectables");
   syncHomeLaunchButtons();
-  if (focusWardrobe) {
-    requestAnimationFrame(() => {
-      const stage = document.querySelector(".wardrobe-stage");
-      stage?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  }
 }
 
 function closeCollectables() {
   if (!panelCollectables || !panelStart) return;
   panelCollectables.hidden = true;
+  panelStart.hidden = false;
+  syncHomeLaunchButtons();
+  if (musicEnabled) startHomeMusic();
+}
+
+function parsePlayerName(value) {
+  return String(value || "").replace(/\s+/g, " ").trim().slice(0, 16);
+}
+
+function initialsFromPlayerName(name) {
+  const letters = String(name || "")
+    .toUpperCase()
+    .replace(/[^A-Z]/g, "");
+  return letters.slice(0, 3);
+}
+
+function refreshProfileUI() {
+  if (profileNameInput) {
+    profileNameInput.value = gameMeta.playerName || "";
+  }
+  updateProfileNameHint();
+  refreshCollectablesUI();
+  syncSeagullOutfit();
+}
+
+function updateProfileNameHint() {
+  if (!profileNameHint) return;
+  const ini = gameMeta.playerInitials || initialsFromPlayerName(profileNameInput?.value || gameMeta.playerName);
+  profileNameHint.textContent = ini
+    ? `Boards will show you as ${ini}.`
+    : "Used on boards as your 3-letter tag.";
+}
+
+function saveProfileNameFromInput() {
+  const name = parsePlayerName(profileNameInput?.value);
+  gameMeta.playerName = name;
+  const derived = initialsFromPlayerName(name);
+  if (derived) gameMeta.playerInitials = derived;
+  saveMeta();
+  if (profileNameInput) profileNameInput.value = name;
+  updateProfileNameHint();
+}
+
+function openProfile() {
+  if (!panelProfile) return;
+  setStartMoreOptionsOpen(false);
+  setStartSettingsOpen(false);
+  refreshProfileUI();
+  showExclusiveMenu("profile");
+  syncHomeLaunchButtons();
+  requestAnimationFrame(() => {
+    profileNameInput?.focus();
+    profileNameInput?.select();
+  });
+}
+
+function closeProfile() {
+  if (!panelProfile || !panelStart) return;
+  saveProfileNameFromInput();
+  panelProfile.hidden = true;
   panelStart.hidden = false;
   syncHomeLaunchButtons();
   if (musicEnabled) startHomeMusic();
@@ -17533,8 +17600,12 @@ btnWorldAdventures?.addEventListener("click", () => {
 btnEvents?.addEventListener("click", openEvents);
 btnCollectables?.addEventListener("click", openCollectables);
 document.getElementById("seagullAvatarStart")?.addEventListener("click", () => {
-  openCollectables({ focusWardrobe: true });
+  openProfile();
 });
+btnCloseProfile?.addEventListener("click", closeProfile);
+profileNameInput?.addEventListener("change", saveProfileNameFromInput);
+profileNameInput?.addEventListener("blur", saveProfileNameFromInput);
+profileNameInput?.addEventListener("input", updateProfileNameHint);
 btnCloseCollectables?.addEventListener("click", closeCollectables);
 collectablesItems?.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-arm-item]");
