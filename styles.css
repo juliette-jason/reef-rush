@@ -4578,12 +4578,36 @@ body {
 
 @keyframes collectablesWingBob {
   0%, 100% { transform: rotate(0deg) translateY(0); }
-  50% { transform: rotate(-2.5deg) translateY(1px); }
+  50% { transform: rotate(-7deg) translateY(2px); }
 }
 
 @keyframes collectablesWingBobR {
   0%, 100% { transform: rotate(0deg) translateY(0); }
-  50% { transform: rotate(2.5deg) translateY(1px); }
+  50% { transform: rotate(7deg) translateY(2px); }
+}
+
+@keyframes collectablesSeagullIdle {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  30% { transform: translateY(-4px) rotate(-1.1deg); }
+  62% { transform: translateY(-1.5px) rotate(0.9deg); }
+}
+
+@keyframes collectablesSeagullHead {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  28% { transform: rotate(-2.4deg) translateY(1px); }
+  58% { transform: rotate(1.8deg) translateY(0); }
+  78% { transform: rotate(-0.6deg) translateY(0.5px); }
+}
+
+@keyframes collectablesSeagullBlink {
+  0%, 42%, 48%, 100% { transform: scaleY(1); }
+  45% { transform: scaleY(0.12); }
+}
+
+@keyframes collectablesSeagullShadow {
+  0%, 100% { transform: scaleX(1); opacity: 0.28; }
+  30% { transform: scaleX(0.88); opacity: 0.18; }
+  62% { transform: scaleX(0.95); opacity: 0.22; }
 }
 
 .panel--collectables > *:not(.collectables-decor) {
@@ -4732,20 +4756,47 @@ body {
   width: min(270px, 84vw);
   height: auto;
   filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.45));
+  overflow: visible;
+}
+
+.collectables-seagull-figure {
+  transform-box: view-box;
+  transform-origin: 130px 198px;
+  animation: collectablesSeagullIdle 3.6s ease-in-out infinite;
+}
+
+.collectables-seagull-head {
+  transform-box: view-box;
+  transform-origin: 130px 100px;
+  animation: collectablesSeagullHead 4.4s ease-in-out infinite;
+}
+
+.collectables-seagull-eyes {
+  transform-box: view-box;
+  transform-origin: 130px 76px;
+  animation: collectablesSeagullBlink 5.2s ease-in-out infinite;
+}
+
+.collectables-seagull-shadow {
+  transform-box: view-box;
+  transform-origin: 130px 204px;
+  animation: collectablesSeagullShadow 3.6s ease-in-out infinite;
 }
 
 .collectables-seagull-wing--l,
 .collectables-seagull-wing--r {
-  transform-box: fill-box;
-  transform-origin: center;
+  transform-box: view-box;
 }
 
 .collectables-seagull-wing--l {
-  animation: collectablesWingBob 2.8s ease-in-out infinite;
+  transform-origin: 100px 122px;
+  animation: collectablesWingBob 2.5s ease-in-out infinite;
 }
 
 .collectables-seagull-wing--r {
-  animation: collectablesWingBobR 2.8s ease-in-out infinite;
+  transform-origin: 160px 122px;
+  animation: collectablesWingBobR 2.5s ease-in-out infinite;
+  animation-delay: -0.35s;
 }
 
 .collectables-items--wardrobe {
@@ -5100,6 +5151,10 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .collectables-decor__glint,
   .collectables-decor__ray,
+  .collectables-seagull-figure,
+  .collectables-seagull-head,
+  .collectables-seagull-eyes,
+  .collectables-seagull-shadow,
   .collectables-seagull-wing--l,
   .collectables-seagull-wing--r {
     animation: none !important;

@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=settings-box-1" />
+    <link rel="stylesheet" href="styles.css?v=seagull-idle-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -1783,6 +1783,8 @@
                   <stop offset="100%" stop-color="#b45309"/>
                 </linearGradient>
               </defs>
+              <g class="collectables-seagull-figure">
+              <g class="collectables-seagull-legs">
               <path d="M114 160 L110 186" fill="none" stroke="#c2410c" stroke-width="3" stroke-linecap="round"/>
               <path d="M146 160 L150 186" fill="none" stroke="#c2410c" stroke-width="3" stroke-linecap="round"/>
               <g data-bare-feet>
@@ -1793,6 +1795,8 @@
                 <path d="M150 186 L150 198" fill="none" stroke="#ea580c" stroke-width="2.4" stroke-linecap="round"/>
                 <path d="M150 186 L159 194" fill="none" stroke="#f97316" stroke-width="2.4" stroke-linecap="round"/>
               </g>
+              </g>
+              <ellipse class="collectables-seagull-shadow" cx="130" cy="204" rx="34" ry="6" fill="rgba(2, 12, 24, 0.28)"/>
               <ellipse cx="130" cy="132" rx="38" ry="42" fill="url(#colSgBody)" stroke="#94a3b8" stroke-width="1.4"/>
               <ellipse cx="130" cy="124" rx="34" ry="18" fill="#94a3b8" opacity="0.28"/>
               <ellipse cx="130" cy="140" rx="24" ry="26" fill="url(#colSgBelly)"/>
@@ -1808,17 +1812,22 @@
                 <path d="M164 112 C190 98 216 78 234 58 C242 48 236 40 224 46 C208 60 186 86 166 106 Z" fill="url(#colSgWingTip)" opacity="0.72"/>
               </g>
               <g data-wear-slot="shoes"></g>
+              <g class="collectables-seagull-head">
               <ellipse cx="130" cy="78" rx="32" ry="28" fill="url(#colSgHead)" stroke="#94a3b8" stroke-width="1.4"/>
               <g data-wear-slot="hair"></g>
               <g data-wear-slot="hat"></g>
-              <ellipse cx="116" cy="76" rx="7" ry="7.4" fill="#fff" stroke="#94a3b8" stroke-width="0.7"/>
-              <ellipse cx="116.6" cy="76.4" rx="3.8" ry="4" fill="#020617"/>
-              <circle cx="118.2" cy="74.6" r="1.3" fill="#fff"/>
-              <ellipse cx="144" cy="76" rx="7" ry="7.4" fill="#fff" stroke="#94a3b8" stroke-width="0.7"/>
-              <ellipse cx="144.6" cy="76.4" rx="3.8" ry="4" fill="#020617"/>
-              <circle cx="146.2" cy="74.6" r="1.3" fill="#fff"/>
+              <g class="collectables-seagull-eyes">
+                <ellipse cx="116" cy="76" rx="7" ry="7.4" fill="#fff" stroke="#94a3b8" stroke-width="0.7"/>
+                <ellipse cx="116.6" cy="76.4" rx="3.8" ry="4" fill="#020617"/>
+                <circle cx="118.2" cy="74.6" r="1.3" fill="#fff"/>
+                <ellipse cx="144" cy="76" rx="7" ry="7.4" fill="#fff" stroke="#94a3b8" stroke-width="0.7"/>
+                <ellipse cx="144.6" cy="76.4" rx="3.8" ry="4" fill="#020617"/>
+                <circle cx="146.2" cy="74.6" r="1.3" fill="#fff"/>
+              </g>
               <path d="M122 84 L130 108 L138 84 Q130 92 122 84 Z" fill="url(#colSgBeak)" stroke="#92400e" stroke-width="1"/>
               <g data-wear-slot="accessory"></g>
+              </g>
+              </g>
             </svg>
           </div>
           <p class="wardrobe-hint">Pick a slot, then tap a clothing tile to put it on.</p>
@@ -2152,6 +2161,6 @@
       </section>
     </div>
 
-    <script src="game.js?v=settings-box-1" defer></script>
+    <script src="game.js?v=seagull-idle-1" defer></script>
   </body>
 </html>
