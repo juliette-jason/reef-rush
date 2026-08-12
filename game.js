@@ -8225,7 +8225,6 @@ const panelCollectables = document.getElementById("panelCollectables");
 const panelProfile = document.getElementById("panelProfile");
 const profileNameInput = document.getElementById("profileNameInput");
 const profileNameHint = document.getElementById("profileNameHint");
-const btnCloseProfile = document.getElementById("btnCloseProfile");
 const collectablesArmed = document.getElementById("collectablesArmed");
 const collectablesItems = document.getElementById("collectablesItems");
 const collectablesStamps = document.getElementById("collectablesStamps");
@@ -8233,10 +8232,8 @@ const collectablesStampCount = document.getElementById("collectablesStampCount")
 const collectablesWardrobe = document.getElementById("collectablesWardrobe");
 const collectablesWardrobeCount = document.getElementById("collectablesWardrobeCount");
 const wardrobeSlotTabs = document.getElementById("wardrobeSlotTabs");
-const btnCloseCollectables = document.getElementById("btnCloseCollectables");
 let wardrobeFilterSlot = "hat";
 const eventsOcean = document.getElementById("eventsOcean");
-const btnCloseEvents = document.getElementById("btnCloseEvents");
 const dailyLeaderboardEvents = document.getElementById("dailyLeaderboardEvents");
 const dailyLeaderboardTitle = document.getElementById("dailyLeaderboardTitle");
 const dailyEventReset = document.getElementById("dailyEventReset");
@@ -8290,7 +8287,6 @@ const crabRewardResult = document.getElementById("crabRewardResult");
 const btnCrabPlayAgain = document.getElementById("btnCrabPlayAgain");
 const btnCrabRewardBack = document.getElementById("btnCrabRewardBack");
 const crabTrapCtx = crabTrapCanvas ? crabTrapCanvas.getContext("2d") : null;
-const btnCloseShop = document.getElementById("btnCloseShop");
 const btnShopGuideDone = document.getElementById("btnShopGuideDone");
 const btnToggleMusic = document.getElementById("btnToggleMusic");
 const panelIntro = document.getElementById("panelIntro");
@@ -8853,6 +8849,13 @@ function loadMetaFromObject(o) {
 }
 
 function hideAllPanels() {
+  if (panelProfile && !panelProfile.hidden) saveProfileNameFromInput();
+  if (panelEvents && !panelEvents.hidden && duelMatchmakingActive) {
+    duelMatchmakingActive = false;
+    void cancelDuelLobbyIfHost(duelLobbyMatchId);
+    duelLobbyMatchId = null;
+    setDuelMatchmakingUi(false);
+  }
   if (panelSplash) panelSplash.hidden = true;
   if (panelStart) panelStart.hidden = true;
   if (panelOver) panelOver.hidden = true;
@@ -17710,11 +17713,9 @@ btnCollectables?.addEventListener("click", openCollectables);
 document.getElementById("seagullAvatarStart")?.addEventListener("click", () => {
   openProfile();
 });
-btnCloseProfile?.addEventListener("click", closeProfile);
 profileNameInput?.addEventListener("change", saveProfileNameFromInput);
 profileNameInput?.addEventListener("blur", saveProfileNameFromInput);
 profileNameInput?.addEventListener("input", updateProfileNameHint);
-btnCloseCollectables?.addEventListener("click", closeCollectables);
 collectablesItems?.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-arm-item]");
   if (!btn) return;
@@ -17731,7 +17732,6 @@ wardrobeSlotTabs?.addEventListener("click", (e) => {
   wardrobeFilterSlot = tab.dataset.wardrobeSlot;
   refreshCollectablesUI();
 });
-btnCloseEvents?.addEventListener("click", closeEvents);
 btnStartDuel?.addEventListener("click", () => {
   void startDuelFromEvents();
 });
@@ -17762,7 +17762,6 @@ window.addEventListener("resize", () => {
   if (panelEvents && !panelEvents.hidden) refreshDuelEventCard();
 });
 
-btnCloseShop?.addEventListener("click", closeShop);
 btnOpenShopGuide?.addEventListener("click", openShopGuide);
 btnShopGuideDone?.addEventListener("click", closeShopGuide);
 btnToggleMusic?.addEventListener("click", () => {

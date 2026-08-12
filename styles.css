@@ -997,11 +997,6 @@ body {
   z-index: auto;
 }
 
-.shop-back-btn {
-  max-width: min(320px, 88vw);
-  width: 100%;
-}
-
 @keyframes shopCoinFloat {
   0%, 100% { transform: translateY(0) rotate(-10deg); }
   50% { transform: translateY(-14px) rotate(10deg); }
@@ -4670,11 +4665,6 @@ button.seagull-avatar:active {
   text-align: center;
 }
 
-.profile-back {
-  width: min(100%, 280px);
-  margin: 4px auto 0;
-}
-
 /* --- Collectables locker --- */
 .panel.panel--collectables {
   position: absolute;
@@ -5311,11 +5301,6 @@ button.seagull-avatar:active {
 
 .collectables-stamp--owned .collectables-stamp__rarity {
   color: #fde68a;
-}
-
-.collectables-back {
-  width: min(100%, 280px);
-  margin: 4px auto 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
