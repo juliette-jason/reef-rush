@@ -483,10 +483,18 @@ function normalizeOwnedClothes(raw) {
 function normalizeEquippedClothes(raw, ownedIds) {
   const owned = new Set(ownedIds || []);
   const out = emptyEquippedClothes();
-  if (raw && typeof raw === "object") {
+  const hadRaw = raw && typeof raw === "object";
+  const rawHadSlot = (slot) => {
+    if (!hadRaw) return false;
+    if (Object.prototype.hasOwnProperty.call(raw, slot)) return true;
+    if (slot === "shoes" && Object.prototype.hasOwnProperty.call(raw, "pants")) return true;
+    return false;
+  };
+  if (hadRaw) {
     for (const slot of CLOTHING_SLOTS) {
       const legacySlot = slot === "shoes" ? "pants" : slot;
       const id = migrateClothingId(raw[slot] ?? raw[legacySlot]);
+      if (id == null) continue;
       if (typeof id !== "string") continue;
       const def = CLOTHING_BY_ID[id];
       if (!def || def.slot !== slot || !owned.has(id)) continue;
@@ -495,7 +503,10 @@ function normalizeEquippedClothes(raw, ownedIds) {
   }
   const defaults = defaultEquippedClothes();
   for (const slot of CLOTHING_SLOTS) {
-    if (!out[slot] && defaults[slot] && owned.has(defaults[slot])) {
+    if (out[slot]) continue;
+    /* Respect an explicit unequip (null / missing valid id) instead of force-filling starters. */
+    if (rawHadSlot(slot)) continue;
+    if (defaults[slot] && owned.has(defaults[slot])) {
       out[slot] = defaults[slot];
     }
   }
@@ -950,9 +961,6 @@ function equipClothingItem(id) {
   if (!gameMeta.equippedClothes) gameMeta.equippedClothes = emptyEquippedClothes();
   const cur = gameMeta.equippedClothes[def.slot];
   gameMeta.equippedClothes[def.slot] = cur === id ? null : id;
-  if (def.slot === "hat" && !gameMeta.equippedClothes.hat && isClothesOwned(STARTER_CLOTHING_ID)) {
-    /* allow bare head */
-  }
   saveMeta();
   syncSeagullOutfit();
   refreshCollectablesUI();
