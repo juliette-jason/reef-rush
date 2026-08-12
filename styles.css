@@ -2869,6 +2869,17 @@ button.seagull-avatar:active {
   text-transform: uppercase;
 }
 
+.initials-input--name {
+  width: min(100%, 12rem);
+  font-family: "Nunito", sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-align: left;
+  text-transform: none;
+  color: #f8fafc;
+}
+
 .initials-input:focus {
   outline: none;
   border-color: var(--neon-cyan);
