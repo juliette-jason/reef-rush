@@ -5809,6 +5809,32 @@ function leaderboardEntryKey(e) {
   return `${e.initials}|${e.score}|${e.reefId || ""}`;
 }
 
+function parseLeaderboardName(value) {
+  return String(value || "").replace(/\s+/g, " ").trim().slice(0, 16);
+}
+
+function leaderboardDisplayName(entry) {
+  const name = parseLeaderboardName(entry?.name);
+  if (name) return name;
+  return entry?.initials || "???";
+}
+
+function resolveScorePlayerIdentity(rawValue = "") {
+  const typedName = parseLeaderboardName(rawValue);
+  const profileName = parseLeaderboardName(gameMeta.playerName);
+  const name = typedName || profileName;
+  const fromName = initialsFromPlayerName(name);
+  const typedIni = String(rawValue || "")
+    .toUpperCase()
+    .replace(/[^A-Z]/g, "")
+    .slice(0, 3);
+  const initials = fromName || typedIni || gameMeta.playerInitials || "AAA";
+  return {
+    initials: String(initials).toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3) || "AAA",
+    name: name || "",
+  };
+}
+
 /** Collapse identical runs (same initials, score, reef) — keeps the first seen. */
 function dedupeExactLeaderboardRows(rows) {
   const seen = new Set();
@@ -5827,11 +5853,16 @@ function normalizeLeaderboardRows(rows) {
   const parsed = rows
     .map((e) => ({
       initials: String(e.initials || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3),
+      name: parseLeaderboardName(e.name || e.display_name || e.displayName),
       score: Math.max(0, Math.floor(Number(e.score) || 0)),
       reefId: e.reefId || e.reef_id || "",
       at: e.at || e.created_at || "",
     }))
-    .filter((e) => e.initials && e.score > 0);
+    .filter((e) => e.initials && e.score > 0)
+    .map((e) => ({
+      ...e,
+      name: e.name || e.initials,
+    }));
   return dedupeExactLeaderboardRows(parsed)
     .sort((a, b) => b.score - a.score || String(a.at).localeCompare(String(b.at)))
     .slice(0, LEADERBOARD_MAX);
@@ -5906,9 +5937,19 @@ async function fetchSharedLeaderboard() {
   renderLeaderboardOl(leaderboardOver);
   renderLeaderboardOl(leaderboardEvents);
   try {
-    const url = `${LEADERBOARD_TABLE_URL}?select=initials,score,reef_id,created_at&order=score.desc,created_at.asc&limit=${LEADERBOARD_FETCH_LIMIT}`;
+    const url = `${LEADERBOARD_TABLE_URL}?select=initials,display_name,score,reef_id,created_at&order=score.desc,created_at.asc&limit=${LEADERBOARD_FETCH_LIMIT}`;
     const res = await fetch(url, { headers: leaderboardHeaders() });
-    if (!res.ok) throw new Error(`Leaderboard fetch failed: ${res.status}`);
+    if (!res.ok) {
+      /* Older schemas may not have display_name yet. */
+      const fallbackUrl = `${LEADERBOARD_TABLE_URL}?select=initials,score,reef_id,created_at&order=score.desc,created_at.asc&limit=${LEADERBOARD_FETCH_LIMIT}`;
+      const fallbackRes = await fetch(fallbackUrl, { headers: leaderboardHeaders() });
+      if (!fallbackRes.ok) throw new Error(`Leaderboard fetch failed: ${fallbackRes.status}`);
+      const rows = normalizeLeaderboardRows(await fallbackRes.json());
+      if (loadId !== leaderboardLoadId) return;
+      leaderboardRows = rows;
+      saveLocalLeaderboard(rows);
+      return;
+    }
     const rows = normalizeLeaderboardRows(await res.json());
     if (loadId !== leaderboardLoadId) return;
     leaderboardRows = rows;
@@ -5930,9 +5971,15 @@ function qualifiesForLeaderboard(score, rows) {
   return score >= rows[rows.length - 1].score;
 }
 
-async function addLeaderboardEntry(initials, score, reefId) {
+async function addLeaderboardEntry(initials, score, reefId, displayName = "") {
+  const ini = String(initials || "")
+    .toUpperCase()
+    .replace(/[^A-Z]/g, "")
+    .slice(0, 3);
+  const name = parseLeaderboardName(displayName) || ini;
   const entry = {
-    initials: initials.slice(0, 3).toUpperCase(),
+    initials: ini,
+    name,
     score,
     reefId: reefId || "",
     at: Date.now(),
@@ -5944,19 +5991,36 @@ async function addLeaderboardEntry(initials, score, reefId) {
   const merged = [...rows, entry];
   leaderboardRows = normalizeLeaderboardRows(merged);
   saveLocalLeaderboard(leaderboardRows);
+  const payloadWithName = {
+    initials: entry.initials,
+    display_name: entry.name,
+    score: entry.score,
+    reef_id: entry.reefId,
+  };
+  const payloadBasic = {
+    initials: entry.initials,
+    score: entry.score,
+    reef_id: entry.reefId,
+  };
   try {
-    const res = await fetch(LEADERBOARD_TABLE_URL, {
+    let res = await fetch(LEADERBOARD_TABLE_URL, {
       method: "POST",
       headers: leaderboardHeaders({
         "Content-Type": "application/json",
         Prefer: "return=minimal",
       }),
-      body: JSON.stringify({
-        initials: entry.initials,
-        score: entry.score,
-        reef_id: entry.reefId,
-      }),
+      body: JSON.stringify(payloadWithName),
     });
+    if (!res.ok) {
+      res = await fetch(LEADERBOARD_TABLE_URL, {
+        method: "POST",
+        headers: leaderboardHeaders({
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        }),
+        body: JSON.stringify(payloadBasic),
+      });
+    }
     if (!res.ok) throw new Error(`Leaderboard save failed: ${res.status}`);
     await fetchSharedLeaderboard();
     return true;
@@ -5985,7 +6049,8 @@ function renderLeaderboardOl(el, rows = loadLeaderboard()) {
     rank.textContent = String(i + 1);
     const ini = document.createElement("span");
     ini.className = "leaderboard__ini";
-    ini.textContent = r.initials;
+    ini.textContent = leaderboardDisplayName(r);
+    ini.title = leaderboardDisplayName(r);
     const pts = document.createElement("span");
     pts.className = "leaderboard__pts";
     pts.textContent = String(r.score);
@@ -6091,8 +6156,10 @@ function normalizeDailyLeaderboardRows(rows) {
   if (!Array.isArray(rows)) return [];
   const bestByIni = new Map();
   for (const raw of rows) {
+    const initials = String(raw.initials || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3);
     const entry = {
-      initials: String(raw.initials || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3),
+      initials,
+      name: parseLeaderboardName(raw.name || raw.display_name || raw.displayName) || initials,
       score: Math.max(0, Math.floor(Number(raw.score) || 0)),
       reefId: raw.reefId || raw.reef_id || "",
       at: raw.at || raw.created_at || "",
@@ -6102,6 +6169,8 @@ function normalizeDailyLeaderboardRows(rows) {
     const prev = bestByIni.get(entry.initials);
     if (!prev || entry.score > prev.score || (entry.score === prev.score && String(entry.at) < String(prev.at))) {
       bestByIni.set(entry.initials, entry);
+    } else if (prev && !prev.name && entry.name) {
+      prev.name = entry.name;
     }
   }
   return [...bestByIni.values()]
@@ -6111,8 +6180,12 @@ function normalizeDailyLeaderboardRows(rows) {
 
 async function fetchDailyLeaderboardForDay(dayKey = getDailyDayKey()) {
   try {
-    const url = `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=initials,score,reef_id,created_at,day_key&order=score.desc,created_at.asc&limit=${DAILY_LEADERBOARD_FETCH_LIMIT}`;
-    const res = await fetch(url, { headers: leaderboardHeaders() });
+    const url = `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=initials,display_name,score,reef_id,created_at,day_key&order=score.desc,created_at.asc&limit=${DAILY_LEADERBOARD_FETCH_LIMIT}`;
+    let res = await fetch(url, { headers: leaderboardHeaders() });
+    if (!res.ok) {
+      const fallbackUrl = `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=initials,score,reef_id,created_at,day_key&order=score.desc,created_at.asc&limit=${DAILY_LEADERBOARD_FETCH_LIMIT}`;
+      res = await fetch(fallbackUrl, { headers: leaderboardHeaders() });
+    }
     if (!res.ok) throw new Error(`Daily leaderboard fetch failed: ${res.status}`);
     const rows = normalizeDailyLeaderboardRows(await res.json());
     saveLocalDailyLeaderboard(dayKey, rows);
@@ -6140,13 +6213,14 @@ async function fetchTodayDailyLeaderboard() {
   }
 }
 
-async function submitDailyScore(initials, score, reefId) {
+async function submitDailyScore(initials, score, reefId, displayName = "") {
   const ini = String(initials || "")
     .toUpperCase()
     .replace(/[^A-Z]/g, "")
     .slice(0, 3);
   const pts = Math.max(0, Math.floor(Number(score) || 0));
   if (!ini || pts <= 0) return false;
+  const name = parseLeaderboardName(displayName) || parseLeaderboardName(gameMeta.playerName) || ini;
 
   const dayKey = getDailyDayKey();
   const localRows = normalizeDailyLeaderboardRows(loadLocalDailyLeaderboard(dayKey));
@@ -6154,14 +6228,21 @@ async function submitDailyScore(initials, score, reefId) {
     getPlayerDailyEntryToday(ini, dailyLeaderboardRows) || localRows.find((r) => r.initials === ini);
   if (existing && existing.score >= pts) return false;
 
-  const entry = { initials: ini, score: pts, reefId: reefId || "", at: Date.now(), dayKey };
+  const entry = { initials: ini, name, score: pts, reefId: reefId || "", at: Date.now(), dayKey };
   const merged = normalizeDailyLeaderboardRows([...localRows, entry]);
   dailyLeaderboardRows = merged;
   saveLocalDailyLeaderboard(dayKey, merged);
   renderAllDailyLeaderboards(merged);
   updateDailyEventPlayerHint(merged);
 
-  const payload = {
+  const payloadWithName = {
+    initials: entry.initials,
+    display_name: entry.name,
+    score: entry.score,
+    reef_id: entry.reefId,
+    day_key: dayKey,
+  };
+  const payloadBasic = {
     initials: entry.initials,
     score: entry.score,
     reef_id: entry.reefId,
@@ -6170,7 +6251,7 @@ async function submitDailyScore(initials, score, reefId) {
 
   try {
     const patchUrl = `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&initials=eq.${encodeURIComponent(ini)}&score=lt.${pts}`;
-    const patchRes = await fetch(patchUrl, {
+    let patchRes = await fetch(patchUrl, {
       method: "PATCH",
       headers: leaderboardHeaders({
         "Content-Type": "application/json",
@@ -6179,8 +6260,22 @@ async function submitDailyScore(initials, score, reefId) {
       body: JSON.stringify({
         score: entry.score,
         reef_id: entry.reefId,
+        display_name: entry.name,
       }),
     });
+    if (!patchRes.ok && patchRes.status !== 404) {
+      patchRes = await fetch(patchUrl, {
+        method: "PATCH",
+        headers: leaderboardHeaders({
+          "Content-Type": "application/json",
+          Prefer: "return=representation",
+        }),
+        body: JSON.stringify({
+          score: entry.score,
+          reef_id: entry.reefId,
+        }),
+      });
+    }
     if (patchRes.ok) {
       const updated = await patchRes.json();
       if (Array.isArray(updated) && updated.length > 0) {
@@ -6191,14 +6286,24 @@ async function submitDailyScore(initials, score, reefId) {
       throw new Error(`Daily leaderboard update failed: ${patchRes.status}`);
     }
 
-    const postRes = await fetch(DAILY_LEADERBOARD_TABLE_URL, {
+    let postRes = await fetch(DAILY_LEADERBOARD_TABLE_URL, {
       method: "POST",
       headers: leaderboardHeaders({
         "Content-Type": "application/json",
         Prefer: "return=minimal",
       }),
-      body: JSON.stringify(payload),
+      body: JSON.stringify(payloadWithName),
     });
+    if (!postRes.ok && postRes.status !== 409) {
+      postRes = await fetch(DAILY_LEADERBOARD_TABLE_URL, {
+        method: "POST",
+        headers: leaderboardHeaders({
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        }),
+        body: JSON.stringify(payloadBasic),
+      });
+    }
     if (postRes.status === 409) {
       await fetchTodayDailyLeaderboard();
       return false;
@@ -6238,7 +6343,8 @@ function renderDailyLeaderboardOl(el, rows = dailyLeaderboardRows) {
     rank.textContent = i < 3 ? ["🥇", "🥈", "🥉"][i] : String(i + 1);
     const ini = document.createElement("span");
     ini.className = "leaderboard__ini";
-    ini.textContent = r.initials;
+    ini.textContent = leaderboardDisplayName(r);
+    ini.title = leaderboardDisplayName(r);
     const pts = document.createElement("span");
     pts.className = "leaderboard__pts";
     pts.textContent = String(r.score);
@@ -6254,22 +6360,23 @@ function renderDailyLeaderboardOl(el, rows = dailyLeaderboardRows) {
 function updateDailyEventPlayerHint(rows = dailyLeaderboardRows) {
   if (!dailyEventPlayerHint) return;
   const ini = gameMeta.playerInitials;
+  const label = parseLeaderboardName(gameMeta.playerName) || ini;
   if (!ini) {
     dailyEventPlayerHint.textContent =
-      "Play a reef run and post your score with initials — today's best only.";
+      "Play a reef run and post your score with your name — today's best only.";
     return;
   }
   const rank = rows.findIndex((r) => r.initials === ini);
   if (rank === 0) {
-    dailyEventPlayerHint.textContent = `${ini}, you're in 1st! Hold the lead until midnight.`;
+    dailyEventPlayerHint.textContent = `${label}, you're in 1st! Hold the lead until midnight.`;
   } else if (rank === 1) {
-    dailyEventPlayerHint.textContent = `${ini}, you're in 2nd — stay there until reset.`;
+    dailyEventPlayerHint.textContent = `${label}, you're in 2nd — stay there until reset.`;
   } else if (rank === 2) {
-    dailyEventPlayerHint.textContent = `${ini}, you're in 3rd — stay there until reset.`;
+    dailyEventPlayerHint.textContent = `${label}, you're in 3rd — stay there until reset.`;
   } else if (rank >= 0) {
-    dailyEventPlayerHint.textContent = `${ini}, you're #${rank + 1} today. Climb into the top 3!`;
+    dailyEventPlayerHint.textContent = `${label}, you're #${rank + 1} today. Climb into the top 3!`;
   } else {
-    dailyEventPlayerHint.textContent = `${ini}, play a reef run to post today's best score.`;
+    dailyEventPlayerHint.textContent = `${label}, play a reef run to post today's best score.`;
   }
 }
 
@@ -6290,6 +6397,7 @@ function getPlayerDailyEntryToday(initials, rows = dailyLeaderboardRows) {
 function updateDailyGameOverStatus(score, submitted = null, rows = dailyLeaderboardRows) {
   if (!dailyScoreStatus) return;
   const ini = gameMeta.playerInitials;
+  const label = parseLeaderboardName(gameMeta.playerName) || ini;
   if (!ini || score <= 0) {
     dailyScoreStatus.hidden = true;
     dailyScoreStatus.textContent = "";
@@ -6298,7 +6406,7 @@ function updateDailyGameOverStatus(score, submitted = null, rows = dailyLeaderbo
   const existing = getPlayerDailyEntryToday(ini, rows);
   if (submitted === true) {
     dailyScoreStatus.hidden = false;
-    dailyScoreStatus.textContent = `${ini}, ${score} posted to today's board!`;
+    dailyScoreStatus.textContent = `${label}, ${score} posted to today's board!`;
     return;
   }
   if (submitted === false && existing) {
@@ -12800,11 +12908,11 @@ function endRound() {
   const canSave = qualifiesForLeaderboard(score, board);
   if (initialsPanel) initialsPanel.hidden = !canSave;
   if (initialsInput) {
-    initialsInput.value = canSave && gameMeta.playerInitials ? gameMeta.playerInitials : "";
+    initialsInput.value = canSave ? (gameMeta.playerName || gameMeta.playerInitials || "") : "";
   }
   if (dailyInitialsPanel) dailyInitialsPanel.hidden = score <= 0;
   if (dailyInitialsInput) {
-    dailyInitialsInput.value = gameMeta.playerInitials || "";
+    dailyInitialsInput.value = gameMeta.playerName || gameMeta.playerInitials || "";
   }
   updateDailyGameOverStatus(score);
   if (canSave && initialsInput) {
@@ -12831,7 +12939,7 @@ function endRound() {
   refreshLeaderboardViews();
   void fetchTodayDailyLeaderboard().then(() => {
     if (gameMeta.playerInitials && score > 0) {
-      return submitDailyScore(gameMeta.playerInitials, score, selectedReefId).then((submitted) => {
+      return submitDailyScore(gameMeta.playerInitials, score, selectedReefId, gameMeta.playerName).then((submitted) => {
         updateDailyGameOverStatus(score, submitted);
       });
     }
@@ -17725,10 +17833,10 @@ async function saveCurrentScoreToBoard() {
   if (leaderboardSaveInFlight) return;
   const board = loadLeaderboard();
   if (!qualifiesForLeaderboard(lastRoundScore, board)) return;
-  const raw = (initialsInput?.value || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3);
-  const ini = raw.length >= 1 ? raw : "AAA";
+  const { initials: ini, name } = resolveScorePlayerIdentity(initialsInput?.value || gameMeta.playerName);
   const pending = {
     initials: ini,
+    name,
     score: lastRoundScore,
     reefId: lastRoundReefId || "",
   };
@@ -17741,13 +17849,14 @@ async function saveCurrentScoreToBoard() {
   if (btnSaveScore) btnSaveScore.disabled = true;
   let savedGlobally = false;
   try {
-    savedGlobally = await addLeaderboardEntry(ini, lastRoundScore, lastRoundReefId);
+    savedGlobally = await addLeaderboardEntry(ini, lastRoundScore, lastRoundReefId, name);
   } finally {
     leaderboardSaveInFlight = false;
     if (btnSaveScore) btnSaveScore.disabled = false;
   }
   if (initialsPanel) initialsPanel.hidden = true;
   gameMeta.playerInitials = ini;
+  if (name) gameMeta.playerName = name;
   saveMeta();
   refreshLeaderboardViews(false);
   showToast(savedGlobally ? "Score saved to all-time top 10" : "Score saved on this device", 1700);
@@ -17755,14 +17864,15 @@ async function saveCurrentScoreToBoard() {
 
 async function saveDailyScoreFromGameOver() {
   if (lastRoundScore <= 0) return;
-  const ini = parsePlayerInitials(dailyInitialsInput?.value);
+  const { initials: ini, name } = resolveScorePlayerIdentity(dailyInitialsInput?.value || gameMeta.playerName);
   gameMeta.playerInitials = ini;
+  if (name) gameMeta.playerName = name;
   saveMeta();
-  if (dailyInitialsInput) dailyInitialsInput.value = ini;
+  if (dailyInitialsInput) dailyInitialsInput.value = name || ini;
   if (btnSaveDailyScore) btnSaveDailyScore.disabled = true;
   let submitted = false;
   try {
-    submitted = await submitDailyScore(ini, lastRoundScore, lastRoundReefId);
+    submitted = await submitDailyScore(ini, lastRoundScore, lastRoundReefId, name);
   } finally {
     if (btnSaveDailyScore) btnSaveDailyScore.disabled = false;
   }

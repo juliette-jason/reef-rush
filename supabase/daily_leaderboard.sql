@@ -5,6 +5,7 @@ create table if not exists public.daily_leaderboard (
   id bigserial primary key,
   day_key text not null,
   initials text not null,
+  display_name text not null default '',
   score integer not null check (score > 0),
   reef_id text not null default '',
   created_at timestamptz not null default now()

@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=profile-1" />
+    <link rel="stylesheet" href="styles.css?v=board-names-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -2124,39 +2124,39 @@
         <div id="dailyInitialsPanel" class="initials-panel initials-panel--daily" hidden>
           <p class="initials-panel__msg">Fisher of the Day — post your score to today's board. You don't need an all-time top 10 score; only today's best counts.</p>
           <div class="initials-panel__row">
-            <label class="sr-only" for="dailyInitialsInput">Initials</label>
+            <label class="sr-only" for="dailyInitialsInput">Your name</label>
             <input
               id="dailyInitialsInput"
-              class="initials-input"
+              class="initials-input initials-input--name"
               type="text"
-              maxlength="3"
-              autocomplete="off"
-              autocapitalize="characters"
+              maxlength="16"
+              autocomplete="nickname"
+              autocapitalize="words"
               spellcheck="false"
-              placeholder="ABC"
+              placeholder="Your name"
               aria-describedby="dailyInitialsHint"
             />
-            <span id="dailyInitialsHint" class="initials-hint">Letters only</span>
+            <span id="dailyInitialsHint" class="initials-hint">Name from your profile</span>
             <button type="button" id="btnSaveDailyScore" class="btn btn--secondary">Post to today</button>
           </div>
           <p id="dailyScoreStatus" class="initials-panel__status" hidden></p>
         </div>
         <div id="initialsPanel" class="initials-panel" hidden>
-          <p class="initials-panel__msg">That score makes the all-time top 10. Save it with your initials (up to 3 letters).</p>
+          <p class="initials-panel__msg">That score makes the all-time top 10. Save it with your name.</p>
           <div class="initials-panel__row">
-            <label class="sr-only" for="initialsInput">Initials</label>
+            <label class="sr-only" for="initialsInput">Your name</label>
             <input
               id="initialsInput"
-              class="initials-input"
+              class="initials-input initials-input--name"
               type="text"
-              maxlength="3"
-              autocomplete="off"
-              autocapitalize="characters"
+              maxlength="16"
+              autocomplete="nickname"
+              autocapitalize="words"
               spellcheck="false"
-              placeholder="ABC"
+              placeholder="Your name"
               aria-describedby="initialsHint"
             />
-            <span id="initialsHint" class="initials-hint">Letters only</span>
+            <span id="initialsHint" class="initials-hint">Shown on the board</span>
             <button type="button" id="btnSaveScore" class="btn btn--secondary">Save all-time</button>
           </div>
         </div>
@@ -2195,6 +2195,6 @@
       </section>
     </div>
 
-    <script src="game.js?v=profile-1" defer></script>
+    <script src="game.js?v=board-names-1" defer></script>
   </body>
 </html>

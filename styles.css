@@ -2766,7 +2766,7 @@ button.seagull-avatar:active {
 
 .leaderboard__row {
   display: grid;
-  grid-template-columns: 28px 44px minmax(72px, 1fr) minmax(0, 1.25fr);
+  grid-template-columns: 28px minmax(72px, 1.1fr) minmax(64px, 0.85fr) minmax(0, 1.15fr);
   gap: 8px;
   align-items: center;
   padding: 6px 4px;
@@ -2787,8 +2787,12 @@ button.seagull-avatar:active {
 
 .leaderboard__ini {
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.02em;
   color: var(--gold-hot);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .leaderboard__pts {
