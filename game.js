@@ -1574,44 +1574,56 @@ function adventureMapSectionBounds() {
   };
 }
 
+/** Winding chart positions (% of map board) — organic sailing route, not a candy zigzag. */
 function buildAdventureMapNodeLayout() {
-  const layout = [];
-  const piratesX = [50, 26, 74, 28, 72, 30, 70, 32, 68, 34, 66, 36, 64, 38, 50];
-  for (let i = 0; i < ADVENTURE_MAIN_LEVEL_COUNT; i++) {
-    layout.push({
-      x: piratesX[i],
-      y: 98 - (i / Math.max(1, ADVENTURE_MAIN_LEVEL_COUNT - 1)) * 40,
-      section: "pirates",
-    });
-  }
-  const goldX = [62, 38, 66, 34, 50];
-  for (let i = 0; i < ADVENTURE_BONUS_LEVEL_COUNT; i++) {
-    layout.push({
-      x: goldX[i],
-      y: 56 - i * 4,
-      section: "gold",
-    });
-  }
-  const iceX = [36, 64, 38, 62, 50];
-  for (let i = 0; i < ADVENTURE_ICE_LEVEL_COUNT; i++) {
-    layout.push({
-      x: iceX[i],
-      y: 35 - i * 3.5,
-      section: "ice",
-    });
-  }
-  const lostCityX = [42, 58, 36, 64, 50];
-  for (let i = 0; i < ADVENTURE_LOST_CITY_LEVEL_COUNT; i++) {
-    layout.push({
-      x: lostCityX[i],
-      y: 14 - i * 2,
-      section: "lost-city",
-    });
-  }
-  return layout;
+  // Stay inside section bands so region labels still match the voyages.
+  const pirates = [
+    { x: 52, y: 96.5 },
+    { x: 27, y: 92 },
+    { x: 42, y: 87 },
+    { x: 76, y: 89 },
+    { x: 84, y: 81.5 },
+    { x: 58, y: 78 },
+    { x: 30, y: 74.5 },
+    { x: 18, y: 68 },
+    { x: 46, y: 70.5 },
+    { x: 71, y: 65 },
+    { x: 88, y: 61 },
+    { x: 60, y: 63 },
+    { x: 34, y: 59.5 },
+    { x: 48, y: 58.8 },
+    { x: 50, y: 58.2 },
+  ];
+  const gold = [
+    { x: 66, y: 54 },
+    { x: 38, y: 50.5 },
+    { x: 74, y: 47 },
+    { x: 30, y: 43 },
+    { x: 52, y: 39.5 },
+  ];
+  const ice = [
+    { x: 32, y: 35 },
+    { x: 70, y: 32.5 },
+    { x: 26, y: 28 },
+    { x: 78, y: 24.5 },
+    { x: 50, y: 21 },
+  ];
+  const lostCity = [
+    { x: 42, y: 16 },
+    { x: 64, y: 13 },
+    { x: 28, y: 10.5 },
+    { x: 72, y: 8 },
+    { x: 50, y: 5.5 },
+  ];
+  return [
+    ...pirates.map((p) => ({ ...p, section: "pirates" })),
+    ...gold.map((p) => ({ ...p, section: "gold" })),
+    ...ice.map((p) => ({ ...p, section: "ice" })),
+    ...lostCity.map((p) => ({ ...p, section: "lost-city" })),
+  ];
 }
 
-/** Candy Crush–style zigzag positions on the treasure chart (% of map board). */
+/** Organic sailing-chart positions on the treasure map (% of map board). */
 const ADVENTURE_MAP_NODE_LAYOUT = buildAdventureMapNodeLayout();
 
 const ADVENTURE_MAP_PLACES = [
@@ -9690,8 +9702,20 @@ function updateAdventureLaunchUI() {
 
 function adventureMapCoords(index) {
   const layout = ADVENTURE_MAP_NODE_LAYOUT[index] || { x: 50, y: 50 };
-  // Match the adventure-map-art SVG viewBox (0 0 400 1200) so the red trail
-  // lines up with the CSS %-positioned voyage nodes on the board.
+  const svg = adventureMapTrail?.ownerSVGElement || document.querySelector(".adventure-map-art");
+  const pin = adventureLevelList
+    ?.querySelector(`.adventure-map-node[data-level-index="${index}"] .adventure-map-node__pin`);
+  if (svg && pin) {
+    const svgRect = svg.getBoundingClientRect();
+    const pinRect = pin.getBoundingClientRect();
+    if (svgRect.width > 1 && svgRect.height > 1 && pinRect.width > 0) {
+      return {
+        x: ((pinRect.left + pinRect.width * 0.5 - svgRect.left) / svgRect.width) * 400,
+        y: ((pinRect.top + pinRect.height * 0.5 - svgRect.top) / svgRect.height) * ADVENTURE_MAP_SVG_HEIGHT,
+      };
+    }
+  }
+  // Fallback before pins exist: aim at the pin mark center (node is centered on x%).
   return { x: (layout.x / 100) * 400, y: (layout.y / 100) * ADVENTURE_MAP_SVG_HEIGHT };
 }
 
@@ -9840,9 +9864,18 @@ function adventureTrailPoints(count) {
 function buildAdventureTrailPathForCount(count) {
   const pts = adventureTrailPoints(count);
   if (!pts.length) return "";
+  if (pts.length === 1) return `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
   let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
   for (let i = 1; i < pts.length; i++) {
-    d += ` L ${pts[i].x.toFixed(1)} ${pts[i].y.toFixed(1)}`;
+    const prev = pts[i - 1];
+    const cur = pts[i];
+    const dx = cur.x - prev.x;
+    const dy = cur.y - prev.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const bulge = (i % 2 === 0 ? 1 : -1) * Math.min(16, len * 0.14);
+    const cx = (prev.x + cur.x) * 0.5 - (dy / len) * bulge;
+    const cy = (prev.y + cur.y) * 0.5 + (dx / len) * bulge;
+    d += ` Q ${cx.toFixed(1)} ${cy.toFixed(1)} ${cur.x.toFixed(1)} ${cur.y.toFixed(1)}`;
   }
   return d;
 }
@@ -10115,6 +10148,10 @@ function buildAdventureLevelUI(force = false) {
   adventureLevelList.appendChild(frag);
   applyAdventureMapExtent(false);
   syncAdventureMapSections();
+  // Remeasure after layout so the dotted route ends on each pin, not nearby.
+  window.requestAnimationFrame(() => {
+    if (!pendingAdventureTrailReveal) syncAdventureMapTrail(false);
+  });
   if (adventureMapBanner) {
     adventureMapBanner.hidden = !isAdventureUnlocked();
     if (iceRevealed) {
@@ -18796,6 +18833,9 @@ window.addEventListener("resize", () => {
   resize();
   initBubbles();
   if (crabTrapSession) resizeCrabTrapCanvas();
+  if (panelAdventure && !panelAdventure.hidden && !pendingAdventureTrailReveal) {
+    syncAdventureMapTrail(false);
+  }
 });
 
 gameMeta = loadMeta();

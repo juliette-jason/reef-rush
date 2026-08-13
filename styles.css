@@ -7806,7 +7806,11 @@ button.seagull-avatar:active {
 
 .adventure-map-nodes {
   position: absolute;
-  inset: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  /* Match the chart SVG height (not board padding) so the dotted trail hits each pin. */
+  height: calc(var(--adv-map-height-vh, 400) * 1vh);
   z-index: 5;
   pointer-events: none;
 }
