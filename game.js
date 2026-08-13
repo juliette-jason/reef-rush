@@ -11503,7 +11503,9 @@ function fillRodChoices(root) {
     const stockLine =
       rod.id === MAGNET_ROD_ID
         ? `<span class="rod-option__stock rod-option__stock--prize">Prize · tonight</span>`
-        : `<span class="rod-option__stock">Owned</span>`;
+        : rod.chestOnly
+          ? `<span class="rod-option__stock">Chest find</span>`
+          : `<span class="rod-option__stock">Owned</span>`;
     b.innerHTML =
       `<span class="rod-option__art">${rodArtSvg(rod)}</span>` +
       `<span class="rod-option__copy">` +
