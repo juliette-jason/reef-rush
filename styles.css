@@ -2924,21 +2924,19 @@ button.seagull-avatar:active {
   border-radius: var(--radius);
   background: var(--glass);
   border: 1px solid rgba(255, 213, 74, 0.2);
-  max-height: 280px;
-  overflow-x: auto;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  max-height: none;
+  overflow: visible;
 }
 
 .leaderboard__row {
   display: grid;
-  grid-template-columns: 28px minmax(72px, 1.1fr) minmax(64px, 0.85fr) minmax(0, 1.15fr);
-  gap: 8px;
+  grid-template-columns: 1.75rem minmax(0, 1.4fr) auto minmax(0, 0.9fr);
+  gap: 6px 8px;
   align-items: center;
   padding: 6px 4px;
   font-size: 0.82rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  min-width: 300px;
+  min-width: 0;
 }
 
 .leaderboard__row:last-child {
@@ -2982,6 +2980,33 @@ button.seagull-avatar:active {
   font-size: 0.82rem;
   color: var(--muted);
   text-align: center;
+}
+
+@media (max-width: 560px) {
+  .leaderboard__row {
+    grid-template-columns: 1.6rem minmax(0, 1fr) auto;
+    grid-template-areas:
+      "rank name pts"
+      ". reef reef";
+    row-gap: 1px;
+  }
+
+  .leaderboard__rank {
+    grid-area: rank;
+  }
+
+  .leaderboard__ini {
+    grid-area: name;
+  }
+
+  .leaderboard__pts {
+    grid-area: pts;
+  }
+
+  .leaderboard__reef {
+    grid-area: reef;
+    font-size: 0.68rem;
+  }
 }
 
 .initials-panel {

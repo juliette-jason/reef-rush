@@ -6187,9 +6187,14 @@ function leaderboardHeaders(extra = {}) {
   return {
     apikey: SUPABASE_PUBLISHABLE_KEY,
     Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+    Accept: "application/json",
+    "Cache-Control": "no-cache",
+    Pragma: "no-cache",
     ...extra,
   };
 }
+
+const LEADERBOARD_FETCH_OPTS = { cache: "no-store" };
 
 const DUEL_BACKEND_MISSING = "DUEL_BACKEND_MISSING";
 
@@ -6253,11 +6258,11 @@ async function fetchSharedLeaderboard() {
   renderLeaderboardOl(leaderboardEvents);
   try {
     const url = `${LEADERBOARD_TABLE_URL}?select=initials,display_name,score,reef_id,created_at&order=score.desc,created_at.asc&limit=${LEADERBOARD_FETCH_LIMIT}`;
-    const res = await fetch(url, { headers: leaderboardHeaders() });
+    const res = await fetch(url, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
     if (!res.ok) {
       /* Older schemas may not have display_name yet. */
       const fallbackUrl = `${LEADERBOARD_TABLE_URL}?select=initials,score,reef_id,created_at&order=score.desc,created_at.asc&limit=${LEADERBOARD_FETCH_LIMIT}`;
-      const fallbackRes = await fetch(fallbackUrl, { headers: leaderboardHeaders() });
+      const fallbackRes = await fetch(fallbackUrl, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
       if (!fallbackRes.ok) throw new Error(`Leaderboard fetch failed: ${fallbackRes.status}`);
       const rows = normalizeLeaderboardRows(await fallbackRes.json());
       if (loadId !== leaderboardLoadId) return;
@@ -6496,10 +6501,10 @@ function normalizeDailyLeaderboardRows(rows) {
 async function fetchDailyLeaderboardForDay(dayKey = getDailyDayKey()) {
   try {
     const url = `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=initials,display_name,score,reef_id,created_at,day_key&order=score.desc,created_at.asc&limit=${DAILY_LEADERBOARD_FETCH_LIMIT}`;
-    let res = await fetch(url, { headers: leaderboardHeaders() });
+    let res = await fetch(url, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
     if (!res.ok) {
       const fallbackUrl = `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=initials,score,reef_id,created_at,day_key&order=score.desc,created_at.asc&limit=${DAILY_LEADERBOARD_FETCH_LIMIT}`;
-      res = await fetch(fallbackUrl, { headers: leaderboardHeaders() });
+      res = await fetch(fallbackUrl, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
     }
     if (!res.ok) throw new Error(`Daily leaderboard fetch failed: ${res.status}`);
     const rows = normalizeDailyLeaderboardRows(await res.json());
@@ -6935,7 +6940,7 @@ async function refreshEventsPanel() {
   updateDailyEventResetLine();
   const rows = await fetchTodayDailyLeaderboard();
   updateDailyEventPlayerHint(rows);
-  refreshLeaderboardViews(false);
+  refreshLeaderboardViews(true);
   refreshDuelEventCard();
   refreshCrabTrapEventCard();
   refreshDailyCatchEventCard();
