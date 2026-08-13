@@ -12810,83 +12810,217 @@ function crabBundleRewardLines(bundle) {
 }
 
 let crabChestSvgSeq = 0;
-// Classic wooden pirate chest: domed barrel-top lid with plank lines, metal
-// reinforcement straps + rivets, a lock plate, and (when opened) gold coins
-// spilling over the rim. Metal + coin richness scale with the reward tier.
+
+function crabChestDiamondSvg(cx, cy, s, outline) {
+  const t = cy - s * 0.72;
+  const b = cy + s * 0.9;
+  const l = cx - s * 0.62;
+  const r = cx + s * 0.62;
+  const g = cy - s * 0.08;
+  return (
+    `<g>` +
+    `<polygon points="${l} ${g} ${cx} ${t} ${r} ${g} ${cx} ${b}" fill="${outline || "#2e1065"}"/>` +
+    `<polygon points="${l} ${g} ${cx} ${t} ${cx} ${g}" fill="#a5f3fc"/>` +
+    `<polygon points="${cx} ${t} ${r} ${g} ${cx} ${g}" fill="#c4b5fd"/>` +
+    `<polygon points="${l} ${g} ${cx} ${g} ${cx} ${b}" fill="#22d3ee"/>` +
+    `<polygon points="${r} ${g} ${cx} ${g} ${cx} ${b}" fill="#7c3aed"/>` +
+    `<polygon points="${cx - s * 0.22} ${t + s * 0.08} ${cx + s * 0.08} ${t + s * 0.08} ${cx - s * 0.04} ${g - s * 0.18}" fill="#fff"/>` +
+    `</g>`
+  );
+}
+
+/** Three distinct chests: battered iron crate, silver pirate trunk, ornate gold reliquary. */
 function crabChestArtSvg(tier, opened) {
-  const p =
-    tier === "great"
-      ? { woodHi: "#a9702f", plank: "#7c4a1e", woodLo: "#4f2c10", metalHi: "#fde68a", metalLo: "#c8901f", stud: "#7a4d10" }
-      : tier === "medium"
-        ? { woodHi: "#8a5a2b", plank: "#6b3f1c", woodLo: "#432711", metalHi: "#e6c58c", metalLo: "#9a6b2f", stud: "#5c3d18" }
-        : { woodHi: "#7a5a37", plank: "#5b4327", woodLo: "#362818", metalHi: "#b6bcc6", metalLo: "#4b5563", stud: "#2f363f" };
   const uid = `cc${crabChestSvgSeq++}`;
+  const isRare = tier === "great";
+  const isGood = tier === "medium";
+  const p = isRare
+    ? {
+        woodHi: "#b45309",
+        plank: "#92400e",
+        woodLo: "#431407",
+        metalHi: "#fde68a",
+        metalLo: "#d97706",
+        stud: "#78350f",
+        rim: "#fbbf24",
+      }
+    : isGood
+      ? {
+          woodHi: "#9a3412",
+          plank: "#7c2d12",
+          woodLo: "#431407",
+          metalHi: "#f1f5f9",
+          metalLo: "#64748b",
+          stud: "#334155",
+          rim: "#cbd5e1",
+        }
+      : {
+          woodHi: "#8b7355",
+          plank: "#6b5340",
+          woodLo: "#3f2e22",
+          metalHi: "#9ca3af",
+          metalLo: "#4b5563",
+          stud: "#1f2937",
+          rim: "#6b7280",
+        };
   const defs =
     `<defs>` +
     `<linearGradient id="${uid}w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${p.woodHi}"/><stop offset="1" stop-color="${p.woodLo}"/></linearGradient>` +
-    `<linearGradient id="${uid}l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${p.woodHi}"/><stop offset="0.55" stop-color="${p.plank}"/><stop offset="1" stop-color="${p.woodLo}"/></linearGradient>` +
+    `<linearGradient id="${uid}l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${p.woodHi}"/><stop offset="0.5" stop-color="${p.plank}"/><stop offset="1" stop-color="${p.woodLo}"/></linearGradient>` +
     `<linearGradient id="${uid}m" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${p.metalHi}"/><stop offset="1" stop-color="${p.metalLo}"/></linearGradient>` +
-    `<radialGradient id="${uid}g" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#fff6c8"/><stop offset="0.55" stop-color="#ffd34d" stop-opacity="0.9"/><stop offset="1" stop-color="#ffd34d" stop-opacity="0"/></radialGradient>` +
+    `<linearGradient id="${uid}brass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fde68a"/><stop offset="1" stop-color="#b45309"/></linearGradient>` +
+    `<radialGradient id="${uid}g" cx="0.5" cy="0.45" r="0.55"><stop offset="0" stop-color="#fff6c8"/><stop offset="0.45" stop-color="#ffd34d" stop-opacity="0.92"/><stop offset="1" stop-color="#ffd34d" stop-opacity="0"/></radialGradient>` +
+    `<radialGradient id="${uid}aura" cx="0.5" cy="0.45" r="0.6"><stop offset="0" stop-color="#fde68a" stop-opacity="0.55"/><stop offset="1" stop-color="#f59e0b" stop-opacity="0"/></radialGradient>` +
     `</defs>`;
-  const strap = (sx, y0, y1) =>
-    `<rect x="${sx - 3}" y="${y0}" width="6" height="${y1 - y0}" rx="1.5" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.6"/>` +
-    `<circle cx="${sx}" cy="${y0 + 3}" r="1.05" fill="${p.stud}"/>` +
-    `<circle cx="${sx}" cy="${y1 - 3}" r="1.05" fill="${p.stud}"/>`;
+  const strap = (sx, y0, y1, halfW = 3.2) =>
+    `<rect x="${sx - halfW}" y="${y0}" width="${halfW * 2}" height="${y1 - y0}" rx="1.4" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.55"/>` +
+    `<circle cx="${sx}" cy="${y0 + 2.6}" r="1.05" fill="${p.stud}"/>` +
+    `<circle cx="${sx}" cy="${(y0 + y1) / 2}" r="0.9" fill="${p.stud}"/>` +
+    `<circle cx="${sx}" cy="${y1 - 2.6}" r="1.05" fill="${p.stud}"/>`;
   const coin = (cx, cy, r) =>
-    `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#ffd94d" stroke="#c8901f" stroke-width="0.6"/>` +
-    `<circle cx="${cx - r * 0.32}" cy="${cy - r * 0.32}" r="${r * 0.34}" fill="#fff2b0"/>`;
+    `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#ffd94d" stroke="#c8901f" stroke-width="0.55"/>` +
+    `<circle cx="${cx - r * 0.3}" cy="${cy - r * 0.3}" r="${r * 0.32}" fill="#fff2b0"/>`;
+  const corner = (x, y, flipX, flipY) =>
+    `<path d="M${x} ${y} h${8 * flipX} v${2.2 * flipY} h${-5.8 * flipX} v${5.8 * flipY} h${-2.2 * flipX} z" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.45"/>`;
+  const wrap = (inner) =>
+    `<svg viewBox="0 0 80 72" width="72" height="64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${defs}${inner}</svg>`;
 
-  if (opened) {
-    const coins =
-      tier === "great"
-        ? [[20, 29, 4], [28, 26.5, 4.6], [36, 25.5, 5], [44, 26.5, 4.6], [52, 29, 4], [24, 33, 3.6], [33, 32, 4], [42, 32, 4], [49, 33.5, 3.4], [18, 36, 3], [55, 36, 3]]
-        : tier === "medium"
-          ? [[24, 29.5, 4], [32, 27.5, 4.5], [40, 28, 4.5], [48, 30, 4], [30, 33.5, 3.5], [43, 33.5, 3.5]]
-          : [[30, 30.5, 4], [38, 29.5, 4], [34, 34.5, 3.5]];
-    const gem = tier === "great"
-      ? `<g>
-          <polygon points="33.1 22.4 38.9 22.4 41.2 26.8 36 33.4 30.8 26.8" fill="#4c1d95"/>
-          <polygon points="33.1 22.4 38.9 22.4 36 26.8" fill="#f8fafc"/>
-          <polygon points="33.1 22.4 30.8 26.8 36 26.8" fill="#a5f3fc"/>
-          <polygon points="38.9 22.4 41.2 26.8 36 26.8" fill="#c4b5fd"/>
-          <polygon points="30.8 26.8 36 26.8 36 33.4" fill="#22d3ee"/>
-          <polygon points="41.2 26.8 36 26.8 36 33.4" fill="#7c3aed"/>
+  const shadow = `<ellipse cx="40" cy="67" rx="${isRare ? 30 : 27}" ry="3.2" fill="rgba(0,0,0,0.3)"/>`;
+  const lootGlow = opened
+    ? `<ellipse cx="40" cy="${opened ? 34 : 32}" rx="${isRare ? 30 : 24}" ry="${isRare ? 14 : 11}" fill="url(#${uid}g)"/>`
+    : "";
+
+  if (isRare) {
+    const lid = opened
+      ? `<g transform="rotate(-18 40 24) translate(0 -14)">
+          <path d="M8 32 C8 12 22 5 40 5 C58 5 72 12 72 32 Z" fill="url(#${uid}l)" stroke="${p.woodLo}" stroke-width="1.1"/>
+          <path d="M14 22 C22 14 58 14 66 22" stroke="#fbbf24" stroke-width="1.1" fill="none" opacity="0.7"/>
+          <path d="M18 16 C28 10 52 10 62 16" stroke="#fde68a" stroke-width="0.8" fill="none" opacity="0.55"/>
+          <rect x="7" y="28" width="66" height="5" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.45"/>
+          ${strap(22, 8, 33, 3.6)}${strap(40, 7, 33, 2.4)}${strap(58, 8, 33, 3.6)}
+          ${crabChestDiamondSvg(40, 16, 5.2)}
         </g>`
+      : `<path d="M8 32 C8 12 22 5 40 5 C58 5 72 12 72 32 Z" fill="url(#${uid}l)" stroke="${p.woodLo}" stroke-width="1.1"/>
+        <path d="M14 22 C22 14 58 14 66 22" stroke="#fbbf24" stroke-width="1.15" fill="none" opacity="0.75"/>
+        <path d="M18 16 C28 10 52 10 62 16" stroke="#fde68a" stroke-width="0.85" fill="none" opacity="0.55"/>
+        <rect x="7" y="28.5" width="66" height="5" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.45"/>`;
+    const lock = opened
+      ? ""
+      : `<rect x="33" y="34" width="14" height="16" rx="2.4" fill="url(#${uid}brass)" stroke="#78350f" stroke-width="0.7"/>
+        <rect x="35" y="36" width="10" height="7" rx="1.2" fill="#fef3c7" opacity="0.55"/>
+        <circle cx="40" cy="40" r="2.4" fill="#ef4444" stroke="#7f1d1d" stroke-width="0.55"/>
+        <rect x="39.1" y="41.6" width="1.8" height="5.2" fill="#78350f"/>
+        <path d="M36 34 L40 30 L44 34" fill="#fbbf24" stroke="#78350f" stroke-width="0.5"/>`;
+    const coins = opened
+      ? [[18, 32, 3.4], [26, 28.5, 4.4], [35, 26.5, 5], [45, 26.8, 4.8], [54, 29, 4.2], [62, 33, 3.5], [22, 37, 3.6], [31, 35, 4], [40, 34, 4.4], [49, 35.5, 3.8], [58, 38, 3.2], [28, 41, 3], [44, 41.5, 3.1]].map((c) => coin(c[0], c[1], c[2])).join("")
       : "";
-    return `<svg viewBox="0 0 72 64" width="60" height="53" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      ${defs}
-      <ellipse cx="36" cy="60" rx="27" ry="3" fill="rgba(0,0,0,0.28)"/>
-      <g transform="rotate(-15 36 22) translate(0 -13)">
-        <path d="M6 29 C6 12 20 7 36 7 C52 7 66 12 66 29 Z" fill="url(#${uid}l)" stroke="${p.woodLo}" stroke-width="1"/>
-        <path d="M9 21 C18 14 54 14 63 21" stroke="${p.plank}" stroke-width="1" fill="none" opacity="0.5"/>
-        <rect x="5" y="25.5" width="62" height="4.5" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.4"/>
-        <rect x="18" y="8" width="6" height="21" fill="url(#${uid}m)"/>
-        <rect x="48" y="8" width="6" height="21" fill="url(#${uid}m)"/>
-      </g>
-      <ellipse cx="36" cy="31" rx="27" ry="12" fill="url(#${uid}g)"/>
-      <path d="M8 30 L64 30 L64 52 Q64 56 60 56 L12 56 Q8 56 8 52 Z" fill="url(#${uid}w)" stroke="${p.woodLo}" stroke-width="1"/>
-      <path d="M8 44 L64 44" stroke="${p.plank}" stroke-width="1" opacity="0.45"/>
-      <rect x="6" y="28" width="60" height="4.5" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.4"/>
-      ${strap(21, 32, 56)}${strap(51, 32, 56)}
-      ${coins.map((c) => coin(c[0], c[1], c[2])).join("")}
-      ${gem}
-    </svg>`;
+    const spark = opened
+      ? ""
+      : `<path d="M12 12 l1.2 3.2 3.2 1.2 -3.2 1.2 -1.2 3.2 -1.2 -3.2 -3.2 -1.2 3.2 -1.2 z" fill="#fef9c3" opacity="0.9"/>
+        <path d="M70 14 l0.9 2.4 2.4 0.9 -2.4 0.9 -0.9 2.4 -0.9 -2.4 -2.4 -0.9 2.4 -0.9 z" fill="#fde68a" opacity="0.85"/>
+        <path d="M66 48 l0.8 2 2 0.8 -2 0.8 -0.8 2 -0.8 -2 -2 -0.8 2 -0.8 z" fill="#fff7ed" opacity="0.7"/>`;
+    return wrap(
+      `${!opened ? `<ellipse cx="40" cy="36" rx="36" ry="30" fill="url(#${uid}aura)"/>` : ""}` +
+        shadow +
+        lid +
+        lootGlow +
+        `<path d="M9 32 L71 32 L71 58 Q71 63 65 63 L15 63 Q9 63 9 58 Z" fill="url(#${uid}w)" stroke="${p.woodLo}" stroke-width="1.1"/>` +
+        `<path d="M11 46 L69 46" stroke="${p.plank}" stroke-width="1" opacity="0.4"/>` +
+        `<rect x="8" y="30.5" width="64" height="5.2" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.45"/>` +
+        (opened
+          ? strap(22, 34, 63, 3.6) + strap(40, 34, 63, 2.4) + strap(58, 34, 63, 3.6)
+          : strap(22, 8, 63, 3.6) + strap(40, 7, 63, 2.4) + strap(58, 8, 63, 3.6)) +
+        corner(11, 34, 1, 1) +
+        corner(69, 34, -1, 1) +
+        corner(11, 61, 1, -1) +
+        corner(69, 61, -1, -1) +
+        `<ellipse cx="16" cy="62.5" rx="4" ry="1.6" fill="url(#${uid}brass)"/><ellipse cx="64" cy="62.5" rx="4" ry="1.6" fill="url(#${uid}brass)"/>` +
+        lock +
+        coins +
+        (opened
+          ? crabChestDiamondSvg(40, 30, 6.4)
+          : crabChestDiamondSvg(28, 18, 4.4) +
+            crabChestDiamondSvg(40, 14.5, 5.4) +
+            crabChestDiamondSvg(52, 18, 4.4) +
+            `<circle cx="18" cy="24" r="1.6" fill="#ef4444" stroke="#7f1d1d" stroke-width="0.4"/>` +
+            `<circle cx="62" cy="24" r="1.6" fill="#22c55e" stroke="#14532d" stroke-width="0.4"/>`) +
+        spark,
+    );
   }
 
-  return `<svg viewBox="0 0 72 64" width="60" height="53" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    ${defs}
-    <ellipse cx="36" cy="60" rx="27" ry="3" fill="rgba(0,0,0,0.28)"/>
-    <path d="M8 28 L64 28 L64 52 Q64 56 60 56 L12 56 Q8 56 8 52 Z" fill="url(#${uid}w)" stroke="${p.woodLo}" stroke-width="1"/>
-    <path d="M8 40 L64 40" stroke="${p.plank}" stroke-width="1" opacity="0.55"/>
-    <path d="M8 48 L64 48" stroke="${p.plank}" stroke-width="1" opacity="0.4"/>
-    <path d="M6 29 C6 12 20 7 36 7 C52 7 66 12 66 29 Z" fill="url(#${uid}l)" stroke="${p.woodLo}" stroke-width="1"/>
-    <path d="M9 21 C18 14 54 14 63 21" stroke="${p.plank}" stroke-width="1" fill="none" opacity="0.5"/>
-    <rect x="6" y="26" width="60" height="4.5" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.4"/>
-    ${strap(21, 9, 56)}${strap(51, 9, 56)}
-    <rect x="31" y="31" width="10" height="13" rx="2" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.6"/>
-    <circle cx="36" cy="36" r="1.7" fill="${p.stud}"/>
-    <rect x="35.2" y="36.5" width="1.6" height="4" fill="${p.stud}"/>
-  </svg>`;
+  if (isGood) {
+    const lid = opened
+      ? `<g transform="rotate(-15 40 26) translate(0 -12)">
+          <path d="M8 32 C8 14 22 8 40 8 C58 8 72 14 72 32 Z" fill="url(#${uid}l)" stroke="${p.woodLo}" stroke-width="1"/>
+          <path d="M13 22 C22 16 58 16 67 22" stroke="${p.rim}" stroke-width="1.05" fill="none" opacity="0.7"/>
+          <rect x="7" y="28.5" width="66" height="4.6" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.45"/>
+          ${strap(22, 10, 33)}${strap(58, 10, 33)}
+        </g>`
+      : `<path d="M8 32 C8 14 22 8 40 8 C58 8 72 14 72 32 Z" fill="url(#${uid}l)" stroke="${p.woodLo}" stroke-width="1"/>
+        <path d="M13 22 C22 16 58 16 67 22" stroke="${p.rim}" stroke-width="1.1" fill="none" opacity="0.75"/>
+        <path d="M16 17 C26 12 54 12 64 17" stroke="${p.plank}" stroke-width="0.7" fill="none" opacity="0.45"/>
+        <rect x="7" y="29" width="66" height="4.6" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.45"/>`;
+    const lock = opened
+      ? ""
+      : `<rect x="33.5" y="35" width="13" height="15" rx="2" fill="url(#${uid}brass)" stroke="#78350f" stroke-width="0.6"/>
+        <circle cx="40" cy="41" r="2.3" fill="#67e8f9" stroke="#0e7490" stroke-width="0.5"/>
+        <circle cx="39.3" cy="40.3" r="0.7" fill="#fff" opacity="0.8"/>
+        <rect x="39.2" y="42.4" width="1.6" height="4.6" fill="#78350f"/>`;
+    const coins = opened
+      ? [[24, 32, 3.8], [33, 29.5, 4.4], [43, 29.8, 4.3], [52, 33, 3.7], [30, 37, 3.4], [41, 37.5, 3.5], [47, 41, 3]].map((c) => coin(c[0], c[1], c[2])).join("")
+      : "";
+    return wrap(
+      shadow +
+        lid +
+        lootGlow +
+        `<path d="M10 32 L70 32 L70 57 Q70 62 64 62 L16 62 Q10 62 10 57 Z" fill="url(#${uid}w)" stroke="${p.woodLo}" stroke-width="1"/>` +
+        `<path d="M12 44 L68 44" stroke="${p.plank}" stroke-width="1" opacity="0.42"/>` +
+        `<path d="M12 52 L68 52" stroke="${p.plank}" stroke-width="0.8" opacity="0.32"/>` +
+        `<rect x="8.5" y="30.8" width="63" height="4.6" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.45"/>` +
+        (opened ? strap(22, 34, 62) + strap(58, 34, 62) : strap(22, 10, 62) + strap(58, 10, 62)) +
+        corner(12, 35, 1, 1) +
+        corner(68, 35, -1, 1) +
+        lock +
+        coins +
+        (opened ? `<circle cx="40" cy="31" r="3.2" fill="#67e8f9" stroke="#0e7490" stroke-width="0.5"/><circle cx="39.2" cy="30.2" r="0.9" fill="#fff" opacity="0.85"/>` : ""),
+    );
+  }
+
+  const lid = opened
+    ? `<g transform="rotate(-12 40 28) translate(0 -10)">
+        <path d="M12 32 L16 18 L64 18 L68 32 Z" fill="url(#${uid}l)" stroke="${p.woodLo}" stroke-width="1"/>
+        <path d="M20 22 H60" stroke="${p.plank}" stroke-width="0.9" opacity="0.45"/>
+        <rect x="11" y="29" width="58" height="4.2" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.45"/>
+        ${strap(24, 18, 33, 2.8)}${strap(56, 18, 33, 2.8)}
+      </g>`
+    : `<path d="M12 32 L16 18 L64 18 L68 32 Z" fill="url(#${uid}l)" stroke="${p.woodLo}" stroke-width="1"/>
+      <path d="M20 22 H60" stroke="${p.plank}" stroke-width="0.9" opacity="0.5"/>
+      <path d="M22 26 H58" stroke="${p.plank}" stroke-width="0.7" opacity="0.35"/>
+      <rect x="11" y="29.2" width="58" height="4.2" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.45"/>`;
+  const lock = opened
+    ? ""
+    : `<rect x="34" y="36" width="12" height="13" rx="1.4" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.6"/>
+      <circle cx="40" cy="41.2" r="2" fill="#111827"/>
+      <rect x="39.2" y="42.4" width="1.6" height="4.2" fill="#111827"/>
+      <rect x="48" y="40" width="7" height="5" rx="0.6" fill="#57534e" stroke="#1c1917" stroke-width="0.4" opacity="0.85"/>`;
+  const coins = opened
+    ? [[32, 34, 3.4], [40, 32.5, 3.8], [48, 35, 3.2]].map((c) => coin(c[0], c[1], c[2])).join("")
+    : "";
+  return wrap(
+    shadow +
+      lid +
+      lootGlow +
+      `<path d="M11 32 L69 32 L67 58 Q67 62 62 62 L18 62 Q13 62 13 58 Z" fill="url(#${uid}w)" stroke="${p.woodLo}" stroke-width="1"/>` +
+      `<path d="M14 42 L66 43" stroke="${p.plank}" stroke-width="1" opacity="0.45"/>` +
+      `<path d="M15 51 L65 50.5" stroke="${p.plank}" stroke-width="0.85" opacity="0.35"/>` +
+      `<rect x="10" y="31" width="60" height="4.2" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.45"/>` +
+      (opened ? strap(24, 34, 61, 2.8) + strap(56, 34, 61, 2.8) : strap(24, 18, 61, 2.8) + strap(56, 18, 61, 2.8)) +
+      `<path d="M14 54 h8 v6 h-8 z" fill="#57534e" opacity="0.55"/>` +
+      `<path d="M8 36 Q6 40 10 48" fill="none" stroke="#a16207" stroke-width="1.6" stroke-linecap="round"/>` +
+      `<path d="M10 48 Q14 50 18 47" fill="none" stroke="#b45309" stroke-width="1.5" stroke-linecap="round"/>` +
+      lock +
+      coins,
+  );
 }
 
 function renderCrabRewardChests(tier) {
