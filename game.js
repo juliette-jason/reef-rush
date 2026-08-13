@@ -1545,7 +1545,7 @@ const PROGRESS_BACKUP_KEY = "reefRushProgressBackup_v1";
 const TREASURE_CHESTS_TO_UNLOCK_ADVENTURE = 20;
 const SECRET_TREASURE_CHEST_GRANT = 19;
 const ADVENTURE_MAIN_LEVEL_COUNT = 15;
-const ADVENTURE_BONUS_LEVEL_COUNT = 5;
+const ADVENTURE_BONUS_LEVEL_COUNT = 7;
 const ADVENTURE_ICE_LEVEL_COUNT = 5;
 const ADVENTURE_LOST_CITY_LEVEL_COUNT = 5;
 const ADVENTURE_LEVEL_COUNT =
@@ -1555,12 +1555,16 @@ const ADVENTURE_LEVEL_COUNT =
   ADVENTURE_LOST_CITY_LEVEL_COUNT;
 /** Index of Treasure Cove (level 15) — clearing it unlocks bonus voyages. */
 const TREASURE_COVE_INDEX = ADVENTURE_MAIN_LEVEL_COUNT - 1;
-/** Index of Legend's Gate (level 20) — clearing it unlocks ice voyages. */
+/** Index of Legend's Gate (last Gold Quest voyage) — clearing it unlocks ice voyages. */
 const LEGENDS_GATE_INDEX = ADVENTURE_MAIN_LEVEL_COUNT + ADVENTURE_BONUS_LEVEL_COUNT - 1;
 const ADVENTURE_ICE_START_INDEX = ADVENTURE_MAIN_LEVEL_COUNT + ADVENTURE_BONUS_LEVEL_COUNT;
 const ADVENTURE_LOST_CITY_START_INDEX = ADVENTURE_ICE_START_INDEX + ADVENTURE_ICE_LEVEL_COUNT;
-/** Index of Aurora Reach (level 25) — clearing it unlocks The Lost City. */
+/** Index of Aurora Reach — clearing it unlocks The Lost City. */
 const AURORA_REACH_INDEX = ADVENTURE_LOST_CITY_START_INDEX - 1;
+/** Bump when inserting voyages mid-chart so saved progress can remapped. */
+const ADVENTURE_MAP_CONTENT_REV = 2;
+/** Ice start index before Middle Passage / Kraken's Grotto were added to Gold Quest. */
+const ADVENTURE_PREV_ICE_START_FOR_REV1 = 20;
 
 const ADVENTURE_SECTION_PIRATES_PATH = "Pirates Path";
 const ADVENTURE_SECTION_GOLD_QUEST = "Gold Quest";
@@ -1701,6 +1705,9 @@ function buildAdventureMapNodeLayout() {
     { x: 38, y: 50.5 },
     { x: 74, y: 47 },
     { x: 30, y: 43 },
+    // Empty Middle Passage / Kraken's Grotto chart gap (between Crown Reef & Legend's Gate).
+    { x: 50, y: 45.2 },
+    { x: 78, y: 41.2 },
     { x: 52, y: 39.5 },
   ];
   const ice = [
@@ -1748,6 +1755,8 @@ const ADVENTURE_MAP_PLACES = [
   "Molten Maelstrom",
   "Pearl Abyss",
   "Crown Reef",
+  "Middle Passage",
+  "Kraken's Grotto",
   "Legend's Gate",
   "Frostbite Fjord",
   "Iceberg Drift",
@@ -1782,6 +1791,8 @@ const ADVENTURE_LEVEL_THEMES = [
   "molten-maelstrom",
   "pearl-abyss",
   "crown-reef",
+  "middle-passage",
+  "krakens-grotto",
   "legends-gate",
   "frost-fjord",
   "iceberg-drift",
@@ -2020,6 +2031,24 @@ function adventureMapSceneSvg(themeId, idSuffix = "") {
       <path d="M24 28 L28 18 L32 24 L36 14 L40 24 L44 18 L48 28 Z" fill="#f0d050" stroke="#a88020" stroke-width="0.8"/>
       <circle cx="22" cy="38" r="2" fill="#f8e890"/>
       <circle cx="50" cy="36" r="2" fill="#f8e890"/>
+    </svg>`,
+    "middle-passage": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#3a6880"/>
+      <path d="M0 28 Q18 20 36 28 T72 28 L72 52 L0 52 Z" fill="#2a5068"/>
+      <path d="M4 30 Q22 18 40 28 Q54 36 68 26" fill="none" stroke="#c8b070" stroke-width="1.6" stroke-dasharray="3 2.5" opacity="0.75"/>
+      <path d="M10 34 Q28 24 46 32 Q58 38 70 30" fill="none" stroke="#7a98a8" stroke-width="1.2" opacity="0.55"/>
+      <circle cx="36" cy="16" r="3" fill="#f0e0a0" opacity="0.7"/>
+      <path d="M48 38 L52 30 L56 38 L54 44 L50 44 Z" fill="#5a6878" stroke="#2e2418" stroke-width="0.6" opacity="0.8"/>
+    </svg>`,
+    "krakens-grotto": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#1a2838"/>
+      <path d="M8 52 L12 22 Q36 8 60 22 L64 52 Z" fill="#0e1824"/>
+      <path d="M16 52 L20 28 Q36 16 52 28 L56 52 Z" fill="#152030"/>
+      <ellipse cx="36" cy="34" rx="10" ry="6" fill="#061018"/>
+      <path d="M22 40 Q28 34 36 38 Q44 42 50 36" fill="none" stroke="#7a2848" stroke-width="2" opacity="0.85"/>
+      <circle cx="28" cy="36" r="1.4" fill="#9a3858"/>
+      <circle cx="44" cy="38" r="1.2" fill="#9a3858"/>
+      <circle cx="36" cy="18" r="2.5" fill="#f0d050" opacity="0.55"/>
     </svg>`,
     "legends-gate": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="72" height="52" fill="#1a2838"/>
@@ -5277,6 +5306,8 @@ const ADVENTURE_BONUS_THEME_BASE = {
   "molten-maelstrom": "lava-falls",
   "pearl-abyss": "emerald-lagoon",
   "crown-reef": "golden-atoll",
+  "middle-passage": "serpent-strait",
+  "krakens-grotto": "krakens-teeth",
   "legends-gate": "treasure-cove",
 };
 
@@ -5285,6 +5316,8 @@ const ADVENTURE_GOLD_QUEST_THEMES = [
   "molten-maelstrom",
   "pearl-abyss",
   "crown-reef",
+  "middle-passage",
+  "krakens-grotto",
   "legends-gate",
 ];
 
@@ -5334,6 +5367,8 @@ function registerGoldQuestTreasureBeds() {
     "molten-maelstrom": 22,
     "pearl-abyss": 23,
     "crown-reef": 24,
+    "middle-passage": 25,
+    "krakens-grotto": 26,
   };
   for (const slug of ADVENTURE_GOLD_QUEST_THEMES) {
     ADVENTURE_THEME_SAND[slug] = { ...ADVENTURE_GOLD_QUEST_SAND };
@@ -5462,6 +5497,7 @@ function defaultMeta() {
     selectedRodId: FREE_ROD_ID,
     totalTreasureChests: 0,
     adventureHighestLevel: 0,
+    adventureMapContentRev: ADVENTURE_MAP_CONTENT_REV,
     pendingAdventureHomeCelebration: false,
     pendingBonusVoyagesCelebration: false,
     pendingIceVoyagesCelebration: false,
@@ -5487,6 +5523,22 @@ function defaultMeta() {
 
 let gameMeta = defaultMeta();
 
+/** Remap voyage progress when new reefs are inserted before later sections. */
+function migrateAdventureMapProgress(highestLevel, contentRev) {
+  let highest = Math.max(0, Math.floor(Number(highestLevel) || 0));
+  let rev = Math.max(0, Math.floor(Number(contentRev) || 1));
+  if (rev < 2) {
+    // Gold Quest gained Middle Passage + Kraken's Grotto before Legend's Gate.
+    if (highest >= ADVENTURE_PREV_ICE_START_FOR_REV1) highest += 2;
+    rev = 2;
+  }
+  if (rev < ADVENTURE_MAP_CONTENT_REV) rev = ADVENTURE_MAP_CONTENT_REV;
+  return {
+    adventureHighestLevel: Math.max(0, Math.min(ADVENTURE_LEVEL_COUNT, highest)),
+    adventureMapContentRev: rev,
+  };
+}
+
 /** Per-round modifiers stacked on the rod (neutral when not in a round). */
 let roundBait = { catchRadiusMult: 1, rareAssistAdd: 0, lightRadiusMult: 1 };
 
@@ -5507,6 +5559,7 @@ function loadMeta() {
     const ownedRodIds = Array.from(new Set([FREE_ROD_ID, ...owned]));
     let selectedRodId = typeof o.selectedRodId === "string" ? o.selectedRodId : FREE_ROD_ID;
     if (!ownedRodIds.includes(selectedRodId)) selectedRodId = FREE_ROD_ID;
+    const adventureProgress = migrateAdventureMapProgress(o.adventureHighestLevel, o.adventureMapContentRev);
     return {
       coins: Math.max(0, Math.floor(Number(o.coins) || 0)),
       gems: Math.max(0, Math.floor(Number(o.gems) || 0)),
@@ -5515,7 +5568,8 @@ function loadMeta() {
       ownedRodIds,
       selectedRodId,
       totalTreasureChests: Math.max(0, Math.floor(Number(o.totalTreasureChests) || 0)),
-      adventureHighestLevel: Math.max(0, Math.min(ADVENTURE_LEVEL_COUNT, Math.floor(Number(o.adventureHighestLevel) || 0))),
+      adventureHighestLevel: adventureProgress.adventureHighestLevel,
+      adventureMapContentRev: adventureProgress.adventureMapContentRev,
       pendingAdventureHomeCelebration: Boolean(o.pendingAdventureHomeCelebration),
       pendingBonusVoyagesCelebration: Boolean(o.pendingBonusVoyagesCelebration),
       pendingIceVoyagesCelebration: Boolean(o.pendingIceVoyagesCelebration),
