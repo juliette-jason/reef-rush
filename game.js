@@ -6159,6 +6159,19 @@ function getReef() {
   if (duelSession) {
     return REEFS.find((r) => r.id === duelSession.reefId) || REEFS[0];
   }
+  if (eventMinigameSession && eventMinigameSession.reefId) {
+    const base = REEFS.find((r) => r.id === eventMinigameSession.reefId) || REEFS[0];
+    const spawnMul = eventMinigameSession.spawnMult || 1;
+    return {
+      ...base,
+      name: eventMinigameSession.reefName || base.name,
+      roundMs: eventMinigameSession.roundMs || base.roundMs,
+      spawnMin: Math.max(70, Math.floor(base.spawnMin * spawnMul)),
+      spawnMax: Math.max(160, Math.floor(base.spawnMax * spawnMul)),
+      fishSpeed: (base.fishSpeed || 1) * (eventMinigameSession.speedMult || 1),
+      maxFish: Math.min(22, Math.floor((base.maxFish || 12) * (eventMinigameSession.maxFishMult || 1))),
+    };
+  }
   if (roundOverrideReefId && !adventureSession) {
     const mystery = REEFS.find((r) => r.id === roundOverrideReefId);
     if (mystery) return mystery;
@@ -7133,6 +7146,7 @@ async function refreshEventsPanel() {
   refreshLeaderboardViews(true);
   refreshDuelEventCard();
   refreshCrabTrapEventCard();
+  refreshEventMinigameCards();
   refreshDailyCatchEventCard();
 }
 
@@ -7155,6 +7169,18 @@ const DUEL_MATCH_START_DELAY_MS = 4000;
 const DUEL_LOBBY_MAX_AGE_MS = 120_000;
 /** null during classic/adventure play; set for split-screen duel fishing. */
 let duelSession = null;
+/** Event mini-games on the main canvas: roulette | coop | survivor. */
+let eventMinigameSession = null;
+const MINIGAME_ROULETTE_MS = 45_000;
+const MINIGAME_COOP_MS = 60_000;
+const MINIGAME_SURVIVOR_MS = 30 * 60_000;
+/** Fish-score chest tiers for timed mini-games. */
+const MINIGAME_FISH_RARE_MIN = 1500;
+const MINIGAME_FISH_LEGENDARY_MIN = 4000;
+/** Survivor chest tiers (bonus haul when you hook the kraken). */
+const MINIGAME_SURVIVOR_RARE_MIN = 700;
+const MINIGAME_SURVIVOR_LEGENDARY_MIN = 1800;
+
 /** Reef shown on the Events card / used for the active duel plan. */
 let duelPendingReefId = null;
 /** Last reef played in duel fishing — avoid picking the same one twice in a row. */
@@ -9274,6 +9300,7 @@ function stopActiveSessionsForProgressTest() {
     }
   }
   duelSession = null;
+  eventMinigameSession = null;
   adventureSession = null;
 }
 
@@ -12155,6 +12182,237 @@ function closeEvents() {
 }
 
 /* =========================================================================
+   Event mini-games — Reef Roulette, Co-op Haul, Kraken Survivor.
+   ========================================================================= */
+function minigameFishTierForScore(pts) {
+  if (pts >= MINIGAME_FISH_LEGENDARY_MIN) return "legendary";
+  if (pts >= MINIGAME_FISH_RARE_MIN) return "rare";
+  return "common";
+}
+
+function survivorTierForScore(pts) {
+  if (pts >= MINIGAME_SURVIVOR_LEGENDARY_MIN) return "legendary";
+  if (pts >= MINIGAME_SURVIVOR_RARE_MIN) return "rare";
+  return "common";
+}
+
+function scheduleSurvivorKraken(now) {
+  if (!eventMinigameSession || eventMinigameSession.kind !== "survivor") return;
+  if (eventMinigameSession.caughtKraken) return;
+  const delay = 500 + Math.random() * 1100;
+  kraken = { state: "scheduled", spawnAt: (now || performance.now()) + delay };
+}
+
+function syncCoopHud(show) {
+  if (!duelHud) return;
+  const you = document.getElementById("duelHudPlayerLabel");
+  const rival = document.getElementById("duelHudOpponentLabel");
+  const vs = duelHud.querySelector(".duel-hud__vs");
+  if (!show || eventMinigameSession?.kind !== "coop") {
+    duelHud.hidden = true;
+    duelHud.classList.remove("duel-hud--coop");
+    if (you) you.textContent = "You";
+    if (rival) rival.textContent = "Rival";
+    if (vs) vs.textContent = "vs";
+    return;
+  }
+  duelHud.hidden = false;
+  duelHud.classList.add("duel-hud--coop");
+  if (you) you.textContent = "You";
+  if (rival) rival.textContent = "Partner";
+  if (vs) vs.textContent = "+";
+  const pScore = document.getElementById("duelHudPlayerScore");
+  const oScore = document.getElementById("duelHudOpponentScore");
+  if (pScore) pScore.textContent = String(score);
+  if (oScore) oScore.textContent = String(eventMinigameSession.partnerScore || 0);
+}
+
+function updateCoopPartner(now) {
+  const s = eventMinigameSession;
+  if (!s || s.kind !== "coop") return;
+  const elapsed = Math.max(0, now - (s.startedAt || now));
+  const progress = Math.min(1, elapsed / (s.roundMs || MINIGAME_COOP_MS));
+  const paced = Math.floor((s.partnerTarget || 2200) * (progress * progress * 0.85 + progress * 0.15));
+  if (paced > (s.partnerScore || 0)) s.partnerScore = paced;
+  // Nudge partner when you score well.
+  const assist = Math.floor(score * 0.12);
+  if (assist > s.partnerScore) s.partnerScore = Math.min(assist + s.partnerScore, s.partnerScore + 40);
+  syncCoopHud(true);
+}
+
+function refreshEventMinigameCards() {
+  const tickets = getDuelTicketCount();
+  const map = [
+    ["rouletteEventTickets", "btnStartRoulette", "Play Reef Roulette"],
+    ["coopEventTickets", "btnStartCoop", "Play Co-op Haul"],
+    ["survivorEventTickets", "btnStartSurvivor", "Play Kraken Survivor"],
+  ];
+  for (const [ticketId, btnId, label] of map) {
+    const ticketEl = document.getElementById(ticketId);
+    const btn = document.getElementById(btnId);
+    if (ticketEl) ticketEl.textContent = `Tickets: ${tickets}`;
+    if (btn) {
+      btn.disabled = tickets <= 0;
+      btn.textContent = tickets <= 0 ? "No tickets — visit shop" : label;
+    }
+  }
+}
+
+function spendTicketOrToast() {
+  if (getDuelTicketCount() <= 0) {
+    showToast("No tickets — visit the shop", 2200);
+    return false;
+  }
+  if (!spendDuelTicket()) {
+    showToast("No tickets — visit the shop", 2200);
+    return false;
+  }
+  refreshCrabTrapEventCard();
+  refreshEventMinigameCards();
+  refreshDuelEventCard();
+  return true;
+}
+
+function pickMinigameReef() {
+  return REEFS[Math.floor(Math.random() * REEFS.length)] || REEFS[0];
+}
+
+function beginEventMinigame(kind) {
+  if (playing || crabTrapSession || duelSession || adventureSession) {
+    showToast("Finish your current run first", 2000);
+    return;
+  }
+  if (!spendTicketOrToast()) return;
+  hideAllPanels();
+  if (panelCrabReward) panelCrabReward.hidden = true;
+  stopEventsMusic();
+  const reef = pickMinigameReef();
+  const now = performance.now();
+  if (kind === "roulette") {
+    const spin = 0.72 + Math.random() * 0.5;
+    eventMinigameSession = {
+      kind: "roulette",
+      reefId: reef.id,
+      reefName: `Roulette · ${reef.name}`,
+      roundMs: MINIGAME_ROULETTE_MS,
+      spawnMult: spin,
+      speedMult: 0.95 + Math.random() * 0.35,
+      maxFishMult: 1.05 + Math.random() * 0.35,
+      startedAt: now,
+    };
+    showToast(`Reef Roulette: ${reef.name}!`, 2200);
+  } else if (kind === "coop") {
+    eventMinigameSession = {
+      kind: "coop",
+      reefId: reef.id,
+      reefName: `Co-op · ${reef.name}`,
+      roundMs: MINIGAME_COOP_MS,
+      spawnMult: 0.9,
+      speedMult: 1,
+      maxFishMult: 1.15,
+      startedAt: now,
+      partnerScore: 0,
+      partnerTarget: 1800 + Math.floor(Math.random() * 2200),
+    };
+    showToast("Co-op Haul — haul with your partner!", 2200);
+  } else {
+    eventMinigameSession = {
+      kind: "survivor",
+      reefId: reef.id,
+      reefName: `Survivor · ${reef.name}`,
+      roundMs: MINIGAME_SURVIVOR_MS,
+      spawnMult: 0.85,
+      speedMult: 1.05,
+      maxFishMult: 1.2,
+      startedAt: now,
+      caughtKraken: false,
+    };
+    showToast("Kraken Survivor — fish for bonus pts, then hook the beast!", 2800);
+  }
+  startRound();
+}
+
+function showEventMinigameReward({ source, title, summaryHtml, scorePts, tier }) {
+  crabRewardSource = source;
+  crabRewardBundles = rollCrabBundles(tier);
+  crabRewardClaimed = false;
+  if (crabRewardHeadline) crabRewardHeadline.textContent = title;
+  if (crabRewardSummary) crabRewardSummary.innerHTML = summaryHtml;
+  if (crabRewardTier) {
+    crabRewardTier.textContent =
+      tier === "legendary"
+        ? "Legendary chest — top haul!"
+        : tier === "rare"
+          ? "Rare chest — solid haul."
+          : "Common chest — keep grinding for bigger rewards.";
+  }
+  if (crabRewardPrompt) crabRewardPrompt.textContent = "Choose one chest — better hauls mean richer loot.";
+  if (crabRewardResult) {
+    crabRewardResult.hidden = true;
+    crabRewardResult.textContent = "";
+  }
+  if (btnCrabPlayAgain) btnCrabPlayAgain.hidden = true;
+  renderCrabRewardChests(tier);
+  if (panelCrabReward) panelCrabReward.hidden = false;
+  syncCoopHud(false);
+  if (adventureGoalLine) adventureGoalLine.hidden = true;
+  refreshEventMinigameCards();
+}
+
+function endEventMinigameRound() {
+  const session = eventMinigameSession;
+  eventMinigameSession = null;
+  syncCoopHud(false);
+  if (adventureGoalLine && !adventureSession) adventureGoalLine.hidden = true;
+  clearAdventurePlayTheme();
+  roundBait = { catchRadiusMult: 1, rareAssistAdd: 0, lightRadiusMult: 1 };
+  roundOverrideReefId = null;
+  refreshCollectablesUI();
+  if (!session) {
+    openEvents();
+    return;
+  }
+  const fishScore = Math.max(0, score);
+  playCrabRoundEndSound();
+  if (session.kind === "roulette") {
+    const tier = minigameFishTierForScore(fishScore);
+    showEventMinigameReward({
+      source: "roulette",
+      title: "Reef Roulette!",
+      summaryHtml: `Haul on <strong>${session.reefName || "a mystery reef"}</strong>: <strong>${fishScore}</strong> pts`,
+      scorePts: fishScore,
+      tier,
+    });
+    return;
+  }
+  if (session.kind === "coop") {
+    const partner = Math.max(0, session.partnerScore || 0);
+    const combined = fishScore + partner;
+    const tier = minigameFishTierForScore(combined);
+    showEventMinigameReward({
+      source: "coop",
+      title: "Co-op Haul!",
+      summaryHtml: `You <strong>${fishScore}</strong> + Partner <strong>${partner}</strong> = <strong>${combined}</strong> pts`,
+      scorePts: combined,
+      tier,
+    });
+    return;
+  }
+  // survivor
+  const tier = survivorTierForScore(fishScore);
+  const hooked = Boolean(session.caughtKraken);
+  showEventMinigameReward({
+    source: "survivor",
+    title: hooked ? "Kraken Survived!" : "Kraken Survivor",
+    summaryHtml: hooked
+      ? `You hooked the kraken with a <strong>${fishScore}</strong> pt bonus haul`
+      : `Bonus haul: <strong>${fishScore}</strong> pts`,
+    scorePts: fishScore,
+    tier,
+  });
+}
+
+/* =========================================================================
    Crab Trap — drop lobster cages on scuttling treasure crabs.
    Self-contained minigame with its own canvas + animation loop.
    ========================================================================= */
@@ -13394,7 +13652,15 @@ function onCrabChestPick(idx) {
     } else {
       btnCrabPlayAgain.hidden = false;
       btnCrabPlayAgain.disabled = tickets <= 0;
-      btnCrabPlayAgain.textContent = tickets > 0 ? "Play again (1 ticket)" : "No tickets left";
+      const againLabel =
+        crabRewardSource === "roulette"
+          ? "Spin again (1 ticket)"
+          : crabRewardSource === "coop"
+            ? "Haul again (1 ticket)"
+            : crabRewardSource === "survivor"
+              ? "Survive again (1 ticket)"
+              : "Play again (1 ticket)";
+      btnCrabPlayAgain.textContent = tickets > 0 ? againLabel : "No tickets left";
     }
   }
 }
@@ -13425,6 +13691,18 @@ function crabPlayAgain() {
     return;
   }
   if (panelCrabReward) panelCrabReward.hidden = true;
+  if (crabRewardSource === "roulette") {
+    beginEventMinigame("roulette");
+    return;
+  }
+  if (crabRewardSource === "coop") {
+    beginEventMinigame("coop");
+    return;
+  }
+  if (crabRewardSource === "survivor") {
+    beginEventMinigame("survivor");
+    return;
+  }
   startCrabTrap();
 }
 
@@ -13436,6 +13714,7 @@ function refreshCrabTrapEventCard() {
     btnStartCrab.disabled = tickets <= 0;
     btnStartCrab.textContent = tickets <= 0 ? "No tickets — visit shop" : "Play Crab Trap";
   }
+  refreshEventMinigameCards();
 }
 
 /* --- Crab Trap sound effects --- */
@@ -13711,7 +13990,7 @@ function startRound() {
 
   roundOverrideReefId = null;
   const boostNotes = [];
-  if (!adventureSession && !duelSession && gameMeta.pendingMysteryReef) {
+  if (!adventureSession && !duelSession && !eventMinigameSession && gameMeta.pendingMysteryReef) {
     gameMeta.pendingMysteryReef = false;
     const pick = REEFS[Math.floor(Math.random() * REEFS.length)] || REEFS[0];
     roundOverrideReefId = pick.id;
@@ -13742,19 +14021,33 @@ function startRound() {
   const roundStart = performance.now();
   roundEndAt = roundStart + reef.roundMs;
   const spawnFrac = 0.18 + Math.random() * 0.52;
-  if (roundKrakenSpray) {
+  const isSurvivor = eventMinigameSession?.kind === "survivor";
+  if (isSurvivor) {
+    // Kraken Survivor ignores spray — the beast keeps coming.
+    kraken = { state: "scheduled", spawnAt: roundStart + 1200 + Math.random() * 900 };
+  } else if (roundKrakenSpray) {
     kraken = null;
     showToast("Kraken spray — no kraken this round!", 2400);
   } else {
     kraken = { state: "scheduled", spawnAt: roundStart + reef.roundMs * spawnFrac };
   }
   const dur = reef.roundMs;
-  const u0 = roundStart + dur * (0.06 + Math.random() * 0.14);
-  const u1 = roundStart + dur * (0.32 + Math.random() * 0.16);
-  const u2 = roundStart + dur * (0.58 + Math.random() * 0.14);
-  const spawnTimes = [u0, u1, u2].sort((a, b) => a - b);
-  jackpotCrab = { spawnTimes, active: null };
+  if (isSurvivor) {
+    jackpotCrab = null;
+  } else {
+    const u0 = roundStart + dur * (0.06 + Math.random() * 0.14);
+    const u1 = roundStart + dur * (0.32 + Math.random() * 0.16);
+    const u2 = roundStart + dur * (0.58 + Math.random() * 0.14);
+    const spawnTimes = [u0, u1, u2].sort((a, b) => a - b);
+    jackpotCrab = { spawnTimes, active: null };
+  }
   lastJackpotCrabCatchAt = -999999;
+  if (eventMinigameSession?.kind === "coop") {
+    syncCoopHud(true);
+  } else if (duelHud) {
+    duelHud.hidden = true;
+    duelHud.classList.remove("duel-hud--coop");
+  }
   panelStart.hidden = true;
   panelOver.hidden = true;
   if (panelAdventure) panelAdventure.hidden = true;
@@ -13824,6 +14117,10 @@ function endRound() {
   }
   if (duelSession) {
     endDuelRound();
+    return;
+  }
+  if (eventMinigameSession) {
+    endEventMinigameRound();
     return;
   }
   if (hasSeenIntro() && !hasSeenSeagullShopHint()) {
@@ -15126,7 +15423,12 @@ function tryCatchKraken(opts) {
   const mouthX = kraken.x + biteFace * L * 0.12;
   const mouthY = kraken.y - L * 0.88;
 
-  playKrakenBadSound();
+  const survivorWin = eventMinigameSession?.kind === "survivor";
+  if (survivorWin) {
+    playCrabTrapSound(2);
+  } else {
+    playKrakenBadSound();
+  }
 
   hook.castState = "idle";
   hook.castTimer = 0;
@@ -15140,10 +15442,16 @@ function tryCatchKraken(opts) {
   kraken.biteFromX = kraken.x;
   kraken.biteFromY = kraken.y;
   kraken.biteSnapMs = KRAKEN_BITE_SNAP_MS;
-  kraken.biteHoldMs = KRAKEN_BITE_HOLD_MS;
+  kraken.biteHoldMs = survivorWin ? Math.max(420, KRAKEN_BITE_HOLD_MS * 0.55) : KRAKEN_BITE_HOLD_MS;
   kraken.netGrab = null;
 
   spawnCatchFX(mouthX, mouthY, 280);
+  if (survivorWin) {
+    eventMinigameSession.caughtKraken = true;
+    catchFlash = Math.min(0.85, catchFlash + 0.35);
+    showToast(`Kraken hooked! Bonus haul ${score} pts`, 2800);
+    return true;
+  }
   const lost = releaseHalfCatchToKraken();
   spawnReleasedFishJumpingIntoWater(lost.count);
   kraken.boatRockSteal = false;
@@ -15192,7 +15500,9 @@ function tickKraken(now, dt) {
     kraken.y = h + len * 0.58;
     kraken.phase = Math.random() * Math.PI * 2;
     kraken.face = kraken.exitDir;
-    showToast("Kraken rising from the depths!", 1700);
+    if (!(eventMinigameSession?.kind === "survivor")) {
+      showToast("Kraken rising from the depths!", 1700);
+    }
     return;
   }
   if (kraken.state === "biting") {
@@ -15219,6 +15529,13 @@ function tickKraken(now, dt) {
       kraken.netGrab = null;
       kraken.boatRockSteal = false;
       hook.krakenBiteLocked = false;
+      if (eventMinigameSession?.kind === "survivor" && eventMinigameSession.caughtKraken) {
+        if (playing) endRound();
+        return;
+      }
+      if (eventMinigameSession?.kind === "survivor") {
+        scheduleSurvivorKraken(now);
+      }
     }
     return;
   }
@@ -15246,6 +15563,9 @@ function tickKraken(now, dt) {
     kraken.face = kraken.exitDir;
     if ((kraken.exitDir < 0 && kraken.x < -L * 0.9) || (kraken.exitDir > 0 && kraken.x > w + L * 0.9)) {
       kraken.state = "done";
+      if (eventMinigameSession?.kind === "survivor" && !eventMinigameSession.caughtKraken) {
+        scheduleSurvivorKraken(now);
+      }
     }
   }
 }
@@ -18360,9 +18680,18 @@ function gameLoop(now) {
 
   if (playing) {
     tickKraken(now, treasureMapRevealPaused ? 0 : dt);
+    const isSurvivorRound = eventMinigameSession?.kind === "survivor";
     const left = roundEndAt - now;
-    timeDisplay.textContent = formatTime(left);
-    if (left <= 0) {
+    if (isSurvivorRound) {
+      timeDisplay.textContent = "GO";
+      if (adventureGoalLine) {
+        adventureGoalLine.hidden = false;
+        adventureGoalLine.textContent = `Bonus: ${score} pts · hook the kraken!`;
+      }
+    } else {
+      timeDisplay.textContent = formatTime(left);
+    }
+    if (!isSurvivorRound && left <= 0) {
       endRound();
     } else {
       if (!treasureMapRevealPaused) {
@@ -18382,6 +18711,7 @@ function gameLoop(now) {
           updateDuelOpponent(dt, now);
           if (isDuelPvpSession()) scheduleDuelStateSync();
         }
+        if (eventMinigameSession?.kind === "coop") updateCoopPartner(now);
       }
       if (isDuelActive()) {
         drawDuelPlayfield();
@@ -18688,6 +19018,9 @@ btnDuelPlayAgain?.addEventListener("click", () => openDuelFromResult(true));
 btnDuelBackEvents?.addEventListener("click", () => openDuelFromResult(false));
 
 btnStartCrab?.addEventListener("click", () => startCrabTrap());
+document.getElementById("btnStartRoulette")?.addEventListener("click", () => beginEventMinigame("roulette"));
+document.getElementById("btnStartCoop")?.addEventListener("click", () => beginEventMinigame("coop"));
+document.getElementById("btnStartSurvivor")?.addEventListener("click", () => beginEventMinigame("survivor"));
 btnDailyCatchClaim?.addEventListener("click", () => showDailyCatchReward());
 btnCrabQuit?.addEventListener("click", () => quitCrabTrap());
 btnCrabRewardBack?.addEventListener("click", () => returnToEventsFromCrab());

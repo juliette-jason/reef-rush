@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=adv-prep-1" />
+    <link rel="stylesheet" href="styles.css?v=minigames-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -1750,6 +1750,106 @@
           <p id="crabEventTickets" class="event-card__tickets">Tickets: 5</p>
           <button type="button" id="btnStartCrab" class="btn event-card__play">Play Crab Trap</button>
         </article>
+
+        <article class="event-card event-card--roulette" id="eventCardRoulette">
+          <div class="event-card__art event-card__art--roulette" aria-hidden="true">
+            <svg class="event-card__art-svg" viewBox="0 0 320 128" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="evRouBg" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#0f766e"/>
+                  <stop offset="0.5" stop-color="#1e3a5f"/>
+                  <stop offset="1" stop-color="#7c2d12"/>
+                </linearGradient>
+              </defs>
+              <rect width="320" height="128" fill="url(#evRouBg)"/>
+              <circle cx="160" cy="58" r="36" fill="none" stroke="#fde68a" stroke-width="6" stroke-dasharray="14 10"/>
+              <circle cx="160" cy="58" r="10" fill="#fbbf24"/>
+              <text x="160" y="112" text-anchor="middle" fill="#ffedd5" font-size="11" font-family="Nunito, sans-serif" font-weight="800" letter-spacing="1.2">SPIN THE REEF</text>
+            </svg>
+            <span class="event-card__art-shine"></span>
+          </div>
+          <header class="event-card__head">
+            <div class="event-card__title-row">
+              <h3 class="event-card__title">Reef Roulette</h3>
+              <details class="event-card__about">
+                <summary class="event-card__info" aria-label="About Reef Roulette">
+                  <span class="event-card__info-glyph" aria-hidden="true">i</span>
+                </summary>
+                <p class="event-card__blurb">Random reef · 45s · chest by score.</p>
+              </details>
+            </div>
+            <p class="event-card__reset">45 seconds</p>
+          </header>
+          <p id="rouletteEventTickets" class="event-card__tickets">Tickets: 5</p>
+          <button type="button" id="btnStartRoulette" class="btn event-card__play">Play Reef Roulette</button>
+        </article>
+
+        <article class="event-card event-card--coop" id="eventCardCoop">
+          <div class="event-card__art event-card__art--coop" aria-hidden="true">
+            <svg class="event-card__art-svg" viewBox="0 0 320 128" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="evCoopBg" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#164e63"/>
+                  <stop offset="1" stop-color="#0c4a6e"/>
+                </linearGradient>
+              </defs>
+              <rect width="320" height="128" fill="url(#evCoopBg)"/>
+              <ellipse cx="118" cy="58" rx="28" ry="18" fill="#7dd3fc" opacity="0.85"/>
+              <ellipse cx="202" cy="58" rx="28" ry="18" fill="#86efac" opacity="0.85"/>
+              <text x="160" y="112" text-anchor="middle" fill="#e0f2fe" font-size="11" font-family="Nunito, sans-serif" font-weight="800" letter-spacing="1.2">TEAM HAUL</text>
+            </svg>
+            <span class="event-card__art-shine"></span>
+          </div>
+          <header class="event-card__head">
+            <div class="event-card__title-row">
+              <h3 class="event-card__title">Co-op Haul</h3>
+              <details class="event-card__about">
+                <summary class="event-card__info" aria-label="About Co-op Haul">
+                  <span class="event-card__info-glyph" aria-hidden="true">i</span>
+                </summary>
+                <p class="event-card__blurb">Fish with a partner · combine scores · chest reward.</p>
+              </details>
+            </div>
+            <p class="event-card__reset">60 seconds</p>
+          </header>
+          <p id="coopEventTickets" class="event-card__tickets">Tickets: 5</p>
+          <button type="button" id="btnStartCoop" class="btn event-card__play">Play Co-op Haul</button>
+        </article>
+
+        <article class="event-card event-card--survivor" id="eventCardSurvivor">
+          <div class="event-card__art event-card__art--survivor" aria-hidden="true">
+            <svg class="event-card__art-svg" viewBox="0 0 320 128" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="evSurvBg" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#1c1917"/>
+                  <stop offset="0.45" stop-color="#3f1d1d"/>
+                  <stop offset="1" stop-color="#0c4a6e"/>
+                </linearGradient>
+              </defs>
+              <rect width="320" height="128" fill="url(#evSurvBg)"/>
+              <ellipse cx="160" cy="72" rx="54" ry="22" fill="#7f1d1d" opacity="0.9"/>
+              <circle cx="148" cy="62" r="5" fill="#fef2f2"/>
+              <circle cx="172" cy="62" r="5" fill="#fef2f2"/>
+              <path d="M130 78 Q160 92 190 78" fill="none" stroke="#450a0a" stroke-width="3"/>
+              <text x="160" y="118" text-anchor="middle" fill="#fecaca" font-size="11" font-family="Nunito, sans-serif" font-weight="800" letter-spacing="1.2">HOOK THE BEAST</text>
+            </svg>
+            <span class="event-card__art-shine"></span>
+          </div>
+          <header class="event-card__head">
+            <div class="event-card__title-row">
+              <h3 class="event-card__title">Kraken Survivor</h3>
+              <details class="event-card__about">
+                <summary class="event-card__info" aria-label="About Kraken Survivor">
+                  <span class="event-card__info-glyph" aria-hidden="true">i</span>
+                </summary>
+                <p class="event-card__blurb">Fish until you hook the kraken · frequent spawns · chest by haul.</p>
+              </details>
+            </div>
+            <p class="event-card__reset">Until the kraken</p>
+          </header>
+          <p id="survivorEventTickets" class="event-card__tickets">Tickets: 5</p>
+          <button type="button" id="btnStartSurvivor" class="btn event-card__play">Play Kraken Survivor</button>
+        </article>
         </div>
       </section>
 
@@ -2255,6 +2355,6 @@
       </section>
     </div>
 
-    <script src="game.js?v=adv-prep-1" defer></script>
+    <script src="game.js?v=minigames-1" defer></script>
   </body>
 </html>
