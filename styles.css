@@ -959,12 +959,12 @@ body {
   padding: 4px;
 }
 
-.shop-item__icon--chest-medium {
+.shop-item__icon--chest-rare {
   background: linear-gradient(180deg, #334155, #0f172a);
   border-color: rgba(125, 211, 252, 0.45);
 }
 
-.shop-item__icon--chest-great {
+.shop-item__icon--chest-legendary {
   background: linear-gradient(180deg, #a16207, #431407);
   border-color: rgba(253, 224, 71, 0.55);
   box-shadow: inset 0 0 14px rgba(253, 224, 71, 0.4);
@@ -8802,11 +8802,11 @@ button.seagull-avatar:active {
   pointer-events: none;
 }
 
-.daily-prize-chest--great .daily-prize-chest__glow {
+.daily-prize-chest--legendary .daily-prize-chest__glow {
   background: radial-gradient(circle, rgba(253, 224, 71, 0.7), rgba(167, 139, 250, 0.25) 55%, transparent 72%);
 }
 
-.daily-prize-chest--medium .daily-prize-chest__glow {
+.daily-prize-chest--rare .daily-prize-chest__glow {
   background: radial-gradient(circle, rgba(125, 211, 252, 0.5), transparent 70%);
 }
 
@@ -9186,12 +9186,12 @@ button.seagull-avatar:active {
   background: linear-gradient(165deg, rgba(42, 48, 58, 0.96), rgba(16, 20, 28, 0.98));
 }
 
-.crab-chest--medium {
+.crab-chest--rare {
   border-color: rgba(125, 211, 252, 0.55);
   background: linear-gradient(165deg, rgba(28, 48, 72, 0.96), rgba(12, 24, 42, 0.98));
 }
 
-.crab-chest--great {
+.crab-chest--legendary {
   border-color: rgba(255, 205, 90, 0.78);
   background: linear-gradient(165deg, rgba(72, 42, 12, 0.96), rgba(32, 16, 8, 0.98));
   box-shadow: 0 0 22px rgba(255, 190, 70, 0.28);
@@ -9210,11 +9210,11 @@ button.seagull-avatar:active {
   display: block;
 }
 
-.crab-chest--medium .crab-chest__art {
+.crab-chest--rare .crab-chest__art {
   filter: drop-shadow(0 4px 8px rgba(56, 189, 248, 0.35));
 }
 
-.crab-chest--great .crab-chest__art {
+.crab-chest--legendary .crab-chest__art {
   animation: crabChestBob 2.4s ease-in-out infinite, crabChestGlow 1.8s ease-in-out infinite;
 }
 

@@ -270,13 +270,13 @@ const ROD_PRICE = 1000;
 const FREE_ROD_ID = "bamboo";
 const MAGNET_ROD_ID = "magnet";
 const KRAKEN_SPRAY_BAIT_ID = "kraken_spray";
-/** Fisher of the Day top 3: rare / good / common chests (great / medium / common tiers). */
-const DAILY_PRIZE_CHEST_TIERS = ["great", "medium", "common"];
+/** Fisher of the Day top 3: legendary / rare / common chests. */
+const DAILY_PRIZE_CHEST_TIERS = ["legendary", "rare", "common"];
 
 /** Gems from found chests only (Crab Trap / Daily Catch / Fisher of the Day). */
 const CHEST_GEMS_COMMON = 15;
-const CHEST_GEMS_GOOD = 40;
-const CHEST_GEMS_GREAT = 60;
+const CHEST_GEMS_RARE = 40;
+const CHEST_GEMS_LEGENDARY = 60;
 
 const SHOP_CHEST_DEFS = [
   {
@@ -287,20 +287,28 @@ const SHOP_CHEST_DEFS = [
     blurb: "A modest crate — a few coins and the occasional lucky find.",
   },
   {
-    id: "uncommon",
-    name: "Uncommon chest",
-    tier: "medium",
-    gemPrice: 110,
-    blurb: "A good haul of coins, bait, and better bonus prizes.",
-  },
-  {
     id: "rare",
     name: "Rare chest",
-    tier: "great",
+    tier: "rare",
+    gemPrice: 110,
+    blurb: "A solid haul of coins, bait, and better bonus prizes.",
+  },
+  {
+    id: "legendary",
+    name: "Legendary chest",
+    tier: "legendary",
     gemPrice: 175,
     blurb: "Rich loot: big coins, premium bait, and a chance at a new rod.",
   },
 ];
+
+/** Map legacy chest tier ids (great/medium/good) to common / rare / legendary. */
+function normalizeChestTier(tier) {
+  const t = String(tier || "");
+  if (t === "legendary" || t === "great") return "legendary";
+  if (t === "rare" || t === "medium" || t === "good" || t === "uncommon") return "rare";
+  return "common";
+}
 
 const SHOP_COIN_BUNDLES = [
   { id: "coins_2k", name: "Coin pouch", gems: 80, coins: 2000, blurb: "A fat pouch of reef coins." },
@@ -403,7 +411,8 @@ function rollCatchStampPrize() {
 
 function rollSpecialChestPrize(tier) {
   const roll = Math.random();
-  if (tier === "great") {
+  tier = normalizeChestTier(tier);
+  if (tier === "legendary") {
     if (roll < 0.035) return { kind: "adventure_skip_rope", qty: 1 };
     if (roll < 0.12) return { kind: "golden_net", qty: 1 };
     if (roll < 0.22) return { kind: "mystery_reef", qty: 1 };
@@ -412,7 +421,7 @@ function rollSpecialChestPrize(tier) {
     if (roll < 0.68) return { kind: "lucky_lure", qty: 1 };
     return null;
   }
-  if (tier === "medium") {
+  if (tier === "rare") {
     if (roll < 0.1) return rollCatchStampPrize();
     if (roll < 0.22) return { kind: "lucky_lure", qty: 1 };
     if (roll < 0.32) return { kind: "double_haul", qty: 1 };
@@ -5474,8 +5483,9 @@ function spendGems(qty) {
 }
 
 function chestGemsForTier(tier) {
-  if (tier === "great") return CHEST_GEMS_GREAT;
-  if (tier === "medium") return CHEST_GEMS_GOOD;
+  const t = normalizeChestTier(tier);
+  if (t === "legendary") return CHEST_GEMS_LEGENDARY;
+  if (t === "rare") return CHEST_GEMS_RARE;
   return CHEST_GEMS_COMMON;
 }
 
@@ -5508,8 +5518,9 @@ function dailyPrizeChestTierForRank(rank) {
 }
 
 function dailyPrizeChestNameForTier(tier) {
-  if (tier === "great") return "Rare chest";
-  if (tier === "medium") return "Good chest";
+  const t = normalizeChestTier(tier);
+  if (t === "legendary") return "Legendary chest";
+  if (t === "rare") return "Rare chest";
   return "Common chest";
 }
 
@@ -5550,7 +5561,7 @@ function rollDailyPrizeChestBundle(tier) {
 
 function ensureDailyPrizeBundle(prize) {
   if (!prize) return prize;
-  const chestTier = prize.chestTier || dailyPrizeChestTierForRank(prize.rank);
+  const chestTier = normalizeChestTier(prize.chestTier || dailyPrizeChestTierForRank(prize.rank));
   prize.chestTier = chestTier;
   prize.chestName = prize.chestName || dailyPrizeChestNameForTier(chestTier);
   if (!prize.bundle) prize.bundle = rollDailyPrizeChestBundle(chestTier);
@@ -5575,10 +5586,8 @@ function normalizePendingDailyPrizeCelebration(raw) {
   const rank = Math.max(0, Math.min(2, Math.floor(Number(raw.rank) || 0)));
   const dayLabel = String(raw.dayLabel || "").trim();
   const rawTier = String(raw.chestTier || "");
-  const chestTier =
-    rawTier === "great" || rawTier === "medium" || rawTier === "common"
-      ? rawTier
-      : dailyPrizeChestTierForRank(rank);
+  const known = rawTier === "legendary" || rawTier === "rare" || rawTier === "common" || rawTier === "great" || rawTier === "medium" || rawTier === "good";
+  const chestTier = known ? normalizeChestTier(rawTier) : dailyPrizeChestTierForRank(rank);
   return {
     rank,
     chestTier,
@@ -5714,7 +5723,7 @@ function showDailyCatchReward() {
   if (!ch || ch.claimed || !isDailyCatchComplete(ch)) return;
   hideAllPanels();
   crabRewardSource = "dailyCatch";
-  const tier = "medium";
+  const tier = "rare";
   crabRewardBundles = rollCrabBundles(tier);
   crabRewardClaimed = false;
   if (crabRewardHeadline) crabRewardHeadline.textContent = "Daily Catch!";
@@ -5723,7 +5732,7 @@ function showDailyCatchReward() {
   }
   if (crabRewardTier) {
     crabRewardTier.textContent =
-      `Nice work finishing today's catch challenge! Pick one chest — ${CHEST_GEMS_GOOD} gems plus the same loot style as Crab Trap.`;
+      `Nice work finishing today's catch challenge! Pick one chest — ${CHEST_GEMS_RARE} gems plus the same loot style as Crab Trap.`;
   }
   if (crabRewardPrompt) crabRewardPrompt.textContent = "Choose one chest to claim your reward.";
   if (crabRewardResult) {
@@ -6780,9 +6789,9 @@ function updateDailyEventPlayerHint(rows = dailyLeaderboardRows) {
   }
   const rank = rows.findIndex((r) => r.initials === ini);
   if (rank === 0) {
-    dailyEventPlayerHint.textContent = `${label}, you're in 1st! Hold the lead until midnight for a rare chest and the Magnet Rod.`;
+    dailyEventPlayerHint.textContent = `${label}, you're in 1st! Hold the lead until midnight for a legendary chest and the Magnet Rod.`;
   } else if (rank === 1) {
-    dailyEventPlayerHint.textContent = `${label}, you're in 2nd — stay there until reset for a good chest.`;
+    dailyEventPlayerHint.textContent = `${label}, you're in 2nd — stay there until reset for a rare chest.`;
   } else if (rank === 2) {
     dailyEventPlayerHint.textContent = `${label}, you're in 3rd — stay there until reset for a common chest.`;
   } else if (rank >= 0) {
@@ -6903,7 +6912,7 @@ function dailyPrizeLineIcon(line, bundle) {
 function buildDailyPrizeAwardRows(prize) {
   ensureDailyPrizeBundle(prize);
   const chestName = prize.chestName || dailyPrizeChestNameForTier(prize.chestTier);
-  const chestIcon = prize.chestTier === "great" ? "💎" : prize.chestTier === "medium" ? "✨" : "📦";
+  const chestIcon = normalizeChestTier(prize.chestTier) === "legendary" ? "💎" : normalizeChestTier(prize.chestTier) === "rare" ? "✨" : "📦";
   const rows = [{ icon: chestIcon, label: chestName }];
   const bundle = prize.bundle;
   if (bundle) {
@@ -7000,10 +7009,10 @@ function populateDailyPrizeAwardsList(prize) {
 function renderDailyPrizeChestArt(opened) {
   const prize = gameMeta.pendingDailyPrizeCelebration;
   if (!dailyPrizeChestArt || !prize) return;
-  const tier = prize.chestTier || dailyPrizeChestTierForRank(prize.rank);
+  const tier = normalizeChestTier(prize.chestTier || dailyPrizeChestTierForRank(prize.rank));
   dailyPrizeChestArt.innerHTML = crabChestArtSvg(tier, opened);
-  btnDailyPrizeChest?.classList.toggle("daily-prize-chest--great", tier === "great");
-  btnDailyPrizeChest?.classList.toggle("daily-prize-chest--medium", tier === "medium");
+  btnDailyPrizeChest?.classList.toggle("daily-prize-chest--legendary", tier === "legendary");
+  btnDailyPrizeChest?.classList.toggle("daily-prize-chest--rare", tier === "rare");
   btnDailyPrizeChest?.classList.toggle("daily-prize-chest--opened", opened);
 }
 
@@ -12812,17 +12821,18 @@ function drawCrabTrap() {
 
 /* --- Crab Trap rewards --- */
 function crabTierForScore(scorePts) {
-  if (scorePts >= CRAB_TRAP_GREAT_MIN) return "great";
-  if (scorePts >= CRAB_TRAP_MEDIUM_MIN) return "medium";
+  if (scorePts >= CRAB_TRAP_GREAT_MIN) return "legendary";
+  if (scorePts >= CRAB_TRAP_MEDIUM_MIN) return "rare";
   return "common";
 }
 
 function crabTierMessage(tier) {
-  if (tier === "great") {
-    return `Incredible haul (${CRAB_TRAP_GREAT_MIN}+)! These rich chests are stuffed with coins, ${CHEST_GEMS_GREAT} gems, bait, and maybe a new fishing rod.`;
+  tier = normalizeChestTier(tier);
+  if (tier === "legendary") {
+    return `Incredible haul (${CRAB_TRAP_GREAT_MIN}+)! These legendary chests are stuffed with coins, ${CHEST_GEMS_LEGENDARY} gems, bait, and maybe a new fishing rod.`;
   }
-  if (tier === "medium") {
-    return `Nice work (${CRAB_TRAP_MEDIUM_MIN}+)! You earned better chests packed with more coins, ${CHEST_GEMS_GOOD} gems, and bait. Trap ${CRAB_TRAP_GREAT_MIN}+ for the richest loot.`;
+  if (tier === "rare") {
+    return `Nice work (${CRAB_TRAP_MEDIUM_MIN}+)! You earned rare chests packed with more coins, ${CHEST_GEMS_RARE} gems, and bait. Trap ${CRAB_TRAP_GREAT_MIN}+ for legendary loot.`;
   }
   return `A modest catch (around ${CRAB_TRAP_LOW_SCORE}) — common chests with ${CHEST_GEMS_COMMON} gems this time. Trap ${CRAB_TRAP_MEDIUM_MIN}+ crabs next round for richer loot!`;
 }
@@ -12836,21 +12846,22 @@ function crabUnownedRods() {
 }
 
 function rollChestBait(tier) {
+  tier = normalizeChestTier(tier);
   if (tier === "common") {
     if (Math.random() < 0.14) {
       return { id: KRAKEN_SPRAY_BAIT_ID, name: baitSpecById(KRAKEN_SPRAY_BAIT_ID).name, qty: 1 };
     }
     return null;
   }
-  const pool = tier === "great" ? CRAB_TRAP_GREAT_BAIT : CRAB_TRAP_MED_BAIT;
+  const pool = tier === "legendary" ? CRAB_TRAP_GREAT_BAIT : CRAB_TRAP_MED_BAIT;
   const id = crabPick(pool);
   const spec = baitSpecById(id);
   const qty =
     id === KRAKEN_SPRAY_BAIT_ID
-      ? tier === "great"
+      ? tier === "legendary"
         ? crabRandInt(1, 2)
         : 1
-      : tier === "great"
+      : tier === "legendary"
         ? crabRandInt(3, 6)
         : crabRandInt(2, 4);
   return { id, name: spec.name, qty };
@@ -12861,23 +12872,24 @@ function rollCrabBundles(tier) {
   for (let i = 0; i < 3; i++) {
     bundles.push({ coins: 0, bait: null, rodId: null, rodName: null, special: null });
   }
+  tier = normalizeChestTier(tier);
   if (tier === "common") {
     bundles.forEach((b) => {
       b.coins = crabRandInt(25, 75);
       b.bait = rollChestBait("common");
       b.special = rollSpecialChestPrize("common");
     });
-  } else if (tier === "medium") {
+  } else if (tier === "rare") {
     bundles.forEach((b) => {
       b.coins = crabRandInt(120, 280);
-      b.bait = rollChestBait("medium");
-      b.special = rollSpecialChestPrize("medium");
+      b.bait = rollChestBait("rare");
+      b.special = rollSpecialChestPrize("rare");
     });
   } else {
     bundles.forEach((b) => {
       b.coins = crabRandInt(400, 850);
-      b.bait = rollChestBait("great");
-      b.special = rollSpecialChestPrize("great");
+      b.bait = rollChestBait("legendary");
+      b.special = rollSpecialChestPrize("legendary");
     });
     const unowned = crabShuffle(crabUnownedRods());
     if (unowned.length > 0) {
@@ -12950,9 +12962,10 @@ function crabChestDiamondSvg(cx, cy, s, outline) {
 /** Three distinct chests: battered iron crate, silver pirate trunk, ornate gold reliquary. */
 function crabChestArtSvg(tier, opened) {
   const uid = `cc${crabChestSvgSeq++}`;
-  const isRare = tier === "great";
-  const isGood = tier === "medium";
-  const p = isRare
+  tier = normalizeChestTier(tier);
+  const isLegendary = tier === "legendary";
+  const isRare = tier === "rare";
+  const p = isLegendary
     ? {
         woodHi: "#b45309",
         plank: "#92400e",
@@ -12962,7 +12975,7 @@ function crabChestArtSvg(tier, opened) {
         stud: "#78350f",
         rim: "#fbbf24",
       }
-    : isGood
+    : isRare
       ? {
           woodHi: "#9a3412",
           plank: "#7c2d12",
@@ -13003,12 +13016,12 @@ function crabChestArtSvg(tier, opened) {
   const wrap = (inner) =>
     `<svg viewBox="0 0 80 72" width="72" height="64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${defs}${inner}</svg>`;
 
-  const shadow = `<ellipse cx="40" cy="67" rx="${isRare ? 30 : 27}" ry="3.2" fill="rgba(0,0,0,0.3)"/>`;
+  const shadow = `<ellipse cx="40" cy="67" rx="${isLegendary ? 30 : 27}" ry="3.2" fill="rgba(0,0,0,0.3)"/>`;
   const lootGlow = opened
-    ? `<ellipse cx="40" cy="${opened ? 34 : 32}" rx="${isRare ? 30 : 24}" ry="${isRare ? 14 : 11}" fill="url(#${uid}g)"/>`
+    ? `<ellipse cx="40" cy="${opened ? 34 : 32}" rx="${isLegendary ? 30 : 24}" ry="${isLegendary ? 14 : 11}" fill="url(#${uid}g)"/>`
     : "";
 
-  if (isRare) {
+  if (isLegendary) {
     const lid = opened
       ? `<g transform="rotate(-18 40 24) translate(0 -14)">
           <path d="M8 32 C8 12 22 5 40 5 C58 5 72 12 72 32 Z" fill="url(#${uid}l)" stroke="${p.woodLo}" stroke-width="1.1"/>
@@ -13066,7 +13079,7 @@ function crabChestArtSvg(tier, opened) {
     );
   }
 
-  if (isGood) {
+  if (isRare) {
     const lid = opened
       ? `<g transform="rotate(-15 40 26) translate(0 -12)">
           <path d="M8 32 C8 14 22 8 40 8 C58 8 72 14 72 32 Z" fill="url(#${uid}l)" stroke="${p.woodLo}" stroke-width="1"/>
@@ -13144,7 +13157,8 @@ function crabChestArtSvg(tier, opened) {
 function renderCrabRewardChests(tier) {
   if (!crabRewardChests) return;
   crabRewardChests.innerHTML = "";
-  const tierLabel = tier === "great" ? "Rich" : tier === "medium" ? "Good" : "Common";
+  tier = normalizeChestTier(tier);
+  const tierLabel = tier === "legendary" ? "Legendary" : tier === "rare" ? "Rare" : "Common";
   for (let i = 0; i < crabRewardBundles.length; i++) {
     const btn = document.createElement("button");
     btn.type = "button";
@@ -13212,10 +13226,10 @@ function onCrabChestPick(idx) {
     if (ci === idx) {
       chest.classList.add("crab-chest--opened");
       const art = chest.querySelector(".crab-chest__art");
-      const openTier = chest.classList.contains("crab-chest--great")
-        ? "great"
-        : chest.classList.contains("crab-chest--medium")
-          ? "medium"
+      const openTier = chest.classList.contains("crab-chest--legendary")
+        ? "legendary"
+        : chest.classList.contains("crab-chest--rare")
+          ? "rare"
           : "common";
       if (art) art.innerHTML = crabChestArtSvg(openTier, true);
       const list = chest.querySelector(".crab-chest__contents");
