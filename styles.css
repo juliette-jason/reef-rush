@@ -6045,6 +6045,76 @@ button.seagull-avatar:active {
   animation: eventArtCrabScuttle 3.6s ease-in-out infinite;
 }
 
+.event-card__art-roulette-wheel {
+  transform-origin: 160px 54px;
+  animation: eventArtRouletteSpin 6.5s linear infinite;
+}
+
+.event-card__art-roulette-pointer {
+  transform-origin: 160px 12px;
+  animation: eventArtRouletteTick 1.1s ease-in-out infinite;
+}
+
+.event-card__art-coop-you {
+  transform-origin: 118px 62px;
+  animation: eventArtSway 3.4s ease-in-out infinite;
+}
+
+.event-card__art-coop-pal {
+  transform-origin: 202px 62px;
+  animation: eventArtSway 3.4s ease-in-out infinite reverse;
+}
+
+.event-card__art-coop-boat {
+  animation: eventArtBob 3.2s ease-in-out infinite;
+}
+
+.event-card__art-coop-fish {
+  animation: eventArtCoopFish 2.4s ease-in-out infinite;
+}
+
+.event-card__art-kraken-body {
+  transform-origin: 160px 78px;
+  animation: eventArtKrakenBob 3.6s ease-in-out infinite;
+}
+
+.event-card__art-kraken-eyes {
+  animation: eventArtKrakenGlow 1.8s ease-in-out infinite;
+}
+
+.event-card__art-kraken-tent {
+  animation: eventArtKrakenTent 2.8s ease-in-out infinite;
+}
+
+.event-card__art-kraken-tent--1 {
+  transform-origin: 96px 86px;
+  animation-delay: 0s;
+}
+
+.event-card__art-kraken-tent--2 {
+  transform-origin: 124px 94px;
+  animation-delay: -0.5s;
+}
+
+.event-card__art-kraken-tent--3 {
+  transform-origin: 196px 94px;
+  animation-delay: -1s;
+}
+
+.event-card__art-kraken-tent--4 {
+  transform-origin: 224px 86px;
+  animation-delay: -1.5s;
+}
+
+.event-card__art-kraken-tent--5 {
+  transform-origin: 160px 100px;
+  animation-delay: -0.8s;
+}
+
+.event-card__art-kraken-hook {
+  animation: eventArtKrakenHook 2.2s ease-in-out infinite;
+}
+
 @keyframes eventArtShine {
   0%,
   100% {
@@ -6140,6 +6210,81 @@ button.seagull-avatar:active {
   }
   50% {
     transform: translate(218px, 62px);
+  }
+}
+
+@keyframes eventArtRouletteSpin {
+  from {
+    transform: translate(160px, 54px) rotate(0deg);
+  }
+  to {
+    transform: translate(160px, 54px) rotate(360deg);
+  }
+}
+
+@keyframes eventArtRouletteTick {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  40% {
+    transform: rotate(-8deg);
+  }
+  55% {
+    transform: rotate(4deg);
+  }
+}
+
+@keyframes eventArtCoopFish {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translateY(10px);
+    opacity: 1;
+  }
+}
+
+@keyframes eventArtKrakenBob {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.02);
+  }
+}
+
+@keyframes eventArtKrakenGlow {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 4px rgba(248, 113, 113, 0.7));
+  }
+}
+
+@keyframes eventArtKrakenTent {
+  0%,
+  100% {
+    transform: rotate(-6deg);
+  }
+  50% {
+    transform: rotate(7deg);
+  }
+}
+
+@keyframes eventArtKrakenHook {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(6px);
   }
 }
 
@@ -6580,6 +6725,16 @@ button.seagull-avatar:active {
   .event-card__art-bubble,
   .event-card__art-sparkle,
   .event-card__art-shine,
+  .event-card__art-roulette-wheel,
+  .event-card__art-roulette-pointer,
+  .event-card__art-coop-you,
+  .event-card__art-coop-pal,
+  .event-card__art-coop-boat,
+  .event-card__art-coop-fish,
+  .event-card__art-kraken-body,
+  .event-card__art-kraken-eyes,
+  .event-card__art-kraken-tent,
+  .event-card__art-kraken-hook,
   .event-card__play {
     animation: none;
   }
