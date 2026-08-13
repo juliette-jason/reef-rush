@@ -14081,9 +14081,19 @@ function startRound() {
   catchFlash = 0;
   hook.krakenBiteLocked = false;
   const passHint = reef.adventurePassScore ? ` · reach ${reef.adventurePassScore} pts` : "";
-  controlHint.textContent = isTouchControlsPreferred()
-    ? `Drag left/right to aim · tap to cast the line${passHint}`
-    : `Move left/right to aim · Enter casts the line · Space or lift = snag${passHint}`;
+  if (eventMinigameSession?.kind === "survivor") {
+    controlHint.textContent = isTouchControlsPreferred()
+      ? "Fish for bonus pts · hook the kraken to finish"
+      : "Fish for bonus pts · hook the kraken to finish";
+  } else if (eventMinigameSession?.kind === "roulette") {
+    controlHint.textContent = `Reef Roulette · ${reef.name} · rack up pts for a better chest`;
+  } else if (eventMinigameSession?.kind === "coop") {
+    controlHint.textContent = "Co-op Haul · your catch + partner score fill the chest";
+  } else {
+    controlHint.textContent = isTouchControlsPreferred()
+      ? `Drag left/right to aim · tap to cast the line${passHint}`
+      : `Move left/right to aim · Enter casts the line · Space or lift = snag${passHint}`;
+  }
   startReefMusic();
 }
 
