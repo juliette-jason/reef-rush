@@ -270,9 +270,10 @@ const ROD_PRICE = 1000;
 const FREE_ROD_ID = "bamboo";
 const MAGNET_ROD_ID = "magnet";
 const KRAKEN_SPRAY_BAIT_ID = "kraken_spray";
-const DAILY_SECOND_PLACE_KRAKEN_SPRAY = 3;
+/** Fisher of the Day top 3: rare / good / common chests (great / medium / common tiers). */
+const DAILY_PRIZE_CHEST_TIERS = ["great", "medium", "common"];
 
-/** Gems from found chests only (Crab Trap / Daily Catch). */
+/** Gems from found chests only (Crab Trap / Daily Catch / Fisher of the Day). */
 const CHEST_GEMS_COMMON = 5;
 const CHEST_GEMS_GOOD = 15;
 const CHEST_GEMS_GREAT = 20;
@@ -1419,7 +1420,7 @@ const BAITS = [
   {
     id: KRAKEN_SPRAY_BAIT_ID,
     name: "Kraken spray",
-    desc: "Fisher of the Day prize — keeps the kraken away for one round.",
+    desc: "Found in chests — keeps the kraken away for one round.",
     price: 0,
     packSize: 0,
     consumesOnRound: true,
@@ -5490,17 +5491,76 @@ function grantMagnetRodForToday() {
   buildRodUI();
 }
 
-function grantKrakenSpray(count = DAILY_SECOND_PLACE_KRAKEN_SPRAY) {
-  gameMeta.baitCounts[KRAKEN_SPRAY_BAIT_ID] = getBaitCount(KRAKEN_SPRAY_BAIT_ID) + count;
+function dailyPrizeChestTierForRank(rank) {
+  return DAILY_PRIZE_CHEST_TIERS[rank] || "common";
+}
+
+function dailyPrizeChestNameForTier(tier) {
+  if (tier === "great") return "Rare chest";
+  if (tier === "medium") return "Good chest";
+  return "Common chest";
+}
+
+function normalizeDailyPrizeBundle(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const coins = Math.max(0, Math.floor(Number(raw.coins) || 0));
+  const gems = Math.max(0, Math.floor(Number(raw.gems) || 0));
+  let bait = null;
+  if (raw.bait && typeof raw.bait === "object") {
+    const id = String(raw.bait.id || "");
+    if (BAITS.some((b) => b.id === id)) {
+      bait = {
+        id,
+        name: baitSpecById(id).name,
+        qty: Math.max(1, Math.floor(Number(raw.bait.qty) || 1)),
+      };
+    }
+  }
+  let rodId = null;
+  let rodName = null;
+  const rawRodId = String(raw.rodId || "");
+  if (rawRodId && RODS.some((r) => r.id === rawRodId && r.id !== FREE_ROD_ID && r.id !== MAGNET_ROD_ID)) {
+    rodId = rawRodId;
+    rodName = rodSpecById(rodId).name;
+  }
+  let special = null;
+  if (raw.special && typeof raw.special === "object") {
+    const kind = String(raw.special.kind || "");
+    if (kind === "catch_stamp" || CHEST_ITEM_DEFS[kind]) special = raw.special;
+  }
+  return { coins, gems, bait, rodId, rodName, special };
+}
+
+function rollDailyPrizeChestBundle(tier) {
+  const bundles = rollCrabBundles(tier);
+  return bundles[Math.floor(Math.random() * bundles.length)] || bundles[0] || null;
+}
+
+function ensureDailyPrizeBundle(prize) {
+  if (!prize) return prize;
+  const chestTier = prize.chestTier || dailyPrizeChestTierForRank(prize.rank);
+  prize.chestTier = chestTier;
+  prize.chestName = prize.chestName || dailyPrizeChestNameForTier(chestTier);
+  if (!prize.bundle) prize.bundle = rollDailyPrizeChestBundle(chestTier);
+  return prize;
 }
 
 function normalizePendingDailyPrizeCelebration(raw) {
   if (!raw || typeof raw !== "object") return null;
   const rank = Math.max(0, Math.min(2, Math.floor(Number(raw.rank) || 0)));
-  const coins = Math.max(0, Math.floor(Number(raw.coins) || 0));
   const dayLabel = String(raw.dayLabel || "").trim();
-  if (!coins) return null;
-  return { rank, coins, dayLabel };
+  const rawTier = String(raw.chestTier || "");
+  const chestTier =
+    rawTier === "great" || rawTier === "medium" || rawTier === "common"
+      ? rawTier
+      : dailyPrizeChestTierForRank(rank);
+  return {
+    rank,
+    chestTier,
+    chestName: dailyPrizeChestNameForTier(chestTier),
+    bundle: normalizeDailyPrizeBundle(raw.bundle),
+    dayLabel,
+  };
 }
 
 /** Daily Catch challenge pool — morph targets with counts tuned for OK players. */
@@ -5651,7 +5711,6 @@ function showDailyCatchReward() {
 
 function dailyPrizeExtrasLabel(rank) {
   if (rank === 0) return " + Magnet Rod";
-  if (rank === 1) return ` + ${DAILY_SECOND_PLACE_KRAKEN_SPRAY} Kraken Spray`;
   return "";
 }
 
@@ -6396,7 +6455,7 @@ const DAILY_LEADERBOARD_KEY = "reefRushDailyLeaderboard_v1";
 const DAILY_LEADERBOARD_MAX = 10;
 const DAILY_LEADERBOARD_FETCH_LIMIT = 80;
 const DAILY_LEADERBOARD_TABLE_URL = `${SUPABASE_REST_URL}/daily_leaderboard`;
-const DAILY_PRIZES = [1500, 1000, 800];
+const DAILY_PRIZE_COUNT = DAILY_PRIZE_CHEST_TIERS.length;
 let dailyLeaderboardRows = [];
 let dailyLeaderboardLoading = false;
 let dailyLeaderboardLoadId = 0;
@@ -6689,13 +6748,13 @@ function updateDailyEventPlayerHint(rows = dailyLeaderboardRows) {
   }
   const rank = rows.findIndex((r) => r.initials === ini);
   if (rank === 0) {
-    dailyEventPlayerHint.textContent = `${label}, you're in 1st! Hold the lead until midnight.`;
+    dailyEventPlayerHint.textContent = `${label}, you're in 1st! Hold the lead until midnight for a rare chest and the Magnet Rod.`;
   } else if (rank === 1) {
-    dailyEventPlayerHint.textContent = `${label}, you're in 2nd — stay there until reset.`;
+    dailyEventPlayerHint.textContent = `${label}, you're in 2nd — stay there until reset for a good chest.`;
   } else if (rank === 2) {
-    dailyEventPlayerHint.textContent = `${label}, you're in 3rd — stay there until reset.`;
+    dailyEventPlayerHint.textContent = `${label}, you're in 3rd — stay there until reset for a common chest.`;
   } else if (rank >= 0) {
-    dailyEventPlayerHint.textContent = `${label}, you're #${rank + 1} today. Climb into the top 3!`;
+    dailyEventPlayerHint.textContent = `${label}, you're #${rank + 1} today. Climb into the top 3 for a chest!`;
   } else {
     dailyEventPlayerHint.textContent = `${label}, play a reef run to post today's best score.`;
   }
@@ -6776,13 +6835,17 @@ async function processDailyPrizePayouts() {
   const rows = await fetchDailyLeaderboardForDay(yesterday);
   gameMeta.dailyPrizeCheckedDay = yesterday;
   const rank = rows.findIndex((r) => r.initials === ini);
-  if (rank >= 0 && rank < DAILY_PRIZES.length) {
-    const prize = DAILY_PRIZES[rank];
-    gameMeta.pendingDailyPrizeCelebration = {
+  if (rank >= 0 && rank < DAILY_PRIZE_COUNT) {
+    const chestTier = dailyPrizeChestTierForRank(rank);
+    const pending = {
       rank,
-      coins: prize,
+      chestTier,
+      chestName: dailyPrizeChestNameForTier(chestTier),
+      bundle: null,
       dayLabel: formatDailyDayLabel(yesterday),
     };
+    ensureDailyPrizeBundle(pending);
+    gameMeta.pendingDailyPrizeCelebration = pending;
     saveMeta();
   } else {
     saveMeta();
@@ -6799,21 +6862,38 @@ function dailyPrizeOrdinal(rank) {
   return ["1st", "2nd", "3rd"][rank] || `${rank + 1}th`;
 }
 
-function buildDailyPrizeAwardRows(prize) {
-  const rows = [{ icon: "🪙", label: `${prize.coins.toLocaleString()} coins` }];
-  if (prize.rank === 0) rows.push({ icon: "🧲", label: "Magnet Rod (today)" });
-  if (prize.rank === 1) {
-    rows.push({ icon: "🦑", label: `${DAILY_SECOND_PLACE_KRAKEN_SPRAY} Kraken Spray` });
+function dailyPrizeLineIcon(line, bundle) {
+  if (line.includes("coins")) return "🪙";
+  if (line.includes("gems")) return "💎";
+  if (bundle?.rodName && line.includes(bundle.rodName)) return "🎣";
+  if (bundle?.bait && line.includes(bundle.bait.name)) {
+    return bundle.bait.id === KRAKEN_SPRAY_BAIT_ID ? "🦑" : "🪱";
   }
+  if (line.includes("stamp")) return "🏅";
+  return "✦";
+}
+
+function buildDailyPrizeAwardRows(prize) {
+  ensureDailyPrizeBundle(prize);
+  const chestName = prize.chestName || dailyPrizeChestNameForTier(prize.chestTier);
+  const chestIcon = prize.chestTier === "great" ? "💎" : prize.chestTier === "medium" ? "✨" : "📦";
+  const rows = [{ icon: chestIcon, label: chestName }];
+  const bundle = prize.bundle;
+  if (bundle) {
+    for (const line of crabBundleRewardLines(bundle)) {
+      rows.push({ icon: dailyPrizeLineIcon(line, bundle), label: line });
+    }
+  }
+  if (prize.rank === 0) rows.push({ icon: "🧲", label: "Magnet Rod (today)" });
   return rows;
 }
 
 function applyPendingDailyPrizeRewards() {
   const prize = gameMeta.pendingDailyPrizeCelebration;
   if (!prize) return;
-  gameMeta.coins += prize.coins;
+  ensureDailyPrizeBundle(prize);
+  if (prize.bundle) grantCrabReward(prize.bundle);
   if (prize.rank === 0) grantMagnetRodForToday();
-  if (prize.rank === 1) grantKrakenSpray();
   gameMeta.pendingDailyPrizeCelebration = null;
   saveMeta();
   refreshCoinDisplays();
@@ -6821,8 +6901,9 @@ function applyPendingDailyPrizeRewards() {
   buildRodUI();
 }
 
-function populateDailyPrizeRevealUI(prize) {
-  if (!dailyPrizeRevealTitle || !dailyPrizeRevealAwards) return;
+function populateDailyPrizeRevealUI() {
+  const prize = ensureDailyPrizeBundle(gameMeta.pendingDailyPrizeCelebration);
+  if (!prize || !dailyPrizeRevealTitle || !dailyPrizeRevealAwards) return;
   const ord = dailyPrizeOrdinal(prize.rank);
   dailyPrizeRevealTitle.textContent = `${ord} place!`;
   if (dailyPrizeRevealDay) {
@@ -6837,9 +6918,9 @@ function populateDailyPrizeRevealUI(prize) {
   }
 }
 
-function showDailyPrizeAwardsOverlay(prize) {
+function showDailyPrizeAwardsOverlay() {
   if (!dailyPrizeReveal) return;
-  populateDailyPrizeRevealUI(prize);
+  populateDailyPrizeRevealUI();
   treasureChestCinematic = null;
   dailyPrizeReveal.hidden = false;
   dailyPrizeReveal.setAttribute("aria-hidden", "false");
@@ -6864,14 +6945,17 @@ function endDailyPrizeCelebration() {
   syncHomeLaunchButtons();
   applyPendingDailyPrizeRewards();
   if (prize) {
+    const chest = prize.chestName || dailyPrizeChestNameForTier(prize.chestTier);
     const extras = dailyPrizeExtrasLabel(prize.rank);
-    showToast(`Fisher of the Day ${dailyPrizeOrdinal(prize.rank)} place collected! +${prize.coins} coins${extras}.`, 4200);
+    showToast(`Fisher of the Day ${dailyPrizeOrdinal(prize.rank)} place collected! ${chest}${extras}.`, 4200);
   }
   syncHomeLaunchButtons();
 }
 
 function startDailyPrizeChestCinematic(prize) {
   if (!prize || dailyPrizeCelebrationActive || treasureMapRevealPaused || w <= 0) return;
+  ensureDailyPrizeBundle(prize);
+  saveMeta();
   dailyPrizeCelebrationActive = true;
   treasureMapRevealPaused = true;
   appRoot?.classList.add("app--daily-prize-cinematic");
@@ -6892,7 +6976,8 @@ function startDailyPrizeChestCinematic(prize) {
   treasureChestCinematic = {
     kind: "dailyPrize",
     rank: prize.rank,
-    coins: prize.coins,
+    chestTier: prize.chestTier,
+    chestName: prize.chestName,
     dayLabel: prize.dayLabel,
     phase: "anticipate",
     startX: anchor.x,
@@ -11810,8 +11895,16 @@ const CRAB_TRAP_LOW_SCORE = 20;
 const CRAB_TRAP_MEDIUM_MIN = 35;
 /** Score >= this counts as a great haul (rich chests with rods). */
 const CRAB_TRAP_GREAT_MIN = 55;
-const CRAB_TRAP_MED_BAIT = ["nightcrawler", "shrimp", "glow_jelly", "squid_ink"];
-const CRAB_TRAP_GREAT_BAIT = ["squid_ink", "golden_chum", "glow_jelly"];
+const CRAB_TRAP_MED_BAIT = [
+  "nightcrawler",
+  "shrimp",
+  "glow_jelly",
+  "squid_ink",
+  "nightcrawler",
+  "shrimp",
+  KRAKEN_SPRAY_BAIT_ID,
+];
+const CRAB_TRAP_GREAT_BAIT = ["squid_ink", "golden_chum", "glow_jelly", "golden_chum", KRAKEN_SPRAY_BAIT_ID];
 
 /** Cages you can drop before a reload. */
 const CRAB_TRAP_CLIP_SIZE = 3;
@@ -12618,6 +12711,27 @@ function crabUnownedRods() {
   return crabPurchasableRods().filter((r) => !isRodOwned(r.id));
 }
 
+function rollChestBait(tier) {
+  if (tier === "common") {
+    if (Math.random() < 0.14) {
+      return { id: KRAKEN_SPRAY_BAIT_ID, name: baitSpecById(KRAKEN_SPRAY_BAIT_ID).name, qty: 1 };
+    }
+    return null;
+  }
+  const pool = tier === "great" ? CRAB_TRAP_GREAT_BAIT : CRAB_TRAP_MED_BAIT;
+  const id = crabPick(pool);
+  const spec = baitSpecById(id);
+  const qty =
+    id === KRAKEN_SPRAY_BAIT_ID
+      ? tier === "great"
+        ? crabRandInt(1, 2)
+        : 1
+      : tier === "great"
+        ? crabRandInt(3, 6)
+        : crabRandInt(2, 4);
+  return { id, name: spec.name, qty };
+}
+
 function rollCrabBundles(tier) {
   const bundles = [];
   for (let i = 0; i < 3; i++) {
@@ -12626,20 +12740,19 @@ function rollCrabBundles(tier) {
   if (tier === "common") {
     bundles.forEach((b) => {
       b.coins = crabRandInt(25, 75);
+      b.bait = rollChestBait("common");
       b.special = rollSpecialChestPrize("common");
     });
   } else if (tier === "medium") {
     bundles.forEach((b) => {
       b.coins = crabRandInt(120, 280);
-      const id = crabPick(CRAB_TRAP_MED_BAIT);
-      b.bait = { id, name: baitSpecById(id).name, qty: crabRandInt(2, 4) };
+      b.bait = rollChestBait("medium");
       b.special = rollSpecialChestPrize("medium");
     });
   } else {
     bundles.forEach((b) => {
       b.coins = crabRandInt(400, 850);
-      const id = crabPick(CRAB_TRAP_GREAT_BAIT);
-      b.bait = { id, name: baitSpecById(id).name, qty: crabRandInt(3, 6) };
+      b.bait = rollChestBait("great");
       b.special = rollSpecialChestPrize("great");
     });
     const unowned = crabShuffle(crabUnownedRods());
@@ -17318,7 +17431,8 @@ function drawTreasureChestCinematic() {
       const ord = dailyPrizeOrdinal(c.rank).toUpperCase();
       badgeText = "★  FISHER OF THE DAY  ★";
       titleText = `${ord} PLACE PRIZE!`;
-      subText = c.dayLabel ? `Rewards for ${c.dayLabel}` : "Yesterday's leaderboard rewards";
+      const chestBit = c.chestName || dailyPrizeChestNameForTier(c.chestTier);
+      subText = c.rank === 0 ? `${chestBit} + Magnet Rod` : chestBit;
     }
     ctx.font = `400 ${Math.round(11 * dpr)}px "Bebas Neue", sans-serif`;
     ctx.fillStyle = `rgba(255, 248, 200, ${bannerAlpha * 0.9})`;
