@@ -240,6 +240,99 @@ const RODS = [
     },
   },
   {
+    id: "coral_crown",
+    name: "Coral Crown Rod",
+    desc: "Chest exclusive · lively catch window.",
+    chestOnly: true,
+    chestTier: "common",
+    catchRadius: 40,
+    rareAssist: 0.14,
+    visual: {
+      lineMain: "rgba(244, 114, 182, 0.95)",
+      lineSheen: "rgba(252, 231, 243, 0.5)",
+      lineW: 1.7,
+      sheenW: 0.78,
+      reelBody: "#9d174d",
+      reelBand: "#f9a8d4",
+      ringIdle: "rgba(244, 114, 182, 0.34)",
+      ringSnag: "rgba(251, 207, 232, 0.7)",
+      hookMetal: "#fbcfe8",
+      hookBarb: "#831843",
+      hookScale: 1.08,
+      tipGlow: "rgba(244, 114, 182, 0.28)",
+    },
+  },
+  {
+    id: "stormcaller",
+    name: "Stormcaller Rod",
+    desc: "Chest exclusive · thunderous rare luck.",
+    chestOnly: true,
+    chestTier: "rare",
+    catchRadius: 42,
+    rareAssist: 0.28,
+    visual: {
+      lineMain: "rgba(125, 211, 252, 0.95)",
+      lineSheen: "rgba(224, 242, 254, 0.55)",
+      lineW: 1.85,
+      sheenW: 0.82,
+      reelBody: "#1e3a8a",
+      reelBand: "#38bdf8",
+      ringIdle: "rgba(56, 189, 248, 0.4)",
+      ringSnag: "rgba(186, 230, 253, 0.75)",
+      hookMetal: "#e0f2fe",
+      hookBarb: "#1d4ed8",
+      hookScale: 1.12,
+      tipGlow: "rgba(56, 189, 248, 0.35)",
+    },
+  },
+  {
+    id: "abyss_prism",
+    name: "Abyss Prism Rod",
+    desc: "Chest exclusive · deep lamp + rare pull.",
+    chestOnly: true,
+    chestTier: "rare",
+    catchRadius: 38,
+    rareAssist: 0.2,
+    lightRadiusMult: 2.1,
+    visual: {
+      lineMain: "rgba(167, 139, 250, 0.95)",
+      lineSheen: "rgba(237, 233, 254, 0.55)",
+      lineW: 1.8,
+      sheenW: 0.8,
+      reelBody: "#312e81",
+      reelBand: "#a78bfa",
+      ringIdle: "rgba(167, 139, 250, 0.4)",
+      ringSnag: "rgba(221, 214, 254, 0.75)",
+      hookMetal: "#ddd6fe",
+      hookBarb: "#4c1d95",
+      hookScale: 1.1,
+      tipGlow: "rgba(167, 139, 250, 0.4)",
+    },
+  },
+  {
+    id: "krakenbane",
+    name: "Krakenbane Rod",
+    desc: "Chest exclusive · huge reach · elite rares.",
+    chestOnly: true,
+    chestTier: "legendary",
+    catchRadius: 58,
+    rareAssist: 0.3,
+    visual: {
+      lineMain: "rgba(251, 146, 60, 0.95)",
+      lineSheen: "rgba(255, 237, 213, 0.55)",
+      lineW: 2.15,
+      sheenW: 0.9,
+      reelBody: "#7c2d12",
+      reelBand: "#fb923c",
+      ringIdle: "rgba(251, 146, 60, 0.4)",
+      ringSnag: "rgba(254, 215, 170, 0.78)",
+      hookMetal: "#fed7aa",
+      hookBarb: "#9a3412",
+      hookScale: 1.22,
+      tipGlow: "rgba(251, 146, 60, 0.35)",
+    },
+  },
+  {
     id: "magnet",
     name: "Magnet Rod",
     desc: "Magnetic tip · farther pulls.",
@@ -11695,7 +11788,7 @@ function buildShopUI() {
 
   const rodSec = shopSection("Pro rods", "GEAR");
   for (const rod of RODS) {
-    if (rod.id === FREE_ROD_ID || rod.id === MAGNET_ROD_ID) continue;
+    if (rod.id === FREE_ROD_ID || rod.id === MAGNET_ROD_ID || rod.chestOnly) continue;
     const owned = isRodOwned(rod.id);
     const li = document.createElement("li");
     li.className = `shop-item shop-item--rod shop-item--rod-${rod.id}${owned ? " shop-item--owned" : ""}`;
@@ -13242,16 +13335,45 @@ function crabTierForScore(scorePts) {
 function crabTierMessage(tier) {
   tier = normalizeChestTier(tier);
   if (tier === "legendary") {
-    return `Incredible haul (${CRAB_TRAP_GREAT_MIN}+)! These legendary chests are stuffed with coins, ${CHEST_GEMS_LEGENDARY} gems, bait, and maybe a new fishing rod.`;
+    return `Incredible haul (${CRAB_TRAP_GREAT_MIN}+)! Legendary chests can hold special rods, gems, and rich loot.`;
   }
   if (tier === "rare") {
-    return `Nice work (${CRAB_TRAP_MEDIUM_MIN}+)! You earned rare chests packed with more coins, ${CHEST_GEMS_RARE} gems, and bait. Trap ${CRAB_TRAP_GREAT_MIN}+ for legendary loot.`;
+    return `Nice work (${CRAB_TRAP_MEDIUM_MIN}+)! Rare chests may hide a special rod — trap ${CRAB_TRAP_GREAT_MIN}+ for legendary loot.`;
   }
-  return `A modest catch (around ${CRAB_TRAP_LOW_SCORE}) — common chests with ${CHEST_GEMS_COMMON} gems this time. Trap ${CRAB_TRAP_MEDIUM_MIN}+ crabs next round for richer loot!`;
+  return `A modest catch (around ${CRAB_TRAP_LOW_SCORE}) — common chests with ${CHEST_GEMS_COMMON} gems, and a slim chance at a special rod.`;
 }
 
 function crabPurchasableRods() {
-  return RODS.filter((r) => r.id !== FREE_ROD_ID && r.id !== MAGNET_ROD_ID);
+  return RODS.filter((r) => r.id !== FREE_ROD_ID && r.id !== MAGNET_ROD_ID && !r.chestOnly);
+}
+
+function chestExclusiveRods() {
+  return RODS.filter((r) => r.chestOnly);
+}
+
+/** Rods eligible to drop from a chest of this tier (unowned chest exclusives first). */
+function rollChestRodDrop(tier) {
+  tier = normalizeChestTier(tier);
+  const exclusives = crabShuffle(
+    chestExclusiveRods().filter((r) => {
+      if (isRodOwned(r.id)) return false;
+      const need = r.chestTier || "rare";
+      if (tier === "legendary") return true;
+      if (tier === "rare") return need === "common" || need === "rare";
+      return need === "common";
+    }),
+  );
+  if (tier === "legendary") {
+    if (exclusives.length) return exclusives[0];
+    const shop = crabShuffle(crabUnownedRods());
+    return shop[0] || null;
+  }
+  if (tier === "rare") {
+    if (!exclusives.length) return null;
+    return Math.random() < 0.48 ? exclusives[0] : null;
+  }
+  if (!exclusives.length) return null;
+  return Math.random() < 0.14 ? exclusives[0] : null;
 }
 
 function crabUnownedRods() {
@@ -13292,27 +13414,49 @@ function rollCrabBundles(tier) {
       b.bait = rollChestBait("common");
       b.special = rollSpecialChestPrize("common");
     });
+    const drop = rollChestRodDrop("common");
+    if (drop) {
+      const ci = crabRandInt(0, 2);
+      bundles[ci].rodId = drop.id;
+      bundles[ci].rodName = `${drop.name} (special)`;
+    }
   } else if (tier === "rare") {
     bundles.forEach((b) => {
       b.coins = crabRandInt(120, 280);
       b.bait = rollChestBait("rare");
       b.special = rollSpecialChestPrize("rare");
     });
+    const drop = rollChestRodDrop("rare");
+    if (drop) {
+      const ci = crabRandInt(0, 2);
+      bundles[ci].rodId = drop.id;
+      bundles[ci].rodName = `${drop.name} (special)`;
+    }
   } else {
     bundles.forEach((b) => {
       b.coins = crabRandInt(400, 850);
       b.bait = rollChestBait("legendary");
       b.special = rollSpecialChestPrize("legendary");
     });
-    const unowned = crabShuffle(crabUnownedRods());
-    if (unowned.length > 0) {
-      const rodChestCount = Math.min(unowned.length, crabRandInt(1, 2));
+    const exclusive = crabShuffle(
+      chestExclusiveRods().filter((r) => !isRodOwned(r.id)),
+    );
+    const shop = crabShuffle(crabUnownedRods());
+    const pool = [];
+    const seen = new Set();
+    for (const rod of [...exclusive, ...shop]) {
+      if (seen.has(rod.id)) continue;
+      seen.add(rod.id);
+      pool.push(rod);
+    }
+    if (pool.length > 0) {
+      const rodChestCount = Math.min(pool.length, crabRandInt(1, 2));
       const chestIdx = crabShuffle([0, 1, 2]).slice(0, rodChestCount);
       chestIdx.forEach((ci, k) => {
-        const rod = unowned[k];
+        const rod = pool[k];
         if (!rod) return;
         bundles[ci].rodId = rod.id;
-        bundles[ci].rodName = rod.name;
+        bundles[ci].rodName = rod.chestOnly ? `${rod.name} (special)` : rod.name;
       });
     } else {
       bundles.forEach((b) => {
