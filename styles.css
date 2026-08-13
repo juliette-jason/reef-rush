@@ -9453,10 +9453,12 @@ button.seagull-avatar:active {
   background:
     linear-gradient(180deg, rgba(45, 212, 191, 0.14), transparent 28%),
     linear-gradient(165deg, rgba(20, 42, 52, 0.96), rgba(14, 24, 36, 0.98));
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(45, 212, 191, 0.12);
 }
 
 .event-card--roulette .event-card__title {
   color: #5eead4;
+  text-shadow: 0 0 14px rgba(45, 212, 191, 0.3);
 }
 
 .event-card--coop {
@@ -9464,10 +9466,12 @@ button.seagull-avatar:active {
   background:
     linear-gradient(180deg, rgba(74, 222, 128, 0.12), transparent 28%),
     linear-gradient(165deg, rgba(18, 42, 48, 0.96), rgba(12, 28, 40, 0.98));
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(134, 239, 172, 0.12);
 }
 
 .event-card--coop .event-card__title {
   color: #86efac;
+  text-shadow: 0 0 14px rgba(134, 239, 172, 0.3);
 }
 
 .event-card--survivor {
@@ -9475,10 +9479,12 @@ button.seagull-avatar:active {
   background:
     linear-gradient(180deg, rgba(248, 113, 113, 0.14), transparent 28%),
     linear-gradient(165deg, rgba(42, 18, 22, 0.96), rgba(16, 12, 24, 0.98));
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(248, 113, 113, 0.14);
 }
 
 .event-card--survivor .event-card__title {
   color: #fca5a5;
+  text-shadow: 0 0 14px rgba(248, 113, 113, 0.3);
 }
 
 .duel-hud--coop .duel-hud__vs {
