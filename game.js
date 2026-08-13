@@ -9042,14 +9042,14 @@ function fillMapSeagullHowto() {
 }
 
 function fillMapSeagullShopHint() {
-  if (mapSeagullTitle) mapSeagullTitle.textContent = "One more tip!";
+  if (mapSeagullTitle) mapSeagullTitle.textContent = "Shop tip";
   if (mapSeagullText) {
     mapSeagullText.innerHTML =
-      "<p>Nice first haul! Head to the <strong>Fishing shop</strong> and talk to the seagull — he can help you spend coins on bait and stronger rods.</p>";
+      "<p>Nice haul — spend coins in the <strong>Fishing shop</strong>.</p>";
   }
   if (btnMapSeagullDone) {
     btnMapSeagullDone.hidden = false;
-    btnMapSeagullDone.textContent = "Thanks, seagull";
+    btnMapSeagullDone.textContent = "Got it";
   }
 }
 
