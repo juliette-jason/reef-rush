@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=chest-gems-2" />
+    <link rel="stylesheet" href="styles.css?v=shop-about-top-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -1920,9 +1920,15 @@
           </div>
         </div>
         <header class="shop-topbar">
-          <div class="shop-topbar__titles">
-            <p class="shop-topbar__eyebrow">Gear &amp; supplies</p>
-            <h2 class="shop-topbar__title">Fishing Shop</h2>
+          <div class="shop-topbar__lead">
+            <div class="shop-topbar__titles">
+              <p class="shop-topbar__eyebrow">Gear &amp; supplies</p>
+              <h2 class="shop-topbar__title">Fishing Shop</h2>
+            </div>
+            <button type="button" id="btnOpenShopGuide" class="shop-guide-launch" aria-label="Ask the shop seagull about the shop">
+              <span class="shop-guide-launch__face" aria-hidden="true"></span>
+              <span class="shop-guide-launch__text">About shop</span>
+            </button>
           </div>
           <div class="shop-wallets">
             <div class="shop-wallet" title="Your coin balance">
@@ -2122,12 +2128,6 @@
           </div>
         </div>
         <div id="shopList" class="shop-shelf" aria-label="Fishing shop items for sale"></div>
-        <div class="shop-footer">
-          <button type="button" id="btnOpenShopGuide" class="shop-guide-launch" aria-label="Ask the shop seagull about the shop">
-            <span class="shop-guide-launch__face" aria-hidden="true"></span>
-            <span class="shop-guide-launch__text">About shop</span>
-          </button>
-        </div>
       </section>
 
       <section id="panelGameOver" class="panel panel--over" hidden>
@@ -2208,6 +2208,6 @@
       </section>
     </div>
 
-    <script src="game.js?v=chest-gems-2" defer></script>
+    <script src="game.js?v=shop-about-top-1" defer></script>
   </body>
 </html>
