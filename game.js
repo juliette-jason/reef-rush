@@ -6789,15 +6789,15 @@ function updateDailyEventPlayerHint(rows = dailyLeaderboardRows) {
   }
   const rank = rows.findIndex((r) => r.initials === ini);
   if (rank === 0) {
-    dailyEventPlayerHint.textContent = `${label}, you're in 1st! Hold the lead until midnight for a legendary chest and the Magnet Rod.`;
+    dailyEventPlayerHint.textContent = `${label}, you're in 1st! Hold for a legendary chest + Magnet Rod.`;
   } else if (rank === 1) {
-    dailyEventPlayerHint.textContent = `${label}, you're in 2nd — stay there until reset for a rare chest.`;
+    dailyEventPlayerHint.textContent = `${label}, you're in 2nd — hold for a rare chest.`;
   } else if (rank === 2) {
-    dailyEventPlayerHint.textContent = `${label}, you're in 3rd — stay there until reset for a common chest.`;
+    dailyEventPlayerHint.textContent = `${label}, you're in 3rd — hold for a common chest.`;
   } else if (rank >= 0) {
-    dailyEventPlayerHint.textContent = `${label}, you're #${rank + 1} today. Climb into the top 3 for a chest!`;
+    dailyEventPlayerHint.textContent = `${label}, #${rank + 1} today. Top 3 wins a chest.`;
   } else {
-    dailyEventPlayerHint.textContent = `${label}, play a reef run to post today's best score.`;
+    dailyEventPlayerHint.textContent = `${label}, play a reef run to post today's best.`;
   }
 }
 
