@@ -5243,9 +5243,9 @@ function registerGoldQuestTreasureBeds() {
 registerAdventureBonusThemes();
 
 function adventurePassScoreForIndex(i) {
-  // Early voyages were auto-cleared by treasure crabs (~2460 pts). Quotas now
-  // require real fishing from Mariner's Rest onward; finales stay close to the
-  // old endgame so they don't jump from "too easy" to unwinnable.
+  // Early voyages need real fishing (crabs can't auto-clear). Frozen Sea and
+  // The Lost City stay a step up from Gold Quest, but quotas are eased so a
+  // good player can finish the chart without perfect rounds.
   if (i < ADVENTURE_MAIN_LEVEL_COUNT) {
     return 5200 + Math.round((i * (9000 - 5200)) / Math.max(1, ADVENTURE_MAIN_LEVEL_COUNT - 1));
   }
@@ -5255,10 +5255,10 @@ function adventurePassScoreForIndex(i) {
   }
   if (i < ADVENTURE_LOST_CITY_START_INDEX) {
     const iceI = i - ADVENTURE_ICE_START_INDEX;
-    return 11100 + Math.round((iceI * (12000 - 11100)) / Math.max(1, ADVENTURE_ICE_LEVEL_COUNT - 1));
+    return 10800 + Math.round((iceI * (11400 - 10800)) / Math.max(1, ADVENTURE_ICE_LEVEL_COUNT - 1));
   }
   const lostI = i - ADVENTURE_LOST_CITY_START_INDEX;
-  return 12300 + Math.round((lostI * (14000 - 12300)) / Math.max(1, ADVENTURE_LOST_CITY_LEVEL_COUNT - 1));
+  return 11500 + Math.round((lostI * (12600 - 11500)) / Math.max(1, ADVENTURE_LOST_CITY_LEVEL_COUNT - 1));
 }
 
 function drawAdventureThemeOverlayInner(now) {
@@ -6037,8 +6037,14 @@ function buildAdventureLevels() {
       spawnMin: Math.max(isLostCity ? 145 : isIce ? 155 : isBonus ? 165 : 185, Math.min(400, reef.spawnMin - i * 14)),
       spawnMax: Math.max(isLostCity ? 350 : isIce ? 370 : isBonus ? 390 : 430, Math.min(1500, reef.spawnMax - i * 36)),
       maxFish: Math.min(20, reef.maxFish + Math.floor(i / 2.2)),
-      fishSpeed: Math.max(1.02, reef.fishSpeed * (1.18 + i * 0.026)),
-      rareRollMult: Math.max(0.55, reef.rareRollMult * (0.97 - i * 0.01)),
+      fishSpeed: Math.max(
+        1.02,
+        reef.fishSpeed * (1.18 + i * 0.026) * (isLostCity ? 0.88 : isIce ? 0.9 : 1),
+      ),
+      rareRollMult: Math.max(
+        isLostCity || isIce ? 0.62 : 0.55,
+        reef.rareRollMult * (0.97 - i * 0.01),
+      ),
     });
   }
   return levels;
