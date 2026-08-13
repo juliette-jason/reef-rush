@@ -94,7 +94,7 @@ const RODS = [
   {
     id: "bamboo",
     name: "Bamboo Reef Rod",
-    desc: "Tight sweet spot — skill pays off.",
+    desc: "Tight sweet spot.",
     catchRadius: 30,
     rareAssist: 0,
     visual: {
@@ -115,7 +115,7 @@ const RODS = [
   {
     id: "chrome",
     name: "Chrome Spinner Rod",
-    desc: "Wider hook window; slight edge on rare fish.",
+    desc: "Wider catch window.",
     catchRadius: 38,
     rareAssist: 0.12,
     visual: {
@@ -136,7 +136,7 @@ const RODS = [
   {
     id: "golden",
     name: "Golden Luxor Rod",
-    desc: "Vegas-wide radius; best odds when legends swim by.",
+    desc: "Wide catch · strong rare odds.",
     catchRadius: 46,
     rareAssist: 0.22,
     visual: {
@@ -157,7 +157,7 @@ const RODS = [
   {
     id: "light",
     name: "Light Rod",
-    desc: "Built-in deep-sea lamp — best choice for the Mariana Trench.",
+    desc: "Built-in deep-sea lamp.",
     catchRadius: 36,
     rareAssist: 0.08,
     lightRadiusMult: 1.55,
@@ -179,7 +179,7 @@ const RODS = [
   {
     id: "wide_net",
     name: "Wide Net Rod",
-    desc: "Huge hook window — great for catching more fish fast.",
+    desc: "Huge catch window.",
     catchRadius: 54,
     rareAssist: 0.05,
     visual: {
@@ -200,7 +200,7 @@ const RODS = [
   {
     id: "legend",
     name: "Legend Seeker Rod",
-    desc: "Smaller target, but the strongest rare-fish odds.",
+    desc: "Strongest rare odds.",
     catchRadius: 34,
     rareAssist: 0.34,
     visual: {
@@ -221,7 +221,7 @@ const RODS = [
   {
     id: "titan",
     name: "Titan Trawler Rod",
-    desc: "Heavy-duty all-rounder — wide reach and solid rare odds.",
+    desc: "Wide reach · solid rare odds.",
     catchRadius: 44,
     rareAssist: 0.18,
     visual: {
@@ -242,7 +242,7 @@ const RODS = [
   {
     id: "magnet",
     name: "Magnet Rod",
-    desc: "Fisher of the Day prize — magnetic tip pulls fish from much farther away.",
+    desc: "Magnetic tip · farther pulls.",
     catchRadius: 66,
     rareAssist: 0.12,
     visual: {
@@ -284,21 +284,21 @@ const SHOP_CHEST_DEFS = [
     name: "Common chest",
     tier: "common",
     gemPrice: 45,
-    blurb: "A modest crate — a few coins and the occasional lucky find.",
+    blurb: "",
   },
   {
     id: "rare",
     name: "Rare chest",
     tier: "rare",
     gemPrice: 110,
-    blurb: "A solid haul of coins, bait, and better bonus prizes.",
+    blurb: "",
   },
   {
     id: "legendary",
     name: "Legendary chest",
     tier: "legendary",
     gemPrice: 175,
-    blurb: "Rich loot: big coins, premium bait, and a chance at a new rod.",
+    blurb: "",
   },
 ];
 
@@ -311,9 +311,9 @@ function normalizeChestTier(tier) {
 }
 
 const SHOP_COIN_BUNDLES = [
-  { id: "coins_2k", name: "Coin pouch", gems: 80, coins: 2000, blurb: "A fat pouch of reef coins." },
-  { id: "coins_5k", name: "Coin crate", gems: 160, coins: 5000, blurb: "A heavy crate of spendable coins." },
-  { id: "coins_10k", name: "Coin vault", gems: 300, coins: 10000, blurb: "The big bundle — 10,000 coins for the shop.", featured: true },
+  { id: "coins_2k", name: "Coin pouch", gems: 80, coins: 2000, blurb: "" },
+  { id: "coins_5k", name: "Coin crate", gems: 160, coins: 5000, blurb: "" },
+  { id: "coins_10k", name: "Coin vault", gems: 300, coins: 10000, blurb: "", featured: true },
 ];
 
 /** Special chest prizes (inventory + catch stamps). */
@@ -322,31 +322,31 @@ const CHEST_ITEM_DEFS = {
     id: "adventure_skip_rope",
     name: "Adventure Skip Rope",
     icon: "🪢",
-    blurb: "Very rare. On a failed adventure voyage, use it to clear the level anyway.",
+    blurb: "Clears a failed adventure level.",
   },
   golden_net: {
     id: "golden_net",
     name: "Golden Net",
     icon: "✨",
-    blurb: "When the kraken bites, your catch stays safe (uses 1 automatically).",
+    blurb: "Saves your catch from the kraken.",
   },
   mystery_reef: {
     id: "mystery_reef",
     name: "Mystery Reef Key",
     icon: "🗝️",
-    blurb: "Arm it, then Start Game — you'll sail a random reef for that round.",
+    blurb: "Next round: random reef.",
   },
   lucky_lure: {
     id: "lucky_lure",
     name: "Lucky Lure",
     icon: "🍀",
-    blurb: "Arm it for your next reef round: better rare hook luck and a wider catch window.",
+    blurb: "Next round: better rare luck.",
   },
   double_haul: {
     id: "double_haul",
     name: "Double Haul",
     icon: "💰",
-    blurb: "Arm it for your next reef round: double the coins you earn from the score.",
+    blurb: "Next round: double coins.",
   },
 };
 
@@ -457,47 +457,47 @@ const CLOTHING_ID_MIGRATIONS = {
 };
 
 const CLOTHING_DEFS = [
-  { id: "sailor_cap", name: "Sailor Cap", slot: "hat", price: 0, starter: true, icon: "🧢", blurb: "Your classic green shop cap." },
-  { id: "captain_hat", name: "Captain Hat", slot: "hat", price: 320, icon: "🎩", blurb: "Navy brass for a reef commander." },
-  { id: "red_beanie", name: "Red Beanie", slot: "hat", price: 180, icon: "🧶", blurb: "Cozy knit for chilly docks." },
-  { id: "straw_sun_hat", name: "Straw Sun Hat", slot: "hat", price: 220, icon: "👒", blurb: "Shade for long sunny voyages." },
-  { id: "pirate_bandana", name: "Pirate Bandana", slot: "hat", price: 260, icon: "🏴‍☠️", blurb: "Knotted red for salty swagger." },
-  { id: "bucket_hat", name: "Bucket Hat", slot: "hat", price: 190, icon: "🎣", blurb: "Olive brim for long days on the pier." },
-  { id: "shark_hood", name: "Shark Hood", slot: "hat", price: 360, icon: "🦈", blurb: "A toothy costume hood for scare tactics." },
-  { id: "kelp_crown", name: "Kelp Crown", slot: "hat", price: 250, icon: "🌿", blurb: "Woven seaweed for a reef monarch." },
-  { id: "night_cap", name: "Night Cap", slot: "hat", price: 160, icon: "🌙", blurb: "Navy knit with a pompom for dawn patrols." },
-  { id: "spiky_tuft", name: "Spiky Tuft", slot: "hair", price: 140, icon: "🦔", blurb: "Wild crest that won't stay down." },
-  { id: "curly_top", name: "Curly Top", slot: "hair", price: 160, icon: "🌀", blurb: "Soft curls for a friendly look." },
-  { id: "sleek_slick", name: "Sleek Slick", slot: "hair", price: 0, starter: true, icon: "✨", blurb: "Combed back starter look." },
-  { id: "rainbow_mohawk", name: "Rainbow Mohawk", slot: "hair", price: 380, icon: "🌈", blurb: "Loud colors for festival tides." },
-  { id: "blond_bob", name: "Blond Bob", slot: "hair", price: 180, icon: "💛", blurb: "Sunny bowl cut with beach bounce." },
-  { id: "pink_pigtails", name: "Pink Pigtails", slot: "hair", price: 240, icon: "💗", blurb: "Twin puffs tied with tiny shells." },
-  { id: "dark_mullet", name: "Dark Mullet", slot: "hair", price: 170, icon: "🎸", blurb: "Business up front, party on the wake." },
-  { id: "frosted_tips", name: "Frosted Tips", slot: "hair", price: 200, icon: "❄️", blurb: "Icy highlights for polar voyages." },
-  { id: "blue_vest", name: "Blue Vest", slot: "shirt", price: 200, icon: "🧥", blurb: "Smart layered chest feathers." },
-  { id: "stripe_sweater", name: "Stripe Sweater", slot: "shirt", price: 0, starter: true, icon: "👕", blurb: "Nautical starter stripes." },
-  { id: "life_vest", name: "Life Vest", slot: "shirt", price: 280, icon: "🦺", blurb: "Safety orange with reflective tape." },
-  { id: "hawaiian_shirt", name: "Hawaiian Shirt", slot: "shirt", price: 300, icon: "🌺", blurb: "Tropical flowers on every flap." },
-  { id: "yellow_raincoat", name: "Yellow Raincoat", slot: "shirt", price: 340, icon: "🌧️", blurb: "Keeps spray off your wings." },
-  { id: "pirate_coat", name: "Pirate Coat", slot: "shirt", price: 400, icon: "⚔️", blurb: "Black wool with gold braid and attitude." },
-  { id: "wetsuit", name: "Wetsuit", slot: "shirt", price: 320, icon: "🤿", blurb: "Sleek black neoprene with teal seams." },
-  { id: "flannel_shirt", name: "Dock Flannel", slot: "shirt", price: 230, icon: "🪵", blurb: "Red plaid for chilly morning bait." },
-  { id: "pearl_cape", name: "Pearl Cape", slot: "shirt", price: 380, icon: "🦪", blurb: "Shimmery lavender drape from the cove." },
-  { id: "blue_sneakers", name: "Blue Sneakers", slot: "shoes", price: 0, starter: true, icon: "👟", blurb: "Comfy starter kicks for the pier." },
-  { id: "work_boots", name: "Work Boots", slot: "shoes", price: 240, icon: "🥾", blurb: "Sturdy soles for slippery docks." },
-  { id: "flip_flops", name: "Flip Flops", slot: "shoes", price: 170, icon: "🩴", blurb: "Beach-ready after a hot haul." },
-  { id: "striped_kicks", name: "Striped Kicks", slot: "shoes", price: 120, icon: "🧦", blurb: "Blue-stripe sneakers with pep." },
-  { id: "rubber_waders", name: "Rubber Waders", slot: "shoes", price: 260, icon: "🐸", blurb: "Tall olive boots for muddy banks." },
-  { id: "gold_loafers", name: "Gold Loafers", slot: "shoes", price: 410, icon: "✨", blurb: "Treasure-shine shoes for prize night." },
-  { id: "red_high_tops", name: "Red High-Tops", slot: "shoes", price: 200, icon: "🏀", blurb: "Court-ready red for deck dashes." },
-  { id: "red_scarf", name: "Red Scarf", slot: "accessory", price: 190, icon: "🧣", blurb: "Wrapped snug around the neck." },
-  { id: "gold_chain", name: "Gold Chain", slot: "accessory", price: 420, icon: "🪙", blurb: "Flashy treasure from the cove." },
-  { id: "monocle", name: "Monocle", slot: "accessory", price: 350, icon: "🧐", blurb: "For spotting rare fish in style." },
-  { id: "bow_tie", name: "Bow Tie", slot: "accessory", price: 210, icon: "🎀", blurb: "Formal wear for prize nights." },
-  { id: "eyepatch", name: "Eyepatch", slot: "accessory", price: 280, icon: "🕶️", blurb: "One eye on the horizon, always." },
-  { id: "pearl_earrings", name: "Pearl Earrings", slot: "accessory", price: 330, icon: "⚪", blurb: "Clam-fresh pearls on both sides." },
-  { id: "bubble_pipe", name: "Bubble Pipe", slot: "accessory", price: 220, icon: "🫧", blurb: "Puffs little bubbles after a big catch." },
-  { id: "starfish_pin", name: "Starfish Pin", slot: "accessory", price: 150, icon: "⭐", blurb: "A tiny star stuck to your chest." },
+  { id: "sailor_cap", name: "Sailor Cap", slot: "hat", price: 0, starter: true, icon: "🧢", blurb: "" },
+  { id: "captain_hat", name: "Captain Hat", slot: "hat", price: 320, icon: "🎩", blurb: "" },
+  { id: "red_beanie", name: "Red Beanie", slot: "hat", price: 180, icon: "🧶", blurb: "" },
+  { id: "straw_sun_hat", name: "Straw Sun Hat", slot: "hat", price: 220, icon: "👒", blurb: "" },
+  { id: "pirate_bandana", name: "Pirate Bandana", slot: "hat", price: 260, icon: "🏴‍☠️", blurb: "" },
+  { id: "bucket_hat", name: "Bucket Hat", slot: "hat", price: 190, icon: "🎣", blurb: "" },
+  { id: "shark_hood", name: "Shark Hood", slot: "hat", price: 360, icon: "🦈", blurb: "" },
+  { id: "kelp_crown", name: "Kelp Crown", slot: "hat", price: 250, icon: "🌿", blurb: "" },
+  { id: "night_cap", name: "Night Cap", slot: "hat", price: 160, icon: "🌙", blurb: "" },
+  { id: "spiky_tuft", name: "Spiky Tuft", slot: "hair", price: 140, icon: "🦔", blurb: "" },
+  { id: "curly_top", name: "Curly Top", slot: "hair", price: 160, icon: "🌀", blurb: "" },
+  { id: "sleek_slick", name: "Sleek Slick", slot: "hair", price: 0, starter: true, icon: "✨", blurb: "" },
+  { id: "rainbow_mohawk", name: "Rainbow Mohawk", slot: "hair", price: 380, icon: "🌈", blurb: "" },
+  { id: "blond_bob", name: "Blond Bob", slot: "hair", price: 180, icon: "💛", blurb: "" },
+  { id: "pink_pigtails", name: "Pink Pigtails", slot: "hair", price: 240, icon: "💗", blurb: "" },
+  { id: "dark_mullet", name: "Dark Mullet", slot: "hair", price: 170, icon: "🎸", blurb: "" },
+  { id: "frosted_tips", name: "Frosted Tips", slot: "hair", price: 200, icon: "❄️", blurb: "" },
+  { id: "blue_vest", name: "Blue Vest", slot: "shirt", price: 200, icon: "🧥", blurb: "" },
+  { id: "stripe_sweater", name: "Stripe Sweater", slot: "shirt", price: 0, starter: true, icon: "👕", blurb: "" },
+  { id: "life_vest", name: "Life Vest", slot: "shirt", price: 280, icon: "🦺", blurb: "" },
+  { id: "hawaiian_shirt", name: "Hawaiian Shirt", slot: "shirt", price: 300, icon: "🌺", blurb: "" },
+  { id: "yellow_raincoat", name: "Yellow Raincoat", slot: "shirt", price: 340, icon: "🌧️", blurb: "" },
+  { id: "pirate_coat", name: "Pirate Coat", slot: "shirt", price: 400, icon: "⚔️", blurb: "" },
+  { id: "wetsuit", name: "Wetsuit", slot: "shirt", price: 320, icon: "🤿", blurb: "" },
+  { id: "flannel_shirt", name: "Dock Flannel", slot: "shirt", price: 230, icon: "🪵", blurb: "" },
+  { id: "pearl_cape", name: "Pearl Cape", slot: "shirt", price: 380, icon: "🦪", blurb: "" },
+  { id: "blue_sneakers", name: "Blue Sneakers", slot: "shoes", price: 0, starter: true, icon: "👟", blurb: "" },
+  { id: "work_boots", name: "Work Boots", slot: "shoes", price: 240, icon: "🥾", blurb: "" },
+  { id: "flip_flops", name: "Flip Flops", slot: "shoes", price: 170, icon: "🩴", blurb: "" },
+  { id: "striped_kicks", name: "Striped Kicks", slot: "shoes", price: 120, icon: "🧦", blurb: "" },
+  { id: "rubber_waders", name: "Rubber Waders", slot: "shoes", price: 260, icon: "🐸", blurb: "" },
+  { id: "gold_loafers", name: "Gold Loafers", slot: "shoes", price: 410, icon: "✨", blurb: "" },
+  { id: "red_high_tops", name: "Red High-Tops", slot: "shoes", price: 200, icon: "🏀", blurb: "" },
+  { id: "red_scarf", name: "Red Scarf", slot: "accessory", price: 190, icon: "🧣", blurb: "" },
+  { id: "gold_chain", name: "Gold Chain", slot: "accessory", price: 420, icon: "🪙", blurb: "" },
+  { id: "monocle", name: "Monocle", slot: "accessory", price: 350, icon: "🧐", blurb: "" },
+  { id: "bow_tie", name: "Bow Tie", slot: "accessory", price: 210, icon: "🎀", blurb: "" },
+  { id: "eyepatch", name: "Eyepatch", slot: "accessory", price: 280, icon: "🕶️", blurb: "" },
+  { id: "pearl_earrings", name: "Pearl Earrings", slot: "accessory", price: 330, icon: "⚪", blurb: "" },
+  { id: "bubble_pipe", name: "Bubble Pipe", slot: "accessory", price: 220, icon: "🫧", blurb: "" },
+  { id: "starfish_pin", name: "Starfish Pin", slot: "accessory", price: 150, icon: "⭐", blurb: "" },
 ];
 
 const CLOTHING_BY_ID = Object.fromEntries(CLOTHING_DEFS.map((c) => [c.id, c]));
@@ -1363,7 +1363,7 @@ const BAITS = [
   {
     id: "standard",
     name: "Standard lure",
-    desc: "Ship stock — no bonus, unlimited uses.",
+    desc: "Unlimited · no bonus.",
     price: 0,
     packSize: 0,
     consumesOnRound: false,
@@ -1374,7 +1374,7 @@ const BAITS = [
   {
     id: "nightcrawler",
     name: "Nightcrawler tub",
-    desc: "Chunky bait — wider hook reach.",
+    desc: "Wider catch window.",
     price: 26,
     packSize: 1,
     consumesOnRound: true,
@@ -1385,7 +1385,7 @@ const BAITS = [
   {
     id: "shrimp",
     name: "Brined shrimp",
-    desc: "Flashy scent — strong odds on rare fish.",
+    desc: "Strong rare odds.",
     price: 44,
     packSize: 1,
     consumesOnRound: true,
@@ -1396,7 +1396,7 @@ const BAITS = [
   {
     id: "glow_jelly",
     name: "Glow jelly jar",
-    desc: "Bioluminescent bait — lights up a much wider area.",
+    desc: "Lights a wide area.",
     price: 64,
     packSize: 1,
     consumesOnRound: true,
@@ -1407,7 +1407,7 @@ const BAITS = [
   {
     id: "squid_ink",
     name: "Squid ink cloud",
-    desc: "Premium cloud — big window and rare-fish boost.",
+    desc: "Big window · rare boost.",
     price: 88,
     packSize: 1,
     consumesOnRound: true,
@@ -1418,7 +1418,7 @@ const BAITS = [
   {
     id: "golden_chum",
     name: "Golden chum bucket",
-    desc: "High-roller mix — huge reach, best rare odds.",
+    desc: "Huge reach · best rare odds.",
     price: 145,
     packSize: 1,
     consumesOnRound: true,
@@ -1429,7 +1429,7 @@ const BAITS = [
   {
     id: KRAKEN_SPRAY_BAIT_ID,
     name: "Kraken spray",
-    desc: "Found in chests — keeps the kraken away for one round.",
+    desc: "Blocks the kraken for 1 round.",
     price: 0,
     packSize: 0,
     consumesOnRound: true,
@@ -9025,22 +9025,19 @@ function hideMapSeagullGuide() {
 }
 
 function fillMapSeagullHowto() {
-  if (mapSeagullTitle) mapSeagullTitle.textContent = "Squawk! Listen up, fisher";
+  if (mapSeagullTitle) mapSeagullTitle.textContent = "Quick tip";
   if (mapSeagullText) {
     mapSeagullText.innerHTML = `
-      <p>Pick a reef on this chart, choose bait and a rod, then hit <strong>Start Game</strong>.</p>
+      <p>Pick a reef, bait, and rod — then Start Game.</p>
       <ul>
-        <li>Move left and right to aim your line.</li>
-        <li>Press Enter to cast deep.</li>
-        <li>Press Space, tap, or lift to snag fish near the hook.</li>
-        <li>Watch out for the kraken — it can rip your net!</li>
+        <li>Aim · cast · snag fish near the hook.</li>
+        <li>Avoid the kraken.</li>
       </ul>
-      <p>Fill your net, earn coins, and bring your catch back to the store.</p>
     `;
   }
   if (btnMapSeagullDone) {
     btnMapSeagullDone.hidden = false;
-    btnMapSeagullDone.textContent = "Got it — let's fish";
+    btnMapSeagullDone.textContent = "Got it";
   }
 }
 
@@ -11378,10 +11375,6 @@ function buildShopUI() {
   refreshDuelTicketsForToday();
 
   const chestSec = shopSection("Treasure chests", "GEMS");
-  const chestNote = document.createElement("p");
-  chestNote.className = "shop-section__note";
-  chestNote.textContent = "Gems drop from found chests. Shop chests open instantly with the same loot as Crab Trap.";
-  chestSec.section.insertBefore(chestNote, chestSec.list);
   for (const def of SHOP_CHEST_DEFS) {
     const li = document.createElement("li");
     li.className = `shop-item shop-item--chest shop-item--chest-${def.tier}`;
@@ -11391,13 +11384,7 @@ function buildShopUI() {
     const title = document.createElement("h3");
     title.className = "shop-item__title";
     title.textContent = def.name;
-    const desc = document.createElement("p");
-    desc.className = "shop-item__desc";
-    desc.textContent = def.blurb;
-    const meta = document.createElement("div");
-    meta.className = "shop-item__meta";
-    meta.innerHTML = `<span class="shop-item__stock">Opens instantly</span>`;
-    body.append(title, desc, meta);
+    body.append(title);
     const buy = shopBuyButton({
       price: def.gemPrice,
       currency: "gems",
@@ -11426,13 +11413,10 @@ function buildShopUI() {
     const title = document.createElement("h3");
     title.className = "shop-item__title";
     title.textContent = pack.name;
-    const desc = document.createElement("p");
-    desc.className = "shop-item__desc";
-    desc.textContent = pack.blurb;
     const meta = document.createElement("div");
     meta.className = "shop-item__meta";
     meta.innerHTML = `<span class="shop-item__stock">${pack.coins.toLocaleString()} coins</span>`;
-    body.append(title, desc, meta);
+    body.append(title, meta);
     const buy = shopBuyButton({
       price: pack.gems,
       currency: "gems",
@@ -11459,7 +11443,7 @@ function buildShopUI() {
   duelTitle.textContent = "Duel ticket";
   const duelDesc = document.createElement("p");
   duelDesc.className = "shop-item__desc";
-  duelDesc.textContent = "One split-screen Duel Fishing run on Events. You get 5 free tickets each day.";
+  duelDesc.textContent = "1 duel run · 5 free each day.";
   const duelMeta = document.createElement("div");
   duelMeta.className = "shop-item__meta";
   duelMeta.innerHTML = `<span class="shop-item__stock">You have ${getDuelTicketCount()}</span>`;
@@ -11538,12 +11522,14 @@ function buildShopUI() {
     const desc = document.createElement("p");
     desc.className = "shop-item__desc";
     desc.textContent = rod.desc;
-    const meta = document.createElement("div");
-    meta.className = "shop-item__meta";
-    meta.innerHTML = owned
-      ? `<span class="shop-item__stock shop-item__stock--owned">Unlocked</span>`
-      : `<span class="shop-item__stock">Permanent unlock</span>`;
-    body.append(title, desc, meta);
+    if (owned) {
+      const meta = document.createElement("div");
+      meta.className = "shop-item__meta";
+      meta.innerHTML = `<span class="shop-item__stock shop-item__stock--owned">Owned</span>`;
+      body.append(title, desc, meta);
+    } else {
+      body.append(title, desc);
+    }
     const buy = shopBuyButton({
       owned,
       price: ROD_PRICE,
@@ -11570,7 +11556,7 @@ function buildShopUI() {
   const clothesSec = shopSection("Daily fits", "TODAY");
   const resetNote = document.createElement("p");
   resetNote.className = "shop-section__note";
-  resetNote.textContent = `5 seagull skins today · ${formatDailyResetCountdown(msUntilDailyReset())}`;
+  resetNote.textContent = formatDailyResetCountdown(msUntilDailyReset());
   clothesSec.section.insertBefore(resetNote, clothesSec.list);
   for (const id of dailyFits.itemIds) {
     const def = CLOTHING_BY_ID[id];
@@ -11587,15 +11573,12 @@ function buildShopUI() {
     const title = document.createElement("h3");
     title.className = "shop-item__title";
     title.textContent = def.name;
-    const desc = document.createElement("p");
-    desc.className = "shop-item__desc";
-    desc.textContent = def.blurb;
     const meta = document.createElement("div");
     meta.className = "shop-item__meta";
     meta.innerHTML = owned
       ? `<span class="shop-item__stock shop-item__stock--owned">${CLOTHING_SLOT_LABELS[def.slot]} · Owned</span>`
-      : `<span class="shop-item__stock">${CLOTHING_SLOT_LABELS[def.slot]} · Daily pick</span>`;
-    body.append(title, desc, meta);
+      : `<span class="shop-item__stock">${CLOTHING_SLOT_LABELS[def.slot]}</span>`;
+    body.append(title, meta);
     const buy = shopBuyButton({
       owned,
       price: def.price,

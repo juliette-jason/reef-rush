@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=chest-names-1" />
+    <link rel="stylesheet" href="styles.css?v=less-copy-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -635,13 +635,13 @@
                   </svg>
                 </div>
               </div>
-              <p id="reefMapCaption" class="reef-map-panel__caption">Tap a pin on the chart to choose your reef.</p>
+              <p id="reefMapCaption" class="reef-map-panel__caption">Pick a reef.</p>
             </div>
           </div>
         </fieldset>
         <fieldset class="rods rods--card">
           <legend class="rods__legend">Choose your bait</legend>
-          <p class="rods__hint">Premium bait lasts one round — stock shows on each option.</p>
+          <p class="rods__hint">Premium bait: 1 round each.</p>
           <div id="baitChoices" class="rods__grid"></div>
         </fieldset>
         <fieldset class="rods rods--card">
@@ -652,7 +652,7 @@
           <button type="button" id="btnStart" class="btn btn--primary btn--start">
             <span class="btn--start__shine" aria-hidden="true"></span>
             <span class="btn--start__label">Start Game</span>
-            <span id="btnStartSub" class="btn__sub">Round length depends on reef · tap to play</span>
+            <span id="btnStartSub" class="btn__sub">Tap to play</span>
           </button>
           <div id="mapSeagullGuide" class="map-seagull" hidden aria-live="polite">
             <div class="map-seagull__bubble" role="dialog" aria-labelledby="mapSeagullTitle">
@@ -759,7 +759,7 @@
         <div id="adventureUnlockBanner" class="adventure-unlock-banner" hidden aria-hidden="true">
           <p class="adventure-unlock-banner__spark">✦ ✦ ✦</p>
           <p class="adventure-unlock-banner__title">Adventure Mode Unlocked!</p>
-          <p class="adventure-unlock-banner__sub">Watch the button rise — then tap to chart your course</p>
+          <p class="adventure-unlock-banner__sub">Fill the bar, then tap to sail.</p>
         </div>
       </section>
 
@@ -1401,7 +1401,7 @@
                 <summary class="event-card__info" aria-label="About Top 10 global scores">
                   <span class="event-card__info-glyph" aria-hidden="true">i</span>
                 </summary>
-                <p class="event-card__blurb">All-time best reef runs from fishers worldwide.</p>
+                <p class="event-card__blurb">All-time best reef scores.</p>
               </details>
             </div>
             <p class="event-card__reset">All-time</p>
@@ -1466,7 +1466,7 @@
                 <summary class="event-card__info" aria-label="About Fisher of the Day">
                   <span class="event-card__info-glyph" aria-hidden="true">i</span>
                 </summary>
-                <p class="event-card__blurb">Post any reef run. Only your best score today counts. Top 3 win chests — legendary, rare, then common — and 1st also gets the Magnet Rod until reset.</p>
+                <p class="event-card__blurb">Best score today. Top 3: legendary, rare, common chests. 1st also gets Magnet Rod.</p>
               </details>
             </div>
             <p id="dailyEventReset" class="event-card__reset">Resets tonight</p>
@@ -1615,7 +1615,7 @@
                 <summary class="event-card__info" aria-label="About Daily Catch">
                   <span class="event-card__info-glyph" aria-hidden="true">i</span>
                 </summary>
-                <p class="event-card__blurb">Hit today's catch goal across your reef rounds, then claim a reward.</p>
+                <p class="event-card__blurb">Hit today's catch goal, then claim a chest.</p>
               </details>
             </div>
             <p id="dailyCatchReset" class="event-card__reset">Resets tonight</p>
@@ -1712,7 +1712,7 @@
                 <summary class="event-card__info" aria-label="About Crab Trap">
                   <span class="event-card__info-glyph" aria-hidden="true">i</span>
                 </summary>
-                <p class="event-card__blurb">Cage treasure crabs in 60 seconds, then open a chest. Uses 1 ticket.</p>
+                <p class="event-card__blurb">60 seconds · 1 ticket · open a chest.</p>
               </details>
             </div>
             <p class="event-card__reset">60 seconds</p>
@@ -1854,13 +1854,13 @@
             spellcheck="false"
           />
         </label>
-        <p id="profileNameHint" class="profile-name__hint">Used on boards as your 3-letter tag.</p>
+        <p id="profileNameHint" class="profile-name__hint">Shown as a 3-letter tag on boards.</p>
         <section class="wardrobe-stage profile-wardrobe" aria-label="Seagull clothes inventory">
           <div class="wardrobe-stage__head">
             <h3 class="collectables-section__title">Clothes inventory</h3>
             <p id="collectablesWardrobeCount" class="collectables-count-pill">0 / 0 owned</p>
           </div>
-          <p class="wardrobe-hint">Pick a slot, then tap a clothing tile to put it on.</p>
+          <p class="wardrobe-hint">Pick a slot, then a tile.</p>
           <div id="wardrobeSlotTabs" class="wardrobe-slot-tabs" role="tablist" aria-label="Clothes slots"></div>
           <div id="collectablesWardrobe" class="wardrobe-grid" role="listbox" aria-label="Your clothes inventory"></div>
         </section>
@@ -1966,7 +1966,6 @@
             </div>
           </div>
         </header>
-        <p class="shop-tagline">Score big on the reef, cash in here — spend coins on gear, or gems on chests and coin vaults.</p>
         <div id="shopGuide" class="shop-guide" hidden>
           <div class="shop-guide__sailor" aria-hidden="true">
             <svg class="shop-guide__art shop-guide__art--merchant" viewBox="0 0 260 220" xmlns="http://www.w3.org/2000/svg" focusable="false" aria-hidden="true">
@@ -2141,8 +2140,8 @@
             </svg>
           </div>
           <div class="shop-guide__bubble">
-            <strong>Ahoy, fisher!</strong>
-            <p>I'm the shopkeeper seagull — not your deckhand! Spend coins from your catches on bait and rods, and gems from chests on more chests or big coin bundles. Better gear helps you bring more fish back to the store before the kraken finds your net.</p>
+            <strong>Ahoy!</strong>
+            <p>Coins buy bait, rods, and fits. Gems buy chests and coin packs.</p>
             <button type="button" id="btnShopGuideDone" class="btn btn--secondary shop-guide__btn">Thanks, seagull</button>
           </div>
         </div>
@@ -2154,7 +2153,7 @@
         <p class="panel__scoreline">Final score: <strong id="finalScore">0</strong></p>
         <p id="coinsEarnedLine" class="panel__coinline" hidden></p>
         <div id="dailyInitialsPanel" class="initials-panel initials-panel--daily" hidden>
-          <p class="initials-panel__msg">Fisher of the Day — post your score to today's board. You don't need an all-time top 10 score; only today's best counts.</p>
+          <p class="initials-panel__msg">Post today's score to Fisher of the Day.</p>
           <div class="initials-panel__row">
             <label class="sr-only" for="dailyInitialsInput">Your name</label>
             <input
@@ -2174,7 +2173,7 @@
           <p id="dailyScoreStatus" class="initials-panel__status" hidden></p>
         </div>
         <div id="initialsPanel" class="initials-panel" hidden>
-          <p class="initials-panel__msg">That score makes the all-time top 10. Save it with your name.</p>
+          <p class="initials-panel__msg">All-time top 10 — save it with your name.</p>
           <div class="initials-panel__row">
             <label class="sr-only" for="initialsInput">Your name</label>
             <input
@@ -2207,26 +2206,25 @@
       <section id="panelIntro" class="panel panel--intro" hidden>
         <h2 class="panel__headline">Your Fishing Story</h2>
         <p class="panel__lede panel__lede--intro">
-          You are a fisher bringing fresh catches back to the store. Fill your net with valuable fish and sea animals, earn coins, and buy better gear, but beware: the deadly kraken prowls the water and can steal fish from your catch.
+          Catch fish for the store, earn coins for gear — and watch out for the kraken.
         </p>
         <div class="intro-card">
           <h3>How to Play</h3>
           <ul class="intro-list">
-            <li>Move left and right to aim your line.</li>
-            <li>Press Enter to cast deep through the water.</li>
-            <li>Press Space, tap, or lift to snag fish and sea animals near the hook.</li>
-            <li>Avoid catching the kraken, or it can rip your net and cost you fish.</li>
-            <li>Score well to earn coins for the Fishing shop.</li>
+            <li>Aim left/right, cast with Enter (or tap).</li>
+            <li>Space / tap near fish to snag them.</li>
+            <li>Don't hook the kraken.</li>
+            <li>Score coins for the shop.</li>
           </ul>
           <h3>Catch Rarity</h3>
           <p class="intro-rarity">
-            Catches can be Common, Uncommon, Rare, Epic, or Legendary. Rarer fish and sea animals are harder to find, but they are worth much more for your score.
+            Common → Legendary. Rarer catches score more.
           </p>
         </div>
         <button type="button" id="btnIntroDone" class="btn btn--primary">Got it</button>
       </section>
     </div>
 
-    <script src="game.js?v=chest-names-1" defer></script>
+    <script src="game.js?v=less-copy-1" defer></script>
   </body>
 </html>
