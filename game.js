@@ -9514,6 +9514,7 @@ function loadMetaFromObject(o) {
     const ownedRodIds = Array.from(new Set([FREE_ROD_ID, ...owned]));
     let selectedRodId = typeof o.selectedRodId === "string" ? o.selectedRodId : FREE_ROD_ID;
     if (!ownedRodIds.includes(selectedRodId)) selectedRodId = FREE_ROD_ID;
+    const adventureProgress = migrateAdventureMapProgress(o.adventureHighestLevel, o.adventureMapContentRev);
     return {
       coins: Math.max(0, Math.floor(Number(o.coins) || 0)),
       gems: Math.max(0, Math.floor(Number(o.gems) || 0)),
@@ -9522,7 +9523,8 @@ function loadMetaFromObject(o) {
       ownedRodIds,
       selectedRodId,
       totalTreasureChests: Math.max(0, Math.floor(Number(o.totalTreasureChests) || 0)),
-      adventureHighestLevel: Math.max(0, Math.min(ADVENTURE_LEVEL_COUNT, Math.floor(Number(o.adventureHighestLevel) || 0))),
+      adventureHighestLevel: adventureProgress.adventureHighestLevel,
+      adventureMapContentRev: adventureProgress.adventureMapContentRev,
       pendingAdventureHomeCelebration: Boolean(o.pendingAdventureHomeCelebration),
       pendingBonusVoyagesCelebration: Boolean(o.pendingBonusVoyagesCelebration),
       pendingIceVoyagesCelebration: Boolean(o.pendingIceVoyagesCelebration),
