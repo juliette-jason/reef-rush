@@ -9963,24 +9963,6 @@ function syncAdventureMapSections() {
       (id === "ice" && visible && bounds.ice && !bounds["lost-city"])
     );
   }
-  syncAdventureMapBackdrops(bounds);
-}
-
-function syncAdventureMapBackdrops(bounds) {
-  const host = document.getElementById("adventureMapBackdrops");
-  if (!host) return;
-  const bands = bounds || adventureMapSectionBounds();
-  for (const backdrop of host.querySelectorAll(".adventure-map-backdrop")) {
-    const id = backdrop.dataset.section;
-    const band = bands[id];
-    const visible = Boolean(band);
-    if (band) {
-      backdrop.style.top = `${band.topPct}%`;
-      backdrop.style.height = `${band.heightPct}%`;
-    }
-    backdrop.hidden = !visible;
-    backdrop.classList.toggle("adventure-map-backdrop--visible", visible);
-  }
 }
 
 function scrollAdventureMapToSection(sectionId, instant = true) {
