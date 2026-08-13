@@ -6082,33 +6082,29 @@ button.seagull-avatar:active {
   animation: eventArtKrakenGlow 1.8s ease-in-out infinite;
 }
 
-.event-card__art-kraken-tent {
-  animation: eventArtKrakenTent 2.8s ease-in-out infinite;
-}
-
 .event-card__art-kraken-tent--1 {
-  transform-origin: 96px 86px;
-  animation-delay: 0s;
+  transform-origin: 0 0;
+  animation: eventArtKrakenTent1 2.8s ease-in-out infinite;
 }
 
 .event-card__art-kraken-tent--2 {
-  transform-origin: 124px 94px;
-  animation-delay: -0.5s;
+  transform-origin: 0 0;
+  animation: eventArtKrakenTent2 2.6s ease-in-out infinite;
 }
 
 .event-card__art-kraken-tent--3 {
-  transform-origin: 196px 94px;
-  animation-delay: -1s;
+  transform-origin: 0 0;
+  animation: eventArtKrakenTent3 2.7s ease-in-out infinite;
 }
 
 .event-card__art-kraken-tent--4 {
-  transform-origin: 224px 86px;
-  animation-delay: -1.5s;
+  transform-origin: 0 0;
+  animation: eventArtKrakenTent4 2.9s ease-in-out infinite;
 }
 
 .event-card__art-kraken-tent--5 {
-  transform-origin: 160px 100px;
-  animation-delay: -0.8s;
+  transform-origin: 0 0;
+  animation: eventArtKrakenTent5 2.5s ease-in-out infinite;
 }
 
 .event-card__art-kraken-hook {
@@ -6268,13 +6264,53 @@ button.seagull-avatar:active {
   }
 }
 
-@keyframes eventArtKrakenTent {
+@keyframes eventArtKrakenTent1 {
   0%,
   100% {
-    transform: rotate(-6deg);
+    transform: translate(96px, 86px) rotate(-7deg);
   }
   50% {
-    transform: rotate(7deg);
+    transform: translate(96px, 86px) rotate(8deg);
+  }
+}
+
+@keyframes eventArtKrakenTent2 {
+  0%,
+  100% {
+    transform: translate(124px, 94px) rotate(6deg);
+  }
+  50% {
+    transform: translate(124px, 94px) rotate(-8deg);
+  }
+}
+
+@keyframes eventArtKrakenTent3 {
+  0%,
+  100% {
+    transform: translate(196px, 94px) rotate(-6deg);
+  }
+  50% {
+    transform: translate(196px, 94px) rotate(8deg);
+  }
+}
+
+@keyframes eventArtKrakenTent4 {
+  0%,
+  100% {
+    transform: translate(224px, 86px) rotate(7deg);
+  }
+  50% {
+    transform: translate(224px, 86px) rotate(-8deg);
+  }
+}
+
+@keyframes eventArtKrakenTent5 {
+  0%,
+  100% {
+    transform: translate(160px, 100px) rotate(-4deg);
+  }
+  50% {
+    transform: translate(160px, 100px) rotate(5deg);
   }
 }
 
