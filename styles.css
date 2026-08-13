@@ -15,6 +15,7 @@
   --shadow-glow: 0 0 24px rgba(255, 213, 74, 0.25);
   --font-brand: "Lilita One", "Bebas Neue", cursive;
   --brand-fill: linear-gradient(180deg, #fff, var(--gold));
+  --gem-icon: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2036%22%3E%3Cpolygon%20points%3D%228%201.2%2024%201.2%2030.8%2013.2%2016%2034.8%201.2%2013.2%22%20fill%3D%22%232e1065%22%2F%3E%3Cpolygon%20points%3D%228.5%202.4%2023.5%202.4%2029.4%2013%2016%2033%202.6%2013%22%20fill%3D%22%234c1d95%22%2F%3E%3Cpolygon%20points%3D%228.5%202.4%2023.5%202.4%2016%2013%22%20fill%3D%22%23f8fafc%22%2F%3E%3Cpolygon%20points%3D%228.5%202.4%202.6%2013%2016%2013%22%20fill%3D%22%23a5f3fc%22%2F%3E%3Cpolygon%20points%3D%2223.5%202.4%2029.4%2013%2016%2013%22%20fill%3D%22%23c4b5fd%22%2F%3E%3Cpolygon%20points%3D%222.6%2013%2016%2013%2016%2033%22%20fill%3D%22%2322d3ee%22%2F%3E%3Cpolygon%20points%3D%2229.4%2013%2016%2013%2016%2033%22%20fill%3D%22%237c3aed%22%2F%3E%3Cpolygon%20points%3D%222.6%2013%209.8%2013%2016%2033%22%20fill%3D%22%2367e8f9%22%20opacity%3D%22.42%22%2F%3E%3Cpolygon%20points%3D%2210%203.1%2015.2%203.1%2013.6%208.6%22%20fill%3D%22%23fff%22%2F%3E%3Cpath%20d%3D%22M2.6%2013h26.8%22%20stroke%3D%22%23ede9fe%22%20stroke-width%3D%22.85%22%20opacity%3D%22.85%22%2F%3E%3C%2Fsvg%3E");
 }
 
 *,
@@ -448,16 +449,14 @@ body {
 .stat--gems .stat__value::before,
 .start-toolbar__gems .start-toolbar__value::before {
   content: "";
-  display: inline-flex;
-  width: 1.05em;
-  height: 1.05em;
+  display: inline-block;
+  width: 1.12em;
+  height: 1.32em;
   margin-right: 0.34em;
   flex: 0 0 auto;
   vertical-align: middle;
-  background:
-    linear-gradient(135deg, #f5f3ff 0%, #c4b5fd 28%, #22d3ee 52%, #7c3aed 78%, #4c1d95 100%);
-  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-  box-shadow: 0 0 0.55em rgba(167, 139, 250, 0.65);
+  background: var(--gem-icon) center / contain no-repeat;
+  filter: drop-shadow(0 0 0.35em rgba(167, 139, 250, 0.75));
 }
 
 .panel__lede--shop {
@@ -645,15 +644,13 @@ body {
 
 .shop-gem {
   position: relative;
-  display: inline-flex;
-  width: 1.05em;
-  height: 1.05em;
+  display: inline-block;
+  width: 1.12em;
+  height: 1.32em;
   flex: 0 0 auto;
   vertical-align: middle;
-  background:
-    linear-gradient(135deg, #f5f3ff 0%, #c4b5fd 28%, #22d3ee 52%, #7c3aed 78%, #4c1d95 100%);
-  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-  box-shadow: 0 0 0.4em rgba(167, 139, 250, 0.55);
+  background: var(--gem-icon) center / contain no-repeat;
+  filter: drop-shadow(0 0 0.28em rgba(167, 139, 250, 0.65));
 }
 
 .shop-gem--float {
@@ -662,8 +659,8 @@ body {
 }
 
 .shop-gem--lg {
-  width: 1.85rem;
-  height: 1.85rem;
+  width: 1.7rem;
+  height: 2.05rem;
 }
 
 .shop-wallets {
@@ -1097,6 +1094,11 @@ body {
   width: 1em;
   height: 1em;
   animation: shopCoinFloatSoft 2.2s ease-in-out infinite;
+}
+
+.shop-buy__price .shop-gem {
+  width: 0.95em;
+  height: 1.12em;
 }
 
 .shop-buy--gems {

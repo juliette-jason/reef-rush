@@ -12724,7 +12724,16 @@ function crabChestArtSvg(tier, opened) {
         : tier === "medium"
           ? [[24, 29.5, 4], [32, 27.5, 4.5], [40, 28, 4.5], [48, 30, 4], [30, 33.5, 3.5], [43, 33.5, 3.5]]
           : [[30, 30.5, 4], [38, 29.5, 4], [34, 34.5, 3.5]];
-    const gem = tier === "great" ? `<path d="M36 26 l3 4 -3 4 -3 -4 z" fill="#8ff0ff" stroke="#3bb4c9" stroke-width="0.5"/>` : "";
+    const gem = tier === "great"
+      ? `<g>
+          <polygon points="33.1 22.4 38.9 22.4 41.2 26.8 36 33.4 30.8 26.8" fill="#4c1d95"/>
+          <polygon points="33.1 22.4 38.9 22.4 36 26.8" fill="#f8fafc"/>
+          <polygon points="33.1 22.4 30.8 26.8 36 26.8" fill="#a5f3fc"/>
+          <polygon points="38.9 22.4 41.2 26.8 36 26.8" fill="#c4b5fd"/>
+          <polygon points="30.8 26.8 36 26.8 36 33.4" fill="#22d3ee"/>
+          <polygon points="41.2 26.8 36 26.8 36 33.4" fill="#7c3aed"/>
+        </g>`
+      : "";
     return `<svg viewBox="0 0 72 64" width="60" height="53" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       ${defs}
       <ellipse cx="36" cy="60" rx="27" ry="3" fill="rgba(0,0,0,0.28)"/>
