@@ -452,23 +452,42 @@ const CLOTHING_DEFS = [
   { id: "red_beanie", name: "Red Beanie", slot: "hat", price: 180, icon: "🧶", blurb: "Cozy knit for chilly docks." },
   { id: "straw_sun_hat", name: "Straw Sun Hat", slot: "hat", price: 220, icon: "👒", blurb: "Shade for long sunny voyages." },
   { id: "pirate_bandana", name: "Pirate Bandana", slot: "hat", price: 260, icon: "🏴‍☠️", blurb: "Knotted red for salty swagger." },
+  { id: "bucket_hat", name: "Bucket Hat", slot: "hat", price: 190, icon: "🎣", blurb: "Olive brim for long days on the pier." },
+  { id: "shark_hood", name: "Shark Hood", slot: "hat", price: 360, icon: "🦈", blurb: "A toothy costume hood for scare tactics." },
+  { id: "kelp_crown", name: "Kelp Crown", slot: "hat", price: 250, icon: "🌿", blurb: "Woven seaweed for a reef monarch." },
+  { id: "night_cap", name: "Night Cap", slot: "hat", price: 160, icon: "🌙", blurb: "Navy knit with a pompom for dawn patrols." },
   { id: "spiky_tuft", name: "Spiky Tuft", slot: "hair", price: 140, icon: "🦔", blurb: "Wild crest that won't stay down." },
   { id: "curly_top", name: "Curly Top", slot: "hair", price: 160, icon: "🌀", blurb: "Soft curls for a friendly look." },
   { id: "sleek_slick", name: "Sleek Slick", slot: "hair", price: 0, starter: true, icon: "✨", blurb: "Combed back starter look." },
   { id: "rainbow_mohawk", name: "Rainbow Mohawk", slot: "hair", price: 380, icon: "🌈", blurb: "Loud colors for festival tides." },
+  { id: "blond_bob", name: "Blond Bob", slot: "hair", price: 180, icon: "💛", blurb: "Sunny bowl cut with beach bounce." },
+  { id: "pink_pigtails", name: "Pink Pigtails", slot: "hair", price: 240, icon: "💗", blurb: "Twin puffs tied with tiny shells." },
+  { id: "dark_mullet", name: "Dark Mullet", slot: "hair", price: 170, icon: "🎸", blurb: "Business up front, party on the wake." },
+  { id: "frosted_tips", name: "Frosted Tips", slot: "hair", price: 200, icon: "❄️", blurb: "Icy highlights for polar voyages." },
   { id: "blue_vest", name: "Blue Vest", slot: "shirt", price: 200, icon: "🧥", blurb: "Smart layered chest feathers." },
   { id: "stripe_sweater", name: "Stripe Sweater", slot: "shirt", price: 0, starter: true, icon: "👕", blurb: "Nautical starter stripes." },
   { id: "life_vest", name: "Life Vest", slot: "shirt", price: 280, icon: "🦺", blurb: "Safety orange with reflective tape." },
   { id: "hawaiian_shirt", name: "Hawaiian Shirt", slot: "shirt", price: 300, icon: "🌺", blurb: "Tropical flowers on every flap." },
   { id: "yellow_raincoat", name: "Yellow Raincoat", slot: "shirt", price: 340, icon: "🌧️", blurb: "Keeps spray off your wings." },
+  { id: "pirate_coat", name: "Pirate Coat", slot: "shirt", price: 400, icon: "⚔️", blurb: "Black wool with gold braid and attitude." },
+  { id: "wetsuit", name: "Wetsuit", slot: "shirt", price: 320, icon: "🤿", blurb: "Sleek black neoprene with teal seams." },
+  { id: "flannel_shirt", name: "Dock Flannel", slot: "shirt", price: 230, icon: "🪵", blurb: "Red plaid for chilly morning bait." },
+  { id: "pearl_cape", name: "Pearl Cape", slot: "shirt", price: 380, icon: "🦪", blurb: "Shimmery lavender drape from the cove." },
   { id: "blue_sneakers", name: "Blue Sneakers", slot: "shoes", price: 0, starter: true, icon: "👟", blurb: "Comfy starter kicks for the pier." },
   { id: "work_boots", name: "Work Boots", slot: "shoes", price: 240, icon: "🥾", blurb: "Sturdy soles for slippery docks." },
   { id: "flip_flops", name: "Flip Flops", slot: "shoes", price: 170, icon: "🩴", blurb: "Beach-ready after a hot haul." },
   { id: "striped_kicks", name: "Striped Kicks", slot: "shoes", price: 120, icon: "🧦", blurb: "Blue-stripe sneakers with pep." },
+  { id: "rubber_waders", name: "Rubber Waders", slot: "shoes", price: 260, icon: "🐸", blurb: "Tall olive boots for muddy banks." },
+  { id: "gold_loafers", name: "Gold Loafers", slot: "shoes", price: 410, icon: "✨", blurb: "Treasure-shine shoes for prize night." },
+  { id: "red_high_tops", name: "Red High-Tops", slot: "shoes", price: 200, icon: "🏀", blurb: "Court-ready red for deck dashes." },
   { id: "red_scarf", name: "Red Scarf", slot: "accessory", price: 190, icon: "🧣", blurb: "Wrapped snug around the neck." },
   { id: "gold_chain", name: "Gold Chain", slot: "accessory", price: 420, icon: "🪙", blurb: "Flashy treasure from the cove." },
   { id: "monocle", name: "Monocle", slot: "accessory", price: 350, icon: "🧐", blurb: "For spotting rare fish in style." },
   { id: "bow_tie", name: "Bow Tie", slot: "accessory", price: 210, icon: "🎀", blurb: "Formal wear for prize nights." },
+  { id: "eyepatch", name: "Eyepatch", slot: "accessory", price: 280, icon: "🕶️", blurb: "One eye on the horizon, always." },
+  { id: "pearl_earrings", name: "Pearl Earrings", slot: "accessory", price: 330, icon: "⚪", blurb: "Clam-fresh pearls on both sides." },
+  { id: "bubble_pipe", name: "Bubble Pipe", slot: "accessory", price: 220, icon: "🫧", blurb: "Puffs little bubbles after a big catch." },
+  { id: "starfish_pin", name: "Starfish Pin", slot: "accessory", price: 150, icon: "⭐", blurb: "A tiny star stuck to your chest." },
 ];
 
 const CLOTHING_BY_ID = Object.fromEntries(CLOTHING_DEFS.map((c) => [c.id, c]));
@@ -869,6 +888,242 @@ function clothingLayerSvg(id) {
         <path d="M144 104 L130 110 L144 116 Z" fill="#7c3aed" stroke="#4c1d95" stroke-width="0.8"/>
         <rect x="126" y="106" width="8" height="8" rx="1.4" fill="#a78bfa"/>
       </g>`;
+    case "bucket_hat":
+      return `<g class="sg-wear sg-wear--hat">
+        <ellipse cx="130" cy="60" rx="40" ry="8" fill="#4d7c0f" stroke="#365314" stroke-width="1.1"/>
+        <path d="M108 58 L112 32 Q130 22 148 32 L152 58 Z" fill="#65a30d" stroke="#3f6212" stroke-width="1.2"/>
+        <path d="M116 40 Q130 36 144 40" fill="none" stroke="#a3e635" stroke-width="1.4" opacity="0.55"/>
+        <path d="M112 50 H148" stroke="#365314" stroke-width="1.1" opacity="0.45"/>
+      </g>`;
+    case "shark_hood":
+      return `<g class="sg-wear sg-wear--hat">
+        <path d="M96 62 Q104 28 130 22 Q156 28 164 62 Q150 74 130 76 Q110 74 96 62 Z" fill="#64748b" stroke="#1e293b" stroke-width="1.2"/>
+        <path d="M124 22 L130 6 L136 22 Z" fill="#475569" stroke="#1e293b" stroke-width="1"/>
+        <path d="M100 48 L88 42 L102 56 Z" fill="#64748b" stroke="#1e293b" stroke-width="0.8"/>
+        <path d="M160 48 L172 42 L158 56 Z" fill="#64748b" stroke="#1e293b" stroke-width="0.8"/>
+        <ellipse cx="118" cy="48" rx="6" ry="5.2" fill="#fff"/>
+        <ellipse cx="142" cy="48" rx="6" ry="5.2" fill="#fff"/>
+        <circle cx="119" cy="49" r="2.4" fill="#0f172a"/>
+        <circle cx="143" cy="49" r="2.4" fill="#0f172a"/>
+        <path d="M118 62 Q130 70 142 62" fill="none" stroke="#0f172a" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M122 64 L124 68 M128 66 L129 70 M132 66 L131 70 M138 64 L136 68" stroke="#fff" stroke-width="1.1" stroke-linecap="round"/>
+      </g>`;
+    case "kelp_crown":
+      return `<g class="sg-wear sg-wear--hat">
+        <path d="M108 58 Q114 36 120 56 Q126 30 130 54 Q134 28 140 56 Q146 34 152 58 Q140 66 130 68 Q120 66 108 58 Z" fill="#16a34a" stroke="#14532d" stroke-width="1"/>
+        <path d="M112 50 Q116 40 118 52" fill="none" stroke="#86efac" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M128 46 Q132 32 134 50" fill="none" stroke="#4ade80" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M142 50 Q146 38 148 54" fill="none" stroke="#86efac" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="120" cy="44" r="2.2" fill="#facc15"/>
+        <circle cx="130" cy="36" r="2.4" fill="#fde047"/>
+        <circle cx="142" cy="42" r="2.2" fill="#facc15"/>
+      </g>`;
+    case "night_cap":
+      return `<g class="sg-wear sg-wear--hat">
+        <path d="M104 60 Q112 32 130 30 Q148 34 154 58 Q144 68 130 70 Q116 68 104 60 Z" fill="#1e3a8a" stroke="#0f172a" stroke-width="1.15"/>
+        <path d="M148 40 Q168 28 174 42" fill="none" stroke="#1e3a8a" stroke-width="7" stroke-linecap="round"/>
+        <circle cx="176" cy="44" r="5.2" fill="#93c5fd" stroke="#1e3a8a" stroke-width="0.9"/>
+        <path d="M112 50 Q130 44 146 52" fill="none" stroke="#60a5fa" stroke-width="1.5" opacity="0.5"/>
+      </g>`;
+    case "blond_bob":
+      return `<g class="sg-wear sg-wear--hair">
+        <path d="M98 66 Q104 36 130 32 Q156 36 162 66 Q154 78 130 80 Q106 78 98 66 Z" fill="#facc15" stroke="#a16207" stroke-width="1"/>
+        <path d="M108 58 Q118 48 128 58" fill="none" stroke="#fef08a" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+        <path d="M132 56 Q142 46 152 58" fill="none" stroke="#fef08a" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+        <path d="M102 70 Q110 78 118 72" fill="none" stroke="#ca8a04" stroke-width="1.3"/>
+        <path d="M158 70 Q150 78 142 72" fill="none" stroke="#ca8a04" stroke-width="1.3"/>
+      </g>`;
+    case "pink_pigtails":
+      return `<g class="sg-wear sg-wear--hair">
+        <path d="M108 58 Q118 40 130 40 Q142 40 152 58 Q144 66 130 68 Q116 66 108 58 Z" fill="#fb7185" stroke="#9d174d" stroke-width="1"/>
+        <circle cx="96" cy="70" r="12" fill="#f472b6" stroke="#9d174d" stroke-width="1"/>
+        <circle cx="164" cy="70" r="12" fill="#f472b6" stroke="#9d174d" stroke-width="1"/>
+        <circle cx="96" cy="70" r="5.5" fill="#fda4af"/>
+        <circle cx="164" cy="70" r="5.5" fill="#fda4af"/>
+        <path d="M104 62 L108 58" stroke="#9d174d" stroke-width="1.4"/>
+        <path d="M156 62 L152 58" stroke="#9d174d" stroke-width="1.4"/>
+        <circle cx="104" cy="60" r="2.2" fill="#fde68a"/>
+        <circle cx="156" cy="60" r="2.2" fill="#fde68a"/>
+      </g>`;
+    case "dark_mullet":
+      return `<g class="sg-wear sg-wear--hair">
+        <path d="M102 62 Q112 40 130 38 Q148 40 158 62 Q148 58 130 56 Q112 58 102 62 Z" fill="#1e293b" stroke="#0f172a" stroke-width="1"/>
+        <path d="M96 64 Q100 78 110 84 Q118 78 116 66" fill="#334155" stroke="#0f172a" stroke-width="0.9"/>
+        <path d="M164 64 Q160 78 150 84 Q142 78 144 66" fill="#334155" stroke="#0f172a" stroke-width="0.9"/>
+        <path d="M118 80 Q130 92 142 80 Q136 86 130 88 Q124 86 118 80 Z" fill="#1e293b" stroke="#0f172a" stroke-width="0.8"/>
+        <path d="M112 52 Q130 46 148 52" fill="none" stroke="#64748b" stroke-width="1.2" opacity="0.45"/>
+      </g>`;
+    case "frosted_tips":
+      return `<g class="sg-wear sg-wear--hair">
+        <path d="M108 60 Q116 44 122 56 Q126 32 132 54 Q138 30 144 56 Q150 42 156 60 Q146 66 130 68 Q114 66 108 60 Z" fill="#334155" stroke="#0f172a" stroke-width="0.9"/>
+        <path d="M118 56 Q122 24 126 54" fill="none" stroke="#e2e8f0" stroke-width="3" stroke-linecap="round"/>
+        <path d="M128 54 Q132 18 136 54" fill="none" stroke="#f8fafc" stroke-width="3.4" stroke-linecap="round"/>
+        <path d="M138 54 Q142 22 146 56" fill="none" stroke="#e2e8f0" stroke-width="3" stroke-linecap="round"/>
+        <path d="M112 58 Q116 34 120 56" fill="none" stroke="#cbd5e1" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M148 56 Q152 32 156 60" fill="none" stroke="#cbd5e1" stroke-width="2.4" stroke-linecap="round"/>
+      </g>`;
+    case "pirate_coat":
+      return `<g class="sg-wear sg-wear--shirt">
+        <ellipse class="sg-wear__back" cx="130" cy="132" rx="42" ry="43" fill="#111827"/>
+        <path d="M92 108
+          C82 126 84 152 100 166
+          Q130 178 160 166
+          C176 152 178 126 168 108
+          Q152 96 130 94
+          Q108 96 92 108 Z" fill="#1f2937" stroke="#0f172a" stroke-width="1.2"/>
+        <path d="M130 96 V166" stroke="#fbbf24" stroke-width="1.3"/>
+        <path d="M106 118 H124 M136 118 H154 M108 134 H122 M138 134 H152" stroke="#f59e0b" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M96 112 Q104 130 106 150" fill="none" stroke="#111827" stroke-width="10" stroke-linecap="round" opacity="0.55"/>
+        <path d="M164 112 Q156 130 154 150" fill="none" stroke="#111827" stroke-width="10" stroke-linecap="round" opacity="0.55"/>
+        <circle cx="118" cy="126" r="2.2" fill="#fde68a"/><circle cx="142" cy="142" r="2.2" fill="#fde68a"/>
+      </g>`;
+    case "wetsuit":
+      return `<g class="sg-wear sg-wear--shirt">
+        <ellipse class="sg-wear__back" cx="130" cy="132" rx="39" ry="40" fill="#020617"/>
+        <path d="M98 110
+          C90 126 92 150 106 162
+          Q130 172 154 162
+          C168 150 170 126 162 110
+          Q148 100 130 98
+          Q112 100 98 110 Z" fill="#0f172a" stroke="#020617" stroke-width="1.15"/>
+        <path d="M108 118 Q130 128 152 118" fill="none" stroke="#22d3ee" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M110 140 Q130 148 150 140" fill="none" stroke="#22d3ee" stroke-width="2" stroke-linecap="round"/>
+        <path d="M130 100 V160" stroke="#164e63" stroke-width="1.1"/>
+        <path d="M102 114 Q108 130 110 148" fill="none" stroke="#155e75" stroke-width="7" stroke-linecap="round" opacity="0.55"/>
+        <path d="M158 114 Q152 130 150 148" fill="none" stroke="#155e75" stroke-width="7" stroke-linecap="round" opacity="0.55"/>
+      </g>`;
+    case "flannel_shirt":
+      return `<g class="sg-wear sg-wear--shirt">
+        <ellipse class="sg-wear__back" cx="130" cy="132" rx="40" ry="41" fill="#7f1d1d"/>
+        <path d="M96 110
+          C88 126 90 150 104 162
+          Q130 172 156 162
+          C170 150 172 126 164 110
+          Q150 100 130 98
+          Q110 100 96 110 Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="1.15"/>
+        <path d="M108 108 V160 M122 104 V164 M138 104 V164 M152 108 V160" stroke="#991b1b" stroke-width="2.2" opacity="0.7"/>
+        <path d="M100 122 H160 M100 138 H160 M104 152 H156" stroke="#7f1d1d" stroke-width="2" opacity="0.65"/>
+        <path d="M100 114 Q108 130 110 148" fill="none" stroke="#b91c1c" stroke-width="8" stroke-linecap="round" opacity="0.45"/>
+        <path d="M160 114 Q152 130 150 148" fill="none" stroke="#b91c1c" stroke-width="8" stroke-linecap="round" opacity="0.45"/>
+      </g>`;
+    case "pearl_cape":
+      return `<g class="sg-wear sg-wear--shirt">
+        <ellipse class="sg-wear__back" cx="130" cy="132" rx="44" ry="44" fill="#7e22ce"/>
+        <path d="M88 108
+          C76 128 80 156 100 168
+          Q130 180 160 168
+          C180 156 184 128 172 108
+          Q152 92 130 90
+          Q108 92 88 108 Z" fill="#c4b5fd" stroke="#6d28d9" stroke-width="1.2"/>
+        <path d="M102 118 Q130 132 158 118" fill="none" stroke="#f5f3ff" stroke-width="2" opacity="0.65"/>
+        <path d="M108 140 Q130 152 152 140" fill="none" stroke="#a78bfa" stroke-width="1.8" opacity="0.7"/>
+        <circle cx="118" cy="124" r="3.2" fill="#f8fafc"/><circle cx="142" cy="136" r="2.6" fill="#f8fafc"/>
+        <circle cx="130" cy="148" r="2.2" fill="#ede9fe"/>
+      </g>`;
+    case "rubber_waders":
+      return `<g class="sg-wear sg-wear--shoes">
+        <path d="M102 158
+          L118 158
+          L120 176
+          C126 182 126 194 124 200
+          C122 206 116 208 110 208
+          C104 208 98 206 96 200
+          C94 194 96 180 102 174
+          Z" fill="#4d7c0f" stroke="#365314" stroke-width="1.2"/>
+        <path d="M106 164 H116" stroke="#a3e635" stroke-width="1.3" stroke-linecap="round"/>
+        <path d="M104 176 H118" stroke="#3f6212" stroke-width="1.2" stroke-linecap="round"/>
+        <ellipse cx="110" cy="204" rx="11" ry="2.4" fill="#1a2e05" opacity="0.5"/>
+        <path d="M142 158
+          L158 158
+          L160 176
+          C166 182 166 194 164 200
+          C162 206 156 208 150 208
+          C144 208 138 206 136 200
+          C134 194 136 180 142 174
+          Z" fill="#4d7c0f" stroke="#365314" stroke-width="1.2"/>
+        <path d="M146 164 H156" stroke="#a3e635" stroke-width="1.3" stroke-linecap="round"/>
+        <path d="M144 176 H158" stroke="#3f6212" stroke-width="1.2" stroke-linecap="round"/>
+        <ellipse cx="150" cy="204" rx="11" ry="2.4" fill="#1a2e05" opacity="0.5"/>
+      </g>`;
+    case "gold_loafers":
+      return `<g class="sg-wear sg-wear--shoes">
+        <path d="M96 188
+          C98 176 106 172 112 172
+          C120 172 126 178 126 188
+          L126 194
+          C125 202 118 206 110 206
+          C102 206 95 202 94 194
+          Z" fill="#fbbf24" stroke="#92400e" stroke-width="1.2"/>
+        <path d="M104 180 Q112 176 120 180" fill="none" stroke="#fde68a" stroke-width="1.6" stroke-linecap="round"/>
+        <ellipse cx="112" cy="190" rx="5" ry="2.2" fill="#b45309"/>
+        <ellipse cx="110" cy="202" rx="10" ry="2.2" fill="#78350f" opacity="0.45"/>
+        <path d="M134 188
+          C136 176 144 172 150 172
+          C158 172 164 178 164 188
+          L164 194
+          C163 202 156 206 148 206
+          C140 206 133 202 132 194
+          Z" fill="#fbbf24" stroke="#92400e" stroke-width="1.2"/>
+        <path d="M142 180 Q150 176 158 180" fill="none" stroke="#fde68a" stroke-width="1.6" stroke-linecap="round"/>
+        <ellipse cx="150" cy="190" rx="5" ry="2.2" fill="#b45309"/>
+        <ellipse cx="148" cy="202" rx="10" ry="2.2" fill="#78350f" opacity="0.45"/>
+      </g>`;
+    case "red_high_tops":
+      return `<g class="sg-wear sg-wear--shoes">
+        <path d="M100 170
+          L120 170
+          L122 184
+          C126 188 126 196 124 202
+          C122 206 116 208 110 208
+          C104 208 96 206 94 200
+          C92 194 94 184 100 180
+          Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="1.2"/>
+        <path d="M106 176 H116" stroke="#fecaca" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M104 184 H118" stroke="#fef2f2" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M105 190 H117" stroke="#fecaca" stroke-width="1.2" stroke-linecap="round"/>
+        <ellipse cx="110" cy="204" rx="10" ry="2.3" fill="#450a0a" opacity="0.5"/>
+        <path d="M140 170
+          L160 170
+          L160 184
+          C164 188 166 196 164 202
+          C162 206 156 208 150 208
+          C144 208 136 206 134 200
+          C132 194 134 184 140 180
+          Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="1.2"/>
+        <path d="M146 176 H156" stroke="#fecaca" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M142 184 H156" stroke="#fef2f2" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M143 190 H155" stroke="#fecaca" stroke-width="1.2" stroke-linecap="round"/>
+        <ellipse cx="150" cy="204" rx="10" ry="2.3" fill="#450a0a" opacity="0.5"/>
+      </g>`;
+    case "eyepatch":
+      return `<g class="sg-wear sg-wear--accessory">
+        <path d="M102 62 Q118 58 136 64" fill="none" stroke="#1f2937" stroke-width="2.2" stroke-linecap="round"/>
+        <ellipse cx="118" cy="70" rx="9.5" ry="8.2" fill="#111827" stroke="#020617" stroke-width="1.1"/>
+        <path d="M112 68 Q118 72 124 68" fill="none" stroke="#374151" stroke-width="1" opacity="0.6"/>
+      </g>`;
+    case "pearl_earrings":
+      return `<g class="sg-wear sg-wear--accessory">
+        <circle cx="100" cy="78" r="2.2" fill="#94a3b8"/>
+        <circle cx="100" cy="86" r="4.4" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+        <circle cx="98.8" cy="84.6" r="1.3" fill="#fff"/>
+        <circle cx="160" cy="78" r="2.2" fill="#94a3b8"/>
+        <circle cx="160" cy="86" r="4.4" fill="#f8fafc" stroke="#cbd5e1" stroke-width="0.9"/>
+        <circle cx="158.8" cy="84.6" r="1.3" fill="#fff"/>
+      </g>`;
+    case "bubble_pipe":
+      return `<g class="sg-wear sg-wear--accessory">
+        <path d="M136 90 Q152 96 158 108" fill="none" stroke="#92400e" stroke-width="2.4" stroke-linecap="round"/>
+        <ellipse cx="162" cy="114" rx="7" ry="5.5" fill="#b45309" stroke="#78350f" stroke-width="1"/>
+        <ellipse cx="162" cy="110" rx="5.2" ry="2.2" fill="#7c2d12"/>
+        <circle cx="170" cy="98" r="4.5" fill="none" stroke="#7dd3fc" stroke-width="1.2" opacity="0.85"/>
+        <circle cx="178" cy="88" r="3.2" fill="none" stroke="#bae6fd" stroke-width="1.1" opacity="0.75"/>
+        <circle cx="172" cy="78" r="2.2" fill="none" stroke="#e0f2fe" stroke-width="1" opacity="0.65"/>
+      </g>`;
+    case "starfish_pin":
+      return `<g class="sg-wear sg-wear--accessory">
+        <path d="M130 118 L134 128 L145 128 L136 134 L140 144 L130 138 L120 144 L124 134 L115 128 L126 128 Z" fill="#fb923c" stroke="#c2410c" stroke-width="0.9"/>
+        <circle cx="130" cy="132" r="2.4" fill="#fdba74"/>
+      </g>`;
     default:
       return "";
   }
@@ -876,11 +1131,11 @@ function clothingLayerSvg(id) {
 
 function clothingSlotViewBox(slot) {
   const views = {
-    hat: "95 12 70 70",
-    hair: "100 22 60 55",
-    shirt: "82 90 96 100",
-    shoes: "88 166 84 46",
-    accessory: "105 68 50 60",
+    hat: "86 4 96 78",
+    hair: "88 16 84 80",
+    shirt: "74 86 112 104",
+    shoes: "88 154 84 60",
+    accessory: "90 54 96 96",
   };
   return views[slot] || "90 40 80 140";
 }
