@@ -6216,9 +6216,19 @@ function buildAdventureLevels() {
           isLostCity ? 50_000 : isIce ? 52_000 : isBonus ? 45_000 : 47_000,
           reef.roundMs - tier * 2200 - i * 420,
         ) + adventureLevelTimeBonusMs(i),
-      spawnMin: Math.max(isLostCity ? 125 : isIce ? 135 : isBonus ? 155 : 185, Math.min(400, reef.spawnMin - i * 12)),
-      spawnMax: Math.max(isLostCity ? 320 : isIce ? 340 : isBonus ? 370 : 430, Math.min(1500, reef.spawnMax - i * 30)),
-      maxFish: Math.min(20, reef.maxFish + Math.floor(i / 2.2)),
+      spawnMin: Math.max(
+        isLostCity ? 95 : isIce ? 110 : isBonus ? 130 : 165,
+        Math.min(400, reef.spawnMin - i * 15),
+      ),
+      spawnMax: Math.max(
+        isLostCity ? 230 : isIce ? 260 : isBonus ? 300 : 370,
+        Math.min(1500, reef.spawnMax - i * 38),
+      ),
+      // Harder voyages pack the water — more fish on screen, not just faster ones.
+      maxFish: Math.min(
+        isLostCity ? 28 : isIce ? 26 : isBonus ? 24 : 22,
+        reef.maxFish + Math.floor(i / 1.55) + (isLostCity ? 5 : isIce ? 3 : isBonus ? 2 : 0),
+      ),
       fishSpeed: Math.max(
         0.92,
         reef.fishSpeed * (1.1 + i * 0.018) * (isLostCity ? 0.76 : isIce ? 0.78 : isBonus ? 0.9 : 1),
