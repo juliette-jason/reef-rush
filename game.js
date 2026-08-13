@@ -5577,18 +5577,18 @@ function normalizePendingDailyPrizeCelebration(raw) {
   };
 }
 
-/** Daily Catch challenge pool — morph targets with counts tuned for OK players. */
+/** Daily Catch challenge pool — targets take a few reef rounds, not one lucky haul. */
 const DAILY_CATCH_POOL = [
-  { morph: "jellyfish", label: "Moon Jellyfish", count: 15 },
-  { morph: "clownfish", label: "Clown Anemonefish", count: 14 },
-  { morph: "silverside", label: "silverside fish", count: 22 },
-  { morph: "mackerel", label: "Chub Mackerel", count: 12 },
-  { morph: "barramundi", label: "Barramundi", count: 12 },
-  { morph: "angelfish", label: "Queen Angelfish", count: 10 },
-  { morph: "seahorse", label: "Lined Seahorse", count: 8 },
-  { morph: "lobster", label: "Caribbean Spiny Lobster", count: 8 },
-  { morph: "cuttlefish", label: "Common Cuttlefish", count: 8 },
-  { morph: "snapper", label: "snapper", count: 10 },
+  { morph: "jellyfish", label: "Moon Jellyfish", count: 24 },
+  { morph: "clownfish", label: "Clown Anemonefish", count: 22 },
+  { morph: "silverside", label: "silverside fish", count: 34 },
+  { morph: "mackerel", label: "Chub Mackerel", count: 20 },
+  { morph: "barramundi", label: "Barramundi", count: 20 },
+  { morph: "angelfish", label: "Queen Angelfish", count: 16 },
+  { morph: "seahorse", label: "Lined Seahorse", count: 14 },
+  { morph: "lobster", label: "Caribbean Spiny Lobster", count: 14 },
+  { morph: "cuttlefish", label: "Common Cuttlefish", count: 14 },
+  { morph: "snapper", label: "snapper", count: 16 },
 ];
 
 function hashDailyCatchSeed(dayKey) {
