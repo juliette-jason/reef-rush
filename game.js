@@ -274,9 +274,9 @@ const KRAKEN_SPRAY_BAIT_ID = "kraken_spray";
 const DAILY_PRIZE_CHEST_TIERS = ["great", "medium", "common"];
 
 /** Gems from found chests only (Crab Trap / Daily Catch / Fisher of the Day). */
-const CHEST_GEMS_COMMON = 5;
-const CHEST_GEMS_GOOD = 15;
-const CHEST_GEMS_GREAT = 20;
+const CHEST_GEMS_COMMON = 15;
+const CHEST_GEMS_GOOD = 40;
+const CHEST_GEMS_GREAT = 60;
 
 const SHOP_CHEST_DEFS = [
   {
