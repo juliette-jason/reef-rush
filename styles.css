@@ -406,6 +406,14 @@ body {
   color: #f5d78e;
 }
 
+.stat--gems .stat__value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  color: #ddd6fe;
+}
+
 .stat--coins .stat__value::before,
 .start-toolbar__coins .start-toolbar__value::before {
   content: "$";
@@ -435,6 +443,21 @@ body {
   font-weight: 900;
   line-height: 1;
   text-shadow: 0.04em 0.04em 0 rgba(255, 245, 157, 0.8);
+}
+
+.stat--gems .stat__value::before,
+.start-toolbar__gems .start-toolbar__value::before {
+  content: "";
+  display: inline-flex;
+  width: 1.05em;
+  height: 1.05em;
+  margin-right: 0.34em;
+  flex: 0 0 auto;
+  vertical-align: middle;
+  background:
+    linear-gradient(135deg, #f5f3ff 0%, #c4b5fd 28%, #22d3ee 52%, #7c3aed 78%, #4c1d95 100%);
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  box-shadow: 0 0 0.55em rgba(167, 139, 250, 0.65);
 }
 
 .panel__lede--shop {
@@ -620,10 +643,81 @@ body {
   z-index: 2;
 }
 
+.shop-gem {
+  position: relative;
+  display: inline-flex;
+  width: 1.05em;
+  height: 1.05em;
+  flex: 0 0 auto;
+  vertical-align: middle;
+  background:
+    linear-gradient(135deg, #f5f3ff 0%, #c4b5fd 28%, #22d3ee 52%, #7c3aed 78%, #4c1d95 100%);
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  box-shadow: 0 0 0.4em rgba(167, 139, 250, 0.55);
+}
+
+.shop-gem--float {
+  will-change: transform;
+  animation: shopCoinFloatSoft 2.4s ease-in-out infinite;
+}
+
+.shop-gem--lg {
+  width: 1.85rem;
+  height: 1.85rem;
+}
+
+.shop-wallets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.shop-wallet--gems {
+  border-color: rgba(167, 139, 250, 0.75);
+  background: linear-gradient(180deg, #3b2766 0%, #1e1b4b 100%);
+}
+
+.shop-wallet--gems .shop-wallet__label {
+  color: rgba(221, 214, 254, 0.85);
+}
+
+.shop-wallet--gems .shop-wallet__amount {
+  color: #ede9fe;
+  text-shadow: 0 0 10px rgba(167, 139, 250, 0.45);
+}
+
+.shop-coin-vault {
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.shop-coin-vault .shop-coin {
+  width: 18px;
+  height: 18px;
+  margin-left: -6px;
+}
+
+.shop-coin-vault .shop-coin:first-child {
+  margin-left: 0;
+  width: 16px;
+  height: 16px;
+  margin-bottom: 4px;
+}
+
+.shop-coin-vault .shop-coin:last-child {
+  width: 14px;
+  height: 14px;
+  margin-bottom: 7px;
+}
+
 .shop-topbar,
 .shop-tagline,
 .shop-shelf,
-.shop-footer {
+.shop-footer,
+.shop-wallets {
   position: relative;
   z-index: 1;
 }
@@ -632,6 +726,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
   width: 100%;
   max-width: min(520px, 94vw);
@@ -744,6 +839,13 @@ body {
   box-shadow: 0 3px 0 #92400e;
 }
 
+.shop-section__badge--gems {
+  color: #2e1065;
+  background: linear-gradient(180deg, #ddd6fe, #8b5cf6);
+  border-color: #5b21b6;
+  box-shadow: 0 3px 0 #4c1d95;
+}
+
 .shop-section__note {
   margin: 0 2px 10px;
   font-size: 0.78rem;
@@ -846,6 +948,32 @@ body {
 .shop-item__icon--ticket {
   background: linear-gradient(180deg, #7f1d1d, #450a0a);
   border-color: rgba(254, 202, 202, 0.35);
+}
+
+.shop-item__icon--chest {
+  background: linear-gradient(180deg, #7c4a1e, #3f2410);
+  border-color: rgba(253, 230, 138, 0.4);
+  padding: 4px;
+}
+
+.shop-item__icon--chest-medium {
+  background: linear-gradient(180deg, #92400e, #451a03);
+}
+
+.shop-item__icon--chest-great {
+  background: linear-gradient(180deg, #a16207, #713f12);
+  box-shadow: inset 0 0 12px rgba(253, 224, 71, 0.35);
+}
+
+.shop-item__icon--chest svg {
+  width: 46px;
+  height: 40px;
+  display: block;
+}
+
+.shop-item__icon--coin-vault {
+  background: linear-gradient(180deg, #854d0e, #422006);
+  border-color: rgba(253, 224, 71, 0.45);
 }
 
 .shop-item__icon--bait {
@@ -964,10 +1092,32 @@ body {
   color: #052e16;
 }
 
-.shop-buy__price .shop-coin {
+.shop-buy__price .shop-coin,
+.shop-buy__price .shop-gem {
   width: 1em;
   height: 1em;
   animation: shopCoinFloatSoft 2.2s ease-in-out infinite;
+}
+
+.shop-buy--gems {
+  border-color: #5b21b6;
+  background: linear-gradient(180deg, #c4b5fd 0%, #8b5cf6 55%, #6d28d9 100%);
+  color: #2e1065;
+  box-shadow:
+    0 5px 0 #4c1d95,
+    0 8px 14px rgba(0, 0, 0, 0.28);
+}
+
+.shop-buy--gems:active:not(:disabled) {
+  box-shadow: 0 2px 0 #4c1d95;
+}
+
+.shop-buy--gems .shop-buy__label {
+  color: rgba(46, 16, 101, 0.85);
+}
+
+.shop-buy--gems .shop-buy__price {
+  color: #2e1065;
 }
 
 .shop-buy--owned {
@@ -1027,12 +1177,19 @@ body {
   .shop-decor__sparkle,
   .shop-decor__pile,
   .shop-coin--float,
-  .shop-buy__price .shop-coin {
+  .shop-gem--float,
+  .shop-buy__price .shop-coin,
+  .shop-buy__price .shop-gem {
     animation: none !important;
   }
 }
 
 @media (max-width: 420px) {
+  .shop-wallets {
+    width: 100%;
+    justify-content: space-between;
+  }
+
   .shop-item {
     flex-wrap: wrap;
   }
@@ -1620,6 +1777,7 @@ body {
 }
 
 .panel--start .start-toolbar__coins,
+.panel--start .start-toolbar__gems,
 .panel--start .start-toolbar__chests {
   text-align: right;
   flex: 0 0 auto;
@@ -1636,6 +1794,13 @@ body {
   border-color: rgba(255, 213, 74, 0.38);
   background:
     linear-gradient(180deg, rgba(255, 224, 138, 0.14), transparent 50%),
+    rgba(3, 21, 37, 0.42);
+}
+
+.panel--start .start-toolbar__gems {
+  border-color: rgba(167, 139, 250, 0.5);
+  background:
+    linear-gradient(180deg, rgba(167, 139, 250, 0.18), transparent 50%),
     rgba(3, 21, 37, 0.42);
 }
 
@@ -1738,11 +1903,16 @@ body {
 }
 
 .start-toolbar__coins,
+.start-toolbar__gems,
 .start-toolbar__chests {
   margin: 0;
   flex: 1 1 auto;
   text-align: left;
   min-width: 0;
+}
+
+.start-toolbar__value--gems {
+  color: #ddd6fe;
 }
 
 .start-toolbar__value--chests {
@@ -2300,6 +2470,7 @@ body {
   }
 
   .panel--start .start-toolbar__coins,
+  .panel--start .start-toolbar__gems,
   .panel--start .start-toolbar__chests {
     flex: 1 1 0;
     text-align: left;

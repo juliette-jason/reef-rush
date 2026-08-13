@@ -272,6 +272,41 @@ const MAGNET_ROD_ID = "magnet";
 const KRAKEN_SPRAY_BAIT_ID = "kraken_spray";
 const DAILY_SECOND_PLACE_KRAKEN_SPRAY = 3;
 
+/** Gems from found chests only (Crab Trap / Daily Catch). */
+const CHEST_GEMS_COMMON = 5;
+const CHEST_GEMS_GOOD = 15;
+const CHEST_GEMS_GREAT = 20;
+
+const SHOP_CHEST_DEFS = [
+  {
+    id: "common",
+    name: "Common chest",
+    tier: "common",
+    gemPrice: 45,
+    blurb: "A modest crate — a few coins and the occasional lucky find.",
+  },
+  {
+    id: "uncommon",
+    name: "Uncommon chest",
+    tier: "medium",
+    gemPrice: 110,
+    blurb: "A good haul of coins, bait, and better bonus prizes.",
+  },
+  {
+    id: "rare",
+    name: "Rare chest",
+    tier: "great",
+    gemPrice: 175,
+    blurb: "Rich loot: big coins, premium bait, and a chance at a new rod.",
+  },
+];
+
+const SHOP_COIN_BUNDLES = [
+  { id: "coins_2k", name: "Coin pouch", gems: 80, coins: 2000, blurb: "A fat pouch of reef coins." },
+  { id: "coins_5k", name: "Coin crate", gems: 160, coins: 5000, blurb: "A heavy crate of spendable coins." },
+  { id: "coins_10k", name: "Coin vault", gems: 300, coins: 10000, blurb: "The big bundle — 10,000 coins for the shop.", featured: true },
+];
+
 /** Special chest prizes (inventory + catch stamps). */
 const CHEST_ITEM_DEFS = {
   adventure_skip_rope: {
@@ -5049,6 +5084,7 @@ function fillAdventureResultTheme(container, levelIndex) {
 function defaultMeta() {
   return {
     coins: 0,
+    gems: 0,
     baitCounts: {},
     selectedBaitId: "standard",
     ownedRodIds: [FREE_ROD_ID],
@@ -5102,6 +5138,7 @@ function loadMeta() {
     if (!ownedRodIds.includes(selectedRodId)) selectedRodId = FREE_ROD_ID;
     return {
       coins: Math.max(0, Math.floor(Number(o.coins) || 0)),
+      gems: Math.max(0, Math.floor(Number(o.gems) || 0)),
       baitCounts: counts,
       selectedBaitId,
       ownedRodIds,
@@ -5148,6 +5185,29 @@ function saveMeta() {
 function getBaitCount(baitId) {
   const n = gameMeta.baitCounts[baitId];
   return Math.max(0, Math.floor(Number(n) || 0));
+}
+
+function getGemCount() {
+  return Math.max(0, Math.floor(Number(gameMeta.gems) || 0));
+}
+
+function addGems(qty) {
+  const n = Math.max(0, Math.floor(qty));
+  if (!n) return;
+  gameMeta.gems = getGemCount() + n;
+}
+
+function spendGems(qty) {
+  const need = Math.max(0, Math.floor(qty));
+  if (getGemCount() < need) return false;
+  gameMeta.gems = getGemCount() - need;
+  return true;
+}
+
+function chestGemsForTier(tier) {
+  if (tier === "great") return CHEST_GEMS_GREAT;
+  if (tier === "medium") return CHEST_GEMS_GOOD;
+  return CHEST_GEMS_COMMON;
 }
 
 function rodSpecById(id) {
@@ -5321,7 +5381,7 @@ function showDailyCatchReward() {
   }
   if (crabRewardTier) {
     crabRewardTier.textContent =
-      "Nice work finishing today's catch challenge! Pick one chest — same loot style as Crab Trap.";
+      `Nice work finishing today's catch challenge! Pick one chest — ${CHEST_GEMS_GOOD} gems plus the same loot style as Crab Trap.`;
   }
   if (crabRewardPrompt) crabRewardPrompt.textContent = "Choose one chest to claim your reward.";
   if (crabRewardResult) {
@@ -8207,6 +8267,9 @@ const baitChoices = document.getElementById("baitChoices");
 const coinDisplay = document.getElementById("coinDisplay");
 const coinDisplayStart = document.getElementById("coinDisplayStart");
 const treasureChestDisplayStart = document.getElementById("treasureChestDisplayStart");
+const gemDisplay = document.getElementById("gemDisplay");
+const gemDisplayStart = document.getElementById("gemDisplayStart");
+const gemDisplayShop = document.getElementById("gemDisplayShop");
 const coinDisplayShop = document.getElementById("coinDisplayShop");
 const coinsEarnedLine = document.getElementById("coinsEarnedLine");
 const panelShop = document.getElementById("panelShop");
@@ -8813,6 +8876,7 @@ function loadMetaFromObject(o) {
     if (!ownedRodIds.includes(selectedRodId)) selectedRodId = FREE_ROD_ID;
     return {
       coins: Math.max(0, Math.floor(Number(o.coins) || 0)),
+      gems: Math.max(0, Math.floor(Number(o.gems) || 0)),
       baitCounts: counts,
       selectedBaitId,
       ownedRodIds,
@@ -10555,6 +10619,10 @@ function refreshCoinDisplays() {
   if (coinDisplay) coinDisplay.textContent = t;
   if (coinDisplayStart) coinDisplayStart.textContent = t;
   if (coinDisplayShop) coinDisplayShop.textContent = t;
+  const g = String(getGemCount());
+  if (gemDisplay) gemDisplay.textContent = g;
+  if (gemDisplayStart) gemDisplayStart.textContent = g;
+  if (gemDisplayShop) gemDisplayShop.textContent = g;
   refreshTreasureChestDisplay();
 }
 
@@ -10709,6 +10777,13 @@ function shopCoinEl(sizeClass = "") {
   return coin;
 }
 
+function shopGemEl(sizeClass = "") {
+  const gem = document.createElement("span");
+  gem.className = sizeClass ? `shop-gem ${sizeClass}` : "shop-gem";
+  gem.setAttribute("aria-hidden", "true");
+  return gem;
+}
+
 function shopSection(title, badgeText) {
   const section = document.createElement("section");
   section.className = "shop-section";
@@ -10720,7 +10795,7 @@ function shopSection(title, badgeText) {
   head.appendChild(h);
   if (badgeText) {
     const badge = document.createElement("span");
-    badge.className = "shop-section__badge";
+    badge.className = badgeText === "GEMS" ? "shop-section__badge shop-section__badge--gems" : "shop-section__badge";
     badge.textContent = badgeText;
     head.appendChild(badge);
   }
@@ -10730,10 +10805,11 @@ function shopSection(title, badgeText) {
   return { section, list };
 }
 
-function shopBuyButton({ owned = false, price, disabled, label }) {
+function shopBuyButton({ owned = false, price, disabled, label, currency = "coins" }) {
   const buy = document.createElement("button");
   buy.type = "button";
-  buy.className = owned ? "shop-buy shop-buy--owned" : "shop-buy";
+  const gemPay = currency === "gems";
+  buy.className = owned ? "shop-buy shop-buy--owned" : gemPay ? "shop-buy shop-buy--gems" : "shop-buy";
   buy.disabled = disabled;
   if (owned) {
     buy.textContent = label || "Owned";
@@ -10741,7 +10817,7 @@ function shopBuyButton({ owned = false, price, disabled, label }) {
   }
   const priceWrap = document.createElement("span");
   priceWrap.className = "shop-buy__price";
-  priceWrap.append(shopCoinEl(), document.createTextNode(String(price)));
+  priceWrap.append(gemPay ? shopGemEl() : shopCoinEl(), document.createTextNode(String(price)));
   const action = document.createElement("span");
   action.className = "shop-buy__label";
   action.textContent = label || "Buy";
@@ -10755,6 +10831,50 @@ function shopBaitIcon(baitId) {
   art.setAttribute("aria-hidden", "true");
   art.innerHTML = baitBucketSvg(baitId);
   return art;
+}
+
+function shopChestIcon(tier) {
+  const art = document.createElement("div");
+  art.className = `shop-item__icon shop-item__icon--chest shop-item__icon--chest-${tier}`;
+  art.setAttribute("aria-hidden", "true");
+  art.innerHTML = crabChestArtSvg(tier, false);
+  return art;
+}
+
+function shopCoinBundleIcon() {
+  const art = document.createElement("div");
+  art.className = "shop-item__icon shop-item__icon--coin-vault";
+  art.setAttribute("aria-hidden", "true");
+  const pile = document.createElement("span");
+  pile.className = "shop-coin-vault";
+  pile.append(shopCoinEl(), shopCoinEl(), shopCoinEl());
+  art.appendChild(pile);
+  return art;
+}
+
+function buyShopChest(def) {
+  if (!spendGems(def.gemPrice)) {
+    showToast("Not enough gems", 1600);
+    return;
+  }
+  const bundles = rollCrabBundles(def.tier);
+  const bundle = bundles[Math.floor(Math.random() * bundles.length)] || bundles[0];
+  if (bundle) bundle.gems = 0;
+  grantCrabReward(bundle);
+  const lines = crabBundleRewardLines(bundle);
+  showToast(`${def.name} opened: ${lines.join(" · ")}`, 2800);
+}
+
+function buyShopCoinBundle(pack) {
+  if (!spendGems(pack.gems)) {
+    showToast("Not enough gems", 1600);
+    return;
+  }
+  gameMeta.coins += pack.coins;
+  saveMeta();
+  refreshCoinDisplays();
+  buildShopUI();
+  showToast(`+${pack.coins.toLocaleString()} coins`, 2000);
 }
 
 function shopTicketIcon() {
@@ -10777,6 +10897,74 @@ function buildShopUI() {
   if (!shopList) return;
   shopList.innerHTML = "";
   refreshDuelTicketsForToday();
+
+  const chestSec = shopSection("Treasure chests", "GEMS");
+  const chestNote = document.createElement("p");
+  chestNote.className = "shop-section__note";
+  chestNote.textContent = "Gems drop from found chests. Shop chests open instantly with the same loot as Crab Trap.";
+  chestSec.section.insertBefore(chestNote, chestSec.list);
+  for (const def of SHOP_CHEST_DEFS) {
+    const li = document.createElement("li");
+    li.className = `shop-item shop-item--chest shop-item--chest-${def.tier}`;
+    li.appendChild(shopChestIcon(def.tier));
+    const body = document.createElement("div");
+    body.className = "shop-item__body";
+    const title = document.createElement("h3");
+    title.className = "shop-item__title";
+    title.textContent = def.name;
+    const desc = document.createElement("p");
+    desc.className = "shop-item__desc";
+    desc.textContent = def.blurb;
+    const meta = document.createElement("div");
+    meta.className = "shop-item__meta";
+    meta.innerHTML = `<span class="shop-item__stock">Opens instantly</span>`;
+    body.append(title, desc, meta);
+    const buy = shopBuyButton({
+      price: def.gemPrice,
+      currency: "gems",
+      disabled: getGemCount() < def.gemPrice,
+      label: "Open",
+    });
+    buy.addEventListener("click", () => buyShopChest(def));
+    li.append(body, buy);
+    chestSec.list.appendChild(li);
+  }
+  shopList.appendChild(chestSec.section);
+
+  const vaultSec = shopSection("Coin vault", "GEMS");
+  for (const pack of SHOP_COIN_BUNDLES) {
+    const li = document.createElement("li");
+    li.className = `shop-item shop-item--coin-vault${pack.featured ? " shop-item--featured" : ""}`;
+    if (pack.featured) {
+      const ribbon = document.createElement("span");
+      ribbon.className = "shop-item__ribbon";
+      ribbon.textContent = "Best value";
+      li.append(ribbon);
+    }
+    li.appendChild(shopCoinBundleIcon());
+    const body = document.createElement("div");
+    body.className = "shop-item__body";
+    const title = document.createElement("h3");
+    title.className = "shop-item__title";
+    title.textContent = pack.name;
+    const desc = document.createElement("p");
+    desc.className = "shop-item__desc";
+    desc.textContent = pack.blurb;
+    const meta = document.createElement("div");
+    meta.className = "shop-item__meta";
+    meta.innerHTML = `<span class="shop-item__stock">${pack.coins.toLocaleString()} coins</span>`;
+    body.append(title, desc, meta);
+    const buy = shopBuyButton({
+      price: pack.gems,
+      currency: "gems",
+      disabled: getGemCount() < pack.gems,
+      label: "Buy",
+    });
+    buy.addEventListener("click", () => buyShopCoinBundle(pack));
+    li.append(body, buy);
+    vaultSec.list.appendChild(li);
+  }
+  shopList.appendChild(vaultSec.section);
 
   const tickets = shopSection("Event tickets", "HOT");
   const duelTicketLi = document.createElement("li");
@@ -12153,12 +12341,12 @@ function crabTierForScore(scorePts) {
 
 function crabTierMessage(tier) {
   if (tier === "great") {
-    return `Incredible haul (${CRAB_TRAP_GREAT_MIN}+)! These rich chests are stuffed with coins, bait, and maybe a new fishing rod.`;
+    return `Incredible haul (${CRAB_TRAP_GREAT_MIN}+)! These rich chests are stuffed with coins, ${CHEST_GEMS_GREAT} gems, bait, and maybe a new fishing rod.`;
   }
   if (tier === "medium") {
-    return `Nice work (${CRAB_TRAP_MEDIUM_MIN}+)! You earned better chests packed with more coins and bait. Trap ${CRAB_TRAP_GREAT_MIN}+ for the richest loot.`;
+    return `Nice work (${CRAB_TRAP_MEDIUM_MIN}+)! You earned better chests packed with more coins, ${CHEST_GEMS_GOOD} gems, and bait. Trap ${CRAB_TRAP_GREAT_MIN}+ for the richest loot.`;
   }
-  return `A modest catch (around ${CRAB_TRAP_LOW_SCORE}) — just some common chests this time. Trap ${CRAB_TRAP_MEDIUM_MIN}+ crabs next round for richer loot!`;
+  return `A modest catch (around ${CRAB_TRAP_LOW_SCORE}) — common chests with ${CHEST_GEMS_COMMON} gems this time. Trap ${CRAB_TRAP_MEDIUM_MIN}+ crabs next round for richer loot!`;
 }
 
 function crabPurchasableRods() {
@@ -12209,6 +12397,10 @@ function rollCrabBundles(tier) {
       });
     }
   }
+  const gems = chestGemsForTier(tier);
+  bundles.forEach((b) => {
+    b.gems = gems;
+  });
   return bundles;
 }
 
@@ -12228,6 +12420,7 @@ function specialPrizeLabel(special) {
 function crabBundleRewardLines(bundle) {
   const lines = [];
   if (bundle.coins) lines.push(`+${bundle.coins} coins`);
+  if (bundle.gems) lines.push(`+${bundle.gems} gems`);
   if (bundle.bait) lines.push(`${bundle.bait.qty}× ${bundle.bait.name}`);
   if (bundle.rodName) lines.push(`${bundle.rodName}`);
   const specialLine = specialPrizeLabel(bundle.special);
@@ -12325,7 +12518,9 @@ function renderCrabRewardChests(tier) {
 }
 
 function grantCrabReward(bundle) {
+  if (!bundle) return;
   if (bundle.coins) gameMeta.coins += bundle.coins;
+  if (bundle.gems) addGems(bundle.gems);
   if (bundle.bait) {
     gameMeta.baitCounts[bundle.bait.id] = getBaitCount(bundle.bait.id) + bundle.bait.qty;
   }

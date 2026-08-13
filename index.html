@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=no-menu-back-1" />
+    <link rel="stylesheet" href="styles.css?v=gems-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -33,6 +33,10 @@
             <div class="stat stat--coins" title="Spend in the fishing shop">
               <span class="stat__label">Coins</span>
               <span id="coinDisplay" class="stat__value">0</span>
+            </div>
+            <div class="stat stat--gems" title="Earn from chests, spend in the shop">
+              <span class="stat__label">Gems</span>
+              <span id="gemDisplay" class="stat__value">0</span>
             </div>
             <div class="stat stat--score">
               <span class="stat__label">Score</span>
@@ -544,6 +548,10 @@
               <p class="start-toolbar__coins">
                 <span class="start-toolbar__label">Coins</span>
                 <strong id="coinDisplayStart" class="start-toolbar__value">0</strong>
+              </p>
+              <p class="start-toolbar__gems">
+                <span class="start-toolbar__label">Gems</span>
+                <strong id="gemDisplayStart" class="start-toolbar__value start-toolbar__value--gems">0</strong>
               </p>
               <p class="start-toolbar__chests">
                 <span class="start-toolbar__label">Chests</span>
@@ -1916,15 +1924,24 @@
             <p class="shop-topbar__eyebrow">Gear &amp; supplies</p>
             <h2 class="shop-topbar__title">Fishing Shop</h2>
           </div>
-          <div class="shop-wallet" title="Your coin balance">
-            <span class="shop-coin shop-coin--lg shop-coin--float" aria-hidden="true"></span>
-            <div class="shop-wallet__text">
-              <span class="shop-wallet__label">Coins</span>
-              <strong id="coinDisplayShop" class="shop-wallet__amount">0</strong>
+          <div class="shop-wallets">
+            <div class="shop-wallet" title="Your coin balance">
+              <span class="shop-coin shop-coin--lg shop-coin--float" aria-hidden="true"></span>
+              <div class="shop-wallet__text">
+                <span class="shop-wallet__label">Coins</span>
+                <strong id="coinDisplayShop" class="shop-wallet__amount">0</strong>
+              </div>
+            </div>
+            <div class="shop-wallet shop-wallet--gems" title="Your gem balance">
+              <span class="shop-gem shop-gem--lg shop-gem--float" aria-hidden="true"></span>
+              <div class="shop-wallet__text">
+                <span class="shop-wallet__label">Gems</span>
+                <strong id="gemDisplayShop" class="shop-wallet__amount">0</strong>
+              </div>
             </div>
           </div>
         </header>
-        <p class="shop-tagline">Score big on the reef, cash in here — bait, rods, tickets, and daily seagull fits.</p>
+        <p class="shop-tagline">Score big on the reef, cash in here — spend coins on gear, or gems on chests and coin vaults.</p>
         <div id="shopGuide" class="shop-guide" hidden>
           <div class="shop-guide__sailor" aria-hidden="true">
             <svg class="shop-guide__art shop-guide__art--merchant" viewBox="0 0 260 220" xmlns="http://www.w3.org/2000/svg" focusable="false" aria-hidden="true">
@@ -2100,7 +2117,7 @@
           </div>
           <div class="shop-guide__bubble">
             <strong>Ahoy, fisher!</strong>
-            <p>I'm the shopkeeper seagull — not your deckhand! Spend coins from your catches on bait for one-round boosts, or save up for stronger rods. Better gear helps you bring more fish back to the store before the kraken finds your net.</p>
+            <p>I'm the shopkeeper seagull — not your deckhand! Spend coins from your catches on bait and rods, and gems from chests on more chests or big coin bundles. Better gear helps you bring more fish back to the store before the kraken finds your net.</p>
             <button type="button" id="btnShopGuideDone" class="btn btn--secondary shop-guide__btn">Thanks, seagull</button>
           </div>
         </div>
@@ -2191,6 +2208,6 @@
       </section>
     </div>
 
-    <script src="game.js?v=no-menu-back-1" defer></script>
+    <script src="game.js?v=gems-1" defer></script>
   </body>
 </html>
