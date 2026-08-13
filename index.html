@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=style-seagull-1" />
+    <link rel="stylesheet" href="styles.css?v=fotd-promo-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -238,15 +238,30 @@
             <button type="button" id="btnTreasureMapRevealDone" class="btn btn--primary treasure-map-reveal__btn">Continue fishing</button>
           </div>
         </div>
-        <div id="dailyPrizeReveal" class="treasure-map-reveal daily-prize-reveal" hidden aria-hidden="true">
-          <div class="treasure-map-reveal__backdrop"></div>
-          <div class="treasure-map-reveal__stage" role="dialog" aria-labelledby="dailyPrizeRevealTitle" aria-modal="true">
-            <div class="daily-prize-reveal__sparkle" aria-hidden="true">✦</div>
-            <p class="treasure-map-reveal__badge" id="dailyPrizeRevealBadge">★ Fisher of the Day ★</p>
-            <h2 id="dailyPrizeRevealTitle" class="treasure-map-reveal__title">1st place!</h2>
-            <p id="dailyPrizeRevealDay" class="daily-prize-reveal__day"></p>
-            <ul id="dailyPrizeRevealAwards" class="daily-prize-reveal__awards"></ul>
-            <button type="button" id="btnDailyPrizeRevealDone" class="btn btn--primary treasure-map-reveal__btn">Collect prizes</button>
+        <div id="dailyPrizeReveal" class="daily-prize-reveal" hidden aria-hidden="true">
+          <div class="daily-prize-reveal__backdrop"></div>
+          <div class="daily-prize-reveal__stage" role="dialog" aria-labelledby="dailyPrizeRevealTitle" aria-modal="true">
+            <div id="dailyPrizeBoardPhase" class="daily-prize-phase">
+              <p class="daily-prize-reveal__badge" id="dailyPrizeRevealBadge">★ Fisher of the Day ★</p>
+              <h2 id="dailyPrizeRevealTitle" class="daily-prize-reveal__title">1st place!</h2>
+              <p id="dailyPrizeRevealDay" class="daily-prize-reveal__day"></p>
+              <div id="dailyPrizePodium" class="daily-prize-podium" aria-hidden="true"></div>
+              <ol id="dailyPrizeBoard" class="daily-prize-board" aria-label="Yesterday's Fisher of the Day standings"></ol>
+              <button type="button" id="btnDailyPrizeContinue" class="btn btn--primary daily-prize-reveal__btn">Claim chest</button>
+            </div>
+            <div id="dailyPrizeChestPhase" class="daily-prize-phase" hidden>
+              <p class="daily-prize-reveal__badge">Your reward</p>
+              <h2 id="dailyPrizeChestTitle" class="daily-prize-reveal__title">Rare chest</h2>
+              <p id="dailyPrizeChestHint" class="daily-prize-reveal__day">Tap the chest to open it</p>
+              <button type="button" id="btnDailyPrizeChest" class="daily-prize-chest" aria-label="Open your prize chest">
+                <span class="daily-prize-chest__glow" aria-hidden="true"></span>
+                <span class="daily-prize-chest__sparkles" aria-hidden="true">✦</span>
+                <span id="dailyPrizeChestArt" class="daily-prize-chest__art"></span>
+                <span class="daily-prize-chest__plinth" aria-hidden="true"></span>
+              </button>
+              <ul id="dailyPrizeRevealAwards" class="daily-prize-reveal__awards" hidden></ul>
+              <button type="button" id="btnDailyPrizeRevealDone" class="btn btn--primary daily-prize-reveal__btn" hidden>Collect prizes</button>
+            </div>
           </div>
         </div>
         <div id="crabTrapStage" class="crab-trap-stage" hidden aria-hidden="true">
@@ -2208,6 +2223,6 @@
       </section>
     </div>
 
-    <script src="game.js?v=style-seagull-1" defer></script>
+    <script src="game.js?v=fotd-promo-1" defer></script>
   </body>
 </html>

@@ -5545,6 +5545,19 @@ function ensureDailyPrizeBundle(prize) {
   return prize;
 }
 
+function snapshotDailyPrizeBoard(rows) {
+  return (Array.isArray(rows) ? rows : []).slice(0, 10).map((r) => ({
+    initials: String(r.initials || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3),
+    name: leaderboardDisplayName(r),
+    score: Math.max(0, Math.floor(Number(r.score) || 0)),
+  }));
+}
+
+function normalizeDailyPrizeBoard(raw) {
+  if (!Array.isArray(raw)) return [];
+  return snapshotDailyPrizeBoard(raw);
+}
+
 function normalizePendingDailyPrizeCelebration(raw) {
   if (!raw || typeof raw !== "object") return null;
   const rank = Math.max(0, Math.min(2, Math.floor(Number(raw.rank) || 0)));
@@ -5559,6 +5572,7 @@ function normalizePendingDailyPrizeCelebration(raw) {
     chestTier,
     chestName: dailyPrizeChestNameForTier(chestTier),
     bundle: normalizeDailyPrizeBundle(raw.bundle),
+    board: normalizeDailyPrizeBoard(raw.board),
     dayLabel,
   };
 }
@@ -6848,6 +6862,7 @@ async function processDailyPrizePayouts() {
       chestTier,
       chestName: dailyPrizeChestNameForTier(chestTier),
       bundle: null,
+      board: snapshotDailyPrizeBoard(rows),
       dayLabel: formatDailyDayLabel(yesterday),
     };
     ensureDailyPrizeBundle(pending);
@@ -6856,12 +6871,6 @@ async function processDailyPrizePayouts() {
   } else {
     saveMeta();
   }
-}
-
-function homeTreasureChestAnchor() {
-  const sandTop = h - dpr * 92;
-  const base = sandTop + dpr * 14;
-  return { x: w * 0.5, y: base - dpr * 16 };
 }
 
 function dailyPrizeOrdinal(rank) {
@@ -6907,14 +6916,66 @@ function applyPendingDailyPrizeRewards() {
   buildRodUI();
 }
 
-function populateDailyPrizeRevealUI() {
-  const prize = ensureDailyPrizeBundle(gameMeta.pendingDailyPrizeCelebration);
-  if (!prize || !dailyPrizeRevealTitle || !dailyPrizeRevealAwards) return;
-  const ord = dailyPrizeOrdinal(prize.rank);
-  dailyPrizeRevealTitle.textContent = `${ord} place!`;
-  if (dailyPrizeRevealDay) {
-    dailyPrizeRevealDay.textContent = prize.dayLabel ? `Rewards for ${prize.dayLabel}` : "Yesterday's leaderboard rewards";
+let dailyPrizePhase = "board";
+let dailyPrizeBoardTimer = 0;
+
+function clearDailyPrizeBoardTimer() {
+  if (dailyPrizeBoardTimer) {
+    window.clearTimeout(dailyPrizeBoardTimer);
+    dailyPrizeBoardTimer = 0;
   }
+}
+
+function populateDailyPrizeBoardUI(prize) {
+  const ord = dailyPrizeOrdinal(prize.rank);
+  if (dailyPrizeRevealTitle) dailyPrizeRevealTitle.textContent = `You placed ${ord}!`;
+  if (dailyPrizeRevealDay) {
+    dailyPrizeRevealDay.textContent = prize.dayLabel
+      ? `Yesterday's board · ${prize.dayLabel}`
+      : "Yesterday's Fisher of the Day standings";
+  }
+  const youIni = gameMeta.playerInitials;
+  const board = Array.isArray(prize.board) ? prize.board : [];
+  if (dailyPrizePodium) {
+    dailyPrizePodium.innerHTML = "";
+    const medals = ["🥇", "🥈", "🥉"];
+    const order = [1, 0, 2];
+    for (const i of order) {
+      const entry = board[i];
+      if (!entry) continue;
+      const slot = document.createElement("div");
+      const isYou = entry.initials === youIni;
+      slot.className = `daily-prize-podium__slot daily-prize-podium__slot--${i + 1}${isYou ? " daily-prize-podium__slot--you" : ""}`;
+      slot.innerHTML =
+        `<span class="daily-prize-podium__medal">${medals[i]}</span>` +
+        `<span class="daily-prize-podium__name">${isYou ? "You" : entry.name}</span>` +
+        `<span class="daily-prize-podium__score">${entry.score.toLocaleString()}</span>` +
+        `<span class="daily-prize-podium__block">${i + 1}</span>`;
+      dailyPrizePodium.appendChild(slot);
+    }
+  }
+  if (dailyPrizeBoard) {
+    dailyPrizeBoard.innerHTML = "";
+    if (board.length > 3) {
+      dailyPrizeBoard.hidden = false;
+      board.slice(3).forEach((entry, idx) => {
+        const li = document.createElement("li");
+        const isYou = entry.initials === youIni;
+        li.className = `daily-prize-board__row${isYou ? " daily-prize-board__row--you" : ""}`;
+        li.innerHTML =
+          `<span class="daily-prize-board__rank">${idx + 4}</span>` +
+          `<span class="daily-prize-board__name">${isYou ? "You" : entry.name}</span>` +
+          `<span class="daily-prize-board__score">${entry.score.toLocaleString()}</span>`;
+        dailyPrizeBoard.appendChild(li);
+      });
+    } else {
+      dailyPrizeBoard.hidden = true;
+    }
+  }
+}
+
+function populateDailyPrizeAwardsList(prize) {
+  if (!dailyPrizeRevealAwards) return;
   dailyPrizeRevealAwards.innerHTML = "";
   for (const row of buildDailyPrizeAwardRows(prize)) {
     const li = document.createElement("li");
@@ -6924,30 +6985,78 @@ function populateDailyPrizeRevealUI() {
   }
 }
 
-function showDailyPrizeAwardsOverlay() {
-  if (!dailyPrizeReveal) return;
-  populateDailyPrizeRevealUI();
-  treasureChestCinematic = null;
-  dailyPrizeReveal.hidden = false;
-  dailyPrizeReveal.setAttribute("aria-hidden", "false");
-  dailyPrizeReveal.classList.remove("daily-prize-reveal--active");
-  void dailyPrizeReveal.offsetWidth;
-  dailyPrizeReveal.classList.add("daily-prize-reveal--active");
+function renderDailyPrizeChestArt(opened) {
+  const prize = gameMeta.pendingDailyPrizeCelebration;
+  if (!dailyPrizeChestArt || !prize) return;
+  const tier = prize.chestTier || dailyPrizeChestTierForRank(prize.rank);
+  dailyPrizeChestArt.innerHTML = crabChestArtSvg(tier, opened);
+  btnDailyPrizeChest?.classList.toggle("daily-prize-chest--great", tier === "great");
+  btnDailyPrizeChest?.classList.toggle("daily-prize-chest--medium", tier === "medium");
+  btnDailyPrizeChest?.classList.toggle("daily-prize-chest--opened", opened);
+}
+
+function showDailyPrizeBoardPhase() {
+  dailyPrizePhase = "board";
+  if (dailyPrizeBoardPhase) dailyPrizeBoardPhase.hidden = false;
+  if (dailyPrizeChestPhase) dailyPrizeChestPhase.hidden = true;
+  if (dailyPrizeRevealAwards) dailyPrizeRevealAwards.hidden = true;
+  if (btnDailyPrizeRevealDone) btnDailyPrizeRevealDone.hidden = true;
+}
+
+function showDailyPrizeChestPhase() {
+  clearDailyPrizeBoardTimer();
+  const prize = ensureDailyPrizeBundle(gameMeta.pendingDailyPrizeCelebration);
+  if (!prize) return;
+  dailyPrizePhase = "chest";
+  if (dailyPrizeBoardPhase) dailyPrizeBoardPhase.hidden = true;
+  if (dailyPrizeChestPhase) dailyPrizeChestPhase.hidden = false;
+  if (dailyPrizeChestTitle) dailyPrizeChestTitle.textContent = prize.chestName || dailyPrizeChestNameForTier(prize.chestTier);
+  if (dailyPrizeChestHint) {
+    dailyPrizeChestHint.textContent =
+      prize.rank === 0 ? "Tap the chest to open it · Magnet Rod included" : "Tap the chest to open it";
+  }
+  if (dailyPrizeRevealAwards) dailyPrizeRevealAwards.hidden = true;
+  if (btnDailyPrizeRevealDone) btnDailyPrizeRevealDone.hidden = true;
+  renderDailyPrizeChestArt(false);
+  if (dailyPrizeReveal) {
+    dailyPrizeReveal.classList.remove("daily-prize-reveal--active");
+    void dailyPrizeReveal.offsetWidth;
+    dailyPrizeReveal.classList.add("daily-prize-reveal--active");
+  }
+  playTreasureMapUnlockSound();
+}
+
+function openDailyPrizeChest() {
+  if (dailyPrizePhase !== "chest") return;
+  const prize = ensureDailyPrizeBundle(gameMeta.pendingDailyPrizeCelebration);
+  if (!prize) return;
+  dailyPrizePhase = "opened";
+  renderDailyPrizeChestArt(true);
+  populateDailyPrizeAwardsList(prize);
+  if (dailyPrizeChestHint) dailyPrizeChestHint.textContent = "Loot secured";
+  if (dailyPrizeRevealAwards) dailyPrizeRevealAwards.hidden = false;
+  if (btnDailyPrizeRevealDone) btnDailyPrizeRevealDone.hidden = false;
+  playCrabChestSound();
+}
+
+function advanceDailyPrizeCelebration() {
+  if (dailyPrizePhase === "board") showDailyPrizeChestPhase();
+  else if (dailyPrizePhase === "chest") openDailyPrizeChest();
+  else endDailyPrizeCelebration();
 }
 
 function endDailyPrizeCelebration() {
   if (!dailyPrizeCelebrationActive) return;
+  clearDailyPrizeBoardTimer();
   const prize = gameMeta.pendingDailyPrizeCelebration;
   dailyPrizeCelebrationActive = false;
-  treasureMapRevealPaused = false;
-  treasureChestCinematic = null;
+  dailyPrizePhase = "board";
   appRoot?.classList.remove("app--daily-prize-cinematic");
   dailyPrizeReveal?.classList.remove("daily-prize-reveal--active");
   if (dailyPrizeReveal) {
     dailyPrizeReveal.hidden = true;
     dailyPrizeReveal.setAttribute("aria-hidden", "true");
   }
-  if (panelStart) panelStart.hidden = false;
   syncHomeLaunchButtons();
   applyPendingDailyPrizeRewards();
   if (prize) {
@@ -6958,59 +7067,27 @@ function endDailyPrizeCelebration() {
   syncHomeLaunchButtons();
 }
 
-function startDailyPrizeChestCinematic(prize) {
-  if (!prize || dailyPrizeCelebrationActive || treasureMapRevealPaused || w <= 0) return;
+function startDailyPrizeCelebration(prize) {
+  if (!prize || dailyPrizeCelebrationActive || treasureMapRevealPaused) return;
   ensureDailyPrizeBundle(prize);
   saveMeta();
   dailyPrizeCelebrationActive = true;
-  treasureMapRevealPaused = true;
   appRoot?.classList.add("app--daily-prize-cinematic");
-  if (panelStart) panelStart.hidden = true;
-  if (homeLaunchDock) homeLaunchDock.hidden = true;
-  if (homeLaunchStack) homeLaunchStack.hidden = true;
-
+  populateDailyPrizeBoardUI(prize);
+  showDailyPrizeBoardPhase();
+  if (!dailyPrizeReveal) return;
+  dailyPrizeReveal.hidden = false;
+  dailyPrizeReveal.setAttribute("aria-hidden", "false");
+  dailyPrizeReveal.classList.remove("daily-prize-reveal--active");
+  void dailyPrizeReveal.offsetWidth;
+  dailyPrizeReveal.classList.add("daily-prize-reveal--active");
+  playTreasureMapUnlockSound();
   const prefersReducedMotion =
     typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (prefersReducedMotion) {
-    showDailyPrizeAwardsOverlay(prize);
-    return;
+  clearDailyPrizeBoardTimer();
+  if (!prefersReducedMotion) {
+    dailyPrizeBoardTimer = window.setTimeout(showDailyPrizeChestPhase, 2400);
   }
-
-  const anchor = homeTreasureChestAnchor();
-  const sc = dpr * 0.85;
-  const now = performance.now();
-  treasureChestCinematic = {
-    kind: "dailyPrize",
-    rank: prize.rank,
-    chestTier: prize.chestTier,
-    chestName: prize.chestName,
-    dayLabel: prize.dayLabel,
-    phase: "anticipate",
-    startX: anchor.x,
-    startY: anchor.y,
-    x: anchor.x,
-    y: anchor.y,
-    targetX: w * 0.5,
-    targetY: h * 0.48,
-    sc,
-    scale: 1,
-    facing: 1,
-    lidOpen: 0,
-    startedAt: now,
-    anticipateStartedAt: now,
-    flyStartedAt: 0,
-    openStartedAt: 0,
-    holdStartedAt: 0,
-    lastSparkleAt: 0,
-    glowPulse: 0,
-  };
-  if (dailyPrizeReveal) {
-    dailyPrizeReveal.hidden = true;
-    dailyPrizeReveal.setAttribute("aria-hidden", "true");
-    dailyPrizeReveal.classList.remove("daily-prize-reveal--active");
-  }
-  spawnTreasureCinematicBurst(anchor.x, anchor.y, 24, 40);
-  playTreasureMapUnlockSound();
 }
 
 function tryStartDailyPrizeCelebration() {
@@ -7020,7 +7097,7 @@ function tryStartDailyPrizeCelebration() {
     window.setTimeout(tryStartDailyPrizeCelebration, 1200);
     return;
   }
-  startDailyPrizeChestCinematic(prize);
+  startDailyPrizeCelebration(prize);
 }
 
 async function refreshEventsPanel() {
@@ -8613,6 +8690,15 @@ const btnDailyPrizeRevealDone = document.getElementById("btnDailyPrizeRevealDone
 const dailyPrizeRevealTitle = document.getElementById("dailyPrizeRevealTitle");
 const dailyPrizeRevealDay = document.getElementById("dailyPrizeRevealDay");
 const dailyPrizeRevealAwards = document.getElementById("dailyPrizeRevealAwards");
+const dailyPrizeBoardPhase = document.getElementById("dailyPrizeBoardPhase");
+const dailyPrizeChestPhase = document.getElementById("dailyPrizeChestPhase");
+const dailyPrizePodium = document.getElementById("dailyPrizePodium");
+const dailyPrizeBoard = document.getElementById("dailyPrizeBoard");
+const btnDailyPrizeContinue = document.getElementById("btnDailyPrizeContinue");
+const dailyPrizeChestTitle = document.getElementById("dailyPrizeChestTitle");
+const dailyPrizeChestHint = document.getElementById("dailyPrizeChestHint");
+const btnDailyPrizeChest = document.getElementById("btnDailyPrizeChest");
+const dailyPrizeChestArt = document.getElementById("dailyPrizeChestArt");
 const adventureUnlockBanner = document.getElementById("adventureUnlockBanner");
 const controlHint = document.getElementById("controlHint");
 const baitChoices = document.getElementById("baitChoices");
@@ -10498,13 +10584,8 @@ function updateTreasureChestCinematic(now) {
       c.lastSparkleAt = now;
     }
     if (holdT >= 1) {
-      if (c.kind === "dailyPrize") {
-        c.phase = "awards";
-        showDailyPrizeAwardsOverlay(c);
-      } else {
-        c.phase = "map";
-        showTreasureMapOverlay();
-      }
+      c.phase = "map";
+      showTreasureMapOverlay();
     }
   }
 }
@@ -17567,13 +17648,6 @@ function drawTreasureChestCinematic() {
     let badgeText = "★  TREASURE MAP FOUND  ★";
     let titleText = "ADVENTURE MODE UNLOCKED!";
     let subText = "Pirates Path · Gold Quest · Frozen Sea";
-    if (c.kind === "dailyPrize") {
-      const ord = dailyPrizeOrdinal(c.rank).toUpperCase();
-      badgeText = "★  FISHER OF THE DAY  ★";
-      titleText = `${ord} PLACE PRIZE!`;
-      const chestBit = c.chestName || dailyPrizeChestNameForTier(c.chestTier);
-      subText = c.rank === 0 ? `${chestBit} + Magnet Rod` : chestBit;
-    }
     ctx.font = `400 ${Math.round(11 * dpr)}px "Bebas Neue", sans-serif`;
     ctx.fillStyle = `rgba(255, 248, 200, ${bannerAlpha * 0.9})`;
     ctx.fillText(badgeText, w * 0.5, h * 0.13);
@@ -18348,7 +18422,8 @@ window.addEventListener("keydown", (e) => {
     const tag = e.target?.tagName;
     if (tag !== "INPUT" && tag !== "TEXTAREA") {
       e.preventDefault();
-      endDailyPrizeCelebration();
+      if (e.key === "Escape" && dailyPrizePhase === "opened") endDailyPrizeCelebration();
+      else advanceDailyPrizeCelebration();
       return;
     }
   }
@@ -18643,6 +18718,10 @@ btnAgain.addEventListener("click", () => {
 });
 
 btnTreasureMapRevealDone?.addEventListener("click", endTreasureMapReveal);
+btnDailyPrizeContinue?.addEventListener("click", showDailyPrizeChestPhase);
+btnDailyPrizeChest?.addEventListener("click", () => {
+  if (dailyPrizePhase === "chest") openDailyPrizeChest();
+});
 btnDailyPrizeRevealDone?.addEventListener("click", endDailyPrizeCelebration);
 
 function prefetchAdventureHub() {
