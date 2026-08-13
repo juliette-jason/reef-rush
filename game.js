@@ -8836,6 +8836,16 @@ const adventureMapTrail = document.getElementById("adventureMapTrail");
 const adventureMapTrailReveal = document.getElementById("adventureMapTrailReveal");
 const adventureMapBanner = document.getElementById("adventureMapBanner");
 const btnAdventureBack = document.getElementById("btnAdventureBack");
+const panelAdventurePrep = document.getElementById("panelAdventurePrep");
+const adventurePrepSection = document.getElementById("adventurePrepSection");
+const adventurePrepTitle = document.getElementById("adventurePrepTitle");
+const adventurePrepGoal = document.getElementById("adventurePrepGoal");
+const adventurePrepBait = document.getElementById("adventurePrepBait");
+const adventurePrepRod = document.getElementById("adventurePrepRod");
+const adventurePrepBoosts = document.getElementById("adventurePrepBoosts");
+const adventurePrepArmed = document.getElementById("adventurePrepArmed");
+const btnAdventurePrepStart = document.getElementById("btnAdventurePrepStart");
+const btnAdventurePrepBack = document.getElementById("btnAdventurePrepBack");
 const panelAdventureFail = document.getElementById("panelAdventureFail");
 const adventureFailScore = document.getElementById("adventureFailScore");
 const adventureFailGoal = document.getElementById("adventureFailGoal");
@@ -9384,6 +9394,7 @@ function hideAllPanels() {
   if (eventsOcean) eventsOcean.hidden = true;
   if (panelIntro) panelIntro.hidden = true;
   if (panelAdventure) panelAdventure.hidden = true;
+  if (panelAdventurePrep) panelAdventurePrep.hidden = true;
   if (panelAdventureFail) panelAdventureFail.hidden = true;
   if (panelAdventureWin) panelAdventureWin.hidden = true;
   if (panelDuelOver) panelDuelOver.hidden = true;
@@ -9623,7 +9634,7 @@ function isHomeScreenActive() {
   if (playing) return false;
   if (isSplashScreenActive()) return false;
   if (!panelStart || panelStart.hidden) return false;
-  const blocking = [panelOver, panelShop, panelEvents, panelCollectables, panelProfile, panelIntro, panelAdventure, panelAdventureFail, panelAdventureWin, panelDuelOver];
+  const blocking = [panelOver, panelShop, panelEvents, panelCollectables, panelProfile, panelIntro, panelAdventure, panelAdventurePrep, panelAdventureFail, panelAdventureWin, panelDuelOver];
   for (const panel of blocking) {
     if (panel && !panel.hidden) return false;
   }
@@ -9636,6 +9647,7 @@ function getActiveTabId() {
   if (panelEvents && !panelEvents.hidden) return "events";
   if (panelCollectables && !panelCollectables.hidden) return "collectables";
   if (panelAdventure && !panelAdventure.hidden) return "adventure";
+  if (panelAdventurePrep && !panelAdventurePrep.hidden) return "adventure";
   if (panelAdventureFail && !panelAdventureFail.hidden) return "adventure";
   if (panelAdventureWin && !panelAdventureWin.hidden) return "adventure";
   if (isHomeScreenActive()) return "world";
@@ -10277,6 +10289,90 @@ function startAdventureLevel(levelIndex) {
   startRound();
 }
 
+function adventurePrepSectionLabel(lvl) {
+  if (lvl.isLostCity) return ADVENTURE_SECTION_LOST_CITY;
+  if (lvl.isIce) return ADVENTURE_SECTION_FROZEN_SEA;
+  if (lvl.isBonus) return ADVENTURE_SECTION_GOLD_QUEST;
+  return ADVENTURE_SECTION_PIRATES_PATH;
+}
+
+function refreshAdventurePrepBoosts() {
+  if (!adventurePrepBoosts) return;
+  const labels = [];
+  if (gameMeta.pendingLuckyLure) labels.push("Lucky Lure");
+  if (gameMeta.pendingDoubleHaul) labels.push("Double Haul");
+  if (adventurePrepArmed) {
+    if (labels.length) {
+      adventurePrepArmed.hidden = false;
+      adventurePrepArmed.textContent = `Armed: ${labels.join(" · ")}`;
+    } else {
+      adventurePrepArmed.hidden = true;
+      adventurePrepArmed.textContent = "";
+    }
+  }
+  adventurePrepBoosts.replaceChildren();
+  const boostIds = ["lucky_lure", "double_haul"];
+  let shown = 0;
+  for (const id of boostIds) {
+    const def = CHEST_ITEM_DEFS[id];
+    if (!def) continue;
+    const qty = getChestItemCount(id);
+    const pending =
+      (id === "lucky_lure" && gameMeta.pendingLuckyLure) ||
+      (id === "double_haul" && gameMeta.pendingDoubleHaul);
+    if (qty < 1 && !pending) continue;
+    shown += 1;
+    const row = document.createElement("div");
+    row.className = `adventure-prep__boost${qty < 1 && !pending ? " adventure-prep__boost--empty" : ""}`;
+    const icon = document.createElement("span");
+    icon.className = "adventure-prep__boost-icon";
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = def.icon;
+    const body = document.createElement("div");
+    body.className = "adventure-prep__boost-body";
+    const name = document.createElement("p");
+    name.className = "adventure-prep__boost-name";
+    name.textContent = def.name;
+    const qtyEl = document.createElement("p");
+    qtyEl.className = "adventure-prep__boost-qty";
+    qtyEl.textContent = pending ? "Armed for this voyage" : `Owned: ${qty}`;
+    body.append(name, qtyEl);
+    const useBtn = document.createElement("button");
+    useBtn.type = "button";
+    useBtn.className = "btn btn--secondary";
+    useBtn.dataset.armItem = id;
+    useBtn.textContent = pending ? "Armed" : "Arm";
+    useBtn.disabled = pending || qty < 1;
+    row.append(icon, body, useBtn);
+    adventurePrepBoosts.appendChild(row);
+  }
+  if (!shown) {
+    const empty = document.createElement("p");
+    empty.className = "adventure-prep__boost-empty";
+    empty.textContent = "No upgrades yet — find them in chests.";
+    adventurePrepBoosts.appendChild(empty);
+  }
+}
+
+function openAdventurePrep(levelIndex) {
+  const lvl = getAdventureLevel(levelIndex);
+  if (!isAdventureLevelPlayable(lvl.level)) return;
+  pendingAdventureLevelIndex = levelIndex;
+  hideAllPanels();
+  if (adventurePrepSection) adventurePrepSection.textContent = adventurePrepSectionLabel(lvl);
+  if (adventurePrepTitle) adventurePrepTitle.textContent = lvl.name;
+  if (adventurePrepGoal) adventurePrepGoal.textContent = `Goal: ${lvl.passScore} pts`;
+  buildBaitUI();
+  buildRodUI();
+  refreshAdventurePrepBoosts();
+  if (panelAdventurePrep) panelAdventurePrep.hidden = false;
+  syncHomeLaunchButtons();
+  if (musicEnabled) {
+    stopHomeMusic();
+    startAdventureMusic();
+  }
+}
+
 function playTreasureCoveVictorySound() {
   playTreasureMapUnlockSound();
   const ac = ensureMusicContext();
@@ -10384,6 +10480,7 @@ function endAdventureRound() {
 function isAdventureMusicActive() {
   if (playing && adventureSession) return true;
   if (panelAdventure && !panelAdventure.hidden) return true;
+  if (panelAdventurePrep && !panelAdventurePrep.hidden) return true;
   if (panelAdventureWin && !panelAdventureWin.hidden) return true;
   if (panelAdventureFail && !panelAdventureFail.hidden) return true;
   return false;
@@ -11209,10 +11306,12 @@ function baitBucketSvg(baitId) {
   );
 }
 
-function buildBaitUI() {
-  if (!baitChoices) return;
-  normalizeSelectedBaitId();
-  baitChoices.innerHTML = "";
+function baitChoiceRoots() {
+  return [baitChoices, adventurePrepBait].filter(Boolean);
+}
+
+function fillBaitChoices(root) {
+  root.innerHTML = "";
   for (const b of BAITS) {
     if (b.shopHidden && getBaitCount(b.id) <= 0) continue;
     const stock = b.consumesOnRound ? getBaitCount(b.id) : null;
@@ -11238,12 +11337,56 @@ function buildBaitUI() {
       btn.addEventListener("click", () => {
         gameMeta.selectedBaitId = b.id;
         saveMeta();
-        baitChoices.querySelectorAll(".rod-option").forEach((el) => el.classList.remove("rod-option--selected"));
-        btn.classList.add("rod-option--selected");
+        buildBaitUI();
       });
     }
-    baitChoices.appendChild(btn);
+    root.appendChild(btn);
   }
+}
+
+function buildBaitUI() {
+  normalizeSelectedBaitId();
+  for (const root of baitChoiceRoots()) fillBaitChoices(root);
+}
+
+function rodChoiceRoots() {
+  return [rodChoices, adventurePrepRod].filter(Boolean);
+}
+
+function fillRodChoices(root) {
+  root.innerHTML = "";
+  for (const rod of RODS) {
+    if (!isRodOwned(rod.id)) continue;
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className =
+      `rod-option rod-option--rod-${rod.id}` +
+      (rod.id === selectedRod.id ? " rod-option--selected" : "");
+    const stockLine =
+      rod.id === MAGNET_ROD_ID
+        ? `<span class="rod-option__stock rod-option__stock--prize">Prize · tonight</span>`
+        : `<span class="rod-option__stock">Owned</span>`;
+    b.innerHTML =
+      `<span class="rod-option__art">${rodArtSvg(rod)}</span>` +
+      `<span class="rod-option__copy">` +
+      `<span class="rod-option__name">${rod.name}</span>` +
+      `<span class="rod-option__desc">${rod.desc}</span>` +
+      `${stockLine}` +
+      `</span>`;
+    b.addEventListener("click", () => {
+      selectedRod = rod;
+      gameMeta.selectedRodId = rod.id;
+      saveMeta();
+      buildRodUI();
+    });
+    root.appendChild(b);
+  }
+}
+
+function buildRodUI() {
+  normalizeSelectedRod();
+  for (const root of rodChoiceRoots()) fillRodChoices(root);
+  updateStartButtonSubtext();
 }
 
 function shopCoinEl(sizeClass = "") {
@@ -11634,6 +11777,7 @@ function syncAdventureSkipRopeButton() {
 
 function refreshCollectablesUI() {
   syncAdventureSkipRopeButton();
+  refreshAdventurePrepBoosts();
   if (collectablesArmed) {
     const labels = armedBoostLabels();
     if (labels.length) {
@@ -11857,7 +12001,12 @@ function armChestBoost(itemId) {
     gameMeta.pendingLuckyLure = true;
     saveMeta();
     refreshCollectablesUI();
-    showToast("Lucky Lure armed for your next reef round", 2200);
+    showToast(
+      panelAdventurePrep && !panelAdventurePrep.hidden
+        ? "Lucky Lure armed for this voyage"
+        : "Lucky Lure armed for your next reef round",
+      2200,
+    );
     return;
   }
   if (itemId === "double_haul") {
@@ -11872,7 +12021,12 @@ function armChestBoost(itemId) {
     gameMeta.pendingDoubleHaul = true;
     saveMeta();
     refreshCollectablesUI();
-    showToast("Double Haul armed for your next reef round", 2200);
+    showToast(
+      panelAdventurePrep && !panelAdventurePrep.hidden
+        ? "Double Haul armed for this voyage"
+        : "Double Haul armed for your next reef round",
+      2200,
+    );
     return;
   }
   if (itemId === "mystery_reef") {
@@ -13405,40 +13559,6 @@ function buildReefUI() {
   showSelectedReefOnMap();
 }
 
-function buildRodUI() {
-  if (!rodChoices) return;
-  normalizeSelectedRod();
-  rodChoices.innerHTML = "";
-  for (const rod of RODS) {
-    if (!isRodOwned(rod.id)) continue;
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className =
-      `rod-option rod-option--rod-${rod.id}` +
-      (rod.id === selectedRod.id ? " rod-option--selected" : "");
-    const stockLine =
-      rod.id === MAGNET_ROD_ID
-        ? `<span class="rod-option__stock rod-option__stock--prize">Prize · tonight</span>`
-        : `<span class="rod-option__stock">Owned</span>`;
-    b.innerHTML =
-      `<span class="rod-option__art">${rodArtSvg(rod)}</span>` +
-      `<span class="rod-option__copy">` +
-      `<span class="rod-option__name">${rod.name}</span>` +
-      `<span class="rod-option__desc">${rod.desc}</span>` +
-      `${stockLine}` +
-      `</span>`;
-    b.addEventListener("click", () => {
-      selectedRod = rod;
-      gameMeta.selectedRodId = rod.id;
-      saveMeta();
-      rodChoices.querySelectorAll(".rod-option").forEach((el) => el.classList.remove("rod-option--selected"));
-      b.classList.add("rod-option--selected");
-    });
-    rodChoices.appendChild(b);
-  }
-  updateStartButtonSubtext();
-}
-
 function invalidateBackgroundCache() {
   bgCacheKey = "";
 }
@@ -13638,6 +13758,7 @@ function startRound() {
   panelStart.hidden = true;
   panelOver.hidden = true;
   if (panelAdventure) panelAdventure.hidden = true;
+  if (panelAdventurePrep) panelAdventurePrep.hidden = true;
   if (panelAdventureFail) panelAdventureFail.hidden = true;
   if (panelAdventureWin) panelAdventureWin.hidden = true;
   syncAdventureLaunchVisibility();
@@ -18791,7 +18912,21 @@ adventureLevelList?.addEventListener("click", (e) => {
   const btn = e.target.closest(".adventure-map-node");
   if (!btn || btn.disabled) return;
   const idx = parseInt(btn.dataset.levelIndex, 10);
-  if (!Number.isNaN(idx)) startAdventureLevel(idx);
+  if (!Number.isNaN(idx)) openAdventurePrep(idx);
+});
+
+adventurePrepBoosts?.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-arm-item]");
+  if (!btn) return;
+  armChestBoost(btn.dataset.armItem);
+});
+
+btnAdventurePrepStart?.addEventListener("click", () => {
+  startAdventureLevel(pendingAdventureLevelIndex);
+});
+
+btnAdventurePrepBack?.addEventListener("click", () => {
+  openAdventureHub();
 });
 
 btnAdventureBack?.addEventListener("click", () => {
@@ -18802,7 +18937,7 @@ btnAdventureBack?.addEventListener("click", () => {
 });
 
 btnAdventureRetry?.addEventListener("click", () => {
-  startAdventureLevel(pendingAdventureLevelIndex);
+  openAdventurePrep(pendingAdventureLevelIndex);
 });
 
 btnAdventureSkipRope?.addEventListener("click", () => {
@@ -18816,7 +18951,7 @@ btnAdventureFailBack?.addEventListener("click", () => {
 btnAdventureNext?.addEventListener("click", () => {
   const highest = gameMeta.adventureHighestLevel || 0;
   if (highest < ADVENTURE_LEVEL_COUNT) {
-    startAdventureLevel(highest);
+    openAdventurePrep(highest);
   } else {
     openAdventureHub();
   }

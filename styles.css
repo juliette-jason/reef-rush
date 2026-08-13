@@ -2803,7 +2803,8 @@ button.seagull-avatar:active {
 .panel.panel--profile[hidden],
 .panel.panel--start[hidden],
 .panel.panel--adventure[hidden],
-.panel.panel--adventure-result[hidden] {
+.panel.panel--adventure-result[hidden],
+.panel.panel--adventure-prep[hidden] {
   display: none !important;
 }
 
@@ -4203,7 +4204,8 @@ button.seagull-avatar:active {
 .app--show-tabs .panel--collectables,
 .app--show-tabs .panel--profile,
 .app--show-tabs .panel--adventure,
-.app--show-tabs .panel--adventure-result {
+.app--show-tabs .panel--adventure-result,
+.app--show-tabs .panel--adventure-prep {
   padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
 }
 
@@ -8271,6 +8273,186 @@ button.seagull-avatar:active {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   gap: 10px;
+}
+
+.panel--adventure-prep {
+  z-index: 52;
+  justify-content: flex-start;
+  align-items: stretch;
+  text-align: left;
+  gap: 12px;
+  padding: 16px 14px max(18px, env(safe-area-inset-bottom, 0px));
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 213, 74, 0.16), transparent 42%),
+    radial-gradient(ellipse at 80% 90%, rgba(77, 255, 243, 0.08), transparent 40%),
+    linear-gradient(180deg, #0a4d68 0%, var(--ocean-mid) 50%, var(--ocean-deep) 100%);
+}
+
+.adventure-prep__header {
+  text-align: center;
+  margin: 0 0 4px;
+}
+
+.adventure-prep__section {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 248, 220, 0.72);
+}
+
+.adventure-prep__title {
+  margin: 4px 0 2px;
+  font-family: var(--font-brand);
+  font-size: clamp(1.45rem, 5vw, 1.85rem);
+  letter-spacing: 0.03em;
+  color: #fff8dc;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+.adventure-prep__goal {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffd54a;
+}
+
+.adventure-prep__gear {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(520px, 100%);
+  margin: 0 auto;
+}
+
+.adventure-prep__card {
+  margin: 0;
+  width: 100%;
+}
+
+.panel--adventure-prep .rod-option__desc {
+  display: none;
+}
+
+.panel--adventure-prep .rod-option {
+  padding: 8px 10px;
+  gap: 8px;
+}
+
+.panel--adventure-prep .rod-option__art {
+  width: 36px;
+  height: 52px;
+}
+
+.panel--adventure-prep .rod-option__art--bait {
+  width: 36px;
+  height: 44px;
+}
+
+.panel--adventure-prep .rod-option__art .bait-bucket {
+  width: 32px;
+  height: 40px;
+}
+
+.panel--adventure-prep .rod-option__art .rod-art {
+  width: 32px;
+  height: 50px;
+}
+
+.adventure-prep__boosts .rods__legend,
+.adventure-prep__boosts h3.rods__legend {
+  margin-bottom: 8px;
+}
+
+.adventure-prep__armed {
+  margin: 0 0 8px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(255, 213, 74, 0.14);
+  border: 1px solid rgba(255, 213, 74, 0.35);
+  color: #fff3c4;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.adventure-prep__boost-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.adventure-prep__boost {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(8, 40, 58, 0.55);
+}
+
+.adventure-prep__boost--empty {
+  opacity: 0.55;
+}
+
+.adventure-prep__boost-icon {
+  font-size: 1.35rem;
+  line-height: 1;
+  width: 1.6em;
+  text-align: center;
+}
+
+.adventure-prep__boost-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.adventure-prep__boost-name {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.adventure-prep__boost-qty {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  color: rgba(226, 232, 240, 0.75);
+}
+
+.adventure-prep__boost .btn {
+  flex-shrink: 0;
+  min-width: 72px;
+  margin: 0;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+
+.adventure-prep__boost-empty {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.7);
+  font-size: 0.85rem;
+}
+
+.adventure-prep__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: min(520px, 100%);
+  margin: 6px auto 0;
+}
+
+.adventure-prep__actions .btn--start {
+  width: 100%;
+  max-width: 320px;
+}
+
+.adventure-prep__actions .btn--secondary {
+  min-width: min(220px, 80vw);
 }
 
 .panel--adventure-result .panel__headline {

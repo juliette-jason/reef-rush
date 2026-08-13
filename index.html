@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=less-copy-1" />
+    <link rel="stylesheet" href="styles.css?v=adv-prep-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -1293,6 +1293,36 @@
         </button>
       </section>
 
+      <section id="panelAdventurePrep" class="panel panel--adventure-prep" hidden>
+        <header class="adventure-prep__header">
+          <p id="adventurePrepSection" class="adventure-prep__section">Voyage</p>
+          <h2 id="adventurePrepTitle" class="adventure-prep__title">Level</h2>
+          <p id="adventurePrepGoal" class="adventure-prep__goal">Goal: 0</p>
+        </header>
+        <div class="adventure-prep__gear">
+          <fieldset class="rods rods--card adventure-prep__card">
+            <legend class="rods__legend">Bait</legend>
+            <div id="adventurePrepBait" class="rods__grid"></div>
+          </fieldset>
+          <fieldset class="rods rods--card adventure-prep__card">
+            <legend class="rods__legend">Rod</legend>
+            <div id="adventurePrepRod" class="rods__grid"></div>
+          </fieldset>
+          <section class="adventure-prep__boosts rods--card adventure-prep__card" aria-label="Upgrades">
+            <h3 class="rods__legend">Upgrades</h3>
+            <p id="adventurePrepArmed" class="adventure-prep__armed" hidden></p>
+            <div id="adventurePrepBoosts" class="adventure-prep__boost-list"></div>
+          </section>
+        </div>
+        <div class="adventure-prep__actions">
+          <button type="button" id="btnAdventurePrepStart" class="btn btn--primary btn--start">
+            <span class="btn--start__shine" aria-hidden="true"></span>
+            <span class="btn--start__label">Cast off</span>
+          </button>
+          <button type="button" id="btnAdventurePrepBack" class="btn btn--secondary">Back to map</button>
+        </div>
+      </section>
+
       <section id="panelAdventureFail" class="panel panel--adventure-result" hidden>
         <div id="adventureFailTheme" class="adventure-result-theme" hidden aria-hidden="true"></div>
         <h2 class="panel__headline panel__headline--fail">Not enough fish caught.</h2>
@@ -2225,6 +2255,6 @@
       </section>
     </div>
 
-    <script src="game.js?v=less-copy-1" defer></script>
+    <script src="game.js?v=adv-prep-1" defer></script>
   </body>
 </html>
