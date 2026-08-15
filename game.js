@@ -5510,8 +5510,8 @@ function showDailyCatchReward() {
     crabRewardSummary.innerHTML = `You caught <strong>${ch.target}</strong> ${ch.label}`;
   }
   if (crabRewardTier) {
-    crabRewardTier.textContent =
-      `Nice work finishing today's catch challenge! Pick one chest — ${CHEST_GEMS_RARE} gems plus the same loot style as Crab Trap.`;
+    crabRewardTier.hidden = true;
+    crabRewardTier.textContent = "";
   }
   if (crabRewardPrompt) crabRewardPrompt.textContent = "Choose one chest to claim your reward.";
   if (crabRewardResult) {
@@ -12798,6 +12798,7 @@ function showEventMinigameReward({ source, title, summaryHtml, scorePts, tier })
   if (crabRewardHeadline) crabRewardHeadline.textContent = title;
   if (crabRewardSummary) crabRewardSummary.innerHTML = summaryHtml;
   if (crabRewardTier) {
+    crabRewardTier.hidden = false;
     crabRewardTier.textContent =
       tier === "legendary"
         ? "Legendary chest — top haul!"
@@ -14184,7 +14185,10 @@ function showCrabReward(finalScore) {
   if (crabRewardSummary) {
     crabRewardSummary.innerHTML = `You trapped <strong>${finalScore}</strong> treasure crab${finalScore === 1 ? "" : "s"}`;
   }
-  if (crabRewardTier) crabRewardTier.textContent = crabTierMessage(tier);
+  if (crabRewardTier) {
+    crabRewardTier.hidden = false;
+    crabRewardTier.textContent = crabTierMessage(tier);
+  }
   if (crabRewardPrompt) crabRewardPrompt.textContent = "Choose one chest to claim your reward.";
   if (crabRewardResult) {
     crabRewardResult.hidden = true;
