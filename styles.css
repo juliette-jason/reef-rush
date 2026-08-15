@@ -5963,7 +5963,7 @@ button.seagull-avatar:active {
     0 14px 36px rgba(0, 0, 0, 0.48),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
   border-width: 1.5px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .panel--events .leaderboard-block {
@@ -5986,8 +5986,16 @@ button.seagull-avatar:active {
   border: 1px solid rgba(255, 180, 90, 0.28);
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
   text-align: left;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
+}
+
+.event-card:has(.event-card__about[open]) {
+  z-index: 6;
+}
+
+.event-card:last-child {
+  margin-bottom: 72px;
 }
 
 .event-card__art {
@@ -6364,10 +6372,13 @@ button.seagull-avatar:active {
 }
 
 .event-card__head {
+  position: relative;
+  z-index: 5;
   display: flex;
-  align-items: flex-start;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px 12px;
   margin: 0 16px 6px;
 }
 
@@ -6381,14 +6392,16 @@ button.seagull-avatar:active {
 
 .event-card__title {
   margin: 0;
+  min-width: 0;
   font-family: "Bebas Neue", sans-serif;
   font-size: 1.55rem;
   letter-spacing: 0.06em;
+  line-height: 1.05;
   color: var(--gold-hot);
 }
 
 .event-card__about {
-  position: relative;
+  position: static;
   flex: 0 0 auto;
   z-index: 5;
 }
@@ -6399,6 +6412,7 @@ button.seagull-avatar:active {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   width: 26px;
   height: 26px;
   border-radius: 50%;
@@ -6437,9 +6451,11 @@ button.seagull-avatar:active {
 .event-card__blurb {
   position: absolute;
   left: 0;
+  right: 0;
   top: calc(100% + 8px);
-  z-index: 4;
-  width: min(280px, 78vw);
+  z-index: 8;
+  width: auto;
+  max-width: none;
   margin: 0;
   padding: 10px 12px;
   border-radius: 12px;
@@ -6475,6 +6491,7 @@ button.seagull-avatar:active {
   text-transform: uppercase;
   color: var(--neon-cyan);
   white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .event-card__tagline {
