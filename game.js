@@ -7508,7 +7508,7 @@ function endDailyPrizeCelebration() {
 }
 
 function startDailyPrizeCelebration(prize) {
-  if (!prize || dailyPrizeCelebrationActive || treasureMapRevealPaused) return;
+  if (!prize || dailyPrizeCelebrationActive || treasureMapRevealPaused || playing || !isHomeScreenActive()) return;
   ensureDailyPrizeBundle(prize);
   saveMeta();
   dailyPrizeCelebrationActive = true;
@@ -7530,9 +7530,21 @@ function startDailyPrizeCelebration(prize) {
   }
 }
 
+function deferDailyPrizeCelebration() {
+  clearDailyPrizeBoardTimer();
+  dailyPrizeCelebrationActive = false;
+  dailyPrizePhase = "board";
+  appRoot?.classList.remove("app--daily-prize-cinematic");
+  dailyPrizeReveal?.classList.remove("daily-prize-reveal--active");
+  if (dailyPrizeReveal) {
+    dailyPrizeReveal.hidden = true;
+    dailyPrizeReveal.setAttribute("aria-hidden", "true");
+  }
+}
+
 function tryStartDailyPrizeCelebration() {
   const prize = gameMeta.pendingDailyPrizeCelebration;
-  if (!prize || dailyPrizeCelebrationActive || treasureMapRevealPaused || !isHomeScreenActive()) return;
+  if (!prize || dailyPrizeCelebrationActive || treasureMapRevealPaused || playing || !isHomeScreenActive()) return;
   if (isAdventureHomeCelebrationActive()) {
     window.setTimeout(tryStartDailyPrizeCelebration, 1200);
     return;
@@ -9836,6 +9848,7 @@ function hideAllPanels() {
   if (panelCrabReward) panelCrabReward.hidden = true;
   if (panelCollectables) panelCollectables.hidden = true;
   if (panelProfile) panelProfile.hidden = true;
+  deferDailyPrizeCelebration();
   appRoot?.classList.remove("app--events-mode", "app--splash");
   stopDailyEventCountdown();
   stopEventsMusic();
@@ -14576,6 +14589,7 @@ function initBubbles() {
 
 function startRound() {
   playing = true;
+  deferDailyPrizeCelebration();
   setStartMoreOptionsOpen(false);
   if (mapSeagullMode === "howto") {
     markIntroSeen();

@@ -24,6 +24,11 @@
   box-sizing: border-box;
 }
 
+/* Safari does not use !important on [hidden], so display:flex overlays leak onto play. */
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   margin: 0;
@@ -9058,6 +9063,10 @@ button.seagull-avatar:active {
 
 .daily-prize-reveal:not([hidden]) {
   pointer-events: auto;
+}
+
+.app--playing .daily-prize-reveal {
+  display: none !important;
 }
 
 .daily-prize-reveal__backdrop {
