@@ -688,32 +688,30 @@ function companionInnerMarkup(id) {
         <path d="M128 76 Q132 72 136 76" fill="none" stroke="#9a3412" stroke-width="0.9"/>`;
     case "sea_turtle":
       return `${shadow}
-        <path d="M50 116 C38 128 32 140 48 138 C58 134 62 124 58 116Z" fill="#7a9a48" stroke="#3a5420" stroke-width="1.1"/>
-        <path d="M110 116 C122 128 128 140 112 138 C102 134 98 124 102 116Z" fill="#7a9a48" stroke="#3a5420" stroke-width="1.1"/>
-        <path d="M34 76 C12 64 4 88 22 102 C36 110 50 100 52 86 C50 78 42 76 34 76Z" fill="#8faf58" stroke="#3a5420" stroke-width="1.15"/>
-        <path d="M126 76 C148 64 156 88 138 102 C124 110 110 100 108 86 C110 78 118 76 126 76Z" fill="#8faf58" stroke="#3a5420" stroke-width="1.15"/>
-        <path d="M18 78 L32 84 M14 88 L30 92 M20 96 L36 98" stroke="#3a5420" stroke-width="0.75" opacity="0.4"/>
-        <path d="M142 78 L128 84 M146 88 L130 92 M140 96 L124 98" stroke="#3a5420" stroke-width="0.75" opacity="0.4"/>
-        <ellipse cx="80" cy="102" rx="20" ry="14" fill="#e8d9a0"/>
-        <path d="M80 56 C100 54 122 66 126 88 C128 106 114 122 80 128 C46 122 32 106 34 88 C38 66 60 54 80 56Z" fill="#3f6a32" stroke="#243f1c" stroke-width="1.45"/>
-        <path d="M80 60 C96 58 114 68 118 86 C120 102 108 116 80 122 C52 116 40 102 42 86 C46 68 64 58 80 60Z" fill="#4f7e3c"/>
-        <path d="M70 66 Q80 60 90 66 Q80 74 70 66Z" fill="#6b9448" stroke="#2f4a22" stroke-width="0.7"/>
-        <path d="M68 78 Q80 72 92 78 Q80 88 68 78Z" fill="#628a42" stroke="#2f4a22" stroke-width="0.7"/>
-        <path d="M70 92 Q80 86 90 92 Q80 102 70 92Z" fill="#6b9448" stroke="#2f4a22" stroke-width="0.7"/>
-        <path d="M72 106 Q80 102 88 106 Q80 114 72 106Z" fill="#5c823c" stroke="#2f4a22" stroke-width="0.7"/>
-        <path d="M54 74 Q64 70 70 78 Q60 86 54 74Z" fill="#7aa050" stroke="#2f4a22" stroke-width="0.65"/>
-        <path d="M90 78 Q96 70 106 74 Q100 86 90 78Z" fill="#7aa050" stroke="#2f4a22" stroke-width="0.65"/>
-        <path d="M52 90 Q62 86 68 94 Q58 100 52 90Z" fill="#6b9448" stroke="#2f4a22" stroke-width="0.65"/>
-        <path d="M92 94 Q98 86 108 90 Q102 100 92 94Z" fill="#6b9448" stroke="#2f4a22" stroke-width="0.65"/>
-        <path d="M56 106 Q66 102 72 108 Q64 114 56 106Z" fill="#5c823c" stroke="#2f4a22" stroke-width="0.65"/>
-        <path d="M88 108 Q94 102 104 106 Q98 114 88 108Z" fill="#5c823c" stroke="#2f4a22" stroke-width="0.65"/>
-        <ellipse cx="80" cy="48" rx="15" ry="13.5" fill="#b5cc72" stroke="#3a5420" stroke-width="1.15"/>
-        <path d="M70 44 Q74 40 78 44" fill="none" stroke="#3a5420" stroke-width="0.7" opacity="0.45"/>
-        <path d="M82 44 Q86 40 90 44" fill="none" stroke="#3a5420" stroke-width="0.7" opacity="0.45"/>
-        ${companionEyes(74, 48, 86, 48, 3.5)}
-        <path d="M76 56 Q80 62 84 56 Q80 58 76 56Z" fill="#4a5c28" stroke="#2f3d18" stroke-width="0.7"/>
-        <ellipse cx="77" cy="54" rx="1.1" ry="0.7" fill="#2f3d18"/>
-        <ellipse cx="83" cy="54" rx="1.1" ry="0.7" fill="#2f3d18"/>`;
+        <path d="M46 112 C30 122 22 138 40 140 C52 134 58 120 56 112Z" fill="#5a4630" stroke="#2a2418" stroke-width="1.05"/>
+        <path d="M58 120 C50 136 56 150 72 144 C78 132 72 118 64 114Z" fill="#6a5438" stroke="#2a2418" stroke-width="1.05"/>
+        <path d="M102 54 C92 30 70 24 62 42 C70 56 90 64 108 66Z" fill="#4a3c28" stroke="#2a2418" stroke-width="1.15"/>
+        <path d="M94 58 C86 40 74 36 70 48" fill="none" stroke="#c4b896" stroke-width="0.7" opacity="0.45"/>
+        <path d="M74 94 C50 108 22 118 20 100 C34 86 62 84 80 86Z" fill="#6b5434" stroke="#2a2418" stroke-width="1.2"/>
+        <path d="M66 96 L42 106 M62 102 L36 112 M58 108 L38 116" stroke="#2a2418" stroke-width="0.7" opacity="0.38"/>
+        <ellipse cx="90" cy="104" rx="20" ry="11" transform="rotate(-26 90 104)" fill="#d4c4a0"/>
+        <g transform="rotate(-26 84 88)">
+          <ellipse cx="84" cy="88" rx="46" ry="29" fill="#6b3a18" stroke="#3a2414" stroke-width="1.45"/>
+          <ellipse cx="86" cy="86" rx="38" ry="23" fill="#8a4e22"/>
+          <path d="M86 66 L100 78 L86 90 L72 78 Z" fill="#c47a38" stroke="#f0d8a8" stroke-width="1.15"/>
+          <path d="M86 90 L100 102 L86 112 L72 102 Z" fill="#b86a2c" stroke="#f0d8a8" stroke-width="1.05"/>
+          <path d="M72 78 L86 90 L72 102 L58 90 Z" fill="#a85c24" stroke="#ead4a4" stroke-width="1"/>
+          <path d="M100 78 L114 90 L100 102 L86 90 Z" fill="#c47a38" stroke="#ead4a4" stroke-width="1"/>
+          <path d="M58 90 L72 102 L62 112 L50 100 Z" fill="#8a4a20" stroke="#ead4a4" stroke-width="0.9"/>
+          <path d="M100 102 L114 90 L122 100 L108 112 Z" fill="#9a5420" stroke="#ead4a4" stroke-width="0.9"/>
+        </g>
+        <path d="M108 74 C118 68 128 70 132 78 C128 86 116 88 106 82Z" fill="#5c4a32" stroke="#2a2418" stroke-width="0.9"/>
+        <ellipse cx="130" cy="70" rx="16.5" ry="13" transform="rotate(-16 130 70)" fill="#5c4a32" stroke="#2a2418" stroke-width="1.15"/>
+        <path d="M122 64 L128 58 M126 62 L134 58 M132 64 L138 60" stroke="#c4b896" stroke-width="0.65" opacity="0.5"/>
+        <path d="M142 72 Q152 74 148 82 Q140 80 142 72Z" fill="#3a3020" stroke="#2a2418" stroke-width="0.8"/>
+        ${companionEye(134, 68, 3.7)}
+        <ellipse cx="122" cy="66" rx="2.1" ry="1.6" fill="#1a140c" opacity="0.45"/>
+        <path d="M136 78 Q140 84 134 84" fill="none" stroke="#2a2418" stroke-width="1.05" stroke-linecap="round"/>`;
     case "octopus":
       return `${shadow}
         <path d="M48 108 Q40 128 52 132 Q56 114 52 106" fill="#fb7185" stroke="#9f1239" stroke-width="1"/>
@@ -731,18 +729,18 @@ function companionInnerMarkup(id) {
         <ellipse cx="80" cy="92" rx="7" ry="4" fill="#9f1239" opacity="0.32"/>`;
     case "dolphin":
       return `${shadow}
-        <path d="M22 84 C8 66 0 68 12 82 C4 84 2 90 14 88 C4 100 10 112 24 90 C28 86 28 84 22 84Z" fill="#5a6d80" stroke="#334155" stroke-width="1.15"/>
-        <path d="M30 86 C38 68 60 50 90 52 C114 54 130 64 140 76 C148 84 146 94 134 96 C118 90 104 92 90 100 C68 112 44 108 32 98 C26 94 26 90 30 86Z" fill="#8aa0b4" stroke="#475569" stroke-width="1.35"/>
-        <path d="M40 80 C62 54 100 50 132 72 C112 58 80 56 50 74 C44 78 40 80 40 80Z" fill="#5b7084" opacity="0.55"/>
-        <path d="M48 94 C66 112 102 114 128 92 C114 106 84 112 60 104 C52 100 48 96 48 94Z" fill="#eef3f7"/>
-        <path d="M108 66 C120 64 132 72 138 80" fill="none" stroke="#dbe4ee" stroke-width="3.4" stroke-linecap="round" opacity="0.45"/>
-        <path d="M132 76 C146 80 156 88 148 96 C142 90 134 86 128 84" fill="#7d91a6" stroke="#475569" stroke-width="0.95"/>
-        <path d="M74 56 C80 26 102 26 104 56 C94 48 82 50 74 56Z" fill="#4f6274" stroke="#334155" stroke-width="1.15"/>
-        <path d="M86 98 C96 124 70 130 68 108 C74 102 82 98 86 98Z" fill="#5a6d80" stroke="#334155" stroke-width="1"/>
-        <ellipse cx="102" cy="58" rx="3.4" ry="1.7" fill="#334155"/>
-        ${companionEye(118, 76, 4.2)}
-        <path d="M126 86 Q138 96 148 88" fill="none" stroke="#1e293b" stroke-width="1.45" stroke-linecap="round"/>
-        <path d="M128 74 Q132 70 136 74" fill="none" stroke="#64748b" stroke-width="0.8"/>`;
+        <path d="M26 116 C8 104 2 122 22 128 C12 140 28 148 40 132 C44 124 36 118 26 116Z" fill="#5b6d80" stroke="#334155" stroke-width="1.1"/>
+        <path d="M38 114 C48 92 66 66 96 54 C118 44 138 48 150 62 C158 72 154 86 138 90 C116 98 88 114 66 124 C50 130 40 126 38 114Z" fill="#8aa0b4" stroke="#475569" stroke-width="1.35"/>
+        <path d="M46 108 C58 82 84 56 118 50 C136 46 146 56 150 66 C128 52 92 62 64 90 C52 102 46 108 46 108Z" fill="#4f6274"/>
+        <path d="M54 118 C74 126 108 112 136 84 C122 100 90 118 66 122 C58 122 54 118 54 118Z" fill="#eef3f7"/>
+        <path d="M108 62 C118 60 132 68 140 78" fill="none" stroke="#dbe4ee" stroke-width="3.2" stroke-linecap="round" opacity="0.4"/>
+        <path d="M90 52 C98 22 122 24 118 56 C108 48 96 48 90 52Z" fill="#3d4f61" stroke="#334155" stroke-width="1.15"/>
+        <path d="M104 86 C114 108 96 120 88 104 C92 94 100 88 104 86Z" fill="#5a6d80" stroke="#334155" stroke-width="1"/>
+        <path d="M138 64 C148 56 162 60 166 72 C160 80 148 82 138 76Z" fill="#8aa0b4" stroke="#475569" stroke-width="0.95"/>
+        <ellipse cx="112" cy="54" rx="3.4" ry="1.6" fill="#334155"/>
+        ${companionEye(132, 68, 4.1)}
+        <path d="M144 76 Q158 86 166 76" fill="none" stroke="#1e293b" stroke-width="1.45" stroke-linecap="round"/>
+        <path d="M138 66 Q142 62 146 66" fill="none" stroke="#64748b" stroke-width="0.8"/>`;
     case "seahorse":
       return `${shadow}
         <path d="M90 78 Q108 72 106 92 Q98 112 88 124 Q82 138 96 142" fill="none" stroke="#c2410c" stroke-width="11" stroke-linecap="round"/>
@@ -878,36 +876,41 @@ function companionInnerMarkup(id) {
         <path d="M62 90 H98" stroke="#0f172a" stroke-width="3" opacity="0.45"/>`;
     case "wizard_turtle":
       return `${shadow}
-        <path d="M50 116 C38 128 32 140 48 138 C58 134 62 124 58 116Z" fill="#7a9a48" stroke="#3a5420" stroke-width="1.1"/>
-        <path d="M110 116 C122 128 128 140 112 138 C102 134 98 124 102 116Z" fill="#7a9a48" stroke="#3a5420" stroke-width="1.1"/>
-        <path d="M34 80 C14 70 8 92 24 104 C38 110 50 100 52 88 C50 80 42 78 34 80Z" fill="#8faf58" stroke="#3a5420" stroke-width="1.1"/>
-        <path d="M126 80 C146 70 152 92 136 104 C122 110 110 100 108 88 C110 80 118 78 126 80Z" fill="#8faf58" stroke="#3a5420" stroke-width="1.1"/>
-        <path d="M80 58 C100 56 122 68 126 90 C128 108 114 124 80 130 C46 124 32 108 34 90 C38 68 60 56 80 58Z" fill="#3f6a32" stroke="#243f1c" stroke-width="1.4"/>
-        <path d="M80 62 C96 60 114 70 118 88 C120 104 108 118 80 124 C52 118 40 104 42 88 C46 70 64 60 80 62Z" fill="#4f7e3c"/>
-        <path d="M70 70 Q80 64 90 70 Q80 80 70 70Z" fill="#6b9448" stroke="#2f4a22" stroke-width="0.7"/>
-        <path d="M68 86 Q80 80 92 86 Q80 96 68 86Z" fill="#628a42" stroke="#2f4a22" stroke-width="0.7"/>
-        <path d="M70 102 Q80 96 90 102 Q80 112 70 102Z" fill="#6b9448" stroke="#2f4a22" stroke-width="0.7"/>
-        <ellipse cx="80" cy="50" rx="14.5" ry="13" fill="#b5cc72" stroke="#3a5420" stroke-width="1.1"/>
-        ${companionEyes(74, 50, 86, 50, 3.4)}
-        <path d="M76 58 Q80 64 84 58 Q80 60 76 58Z" fill="#4a5c28"/>
-        <path d="M58 54 L66 18 Q80 6 94 18 L102 54 Q90 66 80 68 Q70 66 58 54Z" fill="#4c1d95" stroke="#2e1065" stroke-width="1.2"/>
-        <path d="M66 44 Q80 36 94 44" fill="none" stroke="#c4b5fd" stroke-width="1.4"/>
-        <circle cx="80" cy="28" r="4" fill="#fde047"/>
-        <path d="M114 92 L132 66 L126 94Z" fill="#7c3aed" stroke="#4c1d95" stroke-width="1"/>
-        <circle cx="132" cy="64" r="4.5" fill="#fbbf24"/>`;
+        <path d="M46 114 C30 124 22 140 40 142 C52 136 58 122 56 114Z" fill="#5a4630" stroke="#2a2418" stroke-width="1.05"/>
+        <path d="M58 122 C50 138 56 152 72 146 C78 134 72 120 64 116Z" fill="#6a5438" stroke="#2a2418" stroke-width="1.05"/>
+        <path d="M102 56 C92 32 70 26 62 44 C70 58 90 66 108 68Z" fill="#4a3c28" stroke="#2a2418" stroke-width="1.15"/>
+        <path d="M74 96 C50 110 22 120 20 102 C34 88 62 86 80 88Z" fill="#6b5434" stroke="#2a2418" stroke-width="1.2"/>
+        <ellipse cx="90" cy="106" rx="20" ry="11" transform="rotate(-26 90 106)" fill="#d4c4a0"/>
+        <g transform="rotate(-26 84 90)">
+          <ellipse cx="84" cy="90" rx="46" ry="29" fill="#6b3a18" stroke="#3a2414" stroke-width="1.4"/>
+          <ellipse cx="86" cy="88" rx="38" ry="23" fill="#8a4e22"/>
+          <path d="M86 68 L100 80 L86 92 L72 80 Z" fill="#c47a38" stroke="#f0d8a8" stroke-width="1.1"/>
+          <path d="M86 92 L100 104 L86 114 L72 104 Z" fill="#b86a2c" stroke="#f0d8a8" stroke-width="1"/>
+          <path d="M72 80 L86 92 L72 104 L58 92 Z" fill="#a85c24" stroke="#ead4a4" stroke-width="0.95"/>
+          <path d="M100 80 L114 92 L100 104 L86 92 Z" fill="#c47a38" stroke="#ead4a4" stroke-width="0.95"/>
+        </g>
+        <path d="M108 76 C118 70 128 72 132 80 C128 88 116 90 106 84Z" fill="#5c4a32" stroke="#2a2418" stroke-width="0.9"/>
+        <ellipse cx="130" cy="72" rx="16" ry="12.5" transform="rotate(-16 130 72)" fill="#5c4a32" stroke="#2a2418" stroke-width="1.1"/>
+        ${companionEye(134, 70, 3.6)}
+        <path d="M136 80 Q140 86 134 86" fill="none" stroke="#2a2418" stroke-width="1" stroke-linecap="round"/>
+        <path d="M112 64 L122 22 Q134 10 148 24 L154 66 Q140 78 130 78 Q118 74 112 64Z" fill="#4c1d95" stroke="#2e1065" stroke-width="1.2"/>
+        <path d="M124 56 Q136 46 148 56" fill="none" stroke="#c4b5fd" stroke-width="1.35"/>
+        <circle cx="136" cy="34" r="4" fill="#fde047"/>
+        <path d="M96 108 L128 78 L118 112Z" fill="#7c3aed" stroke="#4c1d95" stroke-width="1"/>
+        <circle cx="130" cy="76" r="4.4" fill="#fbbf24"/>`;
     case "super_dolphin":
       return `${shadow}
-        <path d="M46 62 Q80 32 114 62 Q98 80 80 82 Q62 80 46 62Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="1.1"/>
-        <path d="M22 84 C8 66 0 68 12 82 C4 84 2 90 14 88 C4 100 10 112 24 90 C28 86 28 84 22 84Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1.15"/>
-        <path d="M30 86 C38 68 60 50 90 52 C114 54 130 64 140 76 C148 84 146 94 134 96 C118 90 104 92 90 100 C68 112 44 108 32 98 C26 94 26 90 30 86Z" fill="#3b82f6" stroke="#1e3a8a" stroke-width="1.35"/>
-        <path d="M48 94 C66 112 102 114 128 92 C114 106 84 112 60 104 C52 100 48 96 48 94Z" fill="#dbeafe"/>
-        <path d="M132 76 C146 80 156 88 148 96 C142 90 134 86 128 84" fill="#2563eb" stroke="#1e3a8a" stroke-width="0.95"/>
-        <path d="M74 56 C80 26 102 26 104 56 C94 48 82 50 74 56Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1.15"/>
-        <path d="M86 98 C96 124 70 130 68 108 C74 102 82 98 86 98Z" fill="#2563eb" stroke="#1e3a8a" stroke-width="1"/>
-        <path d="M56 86 H112" stroke="#fbbf24" stroke-width="6" stroke-linecap="round"/>
-        <circle cx="80" cy="86" r="5.5" fill="#fef08a" stroke="#b45309" stroke-width="0.8"/>
-        ${companionEye(118, 76, 4.2)}
-        <path d="M126 86 Q138 96 148 88" fill="none" stroke="#1e3a8a" stroke-width="1.45" stroke-linecap="round"/>`;
+        <path d="M58 70 C86 36 128 42 146 70 C128 86 96 92 70 84 C62 80 58 74 58 70Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="1.1"/>
+        <path d="M26 116 C8 104 2 122 22 128 C12 140 28 148 40 132 C44 124 36 118 26 116Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1.1"/>
+        <path d="M38 114 C48 92 66 66 96 54 C118 44 138 48 150 62 C158 72 154 86 138 90 C116 98 88 114 66 124 C50 130 40 126 38 114Z" fill="#3b82f6" stroke="#1e3a8a" stroke-width="1.35"/>
+        <path d="M54 118 C74 126 108 112 136 84 C122 100 90 118 66 122 C58 122 54 118 54 118Z" fill="#dbeafe"/>
+        <path d="M90 52 C98 22 122 24 118 56 C108 48 96 48 90 52Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1.15"/>
+        <path d="M104 86 C114 108 96 120 88 104 C92 94 100 88 104 86Z" fill="#2563eb" stroke="#1e3a8a" stroke-width="1"/>
+        <path d="M138 64 C148 56 162 60 166 72 C160 80 148 82 138 76Z" fill="#60a5fa" stroke="#1e3a8a" stroke-width="0.95"/>
+        <path d="M70 96 H128" stroke="#fbbf24" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="98" cy="96" r="5.5" fill="#fef08a" stroke="#b45309" stroke-width="0.8"/>
+        ${companionEye(132, 68, 4.1)}
+        <path d="M144 76 Q158 86 166 76" fill="none" stroke="#1e3a8a" stroke-width="1.45" stroke-linecap="round"/>`;
     case "chef_crab":
       return `${shadow}
         <path d="M46 90 L30 74 L38 90" fill="none" stroke="#b91c1c" stroke-width="3.1" stroke-linecap="round"/>
@@ -17441,63 +17444,72 @@ function drawFishMorph(morph, L, body, shade, accent, speciesId, phase = 0) {
   }
 
   if (morph === "seaturtle") {
+    const flap = Math.sin(phase) * 0.16;
+    ctx.save();
+    ctx.rotate(-0.28);
     ctx.fillStyle = shade;
-    const flap = Math.sin(phase) * 0.18;
     ctx.save();
-    ctx.translate(-L * 0.08, -L * 0.18);
-    ctx.rotate(-0.35 + flap);
+    ctx.translate(L * 0.08, -L * 0.28);
+    ctx.rotate(-0.7 + flap);
     ctx.beginPath();
-    ctx.ellipse(0, 0, L * 0.22, L * 0.08, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, L * 0.2, L * 0.07, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
     ctx.save();
-    ctx.translate(-L * 0.08, L * 0.18);
-    ctx.rotate(0.35 - flap);
+    ctx.translate(-L * 0.02, L * 0.16);
+    ctx.rotate(0.55 - flap);
     ctx.beginPath();
-    ctx.ellipse(0, 0, L * 0.22, L * 0.08, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, L * 0.28, L * 0.08, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
     ctx.save();
-    ctx.translate(-L * 0.32, -L * 0.12);
-    ctx.rotate(-0.5 - flap * 0.5);
+    ctx.translate(-L * 0.28, L * 0.1);
+    ctx.rotate(0.4 + flap * 0.4);
     ctx.beginPath();
-    ctx.ellipse(0, 0, L * 0.14, L * 0.06, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, L * 0.12, L * 0.055, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
     ctx.save();
-    ctx.translate(-L * 0.32, L * 0.12);
-    ctx.rotate(0.5 + flap * 0.5);
+    ctx.translate(-L * 0.3, -L * 0.08);
+    ctx.rotate(-0.35 - flap * 0.4);
     ctx.beginPath();
-    ctx.ellipse(0, 0, L * 0.14, L * 0.06, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, L * 0.11, L * 0.05, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
-    const shell = ctx.createRadialGradient(-L * 0.05, -L * 0.08, L * 0.04, 0, 0, L * 0.42);
+    ctx.fillStyle = accent;
+    ctx.beginPath();
+    ctx.ellipse(L * 0.04, L * 0.08, L * 0.22, L * 0.12, 0.15, 0, Math.PI * 2);
+    ctx.fill();
+    const shell = ctx.createRadialGradient(L * 0.02, -L * 0.1, L * 0.04, 0, 0, L * 0.4);
     shell.addColorStop(0, accent);
-    shell.addColorStop(0.55, body);
+    shell.addColorStop(0.45, body);
     shell.addColorStop(1, shade);
     ctx.fillStyle = shell;
     ctx.beginPath();
-    ctx.ellipse(0, 0, L * 0.42, L * 0.3, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, L * 0.4, L * 0.24, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = shade;
-    ctx.lineWidth = Math.max(1, L * 0.025);
+    ctx.strokeStyle = accent;
     ctx.globalAlpha = 0.55;
-    for (let i = -1; i <= 1; i++) {
-      ctx.beginPath();
-      ctx.moveTo(-L * 0.28, i * L * 0.1);
-      ctx.quadraticCurveTo(0, i * L * 0.18, L * 0.28, i * L * 0.08);
-      ctx.stroke();
-    }
+    ctx.lineWidth = Math.max(1, L * 0.02);
     ctx.beginPath();
-    ctx.moveTo(0, -L * 0.22);
-    ctx.lineTo(0, L * 0.22);
+    ctx.moveTo(-L * 0.08, -L * 0.16);
+    ctx.lineTo(L * 0.12, 0);
+    ctx.lineTo(-L * 0.08, L * 0.16);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(L * 0.12, 0);
+    ctx.lineTo(L * 0.32, -L * 0.08);
+    ctx.moveTo(L * 0.12, 0);
+    ctx.lineTo(L * 0.32, L * 0.08);
     ctx.stroke();
     ctx.globalAlpha = 1;
-    ctx.fillStyle = accent;
+    ctx.fillStyle = body;
     ctx.beginPath();
-    ctx.ellipse(L * 0.4, 0, L * 0.14, L * 0.1, 0.1, 0, Math.PI * 2);
+    ctx.ellipse(L * 0.38, -L * 0.04, L * 0.14, L * 0.1, -0.2, 0, Math.PI * 2);
     ctx.fill();
-    eye(L * 0.46, -L * 0.02, L * 0.045);
+    eye(L * 0.44, -L * 0.06, L * 0.04);
+    ctx.restore();
     return;
   }
 
@@ -17619,29 +17631,49 @@ function drawFishMorph(morph, L, body, shade, accent, speciesId, phase = 0) {
   }
 
   if (morph === "dolphin") {
-    ctx.fillStyle = oceanBody(L * 0.5, L * 0.2);
+    ctx.save();
+    ctx.rotate(-0.22);
+    ctx.fillStyle = oceanBody(L * 0.5, L * 0.18);
     ctx.beginPath();
-    ctx.moveTo(L * 0.52, 0);
-    ctx.quadraticCurveTo(L * 0.15, -L * 0.26, -L * 0.35, -L * 0.06);
-    ctx.quadraticCurveTo(-L * 0.48, 0, -L * 0.35, L * 0.08);
-    ctx.quadraticCurveTo(L * 0.1, L * 0.24, L * 0.52, 0);
+    ctx.moveTo(L * 0.55, -L * 0.02);
+    ctx.quadraticCurveTo(L * 0.2, -L * 0.28, -L * 0.28, -L * 0.02);
+    ctx.quadraticCurveTo(-L * 0.42, L * 0.06, -L * 0.28, L * 0.12);
+    ctx.quadraticCurveTo(L * 0.12, L * 0.26, L * 0.55, -L * 0.02);
     ctx.closePath();
     ctx.fill();
     ctx.fillStyle = shade;
     ctx.beginPath();
-    ctx.moveTo(L * 0.02, -L * 0.12);
-    ctx.lineTo(L * 0.08, -L * 0.42);
-    ctx.lineTo(L * 0.2, -L * 0.14);
+    ctx.moveTo(L * 0.04, -L * 0.16);
+    ctx.quadraticCurveTo(L * 0.12, -L * 0.48, L * 0.22, -L * 0.16);
     ctx.closePath();
     ctx.fill();
-    forkTail(0.16);
-    bellySheen(L * 0.24, L * 0.07, L * 0.05, L * 0.06);
-    eye(L * 0.36, -L * 0.02, L * 0.045);
+    ctx.fillStyle = shade;
+    ctx.beginPath();
+    ctx.moveTo(-L * 0.22, L * 0.04);
+    ctx.quadraticCurveTo(-L * 0.55, -L * 0.08, -L * 0.48, L * 0.12);
+    ctx.quadraticCurveTo(-L * 0.55, L * 0.22, -L * 0.22, L * 0.1);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = shade;
+    ctx.save();
+    ctx.translate(L * 0.08, L * 0.1);
+    ctx.rotate(0.55);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, L * 0.14, L * 0.05, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    bellySheen(L * 0.18, L * 0.08, L * 0.06, L * 0.05);
+    ctx.fillStyle = body;
+    ctx.beginPath();
+    ctx.ellipse(L * 0.48, -L * 0.04, L * 0.14, L * 0.09, -0.15, 0, Math.PI * 2);
+    ctx.fill();
+    eye(L * 0.42, -L * 0.06, L * 0.04);
     ctx.strokeStyle = shade;
     ctx.lineWidth = L * 0.02;
     ctx.beginPath();
-    ctx.arc(L * 0.48, L * 0.04, L * 0.05, 0.2, Math.PI * 0.9);
+    ctx.arc(L * 0.54, L * 0.02, L * 0.05, 0.15, Math.PI * 0.85);
     ctx.stroke();
+    ctx.restore();
     return;
   }
 
