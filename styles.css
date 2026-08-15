@@ -2755,7 +2755,7 @@ button.seagull-avatar:active {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   pointer-events: none;
   animation: toastPop 0.35s ease-out;
-  z-index: 12;
+  z-index: 80;
   white-space: nowrap;
   max-width: 92vw;
   overflow: hidden;
@@ -9733,6 +9733,13 @@ button.seagull-avatar:active {
   align-items: center;
   gap: 8px;
   transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.crab-chest--shop-solo {
+  flex: 0 0 auto;
+  width: min(220px, 70vw);
+  max-width: 220px;
+  min-height: 200px;
 }
 
 .crab-chest:hover:not(:disabled) {

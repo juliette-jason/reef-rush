@@ -5541,6 +5541,7 @@ function showDailyCatchReward() {
     crabRewardResult.textContent = "";
   }
   if (btnCrabPlayAgain) btnCrabPlayAgain.hidden = true;
+  setCrabRewardBackLabel("Back to Events");
   renderCrabRewardChests(tier);
   if (panelCrabReward) panelCrabReward.hidden = false;
 }
@@ -11964,12 +11965,41 @@ function buyShopChest(def) {
     showToast("Not enough gems", 1600);
     return;
   }
-  const bundles = rollCrabBundles(def.tier);
-  const bundle = bundles[Math.floor(Math.random() * bundles.length)] || bundles[0];
+  saveMeta();
+  refreshCoinDisplays();
+  showShopChestReward(def);
+}
+
+function setCrabRewardBackLabel(text) {
+  if (btnCrabRewardBack) btnCrabRewardBack.textContent = text;
+}
+
+function showShopChestReward(def) {
+  hideAllPanels();
+  crabRewardSource = "shop";
+  resetChestOpenUi();
+  const bundle = rollCrabBundles(def.tier)[0];
   if (bundle) bundle.gems = 0;
-  grantCrabReward(bundle);
-  const lines = crabBundleRewardLines(bundle);
-  showToast(`${def.name} opened: ${lines.join(" · ")}`, 2800);
+  crabRewardBundles = bundle ? [bundle] : [];
+  crabRewardClaimed = false;
+  if (crabRewardHeadline) crabRewardHeadline.textContent = `${def.name}!`;
+  if (crabRewardSummary) {
+    crabRewardSummary.innerHTML = `Bought for <strong>${def.gemPrice}</strong> gems`;
+  }
+  if (crabRewardTier) {
+    crabRewardTier.hidden = true;
+    crabRewardTier.textContent = "";
+  }
+  if (crabRewardPrompt) crabRewardPrompt.textContent = "Tap the chest to open it.";
+  if (crabRewardResult) {
+    crabRewardResult.hidden = true;
+    crabRewardResult.textContent = "";
+  }
+  if (btnCrabPlayAgain) btnCrabPlayAgain.hidden = true;
+  setCrabRewardBackLabel("Back to shop");
+  renderCrabRewardChests(def.tier, 1);
+  if (panelCrabReward) panelCrabReward.hidden = false;
+  syncHomeLaunchButtons();
 }
 
 function buyShopCoinBundle(pack) {
@@ -12857,6 +12887,7 @@ function showEventMinigameReward({ source, title, summaryHtml, scorePts, tier })
     crabRewardResult.textContent = "";
   }
   if (btnCrabPlayAgain) btnCrabPlayAgain.hidden = true;
+  setCrabRewardBackLabel("Back to Events");
   renderCrabRewardChests(tier);
   if (panelCrabReward) panelCrabReward.hidden = false;
   syncCoopHud(false);
@@ -13073,7 +13104,21 @@ function finishCrabTrap() {
   showCrabReward(finalScore);
 }
 
+function claimPendingCrabRewardIfNeeded() {
+  if (crabRewardClaimed) return;
+  const bundle = crabRewardBundles.find(Boolean);
+  if (!bundle) return;
+  crabRewardClaimed = true;
+  grantCrabReward(bundle);
+}
+
 function returnToEventsFromCrab() {
+  if (crabRewardSource === "shop") {
+    claimPendingCrabRewardIfNeeded();
+    if (panelCrabReward) panelCrabReward.hidden = true;
+    openShop();
+    return;
+  }
   if (panelCrabReward) panelCrabReward.hidden = true;
   openEvents();
 }
@@ -14199,15 +14244,16 @@ function crabChestArtSvg(tier, opened) {
   );
 }
 
-function renderCrabRewardChests(tier) {
+function renderCrabRewardChests(tier, count = 3) {
   if (!crabRewardChests) return;
   crabRewardChests.innerHTML = "";
   tier = normalizeChestTier(tier);
+  const n = Math.max(1, Math.min(3, count || 3));
   const tierLabel = tier === "legendary" ? "Legendary" : tier === "rare" ? "Rare" : "Common";
-  for (let i = 0; i < crabRewardBundles.length; i++) {
+  for (let i = 0; i < n; i++) {
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = `crab-chest crab-chest--${tier}`;
+    btn.className = `crab-chest crab-chest--${tier}${n === 1 ? " crab-chest--shop-solo" : ""}`;
     btn.dataset.idx = String(i);
     btn.innerHTML =
       `<span class="crab-chest__art">${crabChestArtSvg(tier, false)}</span>` +
@@ -14309,7 +14355,7 @@ function onCrabChestPick(idx) {
   }
   const tickets = getDuelTicketCount();
   if (btnCrabPlayAgain) {
-    if (crabRewardSource === "dailyCatch") {
+    if (crabRewardSource === "dailyCatch" || crabRewardSource === "shop") {
       btnCrabPlayAgain.hidden = true;
     } else {
       btnCrabPlayAgain.hidden = false;
@@ -14347,6 +14393,7 @@ function showCrabReward(finalScore) {
     crabRewardResult.textContent = "";
   }
   if (btnCrabPlayAgain) btnCrabPlayAgain.hidden = true;
+  setCrabRewardBackLabel("Back to Events");
   renderCrabRewardChests(tier);
   if (panelCrabReward) panelCrabReward.hidden = false;
 }
