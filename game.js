@@ -1570,11 +1570,10 @@ const ADVENTURE_SECTION_PIRATES_PATH = "Pirates Path";
 const ADVENTURE_SECTION_GOLD_QUEST = "Gold Quest";
 const ADVENTURE_SECTION_FROZEN_SEA = "Frozen Sea";
 const ADVENTURE_SECTION_LOST_CITY = "The Lost City";
-/** +0.75s on the clock per voyage index as difficulty ramps up (Pirates Path only). */
-/** +0.9s per Pirates Path voyage so later main levels keep a bit more clock. */
-const ADVENTURE_LEVEL_TIME_BONUS_MS = 900;
-/** +2.2s per voyage from Gold Quest through The Lost City. */
-const ADVENTURE_GOLD_TO_LOST_CITY_TIME_BONUS_MS = 2_200;
+/** +0.7s per Pirates Path voyage so later main levels keep a little more clock. */
+const ADVENTURE_LEVEL_TIME_BONUS_MS = 700;
+/** +0.55s per voyage from Gold Quest through The Lost City — keep the ramp modest. */
+const ADVENTURE_GOLD_TO_LOST_CITY_TIME_BONUS_MS = 550;
 
 function adventureLevelTimeBonusMs(levelIndex) {
   if (levelIndex < ADVENTURE_MAIN_LEVEL_COUNT) {
@@ -6213,21 +6212,20 @@ function buildAdventureLevels() {
       passScore: adventurePassScoreForIndex(i),
       roundMs:
         Math.max(
-          isLostCity ? 50_000 : isIce ? 52_000 : isBonus ? 45_000 : 47_000,
+          isLostCity ? 46_000 : isIce ? 47_000 : isBonus ? 44_000 : 46_000,
           reef.roundMs - tier * 2200 - i * 420,
         ) + adventureLevelTimeBonusMs(i),
       spawnMin: Math.max(
-        isLostCity ? 95 : isIce ? 110 : isBonus ? 130 : 165,
-        Math.min(400, reef.spawnMin - i * 15),
+        isLostCity ? 140 : isIce ? 150 : isBonus ? 165 : 185,
+        Math.min(400, reef.spawnMin - i * 12),
       ),
       spawnMax: Math.max(
-        isLostCity ? 230 : isIce ? 260 : isBonus ? 300 : 370,
-        Math.min(1500, reef.spawnMax - i * 38),
+        isLostCity ? 340 : isIce ? 360 : isBonus ? 390 : 430,
+        Math.min(1500, reef.spawnMax - i * 30),
       ),
-      // Harder voyages pack the water — more fish on screen, not just faster ones.
       maxFish: Math.min(
-        isLostCity ? 28 : isIce ? 26 : isBonus ? 24 : 22,
-        reef.maxFish + Math.floor(i / 1.55) + (isLostCity ? 5 : isIce ? 3 : isBonus ? 2 : 0),
+        isLostCity ? 21 : isIce ? 20 : isBonus ? 19 : 18,
+        reef.maxFish + Math.floor(i / 2.4),
       ),
       fishSpeed: Math.max(
         0.96,
