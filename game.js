@@ -7592,8 +7592,8 @@ const MINIGAME_SURVIVOR_MS = 30 * 60_000;
 const MINIGAME_FISH_RARE_MIN = 1500;
 const MINIGAME_FISH_LEGENDARY_MIN = 4000;
 /** Survivor chest tiers (bonus haul when you hook the kraken). */
-const MINIGAME_SURVIVOR_RARE_MIN = 700;
-const MINIGAME_SURVIVOR_LEGENDARY_MIN = 1800;
+const MINIGAME_SURVIVOR_RARE_MIN = 900;
+const MINIGAME_SURVIVOR_LEGENDARY_MIN = 2200;
 
 /** Reef shown on the Events card / used for the active duel plan. */
 let duelPendingReefId = null;
@@ -8701,7 +8701,7 @@ function beginDuelSession(plan) {
   const roundStart = performance.now();
   duelSession.roundStart = roundStart;
   roundEndAt = roundStart + DUEL_ROUND_MS;
-  kraken = null;
+  clearKrakens();
   jackpotCrab = null;
   hideAllPanels();
   if (panelDuelOver) panelDuelOver.hidden = true;
@@ -9362,8 +9362,9 @@ let clam = {
   pearlR: 14,
   pearlWorldY: 0,
 };
-/** One kraken per round: rises from below; hooking it costs half your logged fish catches. */
+/** Krakens on screen: one in classic/adventure; Survivor can pack more on big screens. */
 let kraken = null;
+let krakens = [];
 let catchLog = [];
 let toastTimer = 0;
 let lastPearlAt = -999999;
@@ -9698,7 +9699,7 @@ function stopActiveSessionsForProgressTest() {
   if (playing) {
     playing = false;
     stopReefMusic();
-    kraken = null;
+    clearKrakens();
     jackpotCrab = null;
     appRoot?.classList.remove("app--playing");
   }
@@ -12597,11 +12598,60 @@ function survivorTierForScore(pts) {
   return "common";
 }
 
-function scheduleSurvivorKraken(now) {
+function syncPrimaryKraken() {
+  kraken = krakens.find((k) => k.state === "biting") || krakens.find((k) => k.state === "active") || krakens[0] || null;
+}
+
+function clearKrakens() {
+  krakens = [];
+  kraken = null;
+}
+
+function setSingleKraken(next) {
+  krakens = next ? [next] : [];
+  syncPrimaryKraken();
+}
+
+/** Computers / tablets / big screens — not phones. */
+function survivorAllowsKrakenPack() {
+  return !isPhoneDevice();
+}
+
+function survivorKrakenPackSize() {
+  if (!survivorAllowsKrakenPack()) return 1;
+  const wide = typeof window !== "undefined" && window.innerWidth >= 1100;
+  return wide ? 3 : 2;
+}
+
+function scheduleSurvivorKraken(now, { refill = false } = {}) {
   if (!eventMinigameSession || eventMinigameSession.kind !== "survivor") return;
   if (eventMinigameSession.caughtKraken) return;
-  const delay = 500 + Math.random() * 1100;
-  kraken = { state: "scheduled", spawnAt: (now || performance.now()) + delay };
+  const t0 = now || performance.now();
+  const n = survivorKrakenPackSize();
+  if (!refill) {
+    krakens = [];
+    for (let i = 0; i < n; i++) {
+      krakens.push({
+        state: "scheduled",
+        spawnAt: t0 + 700 + Math.random() * 800 + i * 320,
+        lane: i,
+        packSize: n,
+      });
+    }
+    syncPrimaryKraken();
+    return;
+  }
+  krakens = krakens.filter((k) => k && k.state !== "done");
+  while (krakens.length < n) {
+    const lane = krakens.length;
+    krakens.push({
+      state: "scheduled",
+      spawnAt: t0 + 280 + Math.random() * 720 + lane * 160,
+      lane,
+      packSize: n,
+    });
+  }
+  syncPrimaryKraken();
 }
 
 function syncCoopHud(show) {
@@ -12725,13 +12775,18 @@ function beginEventMinigame(kind) {
       reefId: reef.id,
       reefName: `Survivor · ${reef.name}`,
       roundMs: MINIGAME_SURVIVOR_MS,
-      spawnMult: 0.85,
-      speedMult: 1.05,
-      maxFishMult: 1.2,
+      spawnMult: 0.8,
+      speedMult: 1.22,
+      maxFishMult: 1.12,
       startedAt: now,
       caughtKraken: false,
     };
-    showToast("Kraken Survivor — fish for bonus pts, then hook the beast!", 2800);
+    showToast(
+      survivorAllowsKrakenPack()
+        ? "Kraken Survivor — dodge the swarm, then hook one to finish!"
+        : "Kraken Survivor — fish for bonus pts, then hook the beast!",
+      2800
+    );
   }
   startRound();
 }
@@ -14479,12 +14534,12 @@ function startRound() {
   const isSurvivor = eventMinigameSession?.kind === "survivor";
   if (isSurvivor) {
     // Kraken Survivor ignores spray — the beast keeps coming.
-    kraken = { state: "scheduled", spawnAt: roundStart + 1200 + Math.random() * 900 };
+    scheduleSurvivorKraken(roundStart);
   } else if (roundKrakenSpray) {
-    kraken = null;
+    clearKrakens();
     showToast("Kraken spray — no kraken this round!", 2400);
   } else {
-    kraken = { state: "scheduled", spawnAt: roundStart + reef.roundMs * spawnFrac };
+    setSingleKraken({ state: "scheduled", spawnAt: roundStart + reef.roundMs * spawnFrac });
   }
   const dur = reef.roundMs;
   if (isSurvivor) {
@@ -14537,8 +14592,8 @@ function startRound() {
   hook.krakenBiteLocked = false;
   const passHint = reef.adventurePassScore ? ` · reach ${reef.adventurePassScore} pts` : "";
   if (eventMinigameSession?.kind === "survivor") {
-    controlHint.textContent = isTouchControlsPreferred()
-      ? "Fish for bonus pts · hook the kraken to finish"
+    controlHint.textContent = survivorAllowsKrakenPack()
+      ? "Fish for bonus pts · dodge the swarm · hook a kraken to finish"
       : "Fish for bonus pts · hook the kraken to finish";
   } else if (eventMinigameSession?.kind === "roulette") {
     controlHint.textContent = `Reef Roulette · ${reef.name} · rack up pts for a better chest`;
@@ -14564,7 +14619,7 @@ function endRound() {
   }
   playing = false;
   stopReefMusic();
-  kraken = null;
+  clearKrakens();
   jackpotCrab = null;
   appRoot.classList.remove("app--playing");
   hook.castState = "idle";
@@ -15015,7 +15070,7 @@ function tryCatchJackpotCrab(now) {
 }
 
 function isKrakenBiting() {
-  return playing && kraken && kraken.state === "biting";
+  return playing && krakens.some((k) => k.state === "biting");
 }
 
 function spawnReleasedFishJumpingIntoWater(count) {
@@ -15867,7 +15922,7 @@ function releaseHalfCatchToKraken() {
 }
 
 function tryCatchKraken(opts) {
-  if (!kraken || kraken.state !== "active") return false;
+  if (krakens.some((k) => k.state === "biting")) return false;
   const hy = hookTipY();
   const hx = hook.x;
   const casting = opts?.casting === true;
@@ -15876,14 +15931,27 @@ function tryCatchKraken(opts) {
   if (hook.snagPulse > 0) hookR *= 1.32;
   if (casting) hookR *= 1.22;
   if (surfaceSnag) hookR *= 1.12;
-  const L = kraken.len;
-  const bodyCx = kraken.x;
-  const bodyCy = kraken.y - L * 0.42;
-  const bodyR = L * 0.44;
-  const dx = bodyCx - hx;
-  const dy = bodyCy - hy;
-  if (dx * dx + dy * dy > (hookR + bodyR) * (hookR + bodyR)) return false;
+  let hit = null;
+  let bestD = Infinity;
+  for (const k of krakens) {
+    if (k.state !== "active" || !k.len) continue;
+    const L = k.len;
+    const bodyCx = k.x;
+    const bodyCy = k.y - L * 0.42;
+    const bodyR = L * 0.44;
+    const dx = bodyCx - hx;
+    const dy = bodyCy - hy;
+    const reach = hookR + bodyR;
+    const d2 = dx * dx + dy * dy;
+    if (d2 <= reach * reach && d2 < bestD) {
+      hit = k;
+      bestD = d2;
+    }
+  }
+  if (!hit) return false;
+  kraken = hit;
 
+  const L = kraken.len;
   const biteFace = hook.x >= kraken.x ? 1 : -1;
   const mouthX = kraken.x + biteFace * L * 0.12;
   const mouthY = kraken.y - L * 0.88;
@@ -15949,93 +16017,119 @@ function tryCatchKraken(opts) {
   return true;
 }
 
-function tickKraken(now, dt) {
-  if (!playing || !kraken) return;
-  if (kraken.state === "scheduled" && now >= kraken.spawnAt) {
-    const len = dpr * (isPhoneDevice() ? 128 : 218);
-    kraken.state = "active";
-    kraken.len = len;
-    kraken.pathStage = "rise";
-    kraken.riseCenterX = w * (0.18 + Math.random() * 0.64);
-    kraken.riseVy = dpr * (0.32 + Math.random() * 0.11);
-    kraken.sweepY = Math.min(h - dpr * 92, waterTop + waterH * 0.78);
-    kraken.exitDir = Math.random() < 0.5 ? -1 : 1;
-    kraken.exitVx = dpr * (1.75 + Math.random() * 0.55) * kraken.exitDir;
-    kraken.x = kraken.riseCenterX;
-    kraken.y = h + len * 0.58;
-    kraken.phase = Math.random() * Math.PI * 2;
-    kraken.face = kraken.exitDir;
+function activateKraken(k) {
+  const pack = Math.max(1, k.packSize || krakens.length || 1);
+  const survivor = eventMinigameSession?.kind === "survivor";
+  const multi = survivor && pack > 1;
+  const len = dpr * (isPhoneDevice() ? 128 : multi ? 168 : 218);
+  const speedBoost = survivor ? 1.28 : 1;
+  const lane = typeof k.lane === "number" ? k.lane : 0;
+  const laneT = pack > 1 ? (lane + 0.5) / pack : 0.18 + Math.random() * 0.64;
+  const jitter = pack > 1 ? (Math.random() - 0.5) * 0.1 : 0;
+  k.state = "active";
+  k.len = len;
+  k.pathStage = "rise";
+  k.riseCenterX = w * Math.max(0.12, Math.min(0.88, laneT + jitter));
+  k.riseVy = dpr * (0.36 + Math.random() * 0.14) * speedBoost;
+  const depth = pack > 1 ? 0.56 + (lane / pack) * 0.26 : 0.78;
+  k.sweepY = Math.min(h - dpr * 92, waterTop + waterH * depth);
+  k.exitDir = pack > 1 ? (lane % 2 === 0 ? -1 : 1) : Math.random() < 0.5 ? -1 : 1;
+  if (pack > 1 && Math.random() < 0.22) k.exitDir *= -1;
+  k.exitVx = dpr * (1.9 + Math.random() * 0.7) * k.exitDir * speedBoost;
+  k.x = k.riseCenterX;
+  k.y = h + len * 0.58;
+  k.phase = Math.random() * Math.PI * 2;
+  k.face = k.exitDir;
+}
+
+function tickOneKraken(k, now, dt) {
+  if (k.state === "scheduled" && now >= k.spawnAt) {
+    activateKraken(k);
     if (!(eventMinigameSession?.kind === "survivor")) {
       showToast("Kraken rising from the depths!", 1700);
     }
     return;
   }
-  if (kraken.state === "biting") {
-    kraken.biteT += dt;
+  if (k.state === "biting") {
+    k.biteT += dt;
     const hx = hook.x;
     const hy = hook.krakenBiteLocked ? hook.krakenBiteTipY : hookTipY();
-    const L = kraken.len;
-    const f = kraken.biteFacing;
+    const L = k.len;
+    const f = k.biteFacing;
     const targX = hx - f * L * 0.12;
     const targY = hy + L * 0.88;
-    const snap = kraken.biteSnapMs;
-    const u = Math.min(1, kraken.biteT / snap);
+    const snap = k.biteSnapMs;
+    const u = Math.min(1, k.biteT / snap);
     const ease = u * u * (3 - 2 * u);
-    kraken.x = kraken.biteFromX + (targX - kraken.biteFromX) * ease;
-    kraken.y = kraken.biteFromY + (targY - kraken.biteFromY) * ease;
+    k.x = k.biteFromX + (targX - k.biteFromX) * ease;
+    k.y = k.biteFromY + (targY - k.biteFromY) * ease;
     if (u >= 1) {
       const t = performance.now() * 0.0011;
-      kraken.x = targX + Math.sin(t * 19) * dpr * 3.2;
-      kraken.y = targY + Math.sin(t * 23 + 1.1) * dpr * 2.6;
+      k.x = targX + Math.sin(t * 19) * dpr * 3.2;
+      k.y = targY + Math.sin(t * 23 + 1.1) * dpr * 2.6;
     }
-    kraken.phase += dt * 0.0045;
-    if (kraken.biteT >= snap + kraken.biteHoldMs) {
-      kraken.state = "done";
-      kraken.netGrab = null;
-      kraken.boatRockSteal = false;
+    k.phase += dt * 0.0045;
+    if (k.biteT >= snap + k.biteHoldMs) {
+      k.state = "done";
+      k.netGrab = null;
+      k.boatRockSteal = false;
       hook.krakenBiteLocked = false;
       if (eventMinigameSession?.kind === "survivor" && eventMinigameSession.caughtKraken) {
         if (playing) endRound();
         return;
       }
       if (eventMinigameSession?.kind === "survivor") {
-        scheduleSurvivorKraken(now);
+        k.state = "scheduled";
+        k.spawnAt = now + 240 + Math.random() * 640;
       }
     }
     return;
   }
-  if (kraken.state === "active") {
+  if (k.state === "active") {
     const step = dt / 16;
-    kraken.phase += dt * 0.002;
-    const L = kraken.len;
+    k.phase += dt * 0.002;
+    const L = k.len;
 
-    if (kraken.pathStage === "rise") {
-      kraken.y -= kraken.riseVy * step * 1.18;
-      kraken.x =
-        kraken.riseCenterX +
-        Math.sin(kraken.phase * 0.62) * dpr * 44 +
-        Math.sin(kraken.phase * 0.29 + 1.1) * dpr * 14;
-      if (kraken.y <= kraken.sweepY) {
-        kraken.pathStage = "side";
-        kraken.y = kraken.sweepY;
-        kraken.face = kraken.exitDir;
+    if (k.pathStage === "rise") {
+      k.y -= k.riseVy * step * 1.18;
+      k.x =
+        k.riseCenterX +
+        Math.sin(k.phase * 0.62) * dpr * 44 +
+        Math.sin(k.phase * 0.29 + 1.1) * dpr * 14;
+      if (k.y <= k.sweepY) {
+        k.pathStage = "side";
+        k.y = k.sweepY;
+        k.face = k.exitDir;
       }
       return;
     }
 
-    kraken.x += kraken.exitVx * step;
-    kraken.y = kraken.sweepY + Math.sin(kraken.phase * 1.35) * dpr * 12;
-    kraken.face = kraken.exitDir;
-    if ((kraken.exitDir < 0 && kraken.x < -L * 0.9) || (kraken.exitDir > 0 && kraken.x > w + L * 0.9)) {
-      kraken.state = "done";
+    k.x += k.exitVx * step;
+    k.y = k.sweepY + Math.sin(k.phase * 1.35) * dpr * 12;
+    k.face = k.exitDir;
+    if ((k.exitDir < 0 && k.x < -L * 0.9) || (k.exitDir > 0 && k.x > w + L * 0.9)) {
+      k.state = "done";
       if (eventMinigameSession?.kind === "survivor" && !eventMinigameSession.caughtKraken) {
-        scheduleSurvivorKraken(now);
+        k.state = "scheduled";
+        k.spawnAt = now + 220 + Math.random() * 580;
       }
     }
   }
 }
 
+function tickKraken(now, dt) {
+  if (!playing || !krakens.length) return;
+  for (const k of krakens) tickOneKraken(k, now, dt);
+  syncPrimaryKraken();
+}
+
 function drawKraken() {
+  for (const k of krakens) {
+    if (k.state === "active" || k.state === "biting") drawOneKraken(k);
+  }
+}
+
+function drawOneKraken(kraken) {
   if (!kraken || (kraken.state !== "active" && kraken.state !== "biting")) return;
   const L = kraken.len;
   const facing = kraken.state === "biting" ? kraken.biteFacing : kraken.face;
@@ -19151,7 +19245,9 @@ function gameLoop(now) {
       timeDisplay.textContent = "GO";
       if (adventureGoalLine) {
         adventureGoalLine.hidden = false;
-        adventureGoalLine.textContent = `Bonus: ${score} pts · hook the kraken!`;
+        adventureGoalLine.textContent = survivorAllowsKrakenPack()
+          ? `Bonus: ${score} pts · hook a kraken!`
+          : `Bonus: ${score} pts · hook the kraken!`;
       }
     } else {
       timeDisplay.textContent = formatTime(left);
