@@ -367,9 +367,9 @@ const KRAKEN_SPRAY_BAIT_ID = "kraken_spray";
 const DAILY_PRIZE_CHEST_TIERS = ["legendary", "rare", "common"];
 
 /** Gems from found chests only (Crab Trap / Daily Catch / Fisher of the Day). */
-const CHEST_GEMS_COMMON = 15;
-const CHEST_GEMS_RARE = 40;
-const CHEST_GEMS_LEGENDARY = 60;
+const CHEST_GEMS_COMMON = 10;
+const CHEST_GEMS_RARE = 25;
+const CHEST_GEMS_LEGENDARY = 40;
 
 const SHOP_CHEST_DEFS = [
   {
@@ -5502,6 +5502,7 @@ function showDailyCatchReward() {
   if (!ch || ch.claimed || !isDailyCatchComplete(ch)) return;
   hideAllPanels();
   crabRewardSource = "dailyCatch";
+  resetChestOpenUi();
   const tier = "rare";
   crabRewardBundles = rollCrabBundles(tier);
   crabRewardClaimed = false;
@@ -7325,32 +7326,6 @@ function dailyPrizeOrdinal(rank) {
   return ["1st", "2nd", "3rd"][rank] || `${rank + 1}th`;
 }
 
-function dailyPrizeLineIcon(line, bundle) {
-  if (line.includes("coins")) return "🪙";
-  if (line.includes("gems")) return "💎";
-  if (bundle?.rodName && line.includes(bundle.rodName)) return "🎣";
-  if (bundle?.bait && line.includes(bundle.bait.name)) {
-    return bundle.bait.id === KRAKEN_SPRAY_BAIT_ID ? "🦑" : "🪱";
-  }
-  if (line.includes("stamp")) return "🏅";
-  return "✦";
-}
-
-function buildDailyPrizeAwardRows(prize) {
-  ensureDailyPrizeBundle(prize);
-  const chestName = prize.chestName || dailyPrizeChestNameForTier(prize.chestTier);
-  const chestIcon = normalizeChestTier(prize.chestTier) === "legendary" ? "💎" : normalizeChestTier(prize.chestTier) === "rare" ? "✨" : "📦";
-  const rows = [{ icon: chestIcon, label: chestName }];
-  const bundle = prize.bundle;
-  if (bundle) {
-    for (const line of crabBundleRewardLines(bundle)) {
-      rows.push({ icon: dailyPrizeLineIcon(line, bundle), label: line });
-    }
-  }
-  if (prize.rank === 0) rows.push({ icon: "🧲", label: "Magnet Rod (today)" });
-  return rows;
-}
-
 function applyPendingDailyPrizeRewards() {
   const prize = gameMeta.pendingDailyPrizeCelebration;
   if (!prize) return;
@@ -7424,13 +7399,19 @@ function populateDailyPrizeBoardUI(prize) {
 
 function populateDailyPrizeAwardsList(prize) {
   if (!dailyPrizeRevealAwards) return;
-  dailyPrizeRevealAwards.innerHTML = "";
-  for (const row of buildDailyPrizeAwardRows(prize)) {
-    const li = document.createElement("li");
-    li.className = "daily-prize-reveal__award";
-    li.innerHTML = `<span class="daily-prize-reveal__award-icon" aria-hidden="true">${row.icon}</span><span class="daily-prize-reveal__award-label">${row.label}</span>`;
-    dailyPrizeRevealAwards.appendChild(li);
+  ensureDailyPrizeBundle(prize);
+  const extras = [];
+  if (prize.rank === 0) {
+    const rod = RODS.find((r) => r.id === MAGNET_ROD_ID);
+    extras.push({
+      kind: "rod",
+      qty: "",
+      label: "Magnet Rod",
+      art: rod ? rodArtSvg(rod) : "🧲",
+    });
   }
+  fillChestLoot(dailyPrizeRevealAwards, prize.bundle, extras);
+  dailyPrizeRevealAwards.classList.add("daily-prize-reveal__awards");
 }
 
 function renderDailyPrizeChestArt(opened) {
@@ -7465,6 +7446,7 @@ function showDailyPrizeChestPhase() {
   }
   if (dailyPrizeRevealAwards) dailyPrizeRevealAwards.hidden = true;
   if (btnDailyPrizeRevealDone) btnDailyPrizeRevealDone.hidden = true;
+  btnDailyPrizeChest?.classList.remove("daily-prize-chest--opening", "daily-prize-chest--opened", "daily-prize-chest--burst");
   renderDailyPrizeChestArt(false);
   if (dailyPrizeReveal) {
     dailyPrizeReveal.classList.remove("daily-prize-reveal--active");
@@ -7479,12 +7461,22 @@ function openDailyPrizeChest() {
   const prize = ensureDailyPrizeBundle(gameMeta.pendingDailyPrizeCelebration);
   if (!prize) return;
   dailyPrizePhase = "opened";
-  renderDailyPrizeChestArt(true);
-  populateDailyPrizeAwardsList(prize);
-  if (dailyPrizeChestHint) dailyPrizeChestHint.textContent = "Loot secured";
-  if (dailyPrizeRevealAwards) dailyPrizeRevealAwards.hidden = false;
-  if (btnDailyPrizeRevealDone) btnDailyPrizeRevealDone.hidden = false;
   playCrabChestSound();
+  btnDailyPrizeChest?.classList.add("daily-prize-chest--opening");
+  const finishOpen = () => {
+    renderDailyPrizeChestArt(true);
+    btnDailyPrizeChest?.classList.remove("daily-prize-chest--opening");
+    btnDailyPrizeChest?.classList.add("daily-prize-chest--opened", "daily-prize-chest--burst");
+    populateDailyPrizeAwardsList(prize);
+    if (dailyPrizeChestHint) dailyPrizeChestHint.textContent = "";
+    if (dailyPrizeRevealAwards) dailyPrizeRevealAwards.hidden = false;
+    if (btnDailyPrizeRevealDone) btnDailyPrizeRevealDone.hidden = false;
+  };
+  if (prefersChestMotion()) {
+    window.setTimeout(finishOpen, 420);
+  } else {
+    finishOpen();
+  }
 }
 
 function advanceDailyPrizeCelebration() {
@@ -12793,6 +12785,7 @@ function beginEventMinigame(kind) {
 
 function showEventMinigameReward({ source, title, summaryHtml, scorePts, tier }) {
   crabRewardSource = source;
+  resetChestOpenUi();
   crabRewardBundles = rollCrabBundles(tier);
   crabRewardClaimed = false;
   if (crabRewardHeadline) crabRewardHeadline.textContent = title;
@@ -13845,6 +13838,100 @@ function crabBundleRewardLines(bundle) {
   return lines;
 }
 
+function chestLootItems(bundle, extras = []) {
+  const items = [];
+  if (bundle?.coins) {
+    items.push({
+      kind: "coins",
+      qty: `+${bundle.coins}`,
+      label: `${bundle.coins} coins`,
+      art: `<span class="shop-coin shop-coin--lg"></span>`,
+    });
+  }
+  if (bundle?.gems) {
+    items.push({
+      kind: "gems",
+      qty: `+${bundle.gems}`,
+      label: `${bundle.gems} gems`,
+      art: `<span class="shop-gem shop-gem--lg"></span>`,
+    });
+  }
+  if (bundle?.bait) {
+    items.push({
+      kind: "bait",
+      qty: `×${bundle.bait.qty}`,
+      label: `${bundle.bait.qty}× ${bundle.bait.name}`,
+      art: baitBucketSvg(bundle.bait.id),
+    });
+  }
+  if (bundle?.rodId) {
+    const rod = RODS.find((r) => r.id === bundle.rodId);
+    items.push({
+      kind: "rod",
+      qty: "",
+      label: bundle.rodName || rod?.name || "Rod",
+      art: rod ? rodArtSvg(rod) : "🎣",
+    });
+  }
+  const sp = bundle?.special;
+  if (sp) {
+    if (sp.kind === "catch_stamp") {
+      const spec = FISH_SPECIES.find((s) => s.id === sp.speciesId);
+      const colors = Array.isArray(spec?.colors) ? spec.colors : ["#38bdf8", "#0369a1"];
+      items.push({
+        kind: "stamp",
+        qty: "",
+        label: sp.speciesName ? `${sp.speciesName} stamp` : "Catch stamp",
+        art: `<span class="chest-loot__stamp" style="background:linear-gradient(135deg,${colors[0]},${colors[1] || colors[0]})"></span>`,
+      });
+    } else if (sp.consolCoins) {
+      items.push({
+        kind: "coins",
+        qty: `+${sp.consolCoins}`,
+        label: `${sp.consolCoins} coins`,
+        art: `<span class="shop-coin shop-coin--lg"></span>`,
+      });
+    } else if (CHEST_ITEM_DEFS[sp.kind]) {
+      const def = CHEST_ITEM_DEFS[sp.kind];
+      items.push({
+        kind: "item",
+        qty: sp.qty > 1 ? `×${sp.qty}` : "",
+        label: def.name,
+        art: `<span class="chest-loot__emoji">${def.icon}</span>`,
+      });
+    }
+  }
+  return items.concat(extras);
+}
+
+function chestLootPipHtml(item, index) {
+  const qty = item.qty
+    ? `<span class="chest-loot__qty">${item.qty}</span>`
+    : "";
+  return (
+    `<li class="chest-loot__pip chest-loot__pip--${item.kind}" style="--i:${index}" title="${item.label}">` +
+    `<span class="chest-loot__art">${item.art}</span>` +
+    qty +
+    `</li>`
+  );
+}
+
+function fillChestLoot(list, bundle, extras = []) {
+  if (!list) return;
+  const items = chestLootItems(bundle, extras);
+  list.className = "chest-loot";
+  list.innerHTML = items.map((item, i) => chestLootPipHtml(item, i)).join("");
+  list.setAttribute("aria-label", items.map((x) => x.label).join(", ") || "Rewards");
+}
+
+function prefersChestMotion() {
+  return !(typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+}
+
+function resetChestOpenUi() {
+  panelCrabReward?.classList.remove("panel--chest-opening");
+}
+
 let crabChestSvgSeq = 0;
 
 function crabChestDiamondSvg(cx, cy, s, outline) {
@@ -14073,7 +14160,7 @@ function renderCrabRewardChests(tier) {
     btn.innerHTML =
       `<span class="crab-chest__art">${crabChestArtSvg(tier, false)}</span>` +
       `<span class="crab-chest__label">${tierLabel} chest</span>` +
-      `<ul class="crab-chest__contents"></ul>`;
+      `<ul class="chest-loot" hidden></ul>`;
     crabRewardChests.appendChild(btn);
   }
 }
@@ -14110,6 +14197,24 @@ function grantCrabReward(bundle) {
   refreshCollectablesUI();
 }
 
+function revealOpenedChest(chest, bundle, tier) {
+  chest.classList.remove("crab-chest--shaking");
+  chest.classList.add("crab-chest--opened", "crab-chest--burst");
+  if (!chest.querySelector(".crab-chest__burst")) {
+    const burst = document.createElement("span");
+    burst.className = "crab-chest__burst";
+    burst.setAttribute("aria-hidden", "true");
+    chest.prepend(burst);
+  }
+  const art = chest.querySelector(".crab-chest__art");
+  if (art) art.innerHTML = crabChestArtSvg(tier, true);
+  const list = chest.querySelector(".chest-loot");
+  if (list) {
+    list.hidden = false;
+    fillChestLoot(list, bundle);
+  }
+}
+
 function onCrabChestPick(idx) {
   if (crabRewardClaimed) return;
   const bundle = crabRewardBundles[idx];
@@ -14125,36 +14230,30 @@ function onCrabChestPick(idx) {
       saveMeta();
     }
   }
+  panelCrabReward?.classList.add("panel--chest-opening");
   const chests = crabRewardChests ? crabRewardChests.querySelectorAll(".crab-chest") : [];
   chests.forEach((chest) => {
     const ci = Number(chest.dataset.idx);
     chest.disabled = true;
     if (ci === idx) {
-      chest.classList.add("crab-chest--opened");
-      const art = chest.querySelector(".crab-chest__art");
+      chest.classList.add("crab-chest--hero", "crab-chest--shaking");
       const openTier = chest.classList.contains("crab-chest--legendary")
         ? "legendary"
         : chest.classList.contains("crab-chest--rare")
           ? "rare"
           : "common";
-      if (art) art.innerHTML = crabChestArtSvg(openTier, true);
-      const list = chest.querySelector(".crab-chest__contents");
-      if (list) {
-        list.innerHTML = "";
-        for (const line of crabBundleRewardLines(bundle)) {
-          const li = document.createElement("li");
-          li.textContent = line;
-          list.appendChild(li);
-        }
+      if (prefersChestMotion()) {
+        window.setTimeout(() => revealOpenedChest(chest, bundle, openTier), 420);
+      } else {
+        revealOpenedChest(chest, bundle, openTier);
       }
     } else {
       chest.classList.add("crab-chest--dimmed");
     }
   });
-  if (crabRewardPrompt) crabRewardPrompt.textContent = "Reward claimed!";
   if (crabRewardResult) {
-    crabRewardResult.hidden = false;
-    crabRewardResult.textContent = `You collected ${crabBundleRewardLines(bundle).join(" · ")}.`;
+    crabRewardResult.hidden = true;
+    crabRewardResult.textContent = "";
   }
   const tickets = getDuelTicketCount();
   if (btnCrabPlayAgain) {
@@ -14178,6 +14277,7 @@ function onCrabChestPick(idx) {
 
 function showCrabReward(finalScore) {
   crabRewardSource = "crab";
+  resetChestOpenUi();
   const tier = crabTierForScore(finalScore);
   crabRewardBundles = rollCrabBundles(tier);
   crabRewardClaimed = false;
