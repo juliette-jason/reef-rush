@@ -1150,13 +1150,16 @@ const ADVENTURE_SECTION_LOST_CITY = "The Lost City";
 const ADVENTURE_LEVEL_TIME_BONUS_MS = 700;
 /** +0.55s per voyage from Gold Quest through The Lost City — keep the ramp modest. */
 const ADVENTURE_GOLD_TO_LOST_CITY_TIME_BONUS_MS = 550;
+/** Extra clock on Legend's Gate so the Gold Quest finale is a bit more forgiving. */
+const LEGENDS_GATE_TIME_BONUS_MS = 7_000;
 
 function adventureLevelTimeBonusMs(levelIndex) {
+  const legendsGateBonus = levelIndex === LEGENDS_GATE_INDEX ? LEGENDS_GATE_TIME_BONUS_MS : 0;
   if (levelIndex < ADVENTURE_MAIN_LEVEL_COUNT) {
-    return levelIndex * ADVENTURE_LEVEL_TIME_BONUS_MS;
+    return levelIndex * ADVENTURE_LEVEL_TIME_BONUS_MS + legendsGateBonus;
   }
   const piratesBonus = ADVENTURE_MAIN_LEVEL_COUNT * ADVENTURE_LEVEL_TIME_BONUS_MS;
-  return piratesBonus + (levelIndex - ADVENTURE_MAIN_LEVEL_COUNT) * ADVENTURE_GOLD_TO_LOST_CITY_TIME_BONUS_MS;
+  return piratesBonus + (levelIndex - ADVENTURE_MAIN_LEVEL_COUNT) * ADVENTURE_GOLD_TO_LOST_CITY_TIME_BONUS_MS + legendsGateBonus;
 }
 
 const TREASURE_CINEMATIC_ANTICIPATE_MS = 800;
