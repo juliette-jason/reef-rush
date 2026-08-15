@@ -5761,6 +5761,328 @@ const REEFS = [
   },
 ];
 
+/** Uncharted waters — Reef Roulette only. Never pinned on the world map. */
+const ROULETTE_REEFS = [
+  {
+    id: "sargasso_gyre",
+    name: "Sargasso Gyre",
+    mapPlace: "Uncharted mid-Atlantic weed sea",
+    desc: "Golden sargassum mats · turtles, jellies, and mahi in the drift.",
+    difficulty: "Medium",
+    roundMs: 45_000,
+    spawnMin: 320,
+    spawnMax: 1100,
+    maxFish: 15,
+    fishSpeed: 0.92,
+    rareRollMult: 1.05,
+    weights: { common: 50, uncommon: 28, rare: 13, epic: 6, legendary: 3 },
+    fishPool: [
+      "moon_jellyfish",
+      "european_sprat",
+      "pacific_sardine",
+      "lined_seahorse",
+      "green_sea_turtle",
+      "dolphinfish_mahi",
+      "yellowfin_tuna",
+      "reef_manta",
+      "bottlenose_dolphin",
+      "sea_otter",
+    ],
+    visuals: {
+      gradient: ["#c4d46a", "#6a9a48", "#2e6a44", "#143828"],
+      shaft: ["rgba(250, 240, 160, 0.18)", "rgba(250, 240, 160, 0)"],
+      silhouette: "rgba(28, 52, 18, 0.5)",
+      corals: [
+        { x: 0.08, c: "#a3b54a", h: 0.22 },
+        { x: 0.22, c: "#7a9a3a", h: 0.18 },
+        { x: 0.4, c: "#c4b05a", h: 0.26 },
+        { x: 0.58, c: "#5a8a40", h: 0.2 },
+        { x: 0.76, c: "#b8c46a", h: 0.24 },
+        { x: 0.9, c: "#6a7a32", h: 0.16 },
+      ],
+      bubble: "rgba(220, 240, 160, 0.28)",
+    },
+  },
+  {
+    id: "moonfall_atoll",
+    name: "Moonfall Atoll",
+    mapPlace: "Uncharted night lagoon",
+    desc: "Bioluminescent shallows · angelfish, octopus, and lantern shadows.",
+    difficulty: "Medium",
+    roundMs: 45_000,
+    spawnMin: 280,
+    spawnMax: 980,
+    maxFish: 16,
+    fishSpeed: 1.04,
+    rareRollMult: 1.08,
+    weights: { common: 48, uncommon: 28, rare: 14, epic: 7, legendary: 3 },
+    fishPool: [
+      "clown_anemonefish",
+      "queen_angelfish",
+      "lined_seahorse",
+      "moon_jellyfish",
+      "reef_octopus",
+      "common_cuttlefish",
+      "coral_trout_gbr",
+      "reef_manta",
+      "dumbo_octopus",
+      "abyss_lantern",
+    ],
+    visuals: {
+      gradient: ["#6a5ab8", "#3a3a88", "#1a2458", "#0a1028"],
+      shaft: ["rgba(180, 220, 255, 0.16)", "rgba(180, 220, 255, 0)"],
+      silhouette: "rgba(18, 12, 48, 0.55)",
+      corals: [
+        { x: 0.1, c: "#a78bfa", h: 0.32 },
+        { x: 0.26, c: "#67e8f9", h: 0.22 },
+        { x: 0.44, c: "#f0abfc", h: 0.28 },
+        { x: 0.62, c: "#818cf8", h: 0.2 },
+        { x: 0.8, c: "#22d3ee", h: 0.26 },
+        { x: 0.94, c: "#c084fc", h: 0.18 },
+      ],
+      bubble: "rgba(196, 181, 253, 0.32)",
+    },
+  },
+  {
+    id: "cinder_caldera",
+    name: "Cinder Caldera",
+    mapPlace: "Uncharted volcanic crater",
+    desc: "Lava-lit rock · snappers, trevally, and heat-hardened pelagics.",
+    difficulty: "Hard",
+    roundMs: 45_000,
+    spawnMin: 240,
+    spawnMax: 860,
+    maxFish: 17,
+    fishSpeed: 1.18,
+    rareRollMult: 0.9,
+    weights: { common: 52, uncommon: 26, rare: 12, epic: 7, legendary: 3 },
+    fishPool: [
+      "red_snapper",
+      "coral_trout_gbr",
+      "chub_mackerel",
+      "giant_trevally",
+      "yellowtail_amberjack",
+      "australian_blacktip",
+      "great_barracuda",
+      "swordfish",
+      "fangtooth",
+      "dread_fangtooth",
+    ],
+    visuals: {
+      gradient: ["#e07040", "#a03828", "#5a1818", "#1a0808"],
+      shaft: ["rgba(255, 180, 80, 0.2)", "rgba(255, 120, 40, 0)"],
+      silhouette: "rgba(48, 12, 8, 0.58)",
+      corals: [
+        { x: 0.12, c: "#7f1d1d", h: 0.28 },
+        { x: 0.3, c: "#b45309", h: 0.22 },
+        { x: 0.48, c: "#44403c", h: 0.34 },
+        { x: 0.66, c: "#9a3412", h: 0.2 },
+        { x: 0.84, c: "#1c1917", h: 0.3 },
+      ],
+      bubble: "rgba(255, 180, 120, 0.22)",
+    },
+  },
+  {
+    id: "whisper_mangrove",
+    name: "Whisper Mangrove",
+    mapPlace: "Uncharted tannin creek",
+    desc: "Tea-dark roots · bass, crabs, and things that wait in the shade.",
+    difficulty: "Medium",
+    roundMs: 45_000,
+    spawnMin: 340,
+    spawnMax: 1200,
+    maxFish: 14,
+    fishSpeed: 0.88,
+    rareRollMult: 1.02,
+    weights: { common: 54, uncommon: 26, rare: 12, epic: 6, legendary: 2 },
+    fishPool: [
+      "barramundi",
+      "striped_bass",
+      "european_seabass",
+      "caribbean_lobster",
+      "reef_octopus",
+      "harbor_seal",
+      "atlantic_cod",
+      "green_sea_turtle",
+      "sea_otter",
+      "grave_eel",
+    ],
+    visuals: {
+      gradient: ["#6a7a48", "#3a4a30", "#1e2a1c", "#0c140c"],
+      shaft: ["rgba(180, 200, 120, 0.1)", "rgba(180, 200, 120, 0)"],
+      silhouette: "rgba(12, 24, 10, 0.62)",
+      corals: [
+        { x: 0.06, c: "#365314", h: 0.42 },
+        { x: 0.18, c: "#3f6212", h: 0.36 },
+        { x: 0.34, c: "#4d7c0f", h: 0.48 },
+        { x: 0.52, c: "#3f3a28", h: 0.3 },
+        { x: 0.7, c: "#365314", h: 0.4 },
+        { x: 0.88, c: "#1a2e05", h: 0.34 },
+      ],
+      bubble: "rgba(180, 200, 140, 0.18)",
+    },
+  },
+  {
+    id: "opal_shelf",
+    name: "Opal Shelf",
+    mapPlace: "Uncharted pastel bank",
+    desc: "Candy coral terraces · seahorses, angels, and pearl-bright schools.",
+    difficulty: "Easy",
+    roundMs: 45_000,
+    spawnMin: 360,
+    spawnMax: 1280,
+    maxFish: 13,
+    fishSpeed: 0.84,
+    rareRollMult: 1.14,
+    weights: { common: 46, uncommon: 30, rare: 14, epic: 7, legendary: 3 },
+    fishPool: [
+      "clown_anemonefish",
+      "queen_angelfish",
+      "lined_seahorse",
+      "moon_jellyfish",
+      "common_cuttlefish",
+      "reef_octopus",
+      "dolphinfish_mahi",
+      "reef_manta",
+      "sea_otter",
+      "yellowtail_amberjack",
+    ],
+    visuals: {
+      gradient: ["#f9a8d4", "#7dd3fc", "#5eead4", "#155e75"],
+      shaft: ["rgba(255, 240, 250, 0.22)", "rgba(255, 240, 250, 0)"],
+      silhouette: "rgba(80, 40, 70, 0.35)",
+      corals: [
+        { x: 0.08, c: "#fb7185", h: 0.3 },
+        { x: 0.22, c: "#67e8f9", h: 0.24 },
+        { x: 0.38, c: "#f0abfc", h: 0.28 },
+        { x: 0.54, c: "#5eead4", h: 0.22 },
+        { x: 0.7, c: "#fda4af", h: 0.32 },
+        { x: 0.86, c: "#a5f3fc", h: 0.2 },
+      ],
+      bubble: "rgba(255, 220, 240, 0.34)",
+    },
+  },
+  {
+    id: "thunderwake_banks",
+    name: "Thunderwake Banks",
+    mapPlace: "Uncharted storm shoal",
+    desc: "Chop and spray · tunas, marlin, and anything fast enough to stay.",
+    difficulty: "Hard",
+    roundMs: 45_000,
+    spawnMin: 220,
+    spawnMax: 780,
+    maxFish: 18,
+    fishSpeed: 1.28,
+    rareRollMult: 0.86,
+    weights: { common: 58, uncommon: 24, rare: 10, epic: 5, legendary: 3 },
+    fishPool: [
+      "chub_mackerel",
+      "atlantic_herring",
+      "yellowfin_tuna",
+      "albacore_tuna",
+      "atlantic_bluefin",
+      "blue_marlin",
+      "swordfish",
+      "great_barracuda",
+      "giant_trevally",
+      "skeletal_marlin",
+    ],
+    visuals: {
+      gradient: ["#64748b", "#334155", "#1e293b", "#020617"],
+      shaft: ["rgba(226, 232, 240, 0.12)", "rgba(226, 232, 240, 0)"],
+      silhouette: "rgba(8, 12, 24, 0.6)",
+      corals: [
+        { x: 0.14, c: "#475569", h: 0.16 },
+        { x: 0.36, c: "#334155", h: 0.22 },
+        { x: 0.62, c: "#1e293b", h: 0.18 },
+        { x: 0.84, c: "#0f172a", h: 0.2 },
+      ],
+      bubble: "rgba(186, 230, 253, 0.22)",
+    },
+  },
+  {
+    id: "mirage_keys",
+    name: "Mirage Keys",
+    mapPlace: "Uncharted pink salt flats",
+    desc: "Rose-water shallows · flaming schools and heat-haze hunters.",
+    difficulty: "Medium",
+    roundMs: 45_000,
+    spawnMin: 300,
+    spawnMax: 1040,
+    maxFish: 15,
+    fishSpeed: 0.98,
+    rareRollMult: 1.06,
+    weights: { common: 50, uncommon: 28, rare: 13, epic: 6, legendary: 3 },
+    fishPool: [
+      "european_sprat",
+      "northern_anchovy",
+      "red_snapper",
+      "queen_angelfish",
+      "caribbean_lobster",
+      "green_sea_turtle",
+      "dolphinfish_mahi",
+      "bottlenose_dolphin",
+      "reef_manta",
+      "specter_ray",
+    ],
+    visuals: {
+      gradient: ["#fda4af", "#fb7185", "#9f1239", "#4c0519"],
+      shaft: ["rgba(255, 228, 230, 0.2)", "rgba(255, 228, 230, 0)"],
+      silhouette: "rgba(64, 16, 28, 0.48)",
+      corals: [
+        { x: 0.1, c: "#fecdd3", h: 0.18 },
+        { x: 0.28, c: "#e11d48", h: 0.26 },
+        { x: 0.46, c: "#fb7185", h: 0.2 },
+        { x: 0.64, c: "#9f1239", h: 0.24 },
+        { x: 0.82, c: "#ffe4e6", h: 0.16 },
+      ],
+      bubble: "rgba(254, 205, 211, 0.3)",
+    },
+  },
+  {
+    id: "starlit_rift",
+    name: "Starlit Rift",
+    mapPlace: "Uncharted midnight canyon",
+    desc: "A crack in the charts · deep oddities mixed with open-ocean ghosts.",
+    difficulty: "Very Hard",
+    roundMs: 45_000,
+    spawnMin: 200,
+    spawnMax: 720,
+    maxFish: 16,
+    fishSpeed: 1.22,
+    rareRollMult: 0.8,
+    weights: { common: 44, uncommon: 26, rare: 16, epic: 9, legendary: 5 },
+    fishPool: [
+      "hatchetfish",
+      "viperfish",
+      "black_seadevil",
+      "gulper_eel",
+      "ghost_shark",
+      "abyss_lantern",
+      "swordfish",
+      "reef_manta",
+      "giant_isopod",
+      "leviathan_skull",
+    ],
+    visuals: {
+      gradient: ["#1e1b4b", "#0f172a", "#020617", "#000000"],
+      shaft: ["rgba(125, 211, 252, 0.1)", "rgba(125, 211, 252, 0)"],
+      silhouette: "rgba(2, 6, 23, 0.7)",
+      corals: [
+        { x: 0.16, c: "#312e81", h: 0.2 },
+        { x: 0.4, c: "#1e3a8a", h: 0.16 },
+        { x: 0.68, c: "#0f172a", h: 0.24 },
+        { x: 0.88, c: "#4c1d95", h: 0.14 },
+      ],
+      bubble: "rgba(165, 243, 252, 0.16)",
+    },
+  },
+];
+
+function findReefById(id) {
+  return REEFS.find((r) => r.id === id) || ROULETTE_REEFS.find((r) => r.id === id) || null;
+}
+
 function buildAdventureLevels() {
   const levels = [];
   for (let i = 0; i < ADVENTURE_LEVEL_COUNT; i++) {
@@ -5891,7 +6213,7 @@ function getReef() {
     return REEFS.find((r) => r.id === duelSession.reefId) || REEFS[0];
   }
   if (eventMinigameSession && eventMinigameSession.reefId) {
-    const base = REEFS.find((r) => r.id === eventMinigameSession.reefId) || REEFS[0];
+    const base = findReefById(eventMinigameSession.reefId) || REEFS[0];
     const spawnMul = eventMinigameSession.spawnMult || 1;
     return {
       ...base,
@@ -11991,7 +12313,10 @@ function spendTicketOrToast() {
   return true;
 }
 
-function pickMinigameReef() {
+function pickMinigameReef(kind) {
+  if (kind === "roulette" && ROULETTE_REEFS.length) {
+    return ROULETTE_REEFS[Math.floor(Math.random() * ROULETTE_REEFS.length)];
+  }
   return REEFS[Math.floor(Math.random() * REEFS.length)] || REEFS[0];
 }
 
@@ -12004,14 +12329,14 @@ function beginEventMinigame(kind) {
   hideAllPanels();
   if (panelCrabReward) panelCrabReward.hidden = true;
   stopEventsMusic();
-  const reef = pickMinigameReef();
+  const reef = pickMinigameReef(kind);
   const now = performance.now();
   if (kind === "roulette") {
     const spin = 0.72 + Math.random() * 0.5;
     eventMinigameSession = {
       kind: "roulette",
       reefId: reef.id,
-      reefName: `Roulette · ${reef.name}`,
+      reefName: reef.name,
       roundMs: MINIGAME_ROULETTE_MS,
       spawnMult: spin,
       speedMult: 0.95 + Math.random() * 0.35,
