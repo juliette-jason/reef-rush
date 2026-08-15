@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=shop-chest-open-1" />
+    <link rel="stylesheet" href="styles.css?v=atlas-charts-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -829,512 +829,606 @@
 
       <section id="panelAdventure" class="panel panel--adventure" hidden>
         <div id="adventureMapScroll" class="adventure-map-scroll">
-          <div class="adventure-map-board">
-            <div class="adventure-map-roll adventure-map-roll--top" aria-hidden="true">
-              <svg class="adventure-map-roll__cap" viewBox="0 0 32 22" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-                <ellipse cx="16" cy="11" rx="14.6" ry="9.6" fill="#ead6a4" stroke="#6a4420" stroke-width="1.05"/>
-                <ellipse cx="16" cy="11" rx="9.8" ry="6.4" fill="#f7ecd0" stroke="#8a5a28" stroke-width="0.8"/>
-                <ellipse cx="16" cy="11" rx="4.6" ry="3" fill="#d2ae70" stroke="#6a4420" stroke-width="0.7"/>
-                <ellipse cx="16" cy="11" rx="1.4" ry="0.9" fill="#5a3818"/>
-              </svg>
-              <div class="adventure-map-roll__tube"></div>
-              <svg class="adventure-map-roll__cap" viewBox="0 0 32 22" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-                <ellipse cx="16" cy="11" rx="14.6" ry="9.6" fill="#ead6a4" stroke="#6a4420" stroke-width="1.05"/>
-                <ellipse cx="16" cy="11" rx="9.8" ry="6.4" fill="#f7ecd0" stroke="#8a5a28" stroke-width="0.8"/>
-                <ellipse cx="16" cy="11" rx="4.6" ry="3" fill="#d2ae70" stroke="#6a4420" stroke-width="0.7"/>
-                <ellipse cx="16" cy="11" rx="1.4" ry="0.9" fill="#5a3818"/>
-              </svg>
-            </div>
-            <svg class="adventure-map-art" viewBox="0 0 400 1200" preserveAspectRatio="none" aria-hidden="true">
+          <div id="adventureLevelList" class="adventure-map-atlas" aria-label="Adventure voyage maps">
+            <article class="adventure-chart adventure-chart--pirates" data-section="pirates">
+              <svg class="adventure-chart__art" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
               <defs>
-                <linearGradient id="advMapParchment" x1="8%" y1="0%" x2="92%" y2="100%">
+                <linearGradient id="piratesParchment" x1="8%" y1="0%" x2="92%" y2="100%">
                   <stop offset="0%" stop-color="#fbf6e0" />
                   <stop offset="28%" stop-color="#f4e6c0" />
                   <stop offset="62%" stop-color="#ead6a4" />
                   <stop offset="100%" stop-color="#e0c488" />
                 </linearGradient>
-                <linearGradient id="advMapLand" x1="20%" y1="0%" x2="80%" y2="100%">
+                <linearGradient id="piratesLand" x1="20%" y1="0%" x2="80%" y2="100%">
                   <stop offset="0%" stop-color="#f3e6c4" />
                   <stop offset="55%" stop-color="#e6d09a" />
                   <stop offset="100%" stop-color="#d8bc80" />
                 </linearGradient>
-                <linearGradient id="advMapLandHi" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stop-color="#faf0d4" />
-                  <stop offset="100%" stop-color="#e4c888" />
-                </linearGradient>
-                <linearGradient id="advMapOcean" x1="0%" y1="0%" x2="0%" y2="100%">
+                <linearGradient id="piratesOcean" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stop-color="#efe4c4" />
                   <stop offset="45%" stop-color="#e4d4ae" />
                   <stop offset="100%" stop-color="#d4c090" />
                 </linearGradient>
-                <linearGradient id="advMapMountain" x1="0%" y1="100%" x2="30%" y2="0%">
-                  <stop offset="0%" stop-color="#6a4e32" />
-                  <stop offset="55%" stop-color="#8a6a44" />
-                  <stop offset="100%" stop-color="#c4b08a" />
-                </linearGradient>
-                <linearGradient id="advMapMountainShade" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#4a3420" />
-                  <stop offset="100%" stop-color="#8a6840" />
-                </linearGradient>
-                <linearGradient id="advMapIcePeak" x1="0%" y1="100%" x2="0%" y2="0%">
-                  <stop offset="0%" stop-color="#6a7a78" />
-                  <stop offset="50%" stop-color="#a8b8b4" />
-                  <stop offset="100%" stop-color="#e8ece8" />
-                </linearGradient>
-                <radialGradient id="advMapCaveMouth" cx="50%" cy="42%" r="62%">
-                  <stop offset="0%" stop-color="#1a1008" />
-                  <stop offset="70%" stop-color="#3a2414" />
-                  <stop offset="100%" stop-color="#5a3c24" />
-                </radialGradient>
-                <filter id="advMapPaperGrain" x="-8%" y="-8%" width="116%" height="116%">
-                  <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" result="noise" />
+                <filter id="piratesGrain" x="-8%" y="-8%" width="116%" height="116%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" result="noise" />
                   <feColorMatrix type="saturate" values="0" in="noise" result="gray" />
                   <feComponentTransfer in="gray" result="grain">
-                    <feFuncA type="linear" slope="0.4" />
+                    <feFuncA type="linear" slope="0.38" />
                   </feComponentTransfer>
                   <feBlend in="SourceGraphic" in2="grain" mode="multiply" />
                 </filter>
-                <clipPath id="advMapTornEdge">
-                  <path d="M10 28 L36 10 L78 16 L122 6 L168 14 L214 5 L262 13 L308 6 L352 14 L386 30 L396 70 L399 160 L394 320 L398 500 L392 680 L397 860 L390 1040 L382 1168 L348 1192 L292 1186 L230 1196 L168 1186 L108 1194 L52 1182 L14 1150 L5 1080 L8 920 L3 740 L9 560 L4 380 L10 200 L6 90 Z" />
+                <clipPath id="piratesTorn">
+                  <path d="M14 32 L48 10 L110 22 L180 8 L260 18 L340 6 L420 16 L500 7 L580 18 L660 8 L730 20 L786 36 L796 90 L800 180 L794 280 L798 380 L792 470 L786 548 L720 592 L620 584 L520 596 L420 586 L320 594 L220 584 L120 592 L28 560 L6 480 L10 360 L4 240 L12 130 L8 60 Z" />
                 </clipPath>
               </defs>
-              <g clip-path="url(#advMapTornEdge)" filter="url(#advMapPaperGrain)">
-                <rect width="400" height="1200" fill="url(#advMapParchment)" />
-                <!-- Wear: stains, folds, foxing -->
+              <g clip-path="url(#piratesTorn)" filter="url(#piratesGrain)">
+                <rect width="800" height="600" fill="url(#piratesParchment)" />
                 <g class="adv-map-wear" pointer-events="none">
-                  <ellipse cx="48" cy="160" rx="78" ry="54" fill="#b88950" opacity="0.32" />
-                  <ellipse cx="350" cy="410" rx="88" ry="62" fill="#8a5a28" opacity="0.28" />
-                  <ellipse cx="70" cy="740" rx="96" ry="56" fill="#a07838" opacity="0.3" />
-                  <ellipse cx="310" cy="980" rx="80" ry="50" fill="#7a4e20" opacity="0.3" />
-                  <ellipse cx="200" cy="600" rx="120" ry="42" fill="#c4a060" opacity="0.22" />
-                  <ellipse cx="20" cy="1180" rx="96" ry="44" fill="#6a4420" opacity="0.34" />
-                  <ellipse cx="380" cy="40" rx="56" ry="40" fill="#8a5a28" opacity="0.3" />
-                  <ellipse cx="180" cy="280" rx="40" ry="28" fill="#6a4420" opacity="0.18" />
-                  <ellipse cx="260" cy="820" rx="52" ry="30" fill="#8a6234" opacity="0.22" />
-                  <ellipse cx="90" cy="500" rx="34" ry="22" fill="#5a3818" opacity="0.16" />
-                  <circle cx="120" cy="340" r="22" fill="none" stroke="#6a4420" stroke-width="3" opacity="0.18" />
-                  <circle cx="120" cy="340" r="14" fill="none" stroke="#6a4420" stroke-width="2" opacity="0.14" />
-                  <circle cx="300" cy="640" r="18" fill="none" stroke="#5a3818" stroke-width="2.4" opacity="0.16" />
-                  <path d="M0 0 L400 0 L400 36 Q200 12 0 36 Z" fill="#6a4420" opacity="0.28" />
-                  <path d="M0 1164 Q200 1190 400 1162 L400 1200 L0 1200 Z" fill="#6a4420" opacity="0.3" />
-                  <path d="M0 0 L18 0 L8 80 L0 70 Z" fill="#5a3818" opacity="0.22" />
-                  <path d="M382 0 L400 0 L400 90 L390 70 Z" fill="#5a3818" opacity="0.2" />
-                  <path d="M198 16 L206 1184" fill="none" stroke="#5a3c18" stroke-width="8" opacity="0.14" />
-                  <path d="M196 16 L208 1184" fill="none" stroke="#3a2410" stroke-width="1.6" opacity="0.2" />
-                  <path d="M40 90 Q80 200 50 320" fill="none" stroke="#6a4420" stroke-width="1.1" opacity="0.12" />
-                  <ellipse cx="64" cy="1088" rx="8" ry="5" fill="#3a2410" opacity="0.35" />
-                  <ellipse cx="336" cy="220" rx="6" ry="4" fill="#3a2410" opacity="0.28" />
-                  <ellipse cx="148" cy="760" rx="7" ry="4.5" fill="#3a2410" opacity="0.3" />
+                  <ellipse cx="80" cy="90" rx="90" ry="58" fill="#b88950" opacity="0.30" />
+                  <ellipse cx="700" cy="140" rx="100" ry="64" fill="#8a5a28" opacity="0.26" />
+                  <ellipse cx="120" cy="480" rx="110" ry="60" fill="#a07838" opacity="0.28" />
+                  <ellipse cx="620" cy="500" rx="88" ry="52" fill="#7a4e20" opacity="0.28" />
+                  <ellipse cx="400" cy="300" rx="140" ry="48" fill="#c4a060" opacity="0.18" />
+                  <path d="M0 0 L800 0 L800 28 Q400 10 0 28 Z" fill="#6a4420" opacity="0.26" />
+                  <path d="M0 572 Q400 596 800 570 L800 600 L0 600 Z" fill="#6a4420" opacity="0.28" />
+                  <path d="M0 0 L16 0 L8 70 L0 58 Z" fill="#5a3818" opacity="0.22" />
+                  <path d="M784 0 L800 0 L800 80 L790 62 Z" fill="#5a3818" opacity="0.2" />
+                  <ellipse cx="70" cy="540" rx="7" ry="4.5" fill="#3a2410" opacity="0.32" />
+                  <ellipse cx="730" cy="80" rx="6" ry="4" fill="#3a2410" opacity="0.28" />
+                  <ellipse cx="390" cy="310" rx="8" ry="5" fill="#3a2410" opacity="0.22" />
                 </g>
-                <!-- Ocean wash, with land cutouts -->
                 <g class="adv-map-oceans" aria-hidden="true">
-                  <path fill="url(#advMapOcean)" opacity="0.14" fill-rule="evenodd" d="M0 0 L400 0 L400 1200 L0 1200 Z
-                    M18 118 Q70 88 130 108 Q190 92 248 128 Q300 168 278 230 Q250 278 188 292 Q118 304 68 268 Q28 220 18 118 Z
-                    M228 308 Q286 286 342 328 Q378 378 362 448 Q338 492 268 498 Q208 478 218 408 Q224 352 228 308 Z
-                    M22 508 Q78 478 138 518 Q186 568 168 638 Q128 688 62 672 Q22 628 22 508 Z
-                    M236 588 Q304 562 362 612 Q388 688 358 768 Q308 812 248 798 Q198 748 214 668 Q224 622 236 588 Z
-                    M36 858 Q108 828 168 878 Q198 948 168 1038 Q118 1088 58 1062 Q22 1000 36 858 Z
-                    M298 62 Q318 52 338 72 Q332 96 308 92 Q290 78 298 62 Z
-                    M6 392 Q30 378 52 402 Q44 424 16 420 Q2 406 6 392 Z
-                    M158 678 Q180 664 202 688 Q192 710 166 704 Q150 692 158 678 Z
-                    M342 828 Q366 814 384 838 Q374 860 348 854 Q332 840 342 828 Z
-                    M148 328 Q168 318 182 338 Q172 354 152 348 Q140 338 148 328 Z
-                    M318 980 Q338 968 354 988 Q344 1008 322 1002 Q308 990 318 980 Z" />
-                  <!-- Coastline ink -->
-                  <g fill="none" stroke="#3d2a14" stroke-width="1.55" opacity="0.72">
-                    <path d="M18 118 Q70 88 130 108 Q190 92 248 128 Q300 168 278 230 Q250 278 188 292 Q118 304 68 268 Q28 220 18 118 Z" />
-                    <path d="M228 308 Q286 286 342 328 Q378 378 362 448 Q338 492 268 498 Q208 478 218 408 Q224 352 228 308 Z" />
-                    <path d="M22 508 Q78 478 138 518 Q186 568 168 638 Q128 688 62 672 Q22 628 22 508 Z" />
-                    <path d="M236 588 Q304 562 362 612 Q388 688 358 768 Q308 812 248 798 Q198 748 214 668 Q224 622 236 588 Z" />
-                    <path d="M36 858 Q108 828 168 878 Q198 948 168 1038 Q118 1088 58 1062 Q22 1000 36 858 Z" />
-                    <path d="M298 62 Q318 52 338 72 Q332 96 308 92 Q290 78 298 62 Z" />
-                    <path d="M6 392 Q30 378 52 402 Q44 424 16 420 Q2 406 6 392 Z" />
-                    <path d="M158 678 Q180 664 202 688 Q192 710 166 704 Q150 692 158 678 Z" />
-                    <path d="M342 828 Q366 814 384 838 Q374 860 348 854 Q332 840 342 828 Z" />
-                    <path d="M148 328 Q168 318 182 338 Q172 354 152 348 Q140 338 148 328 Z" />
-                    <path d="M318 980 Q338 968 354 988 Q344 1008 322 1002 Q308 990 318 980 Z" />
-                  </g>
-                  <!-- Shore hatching -->
-                  <g fill="none" stroke="#3a4a40" stroke-width="0.7" opacity="0.28">
-                    <path d="M40 250 L28 262 M70 278 L56 292 M120 296 L112 312 M180 286 L176 304 M240 250 L252 264 M270 200 L286 210" />
-                    <path d="M250 330 L238 318 M340 360 L354 348 M370 430 L384 422 M300 492 L312 506 M230 470 L218 482" />
-                    <path d="M40 530 L26 518 M150 540 L164 528 M170 640 L184 652 M80 684 L68 698 M30 600 L16 608" />
-                    <path d="M250 600 L236 588 M370 640 L384 628 M370 760 L384 772 M270 808 L258 822 M210 720 L196 732" />
-                    <path d="M50 870 L36 858 M170 900 L184 888 M180 1020 L194 1034 M90 1080 L76 1094 M40 980 L24 988" />
-                  </g>
-                  <!-- Actual ocean waves -->
-                  <g class="adv-map-waves" fill="none" stroke="#5a4030" stroke-width="1.15" stroke-linecap="round" opacity="0.5">
-                    <g transform="translate(300 150)">
-                      <path d="M0 10 Q14 0 28 10" /><path d="M8 18 Q22 8 36 18" /><path d="M16 26 Q30 16 44 26" />
-                    </g>
-                    <g transform="translate(40 360)">
-                      <path d="M0 10 Q16 0 32 10" /><path d="M10 18 Q26 8 42 18" /><path d="M20 26 Q36 16 52 26" />
-                    </g>
-                    <g transform="translate(160 430)">
-                      <path d="M0 8 Q12 0 24 8" /><path d="M8 16 Q20 8 32 16" /><path d="M16 24 Q28 16 40 24" />
-                    </g>
-                    <g transform="translate(300 530)">
-                      <path d="M0 10 Q14 0 28 10" /><path d="M8 18 Q22 8 36 18" /><path d="M16 26 Q30 16 44 26" />
-                    </g>
-                    <g transform="translate(90 760)">
-                      <path d="M0 10 Q16 0 32 10" /><path d="M10 18 Q26 8 42 18" /><path d="M20 26 Q36 16 52 26" />
-                    </g>
-                    <g transform="translate(210 840)">
-                      <path d="M0 8 Q12 0 24 8" /><path d="M8 16 Q20 8 32 16" /><path d="M16 24 Q28 16 40 24" />
-                    </g>
-                    <g transform="translate(250 1120)">
-                      <path d="M0 10 Q18 0 36 10" /><path d="M12 18 Q30 8 48 18" /><path d="M24 26 Q42 16 60 26" />
-                    </g>
-                    <g transform="translate(320 900)">
-                      <path d="M0 8 Q12 0 24 8" /><path d="M8 16 Q20 8 32 16" />
-                    </g>
-                    <g transform="translate(20 200)">
-                      <path d="M0 8 Q12 0 24 8" /><path d="M8 16 Q20 8 32 16" />
-                    </g>
-                  </g>
-                  <text x="292" y="236" font-family="'IM Fell English', Georgia, serif" font-size="11" fill="#3a3224" font-style="italic" opacity="0.62">Eastern Reach</text>
-                  <text x="24" y="740" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#3a3224" font-style="italic" opacity="0.58">Western Channel</text>
-                  <text x="148" y="456" font-family="'IM Fell English', Georgia, serif" font-size="11" fill="#3a3224" font-style="italic" opacity="0.6">Middle Passage</text>
-                  <text x="128" y="1138" font-family="'IM Fell English', Georgia, serif" font-size="13" fill="#3a3224" font-style="italic" opacity="0.68">Southern Ocean</text>
-                  <text x="78" y="78" font-family="'IM Fell English', Georgia, serif" font-size="11" fill="#3a3224" font-style="italic" opacity="0.58">Northern Sea</text>
-                  <text x="248" y="88" font-family="'IM Fell English', Georgia, serif" font-size="9" fill="#3a3224" font-style="italic" opacity="0.55">Gull Islet</text>
-                  <text x="8" y="448" font-family="'IM Fell English', Georgia, serif" font-size="9" fill="#3a3224" font-style="italic" opacity="0.55">Widow's Cay</text>
-                  <text x="150" y="728" font-family="'IM Fell English', Georgia, serif" font-size="9" fill="#3a3224" font-style="italic" opacity="0.55">The Narrows</text>
-                  <text x="300" y="818" font-family="'IM Fell English', Georgia, serif" font-size="9" fill="#3a3224" font-style="italic" opacity="0.55">Coral Banks</text>
+                  <path fill="url(#piratesOcean)" opacity="0.16" d="M0 0 H800 V600 H0 Z" />
                 </g>
-                <!-- Rhumb / latitude lines -->
-                <g class="adv-map-rhumbs" fill="none" stroke="#5a3c18" stroke-width="0.45" opacity="0.18" pointer-events="none">
-                  <path d="M20 80 L380 80 M20 200 L380 200 M20 320 L380 320 M20 440 L380 440 M20 560 L380 560 M20 680 L380 680 M20 800 L380 800 M20 920 L380 920 M20 1040 L380 1040" />
-                  <path d="M70 40 L70 1160 M140 40 L140 1160 M210 40 L210 1160 M280 40 L280 1160 M350 40 L350 1160" />
-                  <path d="M40 60 L360 1140 M360 60 L40 1140" stroke-dasharray="3 7" />
+                <g class="adv-map-rhumbs" fill="none" stroke="#5a3c18" stroke-width="0.55" opacity="0.16" pointer-events="none">
+                  <path d="M30 90 L770 90 M30 180 L770 180 M30 270 L770 270 M30 360 L770 360 M30 450 L770 450 M30 540 L770 540" />
+                  <path d="M100 30 L100 570 M220 30 L220 570 M340 30 L340 570 M460 30 L460 570 M580 30 L580 570 M700 30 L700 570" />
+                  <path d="M50 50 L750 550 M750 50 L50 550" stroke-dasharray="4 8" />
                 </g>
-                <!-- Pirate-map doodles: palms, ship, serpent, wind, skull, X -->
+                <g class="adv-map-lands">
+                  <path fill="url(#piratesLand)" stroke="#3d2a14" stroke-width="1.6" d="M40 430 Q90 390 150 410 Q200 450 170 500 Q110 540 60 510 Q20 470 40 430 Z" />
+                  <path fill="url(#piratesLand)" stroke="#3d2a14" stroke-width="1.6" d="M120 330 Q170 300 220 330 Q240 380 190 410 Q130 400 120 330 Z" />
+                  <path fill="url(#piratesLand)" stroke="#3d2a14" stroke-width="1.6" d="M90 210 Q140 180 190 210 Q210 260 150 280 Q90 260 90 210 Z" />
+                  <path fill="none" stroke="#3d2a14" stroke-width="1.4" d="M118 232 Q150 218 178 236 Q168 258 138 256 Q118 246 118 232 Z" />
+                  <path fill="url(#piratesLand)" stroke="#3d2a14" stroke-width="1.6" d="M210 120 Q270 90 330 120 Q350 170 300 190 Q230 180 210 120 Z" />
+                  <path fill="url(#piratesLand)" stroke="#3d2a14" stroke-width="1.6" d="M340 80 Q410 50 480 90 Q500 140 440 160 Q360 150 340 80 Z" />
+                  <path fill="url(#piratesLand)" stroke="#3d2a14" stroke-width="1.6" d="M460 70 Q530 40 590 80 Q610 130 550 150 Q470 140 460 70 Z" />
+                  <path fill="url(#piratesLand)" stroke="#3d2a14" stroke-width="1.6" d="M580 130 Q650 100 710 150 Q730 210 660 230 Q580 200 580 130 Z" />
+                  <path fill="url(#piratesLand)" stroke="#3d2a14" stroke-width="1.6" d="M650 220 Q720 200 770 250 Q780 310 710 330 Q640 300 650 220 Z" />
+                  <path fill="url(#piratesLand)" stroke="#3d2a14" stroke-width="1.6" d="M600 310 Q670 290 720 340 Q730 400 660 420 Q590 380 600 310 Z" />
+                  <path fill="url(#piratesLand)" stroke="#3d2a14" stroke-width="1.6" d="M500 390 Q570 360 630 410 Q640 470 560 490 Q490 450 500 390 Z" />
+                  <path fill="url(#piratesLand)" stroke="#3d2a14" stroke-width="1.6" d="M360 440 Q440 410 500 460 Q510 520 430 540 Q350 500 360 440 Z" />
+                  <path fill="url(#piratesLand)" stroke="#3d2a14" stroke-width="1.6" d="M250 380 Q320 350 380 400 Q390 460 310 480 Q240 440 250 380 Z" />
+                  <path fill="url(#piratesLand)" stroke="#3d2a14" stroke-width="1.6" d="M450 250 Q520 230 570 280 Q580 330 510 350 Q440 320 450 250 Z" />
+                  <path fill="url(#piratesLand)" stroke="#3d2a14" stroke-width="1.6" d="M560 200 Q620 180 670 220 Q680 270 620 290 Q550 260 560 200 Z" />
+                </g>
                 <g class="adv-map-doodles" fill="none" pointer-events="none">
-                  <g transform="translate(42 48)" opacity="0.78">
+                  <g transform="translate(118 118) scale(0.92)" opacity="0.88">
+                    <circle cx="0" cy="0" r="46" fill="#efe4c0" stroke="#3a2814" stroke-width="1.4" />
+                    <circle cx="0" cy="0" r="40" fill="none" stroke="#3a2814" stroke-width="0.7" opacity="0.55" />
+                    <path d="M0 -38 L8 0 L0 38 L-8 0 Z" fill="#3a2814" />
+                    <path d="M-38 0 L0 -8 L38 0 L0 8 Z" fill="#5a3c1c" />
+                    <path d="M0 -38 L6 0 L0 8 L-6 0 Z" fill="#c45c28" />
+                    <path d="M-26 -26 L0 -6 L26 -26 L6 0 L26 26 L0 6 L-26 26 L-6 0 Z" fill="#efe6d0" stroke="#3a2814" stroke-width="0.7" opacity="0.85" />
+                    <circle cx="0" cy="0" r="5" fill="#c45c28" stroke="#3a2814" stroke-width="0.8" />
+                    <text x="0" y="-52" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="13" fill="#3a2814">N</text>
+                    <text x="52" y="5" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="11" fill="#3a2814">E</text>
+                    <text x="0" y="62" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="11" fill="#3a2814">S</text>
+                    <text x="-52" y="5" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="11" fill="#3a2814">W</text>
+                  </g>
+                  <g transform="translate(150 400) scale(1.0)" opacity="0.82">
+                    <path d="M0 0 L1.7 28 L-1.7 28 Z" fill="#6a4420"/>
+                    <path d="M0 2 Q-18 -8 -8 7 Q-16 12 -1 8 Q1 -16 4 8 Q18 12 9 6 Q20 -8 0 2 Z" fill="#2f6a38" stroke="#1f4a28" stroke-width="0.6"/>
+                  </g>                  <g transform="translate(178 412) scale(0.85)" opacity="0.82">
+                    <path d="M0 0 L1.7 28 L-1.7 28 Z" fill="#6a4420"/>
+                    <path d="M0 2 Q-18 -8 -8 7 Q-16 12 -1 8 Q1 -16 4 8 Q18 12 9 6 Q20 -8 0 2 Z" fill="#2f6a38" stroke="#1f4a28" stroke-width="0.6"/>
+                  </g>                  <g transform="translate(700 250) scale(1.0)" opacity="0.82">
+                    <path d="M0 0 L1.7 28 L-1.7 28 Z" fill="#6a4420"/>
+                    <path d="M0 2 Q-18 -8 -8 7 Q-16 12 -1 8 Q1 -16 4 8 Q18 12 9 6 Q20 -8 0 2 Z" fill="#2f6a38" stroke="#1f4a28" stroke-width="0.6"/>
+                  </g>                  <g transform="translate(728 262) scale(0.8)" opacity="0.82">
+                    <path d="M0 0 L1.7 28 L-1.7 28 Z" fill="#6a4420"/>
+                    <path d="M0 2 Q-18 -8 -8 7 Q-16 12 -1 8 Q1 -16 4 8 Q18 12 9 6 Q20 -8 0 2 Z" fill="#2f6a38" stroke="#1f4a28" stroke-width="0.6"/>
+                  </g>                  <g transform="translate(640 340) scale(0.9)" opacity="0.82">
+                    <path d="M0 0 L1.7 28 L-1.7 28 Z" fill="#6a4420"/>
+                    <path d="M0 2 Q-18 -8 -8 7 Q-16 12 -1 8 Q1 -16 4 8 Q18 12 9 6 Q20 -8 0 2 Z" fill="#2f6a38" stroke="#1f4a28" stroke-width="0.6"/>
+                  </g>                  <g transform="translate(90 230) scale(0.85)" opacity="0.82">
+                    <path d="M0 0 L1.7 28 L-1.7 28 Z" fill="#6a4420"/>
+                    <path d="M0 2 Q-18 -8 -8 7 Q-16 12 -1 8 Q1 -16 4 8 Q18 12 9 6 Q20 -8 0 2 Z" fill="#2f6a38" stroke="#1f4a28" stroke-width="0.6"/>
+                  </g>                  <g transform="translate(470 90) scale(0.75)" opacity="0.82">
+                    <path d="M0 0 L1.7 28 L-1.7 28 Z" fill="#6a4420"/>
+                    <path d="M0 2 Q-18 -8 -8 7 Q-16 12 -1 8 Q1 -16 4 8 Q18 12 9 6 Q20 -8 0 2 Z" fill="#2f6a38" stroke="#1f4a28" stroke-width="0.6"/>
+                  </g>
+                  <g transform="translate(300 300) scale(1.05)" opacity="0.86">
+                    <path d="M-22 16 L22 16 L16 6 L-16 6 Z" fill="#8a6234" stroke="#3a2814" stroke-width="1.15"/>
+                    <path d="M-3 6 L-3 -18 L2 -18 L2 6 Z" fill="#5a3c1c"/>
+                    <path d="M2 -16 L22 -28 L22 -10 L2 -4 Z" fill="#efe6d0" stroke="#3a2814" stroke-width="0.85"/>
+                    <path d="M-3 -14 L-18 -24 L-18 -10 L-3 -4 Z" fill="#e8d8b0" stroke="#3a2814" stroke-width="0.8"/>
+                    <path d="M2 -18 L2 -26 L12 -22 Z" fill="#1a1a1a"/>
+                    <path d="M-12 16 Q0 24 12 16" fill="none" stroke="#3a2814" stroke-width="0.9"/>
+                  </g>
+                  <g transform="translate(720 470) scale(0.8)" opacity="0.86">
+                    <path d="M-22 16 L22 16 L16 6 L-16 6 Z" fill="#8a6234" stroke="#3a2814" stroke-width="1.15"/>
+                    <path d="M-3 6 L-3 -18 L2 -18 L2 6 Z" fill="#5a3c1c"/>
+                    <path d="M2 -16 L22 -28 L22 -10 L2 -4 Z" fill="#efe6d0" stroke="#3a2814" stroke-width="0.85"/>
+                    <path d="M-3 -14 L-18 -24 L-18 -10 L-3 -4 Z" fill="#e8d8b0" stroke="#3a2814" stroke-width="0.8"/>
+                    <path d="M2 -18 L2 -26 L12 -22 Z" fill="#1a1a1a"/>
+                    <path d="M-12 16 Q0 24 12 16" fill="none" stroke="#3a2814" stroke-width="0.9"/>
+                  </g>
+                  <g transform="translate(250 220)" fill="none" stroke="#5a4030" stroke-width="1.2" stroke-linecap="round" opacity="0.48">
+                    <path d="M0 10 Q16 0 32 10" /><path d="M10 18 Q26 8 42 18" /><path d="M20 26 Q36 16 52 26" />
+                  </g>                  <g transform="translate(400 200)" fill="none" stroke="#5a4030" stroke-width="1.2" stroke-linecap="round" opacity="0.48">
+                    <path d="M0 10 Q16 0 32 10" /><path d="M10 18 Q26 8 42 18" /><path d="M20 26 Q36 16 52 26" />
+                  </g>                  <g transform="translate(200 500)" fill="none" stroke="#5a4030" stroke-width="1.2" stroke-linecap="round" opacity="0.48">
+                    <path d="M0 10 Q16 0 32 10" /><path d="M10 18 Q26 8 42 18" /><path d="M20 26 Q36 16 52 26" />
+                  </g>                  <g transform="translate(500 140)" fill="none" stroke="#5a4030" stroke-width="1.2" stroke-linecap="round" opacity="0.48">
+                    <path d="M0 10 Q16 0 32 10" /><path d="M10 18 Q26 8 42 18" /><path d="M20 26 Q36 16 52 26" />
+                  </g>                  <g transform="translate(740 360)" fill="none" stroke="#5a4030" stroke-width="1.2" stroke-linecap="round" opacity="0.48">
+                    <path d="M0 10 Q16 0 32 10" /><path d="M10 18 Q26 8 42 18" /><path d="M20 26 Q36 16 52 26" />
+                  </g>
+                  <g transform="translate(250 155)" opacity="0.84">
+                    <path d="M0 18 Q28 0 56 14 Q78 28 62 46 Q30 40 8 52 Q-10 36 0 18 Z" fill="#c4a06a" stroke="#3a2814" stroke-width="1.25"/>
+                    <path d="M56 16 Q86 6 92 28" fill="none" stroke="#3a2814" stroke-width="1.4" stroke-linecap="round"/>
+                    <circle cx="24" cy="22" r="2.6" fill="#3a2814"/>
+                    <path d="M10 36 Q28 28 48 38" fill="none" stroke="#5a2010" stroke-width="1.1"/>
+                  </g>
+                  <g transform="translate(70 455)" opacity="0.82">
+                    <ellipse cx="0" cy="0" rx="18" ry="14" fill="#efe0b8" stroke="#3a2814" stroke-width="1.15"/>
+                    <circle cx="-6" cy="-2" r="2.4" fill="#3a2814"/>
+                    <circle cx="7" cy="-1" r="2.4" fill="#3a2814"/>
+                    <path d="M-18 4 Q-32 -6 -24 12" fill="none" stroke="#3a2814" stroke-width="1.2" stroke-linecap="round"/>
+                    <path d="M-22 6 Q-36 2 -28 16" fill="none" stroke="#3a2814" stroke-width="1" stroke-linecap="round"/>
+                  </g>
+                  <g transform="translate(70 70)" opacity="0.78">
                     <ellipse cx="0" cy="0" rx="16" ry="12" fill="#efe0b8" stroke="#3a2814" stroke-width="1.1"/>
                     <circle cx="-5" cy="-2" r="2.2" fill="#3a2814"/>
                     <circle cx="6" cy="-1" r="2.2" fill="#3a2814"/>
                     <path d="M-16 2 Q-28 -6 -22 8" fill="none" stroke="#3a2814" stroke-width="1.2" stroke-linecap="round"/>
-                    <path d="M-20 4 Q-32 0 -26 12" fill="none" stroke="#3a2814" stroke-width="1" stroke-linecap="round"/>
                   </g>
-                  <g transform="translate(338 168)" opacity="0.82">
-                    <path d="M0 18 Q18 0 38 10 Q52 18 48 32 Q28 28 8 36 Q-6 28 0 18 Z" fill="#c4a06a" stroke="#3a2814" stroke-width="1.2"/>
-                    <path d="M38 12 Q58 4 62 18" fill="none" stroke="#3a2814" stroke-width="1.3" stroke-linecap="round"/>
-                    <circle cx="18" cy="16" r="2.4" fill="#3a2814"/>
-                    <path d="M8 28 Q22 22 36 30" fill="none" stroke="#5a2010" stroke-width="1.1"/>
+                  <g transform="translate(620 155)" opacity="0.86">
+                    <path d="M-18 22 L-6 4 L6 4 L18 22 Z" fill="#8a6840" stroke="#3a2814" stroke-width="1.1"/>
+                    <path d="M-10 22 L-2 8 L6 22" fill="#6a4a2c"/>
+                    <path d="M8 22 L14 10 L22 22" fill="#7a5634"/>
                   </g>
-                  <g transform="translate(86 198)" opacity="0.8">
-                    <path d="M0 0 L1.6 26 L-1.6 26 Z" fill="#6a4420"/>
-                    <path d="M0 2 Q-16 -6 -7 6 Q-14 10 -1 7 Q1 -14 4 7 Q16 10 8 5 Q17 -6 0 2 Z" fill="#2f6a38" stroke="#1f4a28" stroke-width="0.6"/>
+                  <g transform="translate(700 240)" opacity="0.84">
+                    <path d="M0 0 L32 0 L32 4 L0 4 Z" fill="#6a4420"/>
+                    <path d="M6 0 L6 -12 M16 0 L16 -10 M26 0 L26 -14" stroke="#5a3c1c" stroke-width="1.15"/>
+                    <text x="-4" y="22" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#4a3d2e" font-style="italic">Palmwood Harbor</text>
                   </g>
-                  <g transform="translate(210 248)" opacity="0.8">
-                    <path d="M0 0 L1.5 22 L-1.5 22 Z" fill="#6a4420"/>
-                    <path d="M0 1 Q-14 -6 -6 5 Q-12 9 -1 6 Q1 -12 3 6 Q14 9 7 4 Q15 -5 0 1 Z" fill="#2f6a38" stroke="#1f4a28" stroke-width="0.6"/>
+                  <g transform="translate(555 420)" opacity="0.88">
+                    <path d="M-32 46 L-10 8 L10 8 L32 46 Z" fill="#8a6840" stroke="#3a2814" stroke-width="1.2"/>
+                    <path d="M-10 8 L0 -6 L10 8 Z" fill="#5a3c24" stroke="#3a2814" stroke-width="0.9"/>
+                    <path d="M-5 8 Q0 20 5 8" fill="#c45c28" opacity="0.75"/>
+                    <path d="M-2 -8 Q-12 -26 -4 -36" fill="none" stroke="#6a4420" stroke-width="1.15" stroke-linecap="round"/>
+                    <path d="M3 -10 Q14 -28 8 -40" fill="none" stroke="#6a4420" stroke-width="1" stroke-linecap="round"/>
+                    <text x="-24" y="64" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#4a3d2e" font-style="italic">Lava Falls</text>
                   </g>
-                  <g transform="translate(300 390)" opacity="0.78">
-                    <path d="M0 0 L1.4 20 L-1.4 20 Z" fill="#6a4420"/>
-                    <path d="M0 1 Q-13 -5 -6 5 Q-11 8 -1 6 Q1 -11 3 6 Q13 8 7 4 Q14 -5 0 1 Z" fill="#2f6a38" stroke="#1f4a28" stroke-width="0.6"/>
+                  <g transform="translate(320 400)" opacity="0.88">
+                    <path d="M-36 40 L-8 4 L8 4 L20 28 L36 40 Z" fill="#8a6a44" stroke="#3a2814" stroke-width="1.15"/>
+                    <path d="M-8 4 L0 -18 L8 4 Z" fill="#c4b08a" stroke="#3a2814" stroke-width="0.9"/>
+                    <text x="-34" y="56" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#4a3d2e" font-style="italic">Treasurehorn Peak</text>
                   </g>
-                  <g transform="translate(70 560)" opacity="0.8">
-                    <path d="M0 0 L1.5 24 L-1.5 24 Z" fill="#6a4420"/>
-                    <path d="M0 2 Q-15 -6 -7 6 Q-13 10 -1 7 Q1 -13 4 7 Q15 10 8 5 Q16 -6 0 2 Z" fill="#2f6a38" stroke="#1f4a28" stroke-width="0.6"/>
+                  <g transform="translate(400 300)" opacity="0.8">
+                    <path d="M-30 10 Q-10 -16 12 6 Q28 -8 40 14 Q18 8 -4 18 Q-22 8 -30 10 Z" fill="#8a6848" stroke="#3a2814" stroke-width="1.2"/>
+                    <circle cx="4" cy="4" r="2.2" fill="#3a2814"/>
+                    <text x="-28" y="36" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#4a3d2e" font-style="italic">Leviathan Deep</text>
                   </g>
-                  <g transform="translate(318 720)" opacity="0.78">
-                    <path d="M0 0 L1.4 20 L-1.4 20 Z" fill="#6a4420"/>
-                    <path d="M0 1 Q-13 -5 -6 5 Q-11 8 -1 6 Q1 -11 3 6 Q13 8 7 4 Q14 -5 0 1 Z" fill="#2f6a38" stroke="#1f4a28" stroke-width="0.6"/>
+                  <g transform="translate(608 228)" opacity="0.92">
+                    <path d="M-16 -12 L16 12 M-16 12 L16 -12" stroke="#b91c1c" stroke-width="5" stroke-linecap="round"/>
+                    <path d="M-16 -12 L16 12 M-16 12 L16 -12" stroke="#dc2626" stroke-width="2.6" stroke-linecap="round"/>
+                    <text x="-28" y="32" font-family="'IM Fell English SC', Georgia, serif" font-size="12" fill="#8a1c14">Treasure Cove</text>
                   </g>
-                  <g transform="translate(268 1088)" opacity="0.82">
-                    <path d="M-18 18 L18 18 L12 8 L-12 8 Z" fill="#8a6234" stroke="#3a2814" stroke-width="1.1"/>
-                    <path d="M-2 8 L-2 -10 L2 -10 L2 8 Z" fill="#5a3c1c"/>
-                    <path d="M2 -8 L16 -18 L16 -6 L2 2 Z" fill="#efe6d0" stroke="#3a2814" stroke-width="0.8"/>
-                    <path d="M-2 -8 L-14 -16 L-14 -6 L-2 2 Z" fill="#efe6d0" stroke="#3a2814" stroke-width="0.8"/>
-                    <path d="M-10 18 Q0 24 10 18" fill="none" stroke="#3a2814" stroke-width="0.9"/>
-                  </g>
-                  <g transform="translate(48 1124)" opacity="0.78">
-                    <ellipse cx="0" cy="6" rx="10" ry="8" fill="#efe0b8" stroke="#3a2814" stroke-width="1.1"/>
-                    <circle cx="-3.5" cy="4" r="1.6" fill="#3a2814"/>
-                    <circle cx="3.5" cy="4" r="1.6" fill="#3a2814"/>
-                    <path d="M-4 9 Q0 12 4 9" fill="none" stroke="#3a2814" stroke-width="0.9"/>
-                    <path d="M-7 -4 L-3 0 M7 -4 L3 0 M0 -8 L0 -1" stroke="#3a2814" stroke-width="1.05" stroke-linecap="round"/>
-                  </g>
-                  <g transform="translate(312 1048)" opacity="0.9">
-                    <path d="M-14 -10 L14 10 M-14 10 L14 -10" stroke="#b91c1c" stroke-width="4.2" stroke-linecap="round"/>
-                    <path d="M-14 -10 L14 10 M-14 10 L14 -10" stroke="#dc2626" stroke-width="2.4" stroke-linecap="round"/>
-                    <rect x="-9" y="-22" width="18" height="12" rx="1.4" fill="#b45309" stroke="#3a2814" stroke-width="0.8"/>
-                    <path d="M-7 -22 L-4 -28 L0 -22 L4 -28 L7 -22" fill="#fbbf24" stroke="#92400e" stroke-width="0.6"/>
-                  </g>
-                  <!-- Extra palms -->
-                  <g transform="translate(132 142)" opacity="0.8">
-                    <path d="M0 0 L1.4 20 L-1.4 20 Z" fill="#6a4420"/>
-                    <path d="M0 1 Q-13 -5 -6 5 Q-11 8 -1 6 Q1 -11 3 6 Q13 8 7 4 Q14 -5 0 1 Z" fill="#2f6a38" stroke="#1f4a28" stroke-width="0.6"/>
-                  </g>
-                  <g transform="translate(248 268)" opacity="0.78">
-                    <path d="M0 0 L1.3 18 L-1.3 18 Z" fill="#6a4420"/>
-                    <path d="M0 1 Q-12 -5 -5 5 Q-10 8 -1 6 Q1 -10 3 6 Q12 8 6 4 Q13 -5 0 1 Z" fill="#2f6a38" stroke="#1f4a28" stroke-width="0.6"/>
-                  </g>
-                  <g transform="translate(52 920)" opacity="0.8">
-                    <path d="M0 0 L1.5 22 L-1.5 22 Z" fill="#6a4420"/>
-                    <path d="M0 2 Q-15 -6 -7 6 Q-13 10 -1 7 Q1 -13 4 7 Q15 10 8 5 Q16 -6 0 2 Z" fill="#2f6a38" stroke="#1f4a28" stroke-width="0.6"/>
-                  </g>
-                  <g transform="translate(148 980)" opacity="0.78">
-                    <path d="M0 0 L1.3 18 L-1.3 18 Z" fill="#6a4420"/>
-                    <path d="M0 1 Q-12 -5 -5 5 Q-10 8 -1 6 Q1 -10 3 6 Q12 8 6 4 Q13 -5 0 1 Z" fill="#2f6a38" stroke="#1f4a28" stroke-width="0.6"/>
-                  </g>
-                  <!-- Volcano + smoke -->
-                  <g transform="translate(300 668)" opacity="0.88">
-                    <path d="M-28 42 L-8 8 L8 8 L28 42 Z" fill="#8a6840" stroke="#3a2814" stroke-width="1.15"/>
-                    <path d="M-8 8 L0 -4 L8 8 Z" fill="#5a3c24" stroke="#3a2814" stroke-width="0.9"/>
-                    <path d="M-4 8 Q0 18 4 8" fill="#c45c28" opacity="0.7"/>
-                    <path d="M-2 -6 Q-10 -22 -4 -30" fill="none" stroke="#6a4420" stroke-width="1.1" stroke-linecap="round"/>
-                    <path d="M2 -8 Q12 -24 6 -34" fill="none" stroke="#6a4420" stroke-width="1" stroke-linecap="round"/>
-                    <path d="M0 -10 Q2 -26 8 -32" fill="none" stroke="#8a6234" stroke-width="0.9" stroke-linecap="round"/>
-                    <text x="-22" y="58" font-family="'IM Fell English', Georgia, serif" font-size="8" fill="#4a3d2e" font-style="italic">Firepeak</text>
-                  </g>
-                  <!-- Lighthouse -->
-                  <g transform="translate(358 198)" opacity="0.86">
-                    <path d="M-6 28 L-4 4 L4 4 L6 28 Z" fill="#efe6d0" stroke="#3a2814" stroke-width="0.9"/>
-                    <rect x="-5" y="-2" width="10" height="7" fill="#b45309" stroke="#3a2814" stroke-width="0.7"/>
-                    <path d="M0 -2 L0 -10" stroke="#3a2814" stroke-width="1"/>
-                    <path d="M0 -10 L8 -6 M0 -10 L-8 -4" stroke="#c45c28" stroke-width="0.8" stroke-linecap="round"/>
-                    <ellipse cx="0" cy="30" rx="10" ry="3" fill="#8a6840" opacity="0.45"/>
-                    <text x="-18" y="44" font-family="'IM Fell English', Georgia, serif" font-size="8" fill="#4a3d2e" font-style="italic">Beacon Rock</text>
-                  </g>
-                  <!-- Harbor / docks -->
-                  <g transform="translate(48 638)" opacity="0.84">
-                    <path d="M0 0 L28 0 L28 4 L0 4 Z" fill="#6a4420"/>
-                    <path d="M6 0 L6 -10 M14 0 L14 -8 M22 0 L22 -12" stroke="#5a3c1c" stroke-width="1.1"/>
-                    <path d="M4 -10 L8 -10 M12 -8 L16 -8 M20 -12 L24 -12" stroke="#3a2814" stroke-width="0.8"/>
-                    <path d="M-8 8 Q8 14 30 6" fill="none" stroke="#3a4a40" stroke-width="0.8" opacity="0.6"/>
-                    <text x="-4" y="24" font-family="'IM Fell English', Georgia, serif" font-size="8" fill="#4a3d2e" font-style="italic">Palmwood Harbor</text>
-                  </g>
-                  <!-- Fort -->
-                  <g transform="translate(200 168)" opacity="0.82">
-                    <path d="M-16 18 L-16 2 L-10 2 L-10 -4 L-4 -4 L-4 2 L4 2 L4 -4 L10 -4 L10 2 L16 2 L16 18 Z" fill="#d8c090" stroke="#3a2814" stroke-width="0.95"/>
-                    <path d="M-6 18 L-6 10 L6 10 L6 18" fill="#5a3c24"/>
-                    <text x="-16" y="32" font-family="'IM Fell English', Georgia, serif" font-size="8" fill="#4a3d2e" font-style="italic">Old Fort</text>
-                  </g>
-                  <!-- Anchor -->
-                  <g transform="translate(24 1080)" opacity="0.78">
-                    <path d="M0 -12 L0 10" stroke="#3a2814" stroke-width="1.4" stroke-linecap="round"/>
-                    <circle cx="0" cy="-14" r="3.2" fill="none" stroke="#3a2814" stroke-width="1.2"/>
-                    <path d="M-10 6 Q0 16 10 6" fill="none" stroke="#3a2814" stroke-width="1.3" stroke-linecap="round"/>
-                    <path d="M-10 6 L-7 2 M10 6 L7 2" stroke="#3a2814" stroke-width="1.1" stroke-linecap="round"/>
-                  </g>
-                  <!-- Second ship -->
-                  <g transform="translate(120 400)" opacity="0.8">
-                    <path d="M-14 12 L14 12 L10 4 L-10 4 Z" fill="#8a6234" stroke="#3a2814" stroke-width="1"/>
-                    <path d="M-1 4 L-1 -10 L2 -10 L2 4 Z" fill="#5a3c1c"/>
-                    <path d="M2 -8 L12 -16 L12 -6 L2 0 Z" fill="#efe6d0" stroke="#3a2814" stroke-width="0.7"/>
-                    <path d="M-8 12 Q0 16 8 12" fill="none" stroke="#3a2814" stroke-width="0.8"/>
-                  </g>
-                  <!-- Reef hashes -->
-                  <g transform="translate(220 760)" stroke="#3a4a40" stroke-width="0.85" opacity="0.45">
-                    <path d="M0 0 L8 6 M6 -2 L14 4 M12 0 L20 6 M4 8 L12 14 M10 6 L18 12"/>
-                    <text x="-4" y="26" font-family="'IM Fell English', Georgia, serif" font-size="8" fill="#4a3d2e" font-style="italic" stroke="none">Shoals</text>
-                  </g>
-                  <g transform="translate(80 250)" stroke="#3a4a40" stroke-width="0.8" opacity="0.4">
-                    <path d="M0 0 L7 5 M5 -2 L12 3 M10 0 L17 5"/>
-                  </g>
-                  <!-- Icebergs / floes -->
-                  <g transform="translate(40 360)" opacity="0.75">
-                    <path d="M0 16 L10 0 L22 16 Z" fill="#e8ece8" stroke="#3a4038" stroke-width="0.9"/>
-                    <path d="M16 16 L26 4 L36 16 Z" fill="#d8e0dc" stroke="#3a4038" stroke-width="0.8"/>
-                    <text x="0" y="30" font-family="'IM Fell English', Georgia, serif" font-size="8" fill="#3a4038" font-style="italic">Ice Floes</text>
-                  </g>
-                  <g transform="translate(360 360)" opacity="0.72">
-                    <path d="M0 14 L8 -2 L18 14 Z" fill="#e8ece8" stroke="#3a4038" stroke-width="0.85"/>
-                  </g>
-                  <!-- Atoll -->
-                  <g transform="translate(170 340)" opacity="0.8">
-                    <ellipse cx="0" cy="0" rx="16" ry="10" fill="none" stroke="#3a2814" stroke-width="1.05"/>
-                    <ellipse cx="0" cy="0" rx="8" ry="5" fill="#efe0b8" stroke="#3a2814" stroke-width="0.7"/>
-                    <text x="-14" y="20" font-family="'IM Fell English', Georgia, serif" font-size="8" fill="#4a3d2e" font-style="italic">Golden Atoll</text>
-                  </g>
-                  <!-- Cape -->
-                  <g transform="translate(250 500)" opacity="0.7">
-                    <path d="M0 0 Q18 8 8 22 Q-4 12 0 0 Z" fill="#e6d09a" stroke="#3a2814" stroke-width="0.9"/>
-                    <text x="-6" y="36" font-family="'IM Fell English', Georgia, serif" font-size="8" fill="#4a3d2e" font-style="italic">Cape Hornbill</text>
-                  </g>
-                  <!-- River -->
-                  <path d="M90 180 Q110 210 96 250 Q80 270 108 290" fill="none" stroke="#5a6a60" stroke-width="1.15" opacity="0.45"/>
-                  <path d="M280 650 Q300 690 270 730" fill="none" stroke="#5a6a60" stroke-width="1.05" opacity="0.4"/>
-                </g>
-                <!-- Land masses -->
-                <g class="adv-map-lands">
-                  <path fill="url(#advMapLand)" stroke="#3d2a14" stroke-width="1.4" d="M18 118 Q70 88 130 108 Q190 92 248 128 Q300 168 278 230 Q250 278 188 292 Q118 304 68 268 Q28 220 18 118 Z" />
-                  <path fill="url(#advMapLandHi)" opacity="0.35" d="M40 140 Q90 110 150 128 Q200 118 240 150 Q250 190 210 230 Q140 250 80 220 Q40 180 40 140 Z" />
-                  <path fill="url(#advMapLand)" stroke="#3d2a14" stroke-width="1.4" d="M228 308 Q286 286 342 328 Q378 378 362 448 Q338 492 268 498 Q208 478 218 408 Q224 352 228 308 Z" />
-                  <path fill="url(#advMapLand)" stroke="#3d2a14" stroke-width="1.4" d="M22 508 Q78 478 138 518 Q186 568 168 638 Q128 688 62 672 Q22 628 22 508 Z" />
-                  <path fill="url(#advMapLand)" stroke="#3d2a14" stroke-width="1.4" d="M236 588 Q304 562 362 612 Q388 688 358 768 Q308 812 248 798 Q198 748 214 668 Q224 622 236 588 Z" />
-                  <path fill="url(#advMapLand)" stroke="#3d2a14" stroke-width="1.4" d="M36 858 Q108 828 168 878 Q198 948 168 1038 Q118 1088 58 1062 Q22 1000 36 858 Z" />
-                  <path fill="url(#advMapLand)" stroke="#3d2a14" stroke-width="1.15" d="M298 62 Q318 52 338 72 Q332 96 308 92 Q290 78 298 62 Z" />
-                  <path fill="url(#advMapLand)" stroke="#3d2a14" stroke-width="1.15" d="M6 392 Q30 378 52 402 Q44 424 16 420 Q2 406 6 392 Z" />
-                  <path fill="url(#advMapLand)" stroke="#3d2a14" stroke-width="1.15" d="M158 678 Q180 664 202 688 Q192 710 166 704 Q150 692 158 678 Z" />
-                  <path fill="url(#advMapLand)" stroke="#3d2a14" stroke-width="1.15" d="M342 828 Q366 814 384 838 Q374 860 348 854 Q332 840 342 828 Z" />
-                  <path fill="url(#advMapLand)" stroke="#3d2a14" stroke-width="1.1" d="M148 328 Q168 318 182 338 Q172 354 152 348 Q140 338 148 328 Z" />
-                  <path fill="url(#advMapLand)" stroke="#3d2a14" stroke-width="1.1" d="M318 980 Q338 968 354 988 Q344 1008 322 1002 Q308 990 318 980 Z" />
-                </g>
-                <!-- Mountains: cartographic ranges, sized to the islands -->
-                <g class="adv-map-mountains" aria-hidden="true">
-                  <!-- Northern range -->
-                  <g transform="translate(70 148)">
-                    <path fill="url(#advMapMountain)" stroke="#3a2814" stroke-width="1.1" d="M8 78 C18 78 28 70 38 42 C48 18 58 8 70 8 C86 8 98 28 108 48 C122 72 138 78 154 78 L154 86 L8 86 Z" />
-                    <path fill="url(#advMapMountainShade)" opacity="0.45" d="M70 8 C78 18 86 36 92 54 C98 70 118 78 154 78 L154 86 L70 86 C70 50 72 22 70 8 Z" />
-                    <path fill="#e8e0d0" opacity="0.55" d="M58 22 L70 8 L82 24 L74 24 L70 16 L66 24 Z" />
-                    <path fill="none" stroke="#3a2814" stroke-width="0.7" opacity="0.4" d="M48 50 L54 62 M62 36 L68 52 M88 40 L94 58 M108 52 L114 68" />
-                    <text x="28" y="104" font-family="'IM Fell English', Georgia, serif" font-size="9" fill="#4a3d2e" font-style="italic">Skull Ridge</text>
-                  </g>
-                  <g transform="translate(248 128)">
-                    <path fill="url(#advMapMountain)" stroke="#3a2814" stroke-width="1" d="M0 62 C10 62 18 50 28 28 C36 12 46 6 56 8 C68 12 76 30 84 48 C92 62 104 64 112 64 L112 70 L0 70 Z" />
-                    <path fill="url(#advMapMountainShade)" opacity="0.4" d="M56 8 C64 18 72 36 78 52 C84 64 100 64 112 64 L112 70 L56 70 Z" />
-                    <text x="8" y="86" font-family="'IM Fell English', Georgia, serif" font-size="8" fill="#4a3d2e" font-style="italic">Treasurehorn Range</text>
-                  </g>
-                  <!-- Frozen peaks -->
-                  <g transform="translate(248 328)">
-                    <path fill="url(#advMapIcePeak)" stroke="#3a4038" stroke-width="1.1" d="M10 92 L42 8 L74 92 Z" />
-                    <path fill="url(#advMapIcePeak)" stroke="#3a4038" stroke-width="1.05" d="M58 92 L92 -6 L128 92 Z" />
-                    <path fill="url(#advMapIcePeak)" stroke="#3a4038" stroke-width="0.95" d="M112 92 L138 28 L164 92 Z" />
-                    <path fill="#f4f1ea" opacity="0.55" d="M36 28 L42 8 L50 32 Z M84 22 L92 -6 L102 28 Z" />
-                    <ellipse cx="86" cy="96" rx="78" ry="10" fill="#3a4038" opacity="0.12" />
-                    <text x="36" y="118" font-family="'IM Fell English', Georgia, serif" font-size="9" fill="#3a4038" font-style="italic">Iceberg Drift</text>
-                  </g>
-                  <g transform="translate(38 528)">
-                    <path fill="url(#advMapMountain)" stroke="#3a2814" stroke-width="1" d="M4 70 C16 70 24 58 36 32 C46 14 58 8 70 10 C84 14 94 34 104 54 C114 70 128 72 140 72 L140 80 L4 80 Z" />
-                    <path fill="url(#advMapMountainShade)" opacity="0.42" d="M70 10 C80 22 90 42 98 58 C106 72 124 72 140 72 L140 80 L70 80 Z" />
-                    <text x="18" y="96" font-family="'IM Fell English', Georgia, serif" font-size="9" fill="#4a3d2e" font-style="italic">Compass Knoll</text>
-                  </g>
-                  <g transform="translate(248 618)">
-                    <path fill="url(#advMapMountain)" stroke="#3a2814" stroke-width="1.1" d="M6 88 C20 88 32 74 48 40 C60 16 74 6 90 8 C110 12 124 38 138 62 C152 84 170 88 186 88 L186 96 L6 96 Z" />
-                    <path fill="url(#advMapMountainShade)" opacity="0.44" d="M90 8 C104 22 118 48 130 68 C142 86 168 88 186 88 L186 96 L90 96 Z" />
-                    <path fill="#e8e0d0" opacity="0.4" d="M78 24 L90 8 L102 28 L94 28 L90 18 L86 28 Z" />
-                    <text x="42" y="114" font-family="'IM Fell English', Georgia, serif" font-size="9" fill="#4a3d2e" font-style="italic">Kraken's Teeth</text>
-                  </g>
-                  <g transform="translate(48 888)">
-                    <path fill="url(#advMapMountain)" stroke="#3a2814" stroke-width="1.1" d="M8 96 C22 96 34 80 50 44 C64 16 80 4 98 6 C118 10 132 38 146 64 C160 90 180 96 196 96 L196 104 L8 104 Z" />
-                    <path fill="url(#advMapMountainShade)" opacity="0.44" d="M98 6 C112 20 126 48 138 70 C150 92 176 96 196 96 L196 104 L98 104 Z" />
-                    <path fill="#e8e0d0" opacity="0.42" d="M86 24 L98 6 L110 28 L102 28 L98 16 L94 28 Z" />
-                    <text x="44" y="122" font-family="'IM Fell English', Georgia, serif" font-size="9" fill="#4a3d2e" font-style="italic">Leviathan Depths</text>
+                  <text x="430" y="70" font-family="'IM Fell English', Georgia, serif" font-size="12" fill="#3a3224" font-style="italic" opacity="0.62">Northern Sea</text>
+                  <text x="250" y="560" font-family="'IM Fell English', Georgia, serif" font-size="13" fill="#3a3224" font-style="italic" opacity="0.64">Southern Ocean</text>
+                  <text x="40" y="300" font-family="'IM Fell English', Georgia, serif" font-size="11" fill="#3a3224" font-style="italic" opacity="0.58">Western Channel</text>
+                  <g transform="translate(560 30)" opacity="0.94">
+                    <rect x="0" y="0" width="220" height="58" rx="4" fill="#efe4c0" stroke="#3a2814" stroke-width="1.6"/>
+                    <rect x="5" y="5" width="210" height="48" rx="2" fill="none" stroke="#3a2814" stroke-width="0.7" opacity="0.55"/>
+                    <text x="110.0" y="26" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="20" fill="#3a2010">Pirates Path</text>
+                    <text x="110.0" y="44" text-anchor="middle" font-family="'IM Fell English', Georgia, serif" font-size="11" font-style="italic" fill="#5a3c1c">Here be shoals, serpents & gold</text>
                   </g>
                 </g>
-                <!-- Caves: hillside + dark mouth -->
-                <g class="adv-map-caves" aria-hidden="true">
-                  <g transform="translate(168 210)">
-                    <path fill="#8a6840" stroke="#3a2814" stroke-width="1.15" d="M0 58 C8 28 28 8 52 10 C78 12 96 32 104 58 C104 70 0 70 0 58 Z" />
-                    <path fill="url(#advMapCaveMouth)" d="M32 58 C32 34 44 22 54 22 C64 22 76 34 76 58 C68 64 40 64 32 58 Z" />
-                    <ellipse cx="54" cy="40" rx="8" ry="10" fill="#0c0804" opacity="0.45" />
-                    <text x="8" y="86" font-family="'IM Fell English', Georgia, serif" font-size="8.5" fill="#4a3d2e" font-style="italic">Smuggler's Cave</text>
-                  </g>
-                  <g transform="translate(48 598)">
-                    <path fill="#8a6840" stroke="#3a2814" stroke-width="1.15" d="M0 62 C10 30 32 8 58 10 C86 12 108 34 116 62 C116 76 0 76 0 62 Z" />
-                    <path fill="url(#advMapCaveMouth)" d="M36 62 C36 36 50 22 60 22 C70 22 84 36 84 62 C74 70 46 70 36 62 Z" />
-                    <ellipse cx="60" cy="42" rx="9" ry="11" fill="#0c0804" opacity="0.5" />
-                    <text x="10" y="94" font-family="'IM Fell English', Georgia, serif" font-size="8.5" fill="#4a3d2e" font-style="italic">Gold Vault Cave</text>
-                  </g>
-                  <g transform="translate(292 448)">
-                    <path fill="#8a6840" stroke="#3a2814" stroke-width="1.15" d="M0 64 C12 28 36 6 64 8 C94 10 116 34 124 64 C124 78 0 78 0 64 Z" />
-                    <path fill="url(#advMapCaveMouth)" d="M40 64 C40 36 54 20 66 20 C78 20 92 36 92 64 C80 74 52 74 40 64 Z" />
-                    <ellipse cx="66" cy="42" rx="10" ry="12" fill="#0c0804" opacity="0.5" />
-                    <text x="12" y="96" font-family="'IM Fell English', Georgia, serif" font-size="8.5" fill="#4a3d2e" font-style="italic">Kraken's Grotto</text>
-                  </g>
-                  <g transform="translate(70 980)">
-                    <path fill="#8a6840" stroke="#3a2814" stroke-width="1.2" d="M0 70 C14 32 40 6 70 8 C102 10 128 36 138 70 C138 86 0 86 0 70 Z" />
-                    <path fill="url(#advMapCaveMouth)" d="M44 70 C44 40 60 22 72 22 C84 22 100 40 100 70 C86 82 58 82 44 70 Z" />
-                    <ellipse cx="72" cy="46" rx="11" ry="13" fill="#0c0804" opacity="0.52" />
-                    <path fill="#c9a227" opacity="0.35" d="M64 58 Q72 50 80 58 Q76 66 72 68 Q68 66 64 58 Z" />
-                    <text x="18" y="104" font-family="'IM Fell English', Georgia, serif" font-size="9" fill="#4a3d2e" font-style="italic">Treasure Cave</text>
-                  </g>
-                  <g transform="translate(268 728)">
-                    <path fill="#8a6840" stroke="#3a2814" stroke-width="1.1" d="M0 56 C10 26 30 8 54 10 C80 12 98 32 106 56 C106 70 0 70 0 56 Z" />
-                    <path fill="url(#advMapCaveMouth)" d="M34 56 C34 34 46 22 56 22 C66 22 78 34 78 56 C68 64 44 64 34 56 Z" />
-                    <text x="6" y="86" font-family="'IM Fell English', Georgia, serif" font-size="8.5" fill="#4a3d2e" font-style="italic">Dead Man's Cave</text>
-                  </g>
-                </g>
-                <g id="advMapCompassRose" transform="translate(318 92)">
-                  <circle r="34" fill="#ead6a4" opacity="0.55" />
-                  <circle r="34" fill="none" stroke="#3a2814" stroke-width="1.15" opacity="0.7" />
-                  <circle r="24" fill="none" stroke="#3a2814" stroke-width="0.65" opacity="0.45" />
-                  <path d="M0 -34 L0 34 M-34 0 L34 0" stroke="#3a2814" stroke-width="0.8" opacity="0.55" />
-                  <polygon points="0,-42 6,-18 -6,-18" fill="#5a2010" opacity="0.85" />
-                  <polygon points="0,42 5,20 -5,20" fill="#3a2814" opacity="0.55" />
-                  <polygon points="-42,0 -18,5 -18,-5" fill="#3a2814" opacity="0.5" />
-                  <polygon points="42,0 18,5 18,-5" fill="#3a2814" opacity="0.5" />
-                  <text y="56" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="12" fill="#3a2814" opacity="0.8">N</text>
-                </g>
-                <text id="advMapTitle" x="200" y="172" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="26" fill="#2a1c10" opacity="0.88">Chart of the Reefs</text>
-                <text id="advMapSubtitle" x="200" y="192" text-anchor="middle" font-family="'IM Fell English', Georgia, serif" font-size="11" fill="#4a3d2e" font-style="italic" opacity="0.72">Pirates Path · Gold Quest · Frozen Sea · The Lost City</text>
-                <g id="advMapLostCity" class="adv-map-lost-city" hidden aria-hidden="true">
-                  <rect x="24" y="28" width="352" height="232" fill="#9ebdd0" opacity="0.1" rx="6" />
-                  <g fill="none" stroke="#2e2418" stroke-width="0.7" opacity="0.38" stroke-dasharray="5 4">
-                    <ellipse cx="200" cy="218" rx="158" ry="24" />
-                    <ellipse cx="200" cy="198" rx="132" ry="20" />
-                    <ellipse cx="200" cy="178" rx="106" ry="16" />
-                    <ellipse cx="200" cy="158" rx="78" ry="12" />
-                  </g>
-                  <g class="adv-map-lost-city__ruins" fill="none" stroke="#2e2418">
-                    <g transform="translate(58 175)" opacity="0.68">
-                      <rect x="0" y="28" width="8" height="34" fill="#e6d9c0" stroke-width="0.85" />
-                      <rect x="14" y="18" width="7" height="44" fill="#e6d9c0" stroke-width="0.85" />
-                      <rect x="26" y="32" width="8" height="30" fill="#d8cdb8" stroke-width="0.8" transform="rotate(12 30 47)" />
-                    </g>
-                    <g transform="translate(300 168)" opacity="0.66">
-                      <rect x="0" y="22" width="7" height="40" fill="#e6d9c0" stroke-width="0.85" />
-                      <rect x="12" y="30" width="8" height="32" fill="#e6d9c0" stroke-width="0.85" />
-                    </g>
-                    <g transform="translate(200 88)" opacity="0.78">
-                      <path fill="#f0e6d0" stroke-width="0.95" d="M-48 78 L-48 38 L-36 38 L-36 78 Z" />
-                      <path fill="#f0e6d0" stroke-width="0.95" d="M-24 78 L-24 28 L-12 28 L-12 78 Z" />
-                      <path fill="#f0e6d0" stroke-width="0.95" d="M0 78 L0 22 L12 22 L12 78 Z" />
-                      <path fill="#f0e6d0" stroke-width="0.95" d="M24 78 L24 28 L36 28 L36 78 Z" />
-                      <path fill="#f0e6d0" stroke-width="0.95" d="M48 78 L48 38 L60 38 L60 78 Z" />
-                      <path fill="#e6d9c0" stroke-width="0.85" d="M-52 78 L64 78 L64 84 L-52 84 Z" />
-                      <path fill="#f2ead8" stroke-width="0.9" d="M-54 38 L66 38 L0 18 Z" />
-                    </g>
-                  </g>
-                  <text x="200" y="52" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="13" fill="#2a2014" opacity="0.82">The Lost City</text>
-                </g>
-                <text x="36" y="1168" font-family="'IM Fell English', Georgia, serif" font-size="13" fill="#5a2010" opacity="0.62" transform="rotate(-6 36 1168)">Hic sunt monstra</text>
+                <path class="adventure-map-edge" fill="none" stroke="#6a4420" stroke-width="3.2" opacity="0.55" d="M14 32 L48 10 L110 22 L180 8 L260 18 L340 6 L420 16 L500 7 L580 18 L660 8 L730 20 L786 36 L796 90 L800 180 L794 280 L798 380 L792 470 L786 548 L720 592 L620 584 L520 596 L420 586 L320 594 L220 584 L120 592 L28 560 L6 480 L10 360 L4 240 L12 130 L8 60 Z" />
               </g>
-              <path class="adventure-map-edge" fill="none" stroke="#6a4420" stroke-width="3.2" opacity="0.55" d="M10 28 L36 10 L78 16 L122 6 L168 14 L214 5 L262 13 L308 6 L352 14 L386 30 L396 70 L399 160 L394 320 L398 500 L392 680 L397 860 L390 1040 L382 1168 L348 1192 L292 1186 L230 1196 L168 1186 L108 1194 L52 1182 L14 1150 L5 1080 L8 920 L3 740 L9 560 L4 380 L10 200 L6 90 Z" />
             </svg>
-            <svg class="adventure-map-trail-layer" viewBox="0 0 400 1200" preserveAspectRatio="none" aria-hidden="true">
-              <path id="adventureMapTrail" class="adventure-map-trail" fill="none" d="" />
-              <path id="adventureMapTrailReveal" class="adventure-map-trail adventure-map-trail--reveal" fill="none" d="" />
+              <svg class="adventure-chart__trail" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                <path id="adventureMapTrail-pirates" class="adventure-map-trail" fill="none" d="" />
+                <path id="adventureMapTrailReveal-pirates" class="adventure-map-trail adventure-map-trail--reveal" fill="none" d="" />
+              </svg>
+              <div class="adventure-chart__nodes" data-section="pirates"></div>
+            </article>
+            <article class="adventure-chart adventure-chart--gold" data-section="gold" hidden>
+              <svg class="adventure-chart__art" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+              <defs>
+                <linearGradient id="goldParchment" x1="8%" y1="0%" x2="92%" y2="100%">
+                  <stop offset="0%" stop-color="#fbf3d0" />
+                  <stop offset="28%" stop-color="#f3d98a" />
+                  <stop offset="62%" stop-color="#e8c060" />
+                  <stop offset="100%" stop-color="#d4a848" />
+                </linearGradient>
+                <linearGradient id="goldLand" x1="20%" y1="0%" x2="80%" y2="100%">
+                  <stop offset="0%" stop-color="#f6e4a8" />
+                  <stop offset="55%" stop-color="#e8c878" />
+                  <stop offset="100%" stop-color="#d4a84a" />
+                </linearGradient>
+                <linearGradient id="goldOcean" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#efe0b0" />
+                  <stop offset="45%" stop-color="#e4cc88" />
+                  <stop offset="100%" stop-color="#d4b868" />
+                </linearGradient>
+                <filter id="goldGrain" x="-8%" y="-8%" width="116%" height="116%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" result="noise" />
+                  <feColorMatrix type="saturate" values="0" in="noise" result="gray" />
+                  <feComponentTransfer in="gray" result="grain">
+                    <feFuncA type="linear" slope="0.38" />
+                  </feComponentTransfer>
+                  <feBlend in="SourceGraphic" in2="grain" mode="multiply" />
+                </filter>
+                <clipPath id="goldTorn">
+                  <path d="M14 32 L48 10 L110 22 L180 8 L260 18 L340 6 L420 16 L500 7 L580 18 L660 8 L730 20 L786 36 L796 90 L800 180 L794 280 L798 380 L792 470 L786 548 L720 592 L620 584 L520 596 L420 586 L320 594 L220 584 L120 592 L28 560 L6 480 L10 360 L4 240 L12 130 L8 60 Z" />
+                </clipPath>
+              </defs>
+              <g clip-path="url(#goldTorn)" filter="url(#goldGrain)">
+                <rect width="800" height="600" fill="url(#goldParchment)" />
+                <g class="adv-map-wear" pointer-events="none">
+                  <ellipse cx="90" cy="80" rx="88" ry="54" fill="#c89830" opacity="0.28" />
+                  <ellipse cx="680" cy="160" rx="96" ry="60" fill="#a07020" opacity="0.26" />
+                  <ellipse cx="140" cy="470" rx="100" ry="56" fill="#b88828" opacity="0.26" />
+                  <ellipse cx="600" cy="480" rx="90" ry="50" fill="#8a5a18" opacity="0.24" />
+                  <path d="M0 0 L800 0 L800 28 Q400 10 0 28 Z" fill="#6a4420" opacity="0.26" />
+                  <path d="M0 572 Q400 596 800 570 L800 600 L0 600 Z" fill="#6a4420" opacity="0.28" />
+                  <path d="M0 0 L16 0 L8 70 L0 58 Z" fill="#5a3818" opacity="0.22" />
+                  <path d="M784 0 L800 0 L800 80 L790 62 Z" fill="#5a3818" opacity="0.2" />
+                  <ellipse cx="70" cy="540" rx="7" ry="4.5" fill="#3a2410" opacity="0.32" />
+                  <ellipse cx="730" cy="80" rx="6" ry="4" fill="#3a2410" opacity="0.28" />
+                  <ellipse cx="390" cy="310" rx="8" ry="5" fill="#3a2410" opacity="0.22" />
+                </g>
+                <path fill="url(#goldOcean)" opacity="0.14" d="M0 0 H800 V600 H0 Z" />
+                <g class="adv-map-rhumbs" fill="none" stroke="#5a3c18" stroke-width="0.55" opacity="0.16" pointer-events="none">
+                  <path d="M30 90 L770 90 M30 180 L770 180 M30 270 L770 270 M30 360 L770 360 M30 450 L770 450 M30 540 L770 540" />
+                  <path d="M100 30 L100 570 M220 30 L220 570 M340 30 L340 570 M460 30 L460 570 M580 30 L580 570 M700 30 L700 570" />
+                  <path d="M50 50 L750 550 M750 50 L50 550" stroke-dasharray="4 8" />
+                </g>
+                <g class="adv-map-lands">
+                  <path fill="url(#goldLand)" stroke="#5a3a10" stroke-width="1.6" d="M60 380 Q130 330 200 370 Q230 430 160 470 Q80 460 60 380 Z" />
+                  <path fill="url(#goldLand)" stroke="#5a3a10" stroke-width="1.6" d="M200 210 Q280 160 360 210 Q380 280 300 310 Q210 280 200 210 Z" />
+                  <path fill="url(#goldLand)" stroke="#5a3a10" stroke-width="1.6" d="M340 120 Q430 70 520 130 Q540 200 450 230 Q340 200 340 120 Z" />
+                  <path fill="url(#goldLand)" stroke="#5a3a10" stroke-width="1.6" d="M500 180 Q590 140 680 200 Q700 270 610 300 Q500 260 500 180 Z" />
+                  <path fill="url(#goldLand)" stroke="#5a3a10" stroke-width="1.6" d="M320 310 Q410 270 500 330 Q520 400 420 430 Q320 390 320 310 Z" />
+                  <path fill="url(#goldLand)" stroke="#5a3a10" stroke-width="1.6" d="M520 370 Q610 330 700 390 Q720 460 620 490 Q510 450 520 370 Z" />
+                  <path fill="url(#goldLand)" stroke="#5a3a10" stroke-width="1.6" d="M640 240 Q720 200 780 260 Q790 330 710 360 Q630 320 640 240 Z" />
+                </g>
+                <g class="adv-map-doodles" pointer-events="none">
+                  <g transform="translate(700 90) scale(0.78)" opacity="0.88">
+                    <circle cx="0" cy="0" r="46" fill="#efe4c0" stroke="#3a2814" stroke-width="1.4" />
+                    <circle cx="0" cy="0" r="40" fill="none" stroke="#3a2814" stroke-width="0.7" opacity="0.55" />
+                    <path d="M0 -38 L8 0 L0 38 L-8 0 Z" fill="#3a2814" />
+                    <path d="M-38 0 L0 -8 L38 0 L0 8 Z" fill="#5a3c1c" />
+                    <path d="M0 -38 L6 0 L0 8 L-6 0 Z" fill="#c45c28" />
+                    <path d="M-26 -26 L0 -6 L26 -26 L6 0 L26 26 L0 6 L-26 26 L-6 0 Z" fill="#efe6d0" stroke="#3a2814" stroke-width="0.7" opacity="0.85" />
+                    <circle cx="0" cy="0" r="5" fill="#c45c28" stroke="#3a2814" stroke-width="0.8" />
+                    <text x="0" y="-52" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="13" fill="#3a2814">N</text>
+                    <text x="52" y="5" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="11" fill="#3a2814">E</text>
+                    <text x="0" y="62" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="11" fill="#3a2814">S</text>
+                    <text x="-52" y="5" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="11" fill="#3a2814">W</text>
+                  </g>
+                  <g transform="translate(150 380) scale(0.9)" opacity="0.82">
+                    <path d="M0 0 L1.7 28 L-1.7 28 Z" fill="#6a4420"/>
+                    <path d="M0 2 Q-18 -8 -8 7 Q-16 12 -1 8 Q1 -16 4 8 Q18 12 9 6 Q20 -8 0 2 Z" fill="#2f6a38" stroke="#1f4a28" stroke-width="0.6"/>
+                  </g>                  <g transform="translate(180 392) scale(0.75)" opacity="0.82">
+                    <path d="M0 0 L1.7 28 L-1.7 28 Z" fill="#6a4420"/>
+                    <path d="M0 2 Q-18 -8 -8 7 Q-16 12 -1 8 Q1 -16 4 8 Q18 12 9 6 Q20 -8 0 2 Z" fill="#2f6a38" stroke="#1f4a28" stroke-width="0.6"/>
+                  </g>                  <g transform="translate(360 200) scale(1.0)" opacity="0.82">
+                    <path d="M0 0 L1.7 28 L-1.7 28 Z" fill="#6a4420"/>
+                    <path d="M0 2 Q-18 -8 -8 7 Q-16 12 -1 8 Q1 -16 4 8 Q18 12 9 6 Q20 -8 0 2 Z" fill="#2f6a38" stroke="#1f4a28" stroke-width="0.6"/>
+                  </g>                  <g transform="translate(660 250) scale(0.85)" opacity="0.82">
+                    <path d="M0 0 L1.7 28 L-1.7 28 Z" fill="#6a4420"/>
+                    <path d="M0 2 Q-18 -8 -8 7 Q-16 12 -1 8 Q1 -16 4 8 Q18 12 9 6 Q20 -8 0 2 Z" fill="#2f6a38" stroke="#1f4a28" stroke-width="0.6"/>
+                  </g>
+                  <g transform="translate(280 470) scale(0.95)" opacity="0.86">
+                    <path d="M-22 16 L22 16 L16 6 L-16 6 Z" fill="#8a6234" stroke="#3a2814" stroke-width="1.15"/>
+                    <path d="M-3 6 L-3 -18 L2 -18 L2 6 Z" fill="#5a3c1c"/>
+                    <path d="M2 -16 L22 -28 L22 -10 L2 -4 Z" fill="#efe6d0" stroke="#3a2814" stroke-width="0.85"/>
+                    <path d="M-3 -14 L-18 -24 L-18 -10 L-3 -4 Z" fill="#e8d8b0" stroke="#3a2814" stroke-width="0.8"/>
+                    <path d="M2 -18 L2 -26 L12 -22 Z" fill="#1a1a1a"/>
+                    <path d="M-12 16 Q0 24 12 16" fill="none" stroke="#3a2814" stroke-width="0.9"/>
+                  </g>
+                  <g transform="translate(250 120)" fill="none" stroke="#5a4030" stroke-width="1.2" stroke-linecap="round" opacity="0.48">
+                    <path d="M0 10 Q16 0 32 10" /><path d="M10 18 Q26 8 42 18" /><path d="M20 26 Q36 16 52 26" />
+                  </g>                  <g transform="translate(430 480)" fill="none" stroke="#5a4030" stroke-width="1.2" stroke-linecap="round" opacity="0.48">
+                    <path d="M0 10 Q16 0 32 10" /><path d="M10 18 Q26 8 42 18" /><path d="M20 26 Q36 16 52 26" />
+                  </g>                  <g transform="translate(80 250)" fill="none" stroke="#5a4030" stroke-width="1.2" stroke-linecap="round" opacity="0.48">
+                    <path d="M0 10 Q16 0 32 10" /><path d="M10 18 Q26 8 42 18" /><path d="M20 26 Q36 16 52 26" />
+                  </g>
+                  <g transform="translate(540 210)" opacity="0.9">
+                    <path d="M-36 50 L-12 8 L12 8 L36 50 Z" fill="#8a5a20" stroke="#3a2814" stroke-width="1.2"/>
+                    <path d="M-12 8 L0 -10 L12 8 Z" fill="#5a3010" stroke="#3a2814" stroke-width="0.9"/>
+                    <path d="M-6 8 Q0 24 6 8" fill="#e07020" opacity="0.8"/>
+                    <path d="M-2 -12 Q-14 -32 -4 -42" fill="none" stroke="#6a4420" stroke-width="1.2" stroke-linecap="round"/>
+                    <text x="-36" y="70" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#5a3a10" font-style="italic">Molten Maelstrom</text>
+                  </g>
+                  <g transform="translate(160 400)" opacity="0.88">
+                    <circle cx="0" cy="0" r="8" fill="#e8c040" stroke="#8a5a10" stroke-width="1.1"/>
+                    <circle cx="14" cy="6" r="6.5" fill="#f0d060" stroke="#8a5a10" stroke-width="1"/>
+                    <circle cx="-12" cy="8" r="5.5" fill="#d4a020" stroke="#8a5a10" stroke-width="1"/>
+                    <text x="-18" y="28" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#5a3a10" font-style="italic">Bounty Trench</text>
+                  </g>
+                  <g transform="translate(400 150)" opacity="0.86">
+                    <path d="M-10 16 L0 -6 L10 16 Z" fill="#f0d060" stroke="#8a5a10" stroke-width="1"/>
+                    <path d="M-16 16 L16 16 L12 22 L-12 22 Z" fill="#d4a020" stroke="#8a5a10" stroke-width="0.9"/>
+                    <text x="-22" y="38" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#5a3a10" font-style="italic">Pearl Abyss</text>
+                  </g>
+                  <g transform="translate(688 288)" opacity="0.92">
+                    <path d="M-16 -12 L16 12 M-16 12 L16 -12" stroke="#b45309" stroke-width="5" stroke-linecap="round"/>
+                    <path d="M-16 -12 L16 12 M-16 12 L16 -12" stroke="#f59e0b" stroke-width="2.6" stroke-linecap="round"/>
+                    <text x="-30" y="32" font-family="'IM Fell English SC', Georgia, serif" font-size="12" fill="#7a3e08">Legend's Gate</text>
+                  </g>
+                  <g transform="translate(40 28)" opacity="0.94">
+                    <rect x="0" y="0" width="230" height="58" rx="4" fill="#efe4c0" stroke="#3a2814" stroke-width="1.6"/>
+                    <rect x="5" y="5" width="220" height="48" rx="2" fill="none" stroke="#3a2814" stroke-width="0.7" opacity="0.55"/>
+                    <text x="115.0" y="26" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="20" fill="#3a2010">Gold Quest</text>
+                    <text x="115.0" y="44" text-anchor="middle" font-family="'IM Fell English', Georgia, serif" font-size="11" font-style="italic" fill="#5a3c1c">Doubloons, firepeaks & the Gate</text>
+                  </g>
+                </g>
+                <path class="adventure-map-edge" fill="none" stroke="#8a5a18" stroke-width="3.2" opacity="0.55" d="M14 32 L48 10 L110 22 L180 8 L260 18 L340 6 L420 16 L500 7 L580 18 L660 8 L730 20 L786 36 L796 90 L800 180 L794 280 L798 380 L792 470 L786 548 L720 592 L620 584 L520 596 L420 586 L320 594 L220 584 L120 592 L28 560 L6 480 L10 360 L4 240 L12 130 L8 60 Z" />
+              </g>
             </svg>
-            <div class="adventure-map-roll adventure-map-roll--bottom" aria-hidden="true">
-              <svg class="adventure-map-roll__cap" viewBox="0 0 32 22" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-                <ellipse cx="16" cy="11" rx="14.6" ry="9.6" fill="#ead6a4" stroke="#6a4420" stroke-width="1.05"/>
-                <ellipse cx="16" cy="11" rx="9.8" ry="6.4" fill="#f7ecd0" stroke="#8a5a28" stroke-width="0.8"/>
-                <ellipse cx="16" cy="11" rx="4.6" ry="3" fill="#d2ae70" stroke="#6a4420" stroke-width="0.7"/>
-                <ellipse cx="16" cy="11" rx="1.4" ry="0.9" fill="#5a3818"/>
+              <svg class="adventure-chart__trail" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                <path id="adventureMapTrail-gold" class="adventure-map-trail" fill="none" d="" />
+                <path id="adventureMapTrailReveal-gold" class="adventure-map-trail adventure-map-trail--reveal" fill="none" d="" />
               </svg>
-              <div class="adventure-map-roll__tube"></div>
-              <svg class="adventure-map-roll__cap" viewBox="0 0 32 22" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-                <ellipse cx="16" cy="11" rx="14.6" ry="9.6" fill="#ead6a4" stroke="#6a4420" stroke-width="1.05"/>
-                <ellipse cx="16" cy="11" rx="9.8" ry="6.4" fill="#f7ecd0" stroke="#8a5a28" stroke-width="0.8"/>
-                <ellipse cx="16" cy="11" rx="4.6" ry="3" fill="#d2ae70" stroke="#6a4420" stroke-width="0.7"/>
-                <ellipse cx="16" cy="11" rx="1.4" ry="0.9" fill="#5a3818"/>
+              <div class="adventure-chart__nodes" data-section="gold"></div>
+            </article>
+            <article class="adventure-chart adventure-chart--ice" data-section="ice" hidden>
+              <svg class="adventure-chart__art" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+              <defs>
+                <linearGradient id="iceParchment" x1="8%" y1="0%" x2="92%" y2="100%">
+                  <stop offset="0%" stop-color="#f4f2e8" />
+                  <stop offset="28%" stop-color="#e6e4d6" />
+                  <stop offset="62%" stop-color="#d8dce0" />
+                  <stop offset="100%" stop-color="#c8d0d4" />
+                </linearGradient>
+                <linearGradient id="iceLand" x1="20%" y1="0%" x2="80%" y2="100%">
+                  <stop offset="0%" stop-color="#eef2f0" />
+                  <stop offset="55%" stop-color="#d4dce0" />
+                  <stop offset="100%" stop-color="#b8c4c8" />
+                </linearGradient>
+                <linearGradient id="iceOcean" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#e4ecec" />
+                  <stop offset="45%" stop-color="#d0dce0" />
+                  <stop offset="100%" stop-color="#bcc8cc" />
+                </linearGradient>
+                <filter id="iceGrain" x="-8%" y="-8%" width="116%" height="116%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" result="noise" />
+                  <feColorMatrix type="saturate" values="0" in="noise" result="gray" />
+                  <feComponentTransfer in="gray" result="grain">
+                    <feFuncA type="linear" slope="0.38" />
+                  </feComponentTransfer>
+                  <feBlend in="SourceGraphic" in2="grain" mode="multiply" />
+                </filter>
+                <clipPath id="iceTorn">
+                  <path d="M14 32 L48 10 L110 22 L180 8 L260 18 L340 6 L420 16 L500 7 L580 18 L660 8 L730 20 L786 36 L796 90 L800 180 L794 280 L798 380 L792 470 L786 548 L720 592 L620 584 L520 596 L420 586 L320 594 L220 584 L120 592 L28 560 L6 480 L10 360 L4 240 L12 130 L8 60 Z" />
+                </clipPath>
+              </defs>
+              <g clip-path="url(#iceTorn)" filter="url(#iceGrain)">
+                <rect width="800" height="600" fill="url(#iceParchment)" />
+                <g class="adv-map-wear" pointer-events="none">
+                  <ellipse cx="90" cy="80" rx="88" ry="54" fill="#8aa0a8" opacity="0.22" />
+                  <ellipse cx="680" cy="150" rx="96" ry="60" fill="#6a8890" opacity="0.20" />
+                  <ellipse cx="140" cy="470" rx="100" ry="56" fill="#7a949c" opacity="0.20" />
+                  <ellipse cx="600" cy="480" rx="90" ry="50" fill="#5a7078" opacity="0.18" />
+                  <path d="M0 0 L800 0 L800 28 Q400 10 0 28 Z" fill="#6a4420" opacity="0.26" />
+                  <path d="M0 572 Q400 596 800 570 L800 600 L0 600 Z" fill="#6a4420" opacity="0.28" />
+                  <path d="M0 0 L16 0 L8 70 L0 58 Z" fill="#5a3818" opacity="0.22" />
+                  <path d="M784 0 L800 0 L800 80 L790 62 Z" fill="#5a3818" opacity="0.2" />
+                  <ellipse cx="70" cy="540" rx="7" ry="4.5" fill="#3a2410" opacity="0.32" />
+                  <ellipse cx="730" cy="80" rx="6" ry="4" fill="#3a2410" opacity="0.28" />
+                  <ellipse cx="390" cy="310" rx="8" ry="5" fill="#3a2410" opacity="0.22" />
+                </g>
+                <path fill="url(#iceOcean)" opacity="0.22" d="M0 0 H800 V600 H0 Z" />
+                <path fill="#9ec8e0" opacity="0.12" d="M80 40 Q400 0 720 80 Q760 200 680 120 Q400 40 120 90 Z" />
+                <g class="adv-map-rhumbs" fill="none" stroke="#5a3c18" stroke-width="0.55" opacity="0.16" pointer-events="none">
+                  <path d="M30 90 L770 90 M30 180 L770 180 M30 270 L770 270 M30 360 L770 360 M30 450 L770 450 M30 540 L770 540" />
+                  <path d="M100 30 L100 570 M220 30 L220 570 M340 30 L340 570 M460 30 L460 570 M580 30 L580 570 M700 30 L700 570" />
+                  <path d="M50 50 L750 550 M750 50 L50 550" stroke-dasharray="4 8" />
+                </g>
+                <g class="adv-map-lands">
+                  <path fill="url(#iceLand)" stroke="#3a4850" stroke-width="1.6" d="M70 340 Q150 290 230 340 Q250 410 170 450 Q80 430 70 340 Z" />
+                  <path fill="url(#iceLand)" stroke="#3a4850" stroke-width="1.6" d="M250 140 Q340 90 430 150 Q450 220 350 250 Q250 210 250 140 Z" />
+                  <path fill="url(#iceLand)" stroke="#3a4850" stroke-width="1.6" d="M400 250 Q490 210 580 270 Q600 340 500 370 Q400 330 400 250 Z" />
+                  <path fill="url(#iceLand)" stroke="#3a4850" stroke-width="1.6" d="M560 110 Q650 60 740 130 Q760 200 660 230 Q550 190 560 110 Z" />
+                  <path fill="url(#iceLand)" stroke="#3a4850" stroke-width="1.6" d="M620 310 Q710 270 780 330 Q790 410 700 440 Q610 390 620 310 Z" />
+                </g>
+                <g class="adv-map-doodles" pointer-events="none">
+                  <g transform="translate(110 110) scale(0.8)" opacity="0.88">
+                    <circle cx="0" cy="0" r="46" fill="#efe4c0" stroke="#3a2814" stroke-width="1.4" />
+                    <circle cx="0" cy="0" r="40" fill="none" stroke="#3a2814" stroke-width="0.7" opacity="0.55" />
+                    <path d="M0 -38 L8 0 L0 38 L-8 0 Z" fill="#3a2814" />
+                    <path d="M-38 0 L0 -8 L38 0 L0 8 Z" fill="#5a3c1c" />
+                    <path d="M0 -38 L6 0 L0 8 L-6 0 Z" fill="#c45c28" />
+                    <path d="M-26 -26 L0 -6 L26 -26 L6 0 L26 26 L0 6 L-26 26 L-6 0 Z" fill="#efe6d0" stroke="#3a2814" stroke-width="0.7" opacity="0.85" />
+                    <circle cx="0" cy="0" r="5" fill="#c45c28" stroke="#3a2814" stroke-width="0.8" />
+                    <text x="0" y="-52" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="13" fill="#3a2814">N</text>
+                    <text x="52" y="5" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="11" fill="#3a2814">E</text>
+                    <text x="0" y="62" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="11" fill="#3a2814">S</text>
+                    <text x="-52" y="5" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="11" fill="#3a2814">W</text>
+                  </g>
+                  <g transform="translate(300 470) scale(0.9)" opacity="0.86">
+                    <path d="M-22 16 L22 16 L16 6 L-16 6 Z" fill="#8a6234" stroke="#3a2814" stroke-width="1.15"/>
+                    <path d="M-3 6 L-3 -18 L2 -18 L2 6 Z" fill="#5a3c1c"/>
+                    <path d="M2 -16 L22 -28 L22 -10 L2 -4 Z" fill="#efe6d0" stroke="#3a2814" stroke-width="0.85"/>
+                    <path d="M-3 -14 L-18 -24 L-18 -10 L-3 -4 Z" fill="#e8d8b0" stroke="#3a2814" stroke-width="0.8"/>
+                    <path d="M2 -18 L2 -26 L12 -22 Z" fill="#1a1a1a"/>
+                    <path d="M-12 16 Q0 24 12 16" fill="none" stroke="#3a2814" stroke-width="0.9"/>
+                  </g>
+                  <g transform="translate(200 220)" fill="none" stroke="#5a4030" stroke-width="1.2" stroke-linecap="round" opacity="0.48">
+                    <path d="M0 10 Q16 0 32 10" /><path d="M10 18 Q26 8 42 18" /><path d="M20 26 Q36 16 52 26" />
+                  </g>                  <g transform="translate(480 80)" fill="none" stroke="#5a4030" stroke-width="1.2" stroke-linecap="round" opacity="0.48">
+                    <path d="M0 10 Q16 0 32 10" /><path d="M10 18 Q26 8 42 18" /><path d="M20 26 Q36 16 52 26" />
+                  </g>                  <g transform="translate(120 500)" fill="none" stroke="#5a4030" stroke-width="1.2" stroke-linecap="round" opacity="0.48">
+                    <path d="M0 10 Q16 0 32 10" /><path d="M10 18 Q26 8 42 18" /><path d="M20 26 Q36 16 52 26" />
+                  </g>                  <g transform="translate(500 480)" fill="none" stroke="#5a4030" stroke-width="1.2" stroke-linecap="round" opacity="0.48">
+                    <path d="M0 10 Q16 0 32 10" /><path d="M10 18 Q26 8 42 18" /><path d="M20 26 Q36 16 52 26" />
+                  </g>
+                  <g transform="translate(300 170)" opacity="0.9">
+                    <path d="M-28 36 L-8 4 L8 4 L16 22 L28 36 Z" fill="#d8e4e8" stroke="#3a4850" stroke-width="1.15"/>
+                    <path d="M-8 4 L0 -16 L8 4 Z" fill="#f4f8f8" stroke="#3a4850" stroke-width="0.9"/>
+                    <text x="-24" y="52" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#2a4050" font-style="italic">Iceberg Drift</text>
+                  </g>
+                  <g transform="translate(460 280)" opacity="0.88">
+                    <path d="M-22 8 Q0 -28 22 8 Q8 4 0 18 Q-10 4 -22 8 Z" fill="#c8d8e0" stroke="#3a4850" stroke-width="1.15"/>
+                    <text x="-26" y="36" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#2a4050" font-style="italic">Glacier Maw</text>
+                  </g>
+                  <g transform="translate(140 360)" opacity="0.86">
+                    <path d="M-20 24 L-6 0 L6 0 L20 24 Z" fill="#d0dce0" stroke="#3a4850" stroke-width="1.1"/>
+                    <text x="-22" y="42" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#2a4050" font-style="italic">Frost Fjord</text>
+                  </g>
+                  <g transform="translate(672 348)" opacity="0.92">
+                    <path d="M-16 -12 L16 12 M-16 12 L16 -12" stroke="#1d4e68" stroke-width="5" stroke-linecap="round"/>
+                    <path d="M-16 -12 L16 12 M-16 12 L16 -12" stroke="#38bdf8" stroke-width="2.6" stroke-linecap="round"/>
+                    <text x="-32" y="32" font-family="'IM Fell English SC', Georgia, serif" font-size="12" fill="#164e63">Aurora Reach</text>
+                  </g>
+                  <g transform="translate(520 28)" opacity="0.94">
+                    <rect x="0" y="0" width="220" height="58" rx="4" fill="#efe4c0" stroke="#3a2814" stroke-width="1.6"/>
+                    <rect x="5" y="5" width="210" height="48" rx="2" fill="none" stroke="#3a2814" stroke-width="0.7" opacity="0.55"/>
+                    <text x="110.0" y="26" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="20" fill="#3a2010">Frozen Sea</text>
+                    <text x="110.0" y="44" text-anchor="middle" font-family="'IM Fell English', Georgia, serif" font-size="11" font-style="italic" fill="#5a3c1c">Icebergs, aurora & the north</text>
+                  </g>
+                </g>
+                <path class="adventure-map-edge" fill="none" stroke="#4a6068" stroke-width="3.2" opacity="0.5" d="M14 32 L48 10 L110 22 L180 8 L260 18 L340 6 L420 16 L500 7 L580 18 L660 8 L730 20 L786 36 L796 90 L800 180 L794 280 L798 380 L792 470 L786 548 L720 592 L620 584 L520 596 L420 586 L320 594 L220 584 L120 592 L28 560 L6 480 L10 360 L4 240 L12 130 L8 60 Z" />
+              </g>
+            </svg>
+              <svg class="adventure-chart__trail" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                <path id="adventureMapTrail-ice" class="adventure-map-trail" fill="none" d="" />
+                <path id="adventureMapTrailReveal-ice" class="adventure-map-trail adventure-map-trail--reveal" fill="none" d="" />
               </svg>
-            </div>
-            <div class="adventure-map-lost-city-theme" aria-hidden="true"></div>
-            <div id="adventureMapSections" class="adventure-map-sections" aria-hidden="true">
-              <div class="adventure-map-section adventure-map-section--pirates adventure-map-section--visible" data-section="pirates">
-                <span class="adventure-map-section__label">Pirates Path</span>
-                <span class="adventure-map-section__decor adventure-map-section__decor--compass" aria-hidden="true"></span>
-              </div>
-              <div class="adventure-map-section adventure-map-section--gold" data-section="gold" hidden>
-                <span class="adventure-map-section__label">Gold Quest</span>
-                <span class="adventure-map-section__decor adventure-map-section__decor--coins" aria-hidden="true"></span>
-              </div>
-              <div class="adventure-map-section adventure-map-section--ice" data-section="ice" hidden>
-                <span class="adventure-map-section__label">Frozen Sea</span>
-                <span class="adventure-map-section__decor adventure-map-section__decor--snow" aria-hidden="true"></span>
-              </div>
-              <div class="adventure-map-section adventure-map-section--lost-city" data-section="lost-city" hidden>
-                <span class="adventure-map-section__label">The Lost City</span>
-                <span class="adventure-map-section__decor adventure-map-section__decor--atlantis" aria-hidden="true"></span>
-              </div>
-            </div>
-            <div id="adventureLevelList" class="adventure-map-nodes" aria-label="Adventure voyage map"></div>
+              <div class="adventure-chart__nodes" data-section="ice"></div>
+            </article>
+            <article class="adventure-chart adventure-chart--lost-city" data-section="lost-city" hidden>
+              <svg class="adventure-chart__art" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+              <defs>
+                <linearGradient id="lostParchment" x1="8%" y1="0%" x2="92%" y2="100%">
+                  <stop offset="0%" stop-color="#f0ead4" />
+                  <stop offset="28%" stop-color="#e2d4b0" />
+                  <stop offset="62%" stop-color="#d4c498" />
+                  <stop offset="100%" stop-color="#c4b888" />
+                </linearGradient>
+                <linearGradient id="lostLand" x1="20%" y1="0%" x2="80%" y2="100%">
+                  <stop offset="0%" stop-color="#e8dcc0" />
+                  <stop offset="55%" stop-color="#d0c090" />
+                  <stop offset="100%" stop-color="#b8a878" />
+                </linearGradient>
+                <linearGradient id="lostOcean" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#c8d4cc" />
+                  <stop offset="45%" stop-color="#a8c0bc" />
+                  <stop offset="100%" stop-color="#88a8a8" />
+                </linearGradient>
+                <filter id="lostGrain" x="-8%" y="-8%" width="116%" height="116%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" result="noise" />
+                  <feColorMatrix type="saturate" values="0" in="noise" result="gray" />
+                  <feComponentTransfer in="gray" result="grain">
+                    <feFuncA type="linear" slope="0.38" />
+                  </feComponentTransfer>
+                  <feBlend in="SourceGraphic" in2="grain" mode="multiply" />
+                </filter>
+                <clipPath id="lostTorn">
+                  <path d="M14 32 L48 10 L110 22 L180 8 L260 18 L340 6 L420 16 L500 7 L580 18 L660 8 L730 20 L786 36 L796 90 L800 180 L794 280 L798 380 L792 470 L786 548 L720 592 L620 584 L520 596 L420 586 L320 594 L220 584 L120 592 L28 560 L6 480 L10 360 L4 240 L12 130 L8 60 Z" />
+                </clipPath>
+              </defs>
+              <g clip-path="url(#lostTorn)" filter="url(#lostGrain)">
+                <rect width="800" height="600" fill="url(#lostParchment)" />
+                <g class="adv-map-wear" pointer-events="none">
+                  <ellipse cx="90" cy="80" rx="88" ry="54" fill="#6a8880" opacity="0.22" />
+                  <ellipse cx="680" cy="150" rx="96" ry="60" fill="#4a7068" opacity="0.20" />
+                  <ellipse cx="140" cy="470" rx="100" ry="56" fill="#5a8078" opacity="0.20" />
+                  <ellipse cx="600" cy="480" rx="90" ry="50" fill="#3a6058" opacity="0.18" />
+                  <path d="M0 0 L800 0 L800 28 Q400 10 0 28 Z" fill="#6a4420" opacity="0.26" />
+                  <path d="M0 572 Q400 596 800 570 L800 600 L0 600 Z" fill="#6a4420" opacity="0.28" />
+                  <path d="M0 0 L16 0 L8 70 L0 58 Z" fill="#5a3818" opacity="0.22" />
+                  <path d="M784 0 L800 0 L800 80 L790 62 Z" fill="#5a3818" opacity="0.2" />
+                  <ellipse cx="70" cy="540" rx="7" ry="4.5" fill="#3a2410" opacity="0.32" />
+                  <ellipse cx="730" cy="80" rx="6" ry="4" fill="#3a2410" opacity="0.28" />
+                  <ellipse cx="390" cy="310" rx="8" ry="5" fill="#3a2410" opacity="0.22" />
+                </g>
+                <path fill="url(#lostOcean)" opacity="0.28" d="M0 0 H800 V600 H0 Z" />
+                <g class="adv-map-rhumbs" fill="none" stroke="#5a3c18" stroke-width="0.55" opacity="0.16" pointer-events="none">
+                  <path d="M30 90 L770 90 M30 180 L770 180 M30 270 L770 270 M30 360 L770 360 M30 450 L770 450 M30 540 L770 540" />
+                  <path d="M100 30 L100 570 M220 30 L220 570 M340 30 L340 570 M460 30 L460 570 M580 30 L580 570 M700 30 L700 570" />
+                  <path d="M50 50 L750 550 M750 50 L50 550" stroke-dasharray="4 8" />
+                </g>
+                <g class="adv-map-lands">
+                  <path fill="url(#lostLand)" stroke="#2e4038" stroke-width="1.6" d="M90 370 Q170 320 250 370 Q270 440 190 480 Q90 450 90 370 Z" />
+                  <path fill="url(#lostLand)" stroke="#2e4038" stroke-width="1.6" d="M260 180 Q350 130 440 190 Q460 260 360 290 Q260 250 260 180 Z" />
+                  <path fill="url(#lostLand)" stroke="#2e4038" stroke-width="1.6" d="M400 310 Q490 270 580 330 Q600 400 500 430 Q400 390 400 310 Z" />
+                  <path fill="url(#lostLand)" stroke="#2e4038" stroke-width="1.6" d="M540 140 Q630 90 720 160 Q740 230 640 260 Q530 220 540 140 Z" />
+                  <path fill="url(#lostLand)" stroke="#2e4038" stroke-width="1.6" d="M600 330 Q690 290 770 350 Q780 430 680 460 Q590 410 600 330 Z" />
+                </g>
+                <g class="adv-map-doodles" pointer-events="none">
+                  <g transform="translate(700 90) scale(0.78)" opacity="0.88">
+                    <circle cx="0" cy="0" r="46" fill="#efe4c0" stroke="#3a2814" stroke-width="1.4" />
+                    <circle cx="0" cy="0" r="40" fill="none" stroke="#3a2814" stroke-width="0.7" opacity="0.55" />
+                    <path d="M0 -38 L8 0 L0 38 L-8 0 Z" fill="#3a2814" />
+                    <path d="M-38 0 L0 -8 L38 0 L0 8 Z" fill="#5a3c1c" />
+                    <path d="M0 -38 L6 0 L0 8 L-6 0 Z" fill="#c45c28" />
+                    <path d="M-26 -26 L0 -6 L26 -26 L6 0 L26 26 L0 6 L-26 26 L-6 0 Z" fill="#efe6d0" stroke="#3a2814" stroke-width="0.7" opacity="0.85" />
+                    <circle cx="0" cy="0" r="5" fill="#c45c28" stroke="#3a2814" stroke-width="0.8" />
+                    <text x="0" y="-52" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="13" fill="#3a2814">N</text>
+                    <text x="52" y="5" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="11" fill="#3a2814">E</text>
+                    <text x="0" y="62" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="11" fill="#3a2814">S</text>
+                    <text x="-52" y="5" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="11" fill="#3a2814">W</text>
+                  </g>
+                  <g transform="translate(220 500) scale(0.85)" opacity="0.86">
+                    <path d="M-22 16 L22 16 L16 6 L-16 6 Z" fill="#8a6234" stroke="#3a2814" stroke-width="1.15"/>
+                    <path d="M-3 6 L-3 -18 L2 -18 L2 6 Z" fill="#5a3c1c"/>
+                    <path d="M2 -16 L22 -28 L22 -10 L2 -4 Z" fill="#efe6d0" stroke="#3a2814" stroke-width="0.85"/>
+                    <path d="M-3 -14 L-18 -24 L-18 -10 L-3 -4 Z" fill="#e8d8b0" stroke="#3a2814" stroke-width="0.8"/>
+                    <path d="M2 -18 L2 -26 L12 -22 Z" fill="#1a1a1a"/>
+                    <path d="M-12 16 Q0 24 12 16" fill="none" stroke="#3a2814" stroke-width="0.9"/>
+                  </g>
+                  <g transform="translate(120 220)" fill="none" stroke="#5a4030" stroke-width="1.2" stroke-linecap="round" opacity="0.48">
+                    <path d="M0 10 Q16 0 32 10" /><path d="M10 18 Q26 8 42 18" /><path d="M20 26 Q36 16 52 26" />
+                  </g>                  <g transform="translate(480 80)" fill="none" stroke="#5a4030" stroke-width="1.2" stroke-linecap="round" opacity="0.48">
+                    <path d="M0 10 Q16 0 32 10" /><path d="M10 18 Q26 8 42 18" /><path d="M20 26 Q36 16 52 26" />
+                  </g>                  <g transform="translate(360 500)" fill="none" stroke="#5a4030" stroke-width="1.2" stroke-linecap="round" opacity="0.48">
+                    <path d="M0 10 Q16 0 32 10" /><path d="M10 18 Q26 8 42 18" /><path d="M20 26 Q36 16 52 26" />
+                  </g>
+                  <g transform="translate(176 408)" opacity="0.88">
+                    <path d="M-16 28 L-16 4 L-8 4 L-8 -6 L0 -6 L0 4 L8 4 L8 -6 L16 -6 L16 4 L24 4 L24 28 Z" fill="#d8c090" stroke="#2e4038" stroke-width="1"/>
+                    <circle cx="4" cy="8" r="18" fill="none" stroke="#2e4038" stroke-width="0.8" opacity="0.45"/>
+                    <text x="-28" y="46" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#2a4038" font-style="italic">Sunken Gate</text>
+                  </g>
+                  <g transform="translate(320 210)" opacity="0.86">
+                    <path d="M-6 28 L-4 0 L4 0 L6 28 Z" fill="#d0c8a8" stroke="#2e4038" stroke-width="0.9"/>
+                    <path d="M10 28 L12 6 L18 6 L20 28 Z" fill="#c8b890" stroke="#2e4038" stroke-width="0.9"/>
+                    <path d="M-20 28 L-18 8 L-12 8 L-10 28 Z" fill="#c8b890" stroke="#2e4038" stroke-width="0.9"/>
+                    <text x="-28" y="46" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#2a4038" font-style="italic">Coral Colonnade</text>
+                  </g>
+                  <g transform="translate(464 348)" opacity="0.86">
+                    <circle cx="0" cy="8" r="22" fill="none" stroke="#2e4038" stroke-width="1.1"/>
+                    <circle cx="0" cy="8" r="12" fill="none" stroke="#2e4038" stroke-width="0.8"/>
+                    <path d="M-10 28 L-8 4 L8 4 L10 28 Z" fill="#d8c090" stroke="#2e4038" stroke-width="0.9"/>
+                    <text x="-32" y="50" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#2a4038" font-style="italic">Poseidon's Plaza</text>
+                  </g>
+                  <g transform="translate(656 372)" opacity="0.92">
+                    <path d="M-16 -12 L16 12 M-16 12 L16 -12" stroke="#0e7490" stroke-width="5" stroke-linecap="round"/>
+                    <path d="M-16 -12 L16 12 M-16 12 L16 -12" stroke="#22d3ee" stroke-width="2.6" stroke-linecap="round"/>
+                    <text x="-40" y="32" font-family="'IM Fell English SC', Georgia, serif" font-size="12" fill="#155e75">Throne of Atlantis</text>
+                  </g>
+                  <g transform="translate(40 28)" opacity="0.94">
+                    <rect x="0" y="0" width="220" height="58" rx="4" fill="#efe4c0" stroke="#3a2814" stroke-width="1.6"/>
+                    <rect x="5" y="5" width="210" height="48" rx="2" fill="none" stroke="#3a2814" stroke-width="0.7" opacity="0.55"/>
+                    <text x="110.0" y="26" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="20" fill="#3a2010">The Lost City</text>
+                    <text x="110.0" y="44" text-anchor="middle" font-family="'IM Fell English', Georgia, serif" font-size="11" font-style="italic" fill="#5a3c1c">Ruins beneath the tide</text>
+                  </g>
+                </g>
+                <path class="adventure-map-edge" fill="none" stroke="#3a6058" stroke-width="3.2" opacity="0.5" d="M14 32 L48 10 L110 22 L180 8 L260 18 L340 6 L420 16 L500 7 L580 18 L660 8 L730 20 L786 36 L796 90 L800 180 L794 280 L798 380 L792 470 L786 548 L720 592 L620 584 L520 596 L420 586 L320 594 L220 584 L120 592 L28 560 L6 480 L10 360 L4 240 L12 130 L8 60 Z" />
+              </g>
+            </svg>
+              <svg class="adventure-chart__trail" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                <path id="adventureMapTrail-lost-city" class="adventure-map-trail" fill="none" d="" />
+                <path id="adventureMapTrailReveal-lost-city" class="adventure-map-trail adventure-map-trail--reveal" fill="none" d="" />
+              </svg>
+              <div class="adventure-chart__nodes" data-section="lost-city"></div>
+            </article>
           </div>
         </div>
         <header class="adventure-map-header">
@@ -2529,6 +2623,6 @@
       </section>
     </div>
 
-    <script src="game.js?v=shop-chest-open-1" defer></script>
+    <script src="game.js?v=atlas-charts-1" defer></script>
   </body>
 </html>

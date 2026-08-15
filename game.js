@@ -1242,12 +1242,12 @@ const TREASURE_CINEMATIC_FLY_MS = 2400;
 const TREASURE_CINEMATIC_OPEN_MS = 1600;
 const TREASURE_CINEMATIC_HOLD_MS = 1400;
 
-/** Logical map height for trail SVG coords (matches adventure-map-art viewBox). */
-const ADVENTURE_MAP_SVG_HEIGHT = 1200;
-/** Legacy chart height used by some layout helpers. */
-const ADVENTURE_MAP_HEIGHT = 3100;
+/** Logical chart size for trail SVG coords (matches adventure-chart__art viewBox). */
+const ADVENTURE_MAP_SVG_WIDTH = 800;
+const ADVENTURE_MAP_SVG_HEIGHT = 600;
+const ADVENTURE_MAP_SECTION_IDS = ["pirates", "gold", "ice", "lost-city"];
 
-/** Section metadata — bounds computed dynamically in adventureMapSectionBounds(). */
+/** Section metadata — each themed voyage lives on its own landscape chart. */
 const ADVENTURE_MAP_SECTIONS = {
   pirates: {
     id: "pirates",
@@ -1275,107 +1275,61 @@ const ADVENTURE_MAP_SECTIONS = {
   },
 };
 
-/** Vertical split lines (% from top of map board) aligned to voyage nodes. */
-const ADVENTURE_MAP_PIRATES_TOP_PCT = 58;
-const ADVENTURE_MAP_GOLD_ICE_SPLIT_PCT = 38;
-/** Sits between Lost City nodes (≤14%) and Frozen Sea nodes (≥21%). */
-const ADVENTURE_MAP_ICE_LOST_CITY_SPLIT_PCT = 19;
-const ADVENTURE_MAP_TOP_PCT = 4;
-
-/** Tile the chart into non-overlapping bands; gold fills to the top until ice unlocks. */
-function adventureMapSectionBounds() {
-  const pirates = {
-    topPct: ADVENTURE_MAP_PIRATES_TOP_PCT,
-    heightPct: 100 - ADVENTURE_MAP_PIRATES_TOP_PCT,
-  };
-  if (!isAdventureBonusUnlocked()) {
-    return { pirates, gold: null, ice: null, "lost-city": null };
-  }
-  if (!isAdventureIceUnlocked()) {
-    return {
-      pirates,
-      gold: {
-        topPct: ADVENTURE_MAP_TOP_PCT,
-        heightPct: ADVENTURE_MAP_PIRATES_TOP_PCT - ADVENTURE_MAP_TOP_PCT,
-      },
-      ice: null,
-      "lost-city": null,
-    };
-  }
-  if (!isAdventureLostCityUnlocked()) {
-    return {
-      pirates,
-      gold: {
-        topPct: ADVENTURE_MAP_GOLD_ICE_SPLIT_PCT,
-        heightPct: ADVENTURE_MAP_PIRATES_TOP_PCT - ADVENTURE_MAP_GOLD_ICE_SPLIT_PCT,
-      },
-      ice: {
-        topPct: ADVENTURE_MAP_TOP_PCT,
-        heightPct: ADVENTURE_MAP_GOLD_ICE_SPLIT_PCT - ADVENTURE_MAP_TOP_PCT,
-      },
-      "lost-city": null,
-    };
-  }
-  return {
-    pirates,
-    gold: {
-      topPct: ADVENTURE_MAP_GOLD_ICE_SPLIT_PCT,
-      heightPct: ADVENTURE_MAP_PIRATES_TOP_PCT - ADVENTURE_MAP_GOLD_ICE_SPLIT_PCT,
-    },
-    ice: {
-      topPct: ADVENTURE_MAP_ICE_LOST_CITY_SPLIT_PCT,
-      heightPct: ADVENTURE_MAP_GOLD_ICE_SPLIT_PCT - ADVENTURE_MAP_ICE_LOST_CITY_SPLIT_PCT,
-    },
-    "lost-city": {
-      topPct: ADVENTURE_MAP_TOP_PCT,
-      heightPct: ADVENTURE_MAP_ICE_LOST_CITY_SPLIT_PCT - ADVENTURE_MAP_TOP_PCT,
-    },
-  };
+function adventureSectionIdForIndex(i) {
+  if (i >= ADVENTURE_LOST_CITY_START_INDEX) return "lost-city";
+  if (i >= ADVENTURE_ICE_START_INDEX) return "ice";
+  if (i >= ADVENTURE_MAIN_LEVEL_COUNT) return "gold";
+  return "pirates";
 }
 
-/** Winding chart positions (% of map board) — organic sailing route, not a candy zigzag. */
+function isAdventureSectionUnlocked(sectionId) {
+  if (sectionId === "gold") return isAdventureBonusUnlocked();
+  if (sectionId === "ice") return isAdventureIceUnlocked();
+  if (sectionId === "lost-city") return isAdventureLostCityUnlocked();
+  return sectionId === "pirates";
+}
+
+/** Winding chart positions (% of each landscape map). */
 function buildAdventureMapNodeLayout() {
-  // Stay inside section bands so region labels still match the voyages.
   const pirates = [
-    { x: 52, y: 96.5 },
-    { x: 27, y: 92 },
-    { x: 42, y: 87 },
-    { x: 76, y: 89 },
-    { x: 84, y: 81.5 },
-    { x: 58, y: 78 },
-    { x: 30, y: 74.5 },
-    { x: 18, y: 68 },
-    { x: 46, y: 70.5 },
-    { x: 71, y: 65 },
-    { x: 88, y: 61 },
-    { x: 60, y: 63 },
-    { x: 34, y: 59.5 },
-    { x: 48, y: 58.8 },
-    { x: 50, y: 58.2 },
+    { x: 12, y: 78 },
+    { x: 22, y: 62 },
+    { x: 18, y: 42 },
+    { x: 32, y: 28 },
+    { x: 48, y: 22 },
+    { x: 62, y: 18 },
+    { x: 78, y: 28 },
+    { x: 88, y: 42 },
+    { x: 82, y: 58 },
+    { x: 70, y: 72 },
+    { x: 54, y: 80 },
+    { x: 40, y: 70 },
+    { x: 50, y: 52 },
+    { x: 64, y: 48 },
+    { x: 76, y: 38 },
   ];
   const gold = [
-    { x: 66, y: 54 },
-    { x: 38, y: 50.5 },
-    { x: 74, y: 47 },
-    { x: 30, y: 43 },
-    // Empty Middle Passage / Kraken's Grotto chart gap (between Crown Reef & Legend's Gate).
-    { x: 50, y: 45.2 },
-    { x: 78, y: 41.2 },
-    { x: 52, y: 39.5 },
+    { x: 16, y: 70 },
+    { x: 32, y: 42 },
+    { x: 50, y: 28 },
+    { x: 68, y: 38 },
+    { x: 48, y: 58 },
+    { x: 72, y: 68 },
+    { x: 86, y: 48 },
   ];
   const ice = [
-    { x: 32, y: 35 },
-    { x: 70, y: 32.5 },
-    { x: 26, y: 28 },
-    { x: 78, y: 24.5 },
-    { x: 50, y: 21 },
+    { x: 18, y: 62 },
+    { x: 38, y: 32 },
+    { x: 58, y: 48 },
+    { x: 76, y: 28 },
+    { x: 84, y: 58 },
   ];
   const lostCity = [
-    { x: 42, y: 16 },
-    { x: 64, y: 13 },
-    { x: 28, y: 10.5 },
-    { x: 72, y: 8 },
-    { x: 50, y: 5.5 },
+    { x: 22, y: 68 },
+    { x: 40, y: 38 },
+    { x: 58, y: 58 },
+    { x: 74, y: 32 },
+    { x: 82, y: 62 },
   ];
   return [
     ...pirates.map((p) => ({ ...p, section: "pirates" })),
@@ -9295,9 +9249,6 @@ const adventureUnlockHint = document.getElementById("adventureUnlockHint");
 const panelAdventure = document.getElementById("panelAdventure");
 const adventureLevelList = document.getElementById("adventureLevelList");
 const adventureMapScroll = document.getElementById("adventureMapScroll");
-const adventureMapSections = document.getElementById("adventureMapSections");
-const adventureMapTrail = document.getElementById("adventureMapTrail");
-const adventureMapTrailReveal = document.getElementById("adventureMapTrailReveal");
 const adventureMapBanner = document.getElementById("adventureMapBanner");
 const adventureMapHere = document.getElementById("adventureMapHere");
 const btnAdventureBack = document.getElementById("btnAdventureBack");
@@ -10189,9 +10140,23 @@ function updateAdventureLaunchUI() {
   syncAdventureLaunchVisibility();
 }
 
+function adventureChartEl(sectionId) {
+  return adventureMapScroll?.querySelector(`.adventure-chart[data-section="${sectionId}"]`);
+}
+
+function adventureTrailEl(sectionId) {
+  return document.getElementById(`adventureMapTrail-${sectionId}`);
+}
+
+function adventureTrailRevealEl(sectionId) {
+  return document.getElementById(`adventureMapTrailReveal-${sectionId}`);
+}
+
 function adventureMapCoords(index) {
-  const layout = ADVENTURE_MAP_NODE_LAYOUT[index] || { x: 50, y: 50 };
-  const svg = adventureMapTrail?.ownerSVGElement || document.querySelector(".adventure-map-art");
+  const layout = ADVENTURE_MAP_NODE_LAYOUT[index] || { x: 50, y: 50, section: "pirates" };
+  const section = layout.section || adventureSectionIdForIndex(index);
+  const trail = adventureTrailEl(section);
+  const svg = trail?.ownerSVGElement || adventureChartEl(section)?.querySelector(".adventure-chart__art");
   const pin = adventureLevelList
     ?.querySelector(`.adventure-map-node[data-level-index="${index}"] .adventure-map-node__pin`);
   if (svg && pin) {
@@ -10199,135 +10164,67 @@ function adventureMapCoords(index) {
     const pinRect = pin.getBoundingClientRect();
     if (svgRect.width > 1 && svgRect.height > 1 && pinRect.width > 0) {
       return {
-        x: ((pinRect.left + pinRect.width * 0.5 - svgRect.left) / svgRect.width) * 400,
+        x: ((pinRect.left + pinRect.width * 0.5 - svgRect.left) / svgRect.width) * ADVENTURE_MAP_SVG_WIDTH,
         y: ((pinRect.top + pinRect.height * 0.5 - svgRect.top) / svgRect.height) * ADVENTURE_MAP_SVG_HEIGHT,
+        section,
       };
     }
   }
-  // Fallback before pins exist: aim at the pin mark center (node is centered on x%).
-  return { x: (layout.x / 100) * 400, y: (layout.y / 100) * ADVENTURE_MAP_SVG_HEIGHT };
+  return {
+    x: (layout.x / 100) * ADVENTURE_MAP_SVG_WIDTH,
+    y: (layout.y / 100) * ADVENTURE_MAP_SVG_HEIGHT,
+    section,
+  };
 }
 
-function adventureMapExtentVh() {
-  if (isAdventureLostCityUnlocked()) return 960;
-  if (isAdventureIceUnlocked()) return 760;
-  if (isAdventureBonusUnlocked()) return 560;
-  return 400;
-}
-
-function applyAdventureMapExtent(animate = false) {
-  const board = adventureMapScroll?.querySelector(".adventure-map-board");
-  if (!board) return;
-  const vh = adventureMapExtentVh();
-  board.style.setProperty("--adv-map-height-vh", String(vh));
-  board.classList.toggle("adventure-map-board--extent-animate", animate);
-  board.classList.toggle("adventure-map-board--bonus-revealed", isAdventureBonusUnlocked());
-  board.classList.toggle("adventure-map-board--ice-revealed", isAdventureIceUnlocked());
-  board.classList.toggle("adventure-map-board--lost-city-revealed", isAdventureLostCityUnlocked());
-  const lostCityBand = adventureMapSectionBounds()["lost-city"];
-  if (lostCityBand) {
-    board.style.setProperty("--adv-lost-city-theme-top", `${lostCityBand.topPct}%`);
-    board.style.setProperty("--adv-lost-city-theme-height", `${lostCityBand.heightPct}%`);
-  } else {
-    board.style.removeProperty("--adv-lost-city-theme-top");
-    board.style.removeProperty("--adv-lost-city-theme-height");
+function applyAdventureMapExtent() {
+  for (const id of ADVENTURE_MAP_SECTION_IDS) {
+    const chart = adventureChartEl(id);
+    if (!chart) continue;
+    chart.hidden = !isAdventureSectionUnlocked(id);
   }
-  const advMapLostCity = document.getElementById("advMapLostCity");
-  if (advMapLostCity) advMapLostCity.hidden = !isAdventureLostCityUnlocked();
 }
 
 function syncAdventureMapSections() {
-  if (!adventureMapSections) return;
-  const bounds = adventureMapSectionBounds();
-  for (const section of adventureMapSections.querySelectorAll(".adventure-map-section")) {
-    const id = section.dataset.section;
-    const meta = ADVENTURE_MAP_SECTIONS[id];
-    if (!meta) continue;
-    const band = bounds[id];
-    section.querySelector(".adventure-map-section__label").textContent = meta.label;
-    const visible = Boolean(band);
-    if (band) {
-      section.style.top = `${band.topPct}%`;
-      section.style.height = `${band.heightPct}%`;
-    }
-    section.hidden = !visible;
-    section.classList.toggle("adventure-map-section--visible", visible);
-    section.classList.toggle("adventure-map-section--locked", !visible);
-    section.classList.toggle("adventure-map-section--extends-north", 
-      (id === "gold" && visible && !bounds.ice) ||
-      (id === "ice" && visible && bounds.ice && !bounds["lost-city"])
-    );
-  }
+  applyAdventureMapExtent();
 }
 
 function scrollAdventureMapToSection(sectionId, instant = true) {
-  if (!adventureMapScroll) return;
-  const meta = ADVENTURE_MAP_SECTIONS[sectionId];
-  const target =
-    (meta &&
-      adventureLevelList?.querySelector(
-        `.adventure-map-node[data-level-index="${meta.startIndex}"]`,
-      )) ||
-    adventureMapSections?.querySelector(`.adventure-map-section[data-section="${sectionId}"]`) ||
-    adventureLevelList?.querySelector(`.adventure-map-node[data-section="${sectionId}"]`);
-  if (!target) return;
+  const chart = adventureChartEl(sectionId);
+  if (!chart || !adventureMapScroll) return;
   const run = () => {
-    target.scrollIntoView({ block: "start", behavior: instant ? "instant" : "smooth" });
+    chart.scrollIntoView({ block: "center", behavior: instant ? "instant" : "smooth" });
   };
   if (instant) run();
   else window.requestAnimationFrame(run);
 }
 
 function runAdventureMapSectionReveal(kind) {
-  const board = adventureMapScroll?.querySelector(".adventure-map-board");
-  if (!board || !adventureLevelList) return;
+  const chart = adventureChartEl(kind);
+  if (!chart || !adventureLevelList) return;
   const prefersReducedMotion =
     typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  applyAdventureMapExtent();
   if (prefersReducedMotion) {
-    applyAdventureMapExtent(false);
-    syncAdventureMapSections();
     scrollAdventureMapToSection(kind, true);
     if (kind === "gold") clearBonusVoyagesMapCelebration();
     else if (kind === "ice") clearIceVoyagesMapCelebration();
     else clearLostCityMapCelebration();
     return;
   }
-  const startIdx =
-    kind === "gold"
-      ? ADVENTURE_MAIN_LEVEL_COUNT
-      : kind === "ice"
-        ? ADVENTURE_ICE_START_INDEX
-        : ADVENTURE_LOST_CITY_START_INDEX;
-  const endIdx =
-    kind === "gold"
-      ? ADVENTURE_ICE_START_INDEX
-      : kind === "ice"
-        ? ADVENTURE_LOST_CITY_START_INDEX
-        : ADVENTURE_LEVEL_COUNT;
-  applyAdventureMapExtent(true);
-  syncAdventureMapSections();
-  board.classList.add(`adventure-map-board--revealing-${kind}`);
-  adventureMapSections
-    ?.querySelector(`.adventure-map-section[data-section="${kind}"]`)
-    ?.classList.add("adventure-map-section--revealing");
-  const nodes = adventureLevelList.querySelectorAll(".adventure-map-node");
-  nodes.forEach((node) => {
-    const idx = Number(node.dataset.levelIndex);
-    if (idx < startIdx || idx >= endIdx) return;
+  chart.classList.add("adventure-chart--revealing");
+  const nodes = chart.querySelectorAll(".adventure-map-node");
+  nodes.forEach((node, i) => {
     node.classList.add("adventure-map-node--section-reveal");
-    node.style.animationDelay = `${(idx - startIdx) * 130}ms`;
+    node.style.animationDelay = `${i * 130}ms`;
   });
-  window.setTimeout(() => scrollAdventureMapToSection(kind, false), 500);
+  window.setTimeout(() => scrollAdventureMapToSection(kind, false), 400);
   window.setTimeout(() => {
-    board.classList.remove(`adventure-map-board--revealing-${kind}`);
-    adventureMapSections
-      ?.querySelector(`.adventure-map-section[data-section="${kind}"]`)
-      ?.classList.remove("adventure-map-section--revealing");
+    chart.classList.remove("adventure-chart--revealing");
     nodes.forEach((node) => {
       node.classList.remove("adventure-map-node--section-reveal");
       node.style.animationDelay = "";
     });
-    board.classList.remove("adventure-map-board--extent-animate");
     if (kind === "gold") clearBonusVoyagesMapCelebration();
     else if (kind === "ice") clearIceVoyagesMapCelebration();
     else clearLostCityMapCelebration();
@@ -10345,13 +10242,17 @@ let adventureTrailDrawnCount = 0;
 let pendingAdventureTrailReveal = false;
 let adventureTrailRevealRaf = 0;
 
-function adventureTrailPoints(count) {
-  const n = Math.max(0, Math.min(ADVENTURE_MAP_NODE_LAYOUT.length, count));
-  return ADVENTURE_MAP_NODE_LAYOUT.slice(0, n).map((_, i) => adventureMapCoords(i));
+function adventureTrailPointsInSection(sectionId, count) {
+  const meta = ADVENTURE_MAP_SECTIONS[sectionId];
+  if (!meta) return [];
+  const last = Math.min(count - 1, meta.endIndex);
+  if (last < meta.startIndex) return [];
+  const pts = [];
+  for (let i = meta.startIndex; i <= last; i++) pts.push(adventureMapCoords(i));
+  return pts;
 }
 
-function buildAdventureTrailPathForCount(count) {
-  const pts = adventureTrailPoints(count);
+function buildAdventureTrailPathFromPts(pts) {
   if (!pts.length) return "";
   if (pts.length === 1) return `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
   let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
@@ -10361,7 +10262,7 @@ function buildAdventureTrailPathForCount(count) {
     const dx = cur.x - prev.x;
     const dy = cur.y - prev.y;
     const len = Math.hypot(dx, dy) || 1;
-    const bulge = (i % 2 === 0 ? 1 : -1) * Math.min(16, len * 0.14);
+    const bulge = (i % 2 === 0 ? 1 : -1) * Math.min(22, len * 0.14);
     const cx = (prev.x + cur.x) * 0.5 - (dy / len) * bulge;
     const cy = (prev.y + cur.y) * 0.5 + (dx / len) * bulge;
     d += ` Q ${cx.toFixed(1)} ${cy.toFixed(1)} ${cur.x.toFixed(1)} ${cur.y.toFixed(1)}`;
@@ -10369,8 +10270,12 @@ function buildAdventureTrailPathForCount(count) {
   return d;
 }
 
-function buildAdventureTrailPath() {
-  return buildAdventureTrailPathForCount(adventureMapVisibleLevelCount());
+function setAdventureTrailPaths(count, skipSectionId = null) {
+  for (const sectionId of ADVENTURE_MAP_SECTION_IDS) {
+    const trail = adventureTrailEl(sectionId);
+    if (!trail || sectionId === skipSectionId) continue;
+    trail.setAttribute("d", buildAdventureTrailPathFromPts(adventureTrailPointsInSection(sectionId, count)));
+  }
 }
 
 function cancelAdventureTrailReveal() {
@@ -10378,7 +10283,9 @@ function cancelAdventureTrailReveal() {
     cancelAnimationFrame(adventureTrailRevealRaf);
     adventureTrailRevealRaf = 0;
   }
-  if (adventureMapTrailReveal) adventureMapTrailReveal.setAttribute("d", "");
+  for (const id of ADVENTURE_MAP_SECTION_IDS) {
+    adventureTrailRevealEl(id)?.setAttribute("d", "");
+  }
 }
 
 function polylineLength(pts) {
@@ -10416,30 +10323,35 @@ function finishAdventureTrailReveal(toCount) {
   cancelAdventureTrailReveal();
   adventureTrailDrawnCount = toCount;
   pendingAdventureTrailReveal = false;
-  if (adventureMapTrail) {
-    adventureMapTrail.setAttribute("d", buildAdventureTrailPathForCount(toCount));
-  }
+  setAdventureTrailPaths(toCount);
 }
 
 function animateAdventureTrailReveal(fromCount, toCount) {
   cancelAdventureTrailReveal();
   const prefersReducedMotion =
     typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (prefersReducedMotion || toCount <= fromCount || !adventureMapTrailReveal) {
+  const toSection = adventureSectionIdForIndex(Math.max(0, toCount - 1));
+  const fromSection = fromCount > 0 ? adventureSectionIdForIndex(fromCount - 1) : toSection;
+  const revealEl = adventureTrailRevealEl(toSection);
+  if (prefersReducedMotion || toCount <= fromCount || !revealEl) {
     finishAdventureTrailReveal(toCount);
     return;
   }
 
-  const allPts = adventureTrailPoints(toCount);
-  const startIdx = Math.max(0, fromCount - 1);
-  const animPts = allPts.slice(startIdx);
+  const meta = ADVENTURE_MAP_SECTIONS[toSection];
+  const settledCount = fromSection === toSection ? fromCount : meta.startIndex;
+  setAdventureTrailPaths(toCount, toSection);
+  const trail = adventureTrailEl(toSection);
+  if (trail) {
+    trail.setAttribute("d", buildAdventureTrailPathFromPts(adventureTrailPointsInSection(toSection, Math.max(settledCount, 1))));
+  }
+
+  const allPts = adventureTrailPointsInSection(toSection, toCount);
+  const startLocal = Math.max(0, settledCount - meta.startIndex - 1);
+  const animPts = allPts.slice(startLocal);
   if (animPts.length < 2) {
     finishAdventureTrailReveal(toCount);
     return;
-  }
-
-  if (adventureMapTrail) {
-    adventureMapTrail.setAttribute("d", buildAdventureTrailPathForCount(Math.max(fromCount, 1)));
   }
 
   const totalLen = polylineLength(animPts);
@@ -10451,7 +10363,7 @@ function animateAdventureTrailReveal(fromCount, toCount) {
     const t = Math.min(1, (now - start) / duration);
     const eased = 1 - Math.pow(1 - t, 3);
     const dist = totalLen * eased;
-    adventureMapTrailReveal.setAttribute("d", pathFromPolylinePrefix(animPts, dist));
+    revealEl.setAttribute("d", pathFromPolylinePrefix(animPts, dist));
     if (t < 1) {
       adventureTrailRevealRaf = requestAnimationFrame(tick);
       return;
@@ -10471,10 +10383,7 @@ function syncAdventureMapTrail(animateIfPending = true) {
   if (shouldAnimate) {
     const fromCount = adventureTrailDrawnCount;
     cancelAdventureTrailReveal();
-    if (adventureMapTrail) {
-      adventureMapTrail.setAttribute("d", buildAdventureTrailPathForCount(Math.max(fromCount, 1)));
-    }
-    // Brief delay so the map can settle/scroll before the new dotted path draws in.
+    setAdventureTrailPaths(Math.max(fromCount, 1));
     window.setTimeout(() => {
       if (!pendingAdventureTrailReveal) return;
       animateAdventureTrailReveal(fromCount, adventureMapVisibleLevelCount());
@@ -10485,9 +10394,7 @@ function syncAdventureMapTrail(animateIfPending = true) {
   cancelAdventureTrailReveal();
   pendingAdventureTrailReveal = false;
   adventureTrailDrawnCount = visibleCount;
-  if (adventureMapTrail) {
-    adventureMapTrail.setAttribute("d", buildAdventureTrailPathForCount(visibleCount));
-  }
+  setAdventureTrailPaths(visibleCount);
 }
 
 function updateAdventureMapHereLabel() {
@@ -10513,7 +10420,7 @@ function scrollAdventureMapToProgress(instant = true) {
     adventureLevelList.querySelector(".adventure-map-node");
   if (!target) return;
   const run = () => {
-    target.scrollIntoView({ block: "start", behavior: instant ? "instant" : "smooth" });
+    target.scrollIntoView({ block: "center", behavior: instant ? "instant" : "smooth" });
   };
   if (instant) run();
   else window.requestAnimationFrame(run);
@@ -10551,19 +10458,19 @@ function buildAdventureLevelUI(force = false) {
   const iceRevealed = isAdventureIceUnlocked();
   const lostCityRevealed = isAdventureLostCityUnlocked();
   const visibleCount = adventureMapVisibleLevelCount();
+  const existingNodes = adventureLevelList.querySelectorAll(".adventure-map-node").length;
   if (
     !force &&
     adventureMapUiProgress === highest &&
     adventureMapUiBonusRevealed === bonusRevealed &&
     adventureMapUiIceRevealed === iceRevealed &&
     adventureMapUiLostCityRevealed === lostCityRevealed &&
-    adventureLevelList.children.length === visibleCount
+    existingNodes === visibleCount
   ) {
     syncAdventureMapNodeStates();
-    // Keep the trail visible even when node DOM is reused.
     if (!pendingAdventureTrailReveal && adventureTrailDrawnCount !== visibleCount) {
       syncAdventureMapTrail(false);
-    } else if (!adventureMapTrail?.getAttribute("d") && visibleCount > 1) {
+    } else if (!adventureTrailEl("pirates")?.getAttribute("d") && visibleCount > 1) {
       syncAdventureMapTrail(false);
     }
     return;
@@ -10572,12 +10479,15 @@ function buildAdventureLevelUI(force = false) {
   adventureMapUiBonusRevealed = bonusRevealed;
   adventureMapUiIceRevealed = iceRevealed;
   adventureMapUiLostCityRevealed = lostCityRevealed;
-  adventureLevelList.innerHTML = "";
+  adventureLevelList.querySelectorAll(".adventure-chart__nodes").forEach((el) => {
+    el.innerHTML = "";
+  });
   const nextPlayable = Math.min(ADVENTURE_LEVEL_COUNT, highest + 1);
 
   syncAdventureMapTrail(true);
 
-  const frag = document.createDocumentFragment();
+  const frags = {};
+  for (const id of ADVENTURE_MAP_SECTION_IDS) frags[id] = document.createDocumentFragment();
   for (let i = 0; i < ADVENTURE_LEVELS.length; i++) {
     const lvl = ADVENTURE_LEVELS[i];
     // Hide voyages (and their lands) until the player has unlocked them —
@@ -10647,10 +10557,14 @@ function buildAdventureLevelUI(force = false) {
       </span>
       <span class="adventure-map-node__label">${lvl.name}</span>
     `;
-    frag.appendChild(b);
+    (frags[b.dataset.section] || frags.pirates).appendChild(b);
   }
-  adventureLevelList.appendChild(frag);
-  applyAdventureMapExtent(false);
+  for (const id of ADVENTURE_MAP_SECTION_IDS) {
+    adventureLevelList
+      .querySelector(`.adventure-chart__nodes[data-section="${id}"]`)
+      ?.appendChild(frags[id]);
+  }
+  applyAdventureMapExtent();
   syncAdventureMapSections();
   updateAdventureMapHereLabel();
   // Remeasure after layout so the dotted route ends on each pin, not nearby.
@@ -10686,7 +10600,7 @@ function buildAdventureLevelUI(force = false) {
       (isAdventureIceUnlocked() || gameMeta.pendingIceVoyagesCelebration) && isAdventureUnlocked();
     adventureMapIceBanner.hidden = !showIceBanner;
     adventureMapIceBanner.textContent = iceRevealed
-      ? `${ADVENTURE_SECTION_FROZEN_SEA} — icy voyages at the top of the chart`
+      ? `${ADVENTURE_SECTION_FROZEN_SEA} — icy voyages on their own chart`
       : `${ADVENTURE_SECTION_FROZEN_SEA} — clear Legend's Gate to unlock`;
     adventureMapIceBanner.classList.toggle(
       "adventure-map-ice-banner--reveal",
@@ -10698,7 +10612,7 @@ function buildAdventureLevelUI(force = false) {
       (isAdventureLostCityUnlocked() || gameMeta.pendingLostCityCelebration) && isAdventureUnlocked();
     adventureMapLostCityBanner.hidden = !showLostCityBanner;
     adventureMapLostCityBanner.textContent = lostCityRevealed
-      ? `${ADVENTURE_SECTION_LOST_CITY} — sunken Atlantis voyages at the top of the chart`
+      ? `${ADVENTURE_SECTION_LOST_CITY} — sunken Atlantis voyages on their own chart`
       : `${ADVENTURE_SECTION_LOST_CITY} — clear Aurora Reach to unlock`;
     adventureMapLostCityBanner.classList.toggle(
       "adventure-map-lost-city-banner--reveal",
@@ -10750,13 +10664,13 @@ function openAdventureHub() {
   syncAdventureLaunchVisibility();
   scrollAdventureMapToProgress(true);
   if (gameMeta.pendingBonusVoyagesCelebration) {
-    showToast(`${ADVENTURE_SECTION_GOLD_QUEST} unlocked! New lands appear on the chart.`, 4200);
+    showToast(`${ADVENTURE_SECTION_GOLD_QUEST} unlocked! A new chart is unfurled.`, 4200);
     window.requestAnimationFrame(() => runAdventureMapSectionReveal("gold"));
   } else if (gameMeta.pendingIceVoyagesCelebration) {
-    showToast(`${ADVENTURE_SECTION_FROZEN_SEA} unlocked! The frozen north extends the chart.`, 4200);
+    showToast(`${ADVENTURE_SECTION_FROZEN_SEA} unlocked! A new chart is unfurled.`, 4200);
     window.requestAnimationFrame(() => runAdventureMapSectionReveal("ice"));
   } else if (gameMeta.pendingLostCityCelebration) {
-    showToast(`${ADVENTURE_SECTION_LOST_CITY} unlocked! The sunken realm rises on the chart.`, 4200);
+    showToast(`${ADVENTURE_SECTION_LOST_CITY} unlocked! A new chart is unfurled.`, 4200);
     window.requestAnimationFrame(() => runAdventureMapSectionReveal("lost-city"));
   }
   if (musicEnabled) {
