@@ -688,19 +688,32 @@ function companionInnerMarkup(id) {
         <path d="M128 76 Q132 72 136 76" fill="none" stroke="#9a3412" stroke-width="0.9"/>`;
     case "sea_turtle":
       return `${shadow}
-        <ellipse cx="48" cy="104" rx="14" ry="8" fill="#4ade80" stroke="#166534" stroke-width="1.1" transform="rotate(-18 48 104)"/>
-        <ellipse cx="112" cy="104" rx="14" ry="8" fill="#4ade80" stroke="#166534" stroke-width="1.1" transform="rotate(18 112 104)"/>
-        <ellipse cx="52" cy="78" rx="13" ry="7" fill="#86efac" stroke="#166534" stroke-width="1.1" transform="rotate(-28 52 78)"/>
-        <ellipse cx="108" cy="78" rx="13" ry="7" fill="#86efac" stroke="#166534" stroke-width="1.1" transform="rotate(28 108 78)"/>
-        <path d="M50 80 L58 78 M102 78 L110 80 M46 102 L56 100 M104 100 L114 102" stroke="#166534" stroke-width="0.7" opacity="0.55"/>
-        <ellipse cx="80" cy="90" rx="30" ry="24" fill="#15803d" stroke="#14532d" stroke-width="1.4"/>
-        <ellipse cx="80" cy="90" rx="24" ry="18" fill="#22c55e"/>
-        <path d="M68 78 L80 90 L92 78 M68 102 L80 90 L92 102 M80 70 L80 110" fill="none" stroke="#166534" stroke-width="1.35"/>
-        <path d="M62 90 H98 M70 82 L90 98 M90 82 L70 98" fill="none" stroke="#14532d" stroke-width="0.7" opacity="0.7"/>
-        <ellipse cx="80" cy="62" rx="15" ry="12" fill="#86efac" stroke="#166534" stroke-width="1.1"/>
-        ${companionEyes(74, 60, 86, 60, 3.6)}
-        <path d="M76 68 Q80 72 84 68" fill="none" stroke="#14532d" stroke-width="1.2" stroke-linecap="round"/>
-        <ellipse cx="80" cy="66" rx="2.6" ry="1.4" fill="#14532d"/>`;
+        <path d="M50 116 C38 128 32 140 48 138 C58 134 62 124 58 116Z" fill="#7a9a48" stroke="#3a5420" stroke-width="1.1"/>
+        <path d="M110 116 C122 128 128 140 112 138 C102 134 98 124 102 116Z" fill="#7a9a48" stroke="#3a5420" stroke-width="1.1"/>
+        <path d="M34 76 C12 64 4 88 22 102 C36 110 50 100 52 86 C50 78 42 76 34 76Z" fill="#8faf58" stroke="#3a5420" stroke-width="1.15"/>
+        <path d="M126 76 C148 64 156 88 138 102 C124 110 110 100 108 86 C110 78 118 76 126 76Z" fill="#8faf58" stroke="#3a5420" stroke-width="1.15"/>
+        <path d="M18 78 L32 84 M14 88 L30 92 M20 96 L36 98" stroke="#3a5420" stroke-width="0.75" opacity="0.4"/>
+        <path d="M142 78 L128 84 M146 88 L130 92 M140 96 L124 98" stroke="#3a5420" stroke-width="0.75" opacity="0.4"/>
+        <ellipse cx="80" cy="102" rx="20" ry="14" fill="#e8d9a0"/>
+        <path d="M80 56 C100 54 122 66 126 88 C128 106 114 122 80 128 C46 122 32 106 34 88 C38 66 60 54 80 56Z" fill="#3f6a32" stroke="#243f1c" stroke-width="1.45"/>
+        <path d="M80 60 C96 58 114 68 118 86 C120 102 108 116 80 122 C52 116 40 102 42 86 C46 68 64 58 80 60Z" fill="#4f7e3c"/>
+        <path d="M70 66 Q80 60 90 66 Q80 74 70 66Z" fill="#6b9448" stroke="#2f4a22" stroke-width="0.7"/>
+        <path d="M68 78 Q80 72 92 78 Q80 88 68 78Z" fill="#628a42" stroke="#2f4a22" stroke-width="0.7"/>
+        <path d="M70 92 Q80 86 90 92 Q80 102 70 92Z" fill="#6b9448" stroke="#2f4a22" stroke-width="0.7"/>
+        <path d="M72 106 Q80 102 88 106 Q80 114 72 106Z" fill="#5c823c" stroke="#2f4a22" stroke-width="0.7"/>
+        <path d="M54 74 Q64 70 70 78 Q60 86 54 74Z" fill="#7aa050" stroke="#2f4a22" stroke-width="0.65"/>
+        <path d="M90 78 Q96 70 106 74 Q100 86 90 78Z" fill="#7aa050" stroke="#2f4a22" stroke-width="0.65"/>
+        <path d="M52 90 Q62 86 68 94 Q58 100 52 90Z" fill="#6b9448" stroke="#2f4a22" stroke-width="0.65"/>
+        <path d="M92 94 Q98 86 108 90 Q102 100 92 94Z" fill="#6b9448" stroke="#2f4a22" stroke-width="0.65"/>
+        <path d="M56 106 Q66 102 72 108 Q64 114 56 106Z" fill="#5c823c" stroke="#2f4a22" stroke-width="0.65"/>
+        <path d="M88 108 Q94 102 104 106 Q98 114 88 108Z" fill="#5c823c" stroke="#2f4a22" stroke-width="0.65"/>
+        <ellipse cx="80" cy="48" rx="15" ry="13.5" fill="#b5cc72" stroke="#3a5420" stroke-width="1.15"/>
+        <path d="M70 44 Q74 40 78 44" fill="none" stroke="#3a5420" stroke-width="0.7" opacity="0.45"/>
+        <path d="M82 44 Q86 40 90 44" fill="none" stroke="#3a5420" stroke-width="0.7" opacity="0.45"/>
+        ${companionEyes(74, 48, 86, 48, 3.5)}
+        <path d="M76 56 Q80 62 84 56 Q80 58 76 56Z" fill="#4a5c28" stroke="#2f3d18" stroke-width="0.7"/>
+        <ellipse cx="77" cy="54" rx="1.1" ry="0.7" fill="#2f3d18"/>
+        <ellipse cx="83" cy="54" rx="1.1" ry="0.7" fill="#2f3d18"/>`;
     case "octopus":
       return `${shadow}
         <path d="M48 108 Q40 128 52 132 Q56 114 52 106" fill="#fb7185" stroke="#9f1239" stroke-width="1"/>
@@ -718,16 +731,18 @@ function companionInnerMarkup(id) {
         <ellipse cx="80" cy="92" rx="7" ry="4" fill="#9f1239" opacity="0.32"/>`;
     case "dolphin":
       return `${shadow}
-        <path d="M24 72 C10 78 8 86 24 88 C8 92 12 104 26 96 C32 90 34 86 32 82 C30 76 26 72 24 72Z" fill="#64748b" stroke="#334155" stroke-width="1.15"/>
-        <path d="M32 86 C36 68 56 54 84 56 C106 58 122 66 134 76 C142 82 144 88 138 92 C128 86 118 86 110 90 C98 104 76 110 56 106 C42 102 34 96 32 86Z" fill="#8ea0b5" stroke="#475569" stroke-width="1.35"/>
-        <path d="M50 94 C64 108 96 110 122 90 C110 102 84 108 62 102 C54 100 50 96 50 94Z" fill="#eef2f7"/>
-        <path d="M100 68 C112 66 124 72 132 80" fill="none" stroke="#cbd5e1" stroke-width="3.2" stroke-linecap="round" opacity="0.45"/>
-        <path d="M70 58 C74 32 92 30 96 56 C88 50 78 52 70 58Z" fill="#5b6d82" stroke="#334155" stroke-width="1.15"/>
-        <path d="M84 96 C90 116 72 124 68 106 C74 100 80 96 84 96Z" fill="#64748b" stroke="#334155" stroke-width="1"/>
-        <path d="M128 76 C138 80 146 86 142 92 C136 88 128 84 124 82" fill="#7d8fa4" stroke="#475569" stroke-width="0.9"/>
-        <ellipse cx="98" cy="62" rx="3" ry="1.5" fill="#334155"/>
-        ${companionEye(118, 78, 4.3)}
-        <path d="M124 88 Q134 94 142 88" fill="none" stroke="#1e293b" stroke-width="1.4" stroke-linecap="round"/>`;
+        <path d="M22 84 C8 66 0 68 12 82 C4 84 2 90 14 88 C4 100 10 112 24 90 C28 86 28 84 22 84Z" fill="#5a6d80" stroke="#334155" stroke-width="1.15"/>
+        <path d="M30 86 C38 68 60 50 90 52 C114 54 130 64 140 76 C148 84 146 94 134 96 C118 90 104 92 90 100 C68 112 44 108 32 98 C26 94 26 90 30 86Z" fill="#8aa0b4" stroke="#475569" stroke-width="1.35"/>
+        <path d="M40 80 C62 54 100 50 132 72 C112 58 80 56 50 74 C44 78 40 80 40 80Z" fill="#5b7084" opacity="0.55"/>
+        <path d="M48 94 C66 112 102 114 128 92 C114 106 84 112 60 104 C52 100 48 96 48 94Z" fill="#eef3f7"/>
+        <path d="M108 66 C120 64 132 72 138 80" fill="none" stroke="#dbe4ee" stroke-width="3.4" stroke-linecap="round" opacity="0.45"/>
+        <path d="M132 76 C146 80 156 88 148 96 C142 90 134 86 128 84" fill="#7d91a6" stroke="#475569" stroke-width="0.95"/>
+        <path d="M74 56 C80 26 102 26 104 56 C94 48 82 50 74 56Z" fill="#4f6274" stroke="#334155" stroke-width="1.15"/>
+        <path d="M86 98 C96 124 70 130 68 108 C74 102 82 98 86 98Z" fill="#5a6d80" stroke="#334155" stroke-width="1"/>
+        <ellipse cx="102" cy="58" rx="3.4" ry="1.7" fill="#334155"/>
+        ${companionEye(118, 76, 4.2)}
+        <path d="M126 86 Q138 96 148 88" fill="none" stroke="#1e293b" stroke-width="1.45" stroke-linecap="round"/>
+        <path d="M128 74 Q132 70 136 74" fill="none" stroke="#64748b" stroke-width="0.8"/>`;
     case "seahorse":
       return `${shadow}
         <path d="M90 78 Q108 72 106 92 Q98 112 88 124 Q82 138 96 142" fill="none" stroke="#c2410c" stroke-width="11" stroke-linecap="round"/>
@@ -863,30 +878,36 @@ function companionInnerMarkup(id) {
         <path d="M62 90 H98" stroke="#0f172a" stroke-width="3" opacity="0.45"/>`;
     case "wizard_turtle":
       return `${shadow}
-        <ellipse cx="48" cy="106" rx="13" ry="7.5" fill="#4ade80" stroke="#166534" stroke-width="1.1" transform="rotate(-18 48 106)"/>
-        <ellipse cx="112" cy="106" rx="13" ry="7.5" fill="#4ade80" stroke="#166534" stroke-width="1.1" transform="rotate(18 112 106)"/>
-        <ellipse cx="80" cy="94" rx="28" ry="22" fill="#15803d" stroke="#14532d" stroke-width="1.35"/>
-        <ellipse cx="80" cy="94" rx="22" ry="16" fill="#22c55e"/>
-        <path d="M68 84 L80 94 L92 84 M68 104 L80 94 L92 104" fill="none" stroke="#166534" stroke-width="1.2"/>
-        <ellipse cx="80" cy="70" rx="15" ry="12" fill="#86efac" stroke="#166534" stroke-width="1.1"/>
-        ${companionEyes(74, 68, 86, 68, 3.6)}
-        <path d="M58 66 L64 32 Q80 18 96 32 L102 66 Q90 76 80 78 Q70 76 58 66Z" fill="#4c1d95" stroke="#2e1065" stroke-width="1.2"/>
-        <path d="M64 54 Q80 46 96 54" fill="none" stroke="#c4b5fd" stroke-width="1.4"/>
-        <circle cx="80" cy="44" r="4" fill="#fde047"/>
-        <path d="M112 90 L128 68 L124 90Z" fill="#7c3aed" stroke="#4c1d95" stroke-width="1"/>
-        <circle cx="128" cy="66" r="4.5" fill="#fbbf24"/>`;
+        <path d="M50 116 C38 128 32 140 48 138 C58 134 62 124 58 116Z" fill="#7a9a48" stroke="#3a5420" stroke-width="1.1"/>
+        <path d="M110 116 C122 128 128 140 112 138 C102 134 98 124 102 116Z" fill="#7a9a48" stroke="#3a5420" stroke-width="1.1"/>
+        <path d="M34 80 C14 70 8 92 24 104 C38 110 50 100 52 88 C50 80 42 78 34 80Z" fill="#8faf58" stroke="#3a5420" stroke-width="1.1"/>
+        <path d="M126 80 C146 70 152 92 136 104 C122 110 110 100 108 88 C110 80 118 78 126 80Z" fill="#8faf58" stroke="#3a5420" stroke-width="1.1"/>
+        <path d="M80 58 C100 56 122 68 126 90 C128 108 114 124 80 130 C46 124 32 108 34 90 C38 68 60 56 80 58Z" fill="#3f6a32" stroke="#243f1c" stroke-width="1.4"/>
+        <path d="M80 62 C96 60 114 70 118 88 C120 104 108 118 80 124 C52 118 40 104 42 88 C46 70 64 60 80 62Z" fill="#4f7e3c"/>
+        <path d="M70 70 Q80 64 90 70 Q80 80 70 70Z" fill="#6b9448" stroke="#2f4a22" stroke-width="0.7"/>
+        <path d="M68 86 Q80 80 92 86 Q80 96 68 86Z" fill="#628a42" stroke="#2f4a22" stroke-width="0.7"/>
+        <path d="M70 102 Q80 96 90 102 Q80 112 70 102Z" fill="#6b9448" stroke="#2f4a22" stroke-width="0.7"/>
+        <ellipse cx="80" cy="50" rx="14.5" ry="13" fill="#b5cc72" stroke="#3a5420" stroke-width="1.1"/>
+        ${companionEyes(74, 50, 86, 50, 3.4)}
+        <path d="M76 58 Q80 64 84 58 Q80 60 76 58Z" fill="#4a5c28"/>
+        <path d="M58 54 L66 18 Q80 6 94 18 L102 54 Q90 66 80 68 Q70 66 58 54Z" fill="#4c1d95" stroke="#2e1065" stroke-width="1.2"/>
+        <path d="M66 44 Q80 36 94 44" fill="none" stroke="#c4b5fd" stroke-width="1.4"/>
+        <circle cx="80" cy="28" r="4" fill="#fde047"/>
+        <path d="M114 92 L132 66 L126 94Z" fill="#7c3aed" stroke="#4c1d95" stroke-width="1"/>
+        <circle cx="132" cy="64" r="4.5" fill="#fbbf24"/>`;
     case "super_dolphin":
       return `${shadow}
-        <path d="M46 64 Q80 34 114 64 Q98 82 80 84 Q62 82 46 64Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="1.1"/>
-        <path d="M24 74 C10 80 8 88 24 90 C8 94 12 106 26 98 C32 92 34 88 32 84 C30 78 26 74 24 74Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1.15"/>
-        <path d="M32 88 C36 70 56 56 84 58 C106 60 122 68 134 78 C142 84 144 90 138 94 C128 88 118 88 110 92 C98 106 76 112 56 108 C42 104 34 98 32 88Z" fill="#3b82f6" stroke="#1e3a8a" stroke-width="1.35"/>
-        <path d="M50 96 C64 110 96 112 122 92 C110 104 84 110 62 104 C54 102 50 98 50 96Z" fill="#dbeafe"/>
-        <path d="M70 60 C74 34 92 32 96 58 C88 52 78 54 70 60Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1.15"/>
-        <path d="M84 98 C90 118 72 126 68 108 C74 102 80 98 84 98Z" fill="#2563eb" stroke="#1e3a8a" stroke-width="1"/>
-        <path d="M56 84 H112" stroke="#fbbf24" stroke-width="6" stroke-linecap="round"/>
-        <circle cx="80" cy="84" r="5.5" fill="#fef08a" stroke="#b45309" stroke-width="0.8"/>
-        ${companionEye(118, 80, 4.3)}
-        <path d="M124 90 Q134 96 142 90" fill="none" stroke="#1e3a8a" stroke-width="1.4" stroke-linecap="round"/>`;
+        <path d="M46 62 Q80 32 114 62 Q98 80 80 82 Q62 80 46 62Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="1.1"/>
+        <path d="M22 84 C8 66 0 68 12 82 C4 84 2 90 14 88 C4 100 10 112 24 90 C28 86 28 84 22 84Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1.15"/>
+        <path d="M30 86 C38 68 60 50 90 52 C114 54 130 64 140 76 C148 84 146 94 134 96 C118 90 104 92 90 100 C68 112 44 108 32 98 C26 94 26 90 30 86Z" fill="#3b82f6" stroke="#1e3a8a" stroke-width="1.35"/>
+        <path d="M48 94 C66 112 102 114 128 92 C114 106 84 112 60 104 C52 100 48 96 48 94Z" fill="#dbeafe"/>
+        <path d="M132 76 C146 80 156 88 148 96 C142 90 134 86 128 84" fill="#2563eb" stroke="#1e3a8a" stroke-width="0.95"/>
+        <path d="M74 56 C80 26 102 26 104 56 C94 48 82 50 74 56Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1.15"/>
+        <path d="M86 98 C96 124 70 130 68 108 C74 102 82 98 86 98Z" fill="#2563eb" stroke="#1e3a8a" stroke-width="1"/>
+        <path d="M56 86 H112" stroke="#fbbf24" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="80" cy="86" r="5.5" fill="#fef08a" stroke="#b45309" stroke-width="0.8"/>
+        ${companionEye(118, 76, 4.2)}
+        <path d="M126 86 Q138 96 148 88" fill="none" stroke="#1e3a8a" stroke-width="1.45" stroke-linecap="round"/>`;
     case "chef_crab":
       return `${shadow}
         <path d="M46 90 L30 74 L38 90" fill="none" stroke="#b91c1c" stroke-width="3.1" stroke-linecap="round"/>
@@ -9859,6 +9880,7 @@ function showExclusiveMenu(which) {
   hideAllPanels();
   if (which === "start") {
     if (panelStart) panelStart.hidden = false;
+    window.setTimeout(tryStartDailyPrizeCelebration, 200);
     return;
   }
   if (which === "shop") {
