@@ -859,9 +859,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
-  padding: 4px;
+  width: 72px;
+  height: 72px;
+  padding: 2px;
   overflow: hidden;
   background:
     radial-gradient(circle at 50% 35%, rgba(186, 230, 253, 0.22), transparent 55%),
@@ -2601,7 +2601,8 @@ button.seagull-avatar:active {
   transform: scale(0.97);
 }
 
-.seagull-avatar__art {
+.seagull-avatar__art,
+.companion-avatar__art {
   display: block;
   width: 100%;
   height: 100%;
@@ -5107,11 +5108,14 @@ button.seagull-avatar:active {
   box-shadow: inset 0 -18px 30px rgba(2, 12, 24, 0.35);
 }
 
-.collectables-seagull-preview__art {
-  width: min(270px, 84vw);
+.collectables-seagull-preview__art,
+.companion-preview__art {
+  width: min(240px, 78vw);
   height: auto;
   filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.45));
   overflow: visible;
+  transform-origin: 50% 88%;
+  animation: collectablesSeagullIdle 3.6s ease-in-out infinite;
 }
 
 .collectables-seagull-figure {
@@ -5252,14 +5256,14 @@ button.seagull-avatar:active {
 }
 
 .wardrobe-tile__art {
-  width: 72px;
-  height: 64px;
+  width: 84px;
+  height: 84px;
   display: block;
   background:
     radial-gradient(circle at 50% 30%, rgba(186, 230, 253, 0.22), transparent 55%),
     rgba(12, 90, 120, 0.4);
   border-radius: 12px;
-  padding: 4px;
+  padding: 2px;
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -5506,7 +5510,8 @@ button.seagull-avatar:active {
   .collectables-seagull-eyes,
   .collectables-seagull-shadow,
   .collectables-seagull-wing--l,
-  .collectables-seagull-wing--r {
+  .collectables-seagull-wing--r,
+  .companion-preview__art {
     animation: none !important;
   }
 
