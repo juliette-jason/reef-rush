@@ -7822,21 +7822,34 @@ button.seagull-avatar:active {
   user-select: none;
 }
 
+.adventure-map-trail-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: calc(var(--adv-map-height-vh, 400) * 1vh);
+  z-index: 4;
+  pointer-events: none;
+  overflow: visible;
+}
+
 .adventure-map-trail {
-  stroke: #b91c1c;
-  stroke-width: 2.6;
+  stroke: #dc2626;
+  stroke-width: 3.4;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-dasharray: 7 9;
-  opacity: 0.88;
+  stroke-dasharray: 4 7;
+  opacity: 0.95;
   pointer-events: none;
-  filter: drop-shadow(0 1px 0.5px rgba(80, 10, 8, 0.4));
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 1px 0.5px rgba(80, 10, 8, 0.45));
 }
 
 .adventure-map-trail--reveal {
-  stroke: #a01818;
-  stroke-width: 3.6;
+  stroke: #b91c1c;
+  stroke-width: 4;
   opacity: 1;
+  vector-effect: non-scaling-stroke;
   filter: drop-shadow(0 0 4px rgba(120, 20, 20, 0.55));
   animation: adventureTrailDashMarch 0.55s linear infinite;
 }
