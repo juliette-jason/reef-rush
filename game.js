@@ -9265,6 +9265,7 @@ const adventureMapSections = document.getElementById("adventureMapSections");
 const adventureMapTrail = document.getElementById("adventureMapTrail");
 const adventureMapTrailReveal = document.getElementById("adventureMapTrailReveal");
 const adventureMapBanner = document.getElementById("adventureMapBanner");
+const adventureMapHere = document.getElementById("adventureMapHere");
 const btnAdventureBack = document.getElementById("btnAdventureBack");
 const panelAdventurePrep = document.getElementById("panelAdventurePrep");
 const adventurePrepSection = document.getElementById("adventurePrepSection");
@@ -10235,7 +10236,7 @@ function scrollAdventureMapToSection(sectionId, instant = true) {
     adventureLevelList?.querySelector(`.adventure-map-node[data-section="${sectionId}"]`);
   if (!target) return;
   const run = () => {
-    target.scrollIntoView({ block: "center", behavior: instant ? "instant" : "smooth" });
+    target.scrollIntoView({ block: "start", behavior: instant ? "instant" : "smooth" });
   };
   if (instant) run();
   else window.requestAnimationFrame(run);
@@ -10453,8 +10454,22 @@ function syncAdventureMapTrail(animateIfPending = true) {
   }
 }
 
+function updateAdventureMapHereLabel() {
+  if (!adventureMapHere) return;
+  const highest = gameMeta.adventureHighestLevel || 0;
+  const allCleared = highest >= ADVENTURE_LEVEL_COUNT;
+  const nextPlayable = Math.min(ADVENTURE_LEVEL_COUNT, highest + 1);
+  const lvl = ADVENTURE_LEVELS[allCleared ? ADVENTURE_LEVEL_COUNT - 1 : nextPlayable - 1];
+  adventureMapHere.textContent = lvl
+    ? allCleared
+      ? `Cleared: ${lvl.name}`
+      : `Now: ${lvl.name}`
+    : "";
+}
+
 function scrollAdventureMapToProgress(instant = true) {
   if (!adventureMapScroll || !adventureLevelList) return;
+  updateAdventureMapHereLabel();
   const clearedNodes = adventureLevelList.querySelectorAll(".adventure-map-node--cleared");
   const target =
     adventureLevelList.querySelector(".adventure-map-node--current") ||
@@ -10462,7 +10477,7 @@ function scrollAdventureMapToProgress(instant = true) {
     adventureLevelList.querySelector(".adventure-map-node");
   if (!target) return;
   const run = () => {
-    target.scrollIntoView({ block: "center", behavior: instant ? "instant" : "smooth" });
+    target.scrollIntoView({ block: "start", behavior: instant ? "instant" : "smooth" });
   };
   if (instant) run();
   else window.requestAnimationFrame(run);
@@ -10490,6 +10505,7 @@ function syncAdventureMapNodeStates() {
     b.classList.toggle("adventure-map-node--current", isCurrent);
     b.disabled = !playable;
   });
+  updateAdventureMapHereLabel();
 }
 
 function buildAdventureLevelUI(force = false) {
@@ -10600,6 +10616,7 @@ function buildAdventureLevelUI(force = false) {
   adventureLevelList.appendChild(frag);
   applyAdventureMapExtent(false);
   syncAdventureMapSections();
+  updateAdventureMapHereLabel();
   // Remeasure after layout so the dotted route ends on each pin, not nearby.
   window.requestAnimationFrame(() => {
     if (!pendingAdventureTrailReveal) syncAdventureMapTrail(false);
