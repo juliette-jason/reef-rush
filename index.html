@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=event-art-3" />
+    <link rel="stylesheet" href="styles.css?v=map-rolls-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -830,6 +830,42 @@
       <section id="panelAdventure" class="panel panel--adventure" hidden>
         <div id="adventureMapScroll" class="adventure-map-scroll">
           <div class="adventure-map-board">
+            <div class="adventure-map-roll adventure-map-roll--top" aria-hidden="true">
+              <svg class="adventure-map-roll__art" viewBox="0 0 400 56" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="advRollPaper" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#6a4a28"/>
+                    <stop offset="0.18" stop-color="#c4a06a"/>
+                    <stop offset="0.38" stop-color="#8a6234"/>
+                    <stop offset="0.58" stop-color="#e2c48a"/>
+                    <stop offset="0.78" stop-color="#9a7040"/>
+                    <stop offset="1" stop-color="#5a3c1c"/>
+                  </linearGradient>
+                  <linearGradient id="advRollWood" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0" stop-color="#3a2410"/>
+                    <stop offset="0.5" stop-color="#7a4a22"/>
+                    <stop offset="1" stop-color="#3a2410"/>
+                  </linearGradient>
+                  <radialGradient id="advRollKnob" cx="35%" cy="35%" r="70%">
+                    <stop offset="0" stop-color="#c4a06a"/>
+                    <stop offset="0.45" stop-color="#8a5a28"/>
+                    <stop offset="1" stop-color="#3a2210"/>
+                  </radialGradient>
+                </defs>
+                <ellipse cx="200" cy="44" rx="188" ry="10" fill="#3a2410" opacity="0.28"/>
+                <rect x="18" y="14" width="364" height="28" rx="14" fill="url(#advRollPaper)"/>
+                <ellipse cx="200" cy="14" rx="182" ry="13" fill="url(#advRollPaper)"/>
+                <ellipse cx="200" cy="14" rx="182" ry="13" fill="none" stroke="#5a3c1c" stroke-width="1.2" opacity="0.45"/>
+                <ellipse cx="200" cy="20" rx="178" ry="6" fill="#f0d9a8" opacity="0.28"/>
+                <ellipse cx="200" cy="36" rx="180" ry="7" fill="#4a3014" opacity="0.22"/>
+                <rect x="6" y="22" width="16" height="12" rx="3" fill="url(#advRollWood)"/>
+                <rect x="378" y="22" width="16" height="12" rx="3" fill="url(#advRollWood)"/>
+                <ellipse cx="14" cy="28" rx="11" ry="11" fill="url(#advRollKnob)" stroke="#2a1808" stroke-width="1.1"/>
+                <ellipse cx="386" cy="28" rx="11" ry="11" fill="url(#advRollKnob)" stroke="#2a1808" stroke-width="1.1"/>
+                <ellipse cx="11" cy="25" rx="3.2" ry="2.4" fill="#e8d4a8" opacity="0.45"/>
+                <ellipse cx="383" cy="25" rx="3.2" ry="2.4" fill="#e8d4a8" opacity="0.45"/>
+              </svg>
+            </div>
             <svg class="adventure-map-art" viewBox="0 0 400 1200" preserveAspectRatio="none" aria-hidden="true">
               <defs>
                 <linearGradient id="advMapParchment" x1="8%" y1="0%" x2="92%" y2="100%">
@@ -1092,6 +1128,42 @@
               </g>
               <path class="adventure-map-edge" fill="none" stroke="#5c4030" stroke-width="2.4" opacity="0.4" d="M10 28 L36 10 L78 16 L122 6 L168 14 L214 5 L262 13 L308 6 L352 14 L386 30 L396 70 L399 160 L394 320 L398 500 L392 680 L397 860 L390 1040 L382 1168 L348 1192 L292 1186 L230 1196 L168 1186 L108 1194 L52 1182 L14 1150 L5 1080 L8 920 L3 740 L9 560 L4 380 L10 200 L6 90 Z" />
             </svg>
+            <div class="adventure-map-roll adventure-map-roll--bottom" aria-hidden="true">
+              <svg class="adventure-map-roll__art" viewBox="0 0 400 56" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="advRollPaperB" x1="0" y1="1" x2="0" y2="0">
+                    <stop offset="0" stop-color="#6a4a28"/>
+                    <stop offset="0.18" stop-color="#c4a06a"/>
+                    <stop offset="0.38" stop-color="#8a6234"/>
+                    <stop offset="0.58" stop-color="#e2c48a"/>
+                    <stop offset="0.78" stop-color="#9a7040"/>
+                    <stop offset="1" stop-color="#5a3c1c"/>
+                  </linearGradient>
+                  <linearGradient id="advRollWoodB" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0" stop-color="#3a2410"/>
+                    <stop offset="0.5" stop-color="#7a4a22"/>
+                    <stop offset="1" stop-color="#3a2410"/>
+                  </linearGradient>
+                  <radialGradient id="advRollKnobB" cx="35%" cy="35%" r="70%">
+                    <stop offset="0" stop-color="#c4a06a"/>
+                    <stop offset="0.45" stop-color="#8a5a28"/>
+                    <stop offset="1" stop-color="#3a2210"/>
+                  </radialGradient>
+                </defs>
+                <ellipse cx="200" cy="12" rx="188" ry="10" fill="#3a2410" opacity="0.28"/>
+                <rect x="18" y="14" width="364" height="28" rx="14" fill="url(#advRollPaperB)"/>
+                <ellipse cx="200" cy="42" rx="182" ry="13" fill="url(#advRollPaperB)"/>
+                <ellipse cx="200" cy="42" rx="182" ry="13" fill="none" stroke="#5a3c1c" stroke-width="1.2" opacity="0.45"/>
+                <ellipse cx="200" cy="36" rx="178" ry="6" fill="#f0d9a8" opacity="0.28"/>
+                <ellipse cx="200" cy="20" rx="180" ry="7" fill="#4a3014" opacity="0.22"/>
+                <rect x="6" y="22" width="16" height="12" rx="3" fill="url(#advRollWoodB)"/>
+                <rect x="378" y="22" width="16" height="12" rx="3" fill="url(#advRollWoodB)"/>
+                <ellipse cx="14" cy="28" rx="11" ry="11" fill="url(#advRollKnobB)" stroke="#2a1808" stroke-width="1.1"/>
+                <ellipse cx="386" cy="28" rx="11" ry="11" fill="url(#advRollKnobB)" stroke="#2a1808" stroke-width="1.1"/>
+                <ellipse cx="11" cy="25" rx="3.2" ry="2.4" fill="#e8d4a8" opacity="0.45"/>
+                <ellipse cx="383" cy="25" rx="3.2" ry="2.4" fill="#e8d4a8" opacity="0.45"/>
+              </svg>
+            </div>
             <div class="adventure-map-lost-city-theme" aria-hidden="true"></div>
             <div id="adventureMapSections" class="adventure-map-sections" aria-hidden="true">
               <div class="adventure-map-section adventure-map-section--pirates adventure-map-section--visible" data-section="pirates">
