@@ -19,7 +19,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=map-bg-undo-1" />
+    <link rel="stylesheet" href="styles.css?v=treasure-map-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -832,427 +832,247 @@
           <div class="adventure-map-board">
             <svg class="adventure-map-art" viewBox="0 0 400 1200" preserveAspectRatio="none" aria-hidden="true">
               <defs>
-                <linearGradient id="advMapParchment" x1="0%" y1="0%" x2="85%" y2="100%">
-                  <stop offset="0%" stop-color="#e8dcc4" />
-                  <stop offset="40%" stop-color="#d4c2a0" />
-                  <stop offset="100%" stop-color="#b89a72" />
+                <linearGradient id="advMapParchment" x1="8%" y1="0%" x2="92%" y2="100%">
+                  <stop offset="0%" stop-color="#c4a06a" />
+                  <stop offset="28%" stop-color="#b08958" />
+                  <stop offset="62%" stop-color="#9a7344" />
+                  <stop offset="100%" stop-color="#7d5a32" />
                 </linearGradient>
-                <linearGradient id="advMapLand" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#d8c8a8" />
-                  <stop offset="100%" stop-color="#c4ae88" />
+                <linearGradient id="advMapLand" x1="20%" y1="0%" x2="80%" y2="100%">
+                  <stop offset="0%" stop-color="#c9a56a" />
+                  <stop offset="55%" stop-color="#b08a4e" />
+                  <stop offset="100%" stop-color="#8f6a38" />
                 </linearGradient>
-                <linearGradient id="advMapSeaWash" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stop-color="#4a6870" stop-opacity="0.14" />
-                  <stop offset="100%" stop-color="#2a4048" stop-opacity="0.18" />
+                <linearGradient id="advMapLandHi" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#d4b078" />
+                  <stop offset="100%" stop-color="#a07840" />
                 </linearGradient>
-                <linearGradient id="advMapOcean" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#6a8a98" />
-                  <stop offset="45%" stop-color="#4a6e80" />
-                  <stop offset="100%" stop-color="#2f4f5e" />
+                <linearGradient id="advMapOcean" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#6d7d68" />
+                  <stop offset="45%" stop-color="#5a6c5c" />
+                  <stop offset="100%" stop-color="#445248" />
                 </linearGradient>
-                <linearGradient id="advMapRiver" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#6a8a98" />
-                  <stop offset="50%" stop-color="#4a6e80" />
-                  <stop offset="100%" stop-color="#3a5e70" />
+                <linearGradient id="advMapMountain" x1="0%" y1="100%" x2="30%" y2="0%">
+                  <stop offset="0%" stop-color="#6a4e32" />
+                  <stop offset="55%" stop-color="#8a6a44" />
+                  <stop offset="100%" stop-color="#c4b08a" />
                 </linearGradient>
-                <linearGradient id="advMapPond" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#5a7a88" />
-                  <stop offset="50%" stop-color="#3a5e70" />
-                  <stop offset="100%" stop-color="#2a4a58" />
+                <linearGradient id="advMapMountainShade" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#4a3420" />
+                  <stop offset="100%" stop-color="#8a6840" />
                 </linearGradient>
-                <linearGradient id="advMapMountain" x1="0%" y1="100%" x2="0%" y2="0%">
-                  <stop offset="0%" stop-color="#5a4a38" />
-                  <stop offset="100%" stop-color="#8a7a64" />
+                <linearGradient id="advMapIcePeak" x1="0%" y1="100%" x2="0%" y2="0%">
+                  <stop offset="0%" stop-color="#6a7a78" />
+                  <stop offset="50%" stop-color="#a8b8b4" />
+                  <stop offset="100%" stop-color="#e8ece8" />
                 </linearGradient>
+                <radialGradient id="advMapCaveMouth" cx="50%" cy="42%" r="62%">
+                  <stop offset="0%" stop-color="#1a1008" />
+                  <stop offset="70%" stop-color="#3a2414" />
+                  <stop offset="100%" stop-color="#5a3c24" />
+                </radialGradient>
                 <filter id="advMapPaperGrain" x="-8%" y="-8%" width="116%" height="116%">
-                  <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="5" result="noise" />
+                  <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="4" result="noise" />
                   <feColorMatrix type="saturate" values="0" in="noise" result="gray" />
                   <feComponentTransfer in="gray" result="grain">
-                    <feFuncA type="linear" slope="0.18" />
+                    <feFuncA type="linear" slope="0.22" />
                   </feComponentTransfer>
                   <feBlend in="SourceGraphic" in2="grain" mode="multiply" />
                 </filter>
-                <filter id="advMapInk" x="-2%" y="-2%" width="104%" height="104%">
-                  <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="wobble" />
-                  <feDisplacementMap in="SourceGraphic" in2="wobble" scale="2.2" xChannelSelector="R" yChannelSelector="G" />
-                </filter>
                 <clipPath id="advMapTornEdge">
-                  <path d="M6 24 L28 8 L72 14 L118 6 L168 16 L218 8 L268 14 L318 6 L368 12 L394 34 L398 120 L392 280 L396 520 L390 760 L394 980 L386 1168 L362 1190 L310 1196 L250 1188 L190 1194 L130 1190 L70 1196 L24 1184 L8 1140 L4 880 L10 620 L6 360 L10 140 Z" />
+                  <path d="M10 28 L36 10 L78 16 L122 6 L168 14 L214 5 L262 13 L308 6 L352 14 L386 30 L396 70 L399 160 L394 320 L398 500 L392 680 L397 860 L390 1040 L382 1168 L348 1192 L292 1186 L230 1196 L168 1186 L108 1194 L52 1182 L14 1150 L5 1080 L8 920 L3 740 L9 560 L4 380 L10 200 L6 90 Z" />
                 </clipPath>
               </defs>
-              <g clip-path="url(#advMapTornEdge)">
+              <g clip-path="url(#advMapTornEdge)" filter="url(#advMapPaperGrain)">
                 <rect width="400" height="1200" fill="url(#advMapParchment)" />
-                <rect width="400" height="1200" fill="url(#advMapSeaWash)" />
+                <!-- Wear: stains, folds, foxing -->
+                <g class="adv-map-wear" pointer-events="none">
+                  <ellipse cx="48" cy="160" rx="70" ry="48" fill="#6a4420" opacity="0.18" />
+                  <ellipse cx="350" cy="410" rx="80" ry="56" fill="#5a3814" opacity="0.16" />
+                  <ellipse cx="70" cy="740" rx="90" ry="50" fill="#6a4018" opacity="0.17" />
+                  <ellipse cx="310" cy="980" rx="72" ry="46" fill="#4a2c10" opacity="0.2" />
+                  <ellipse cx="200" cy="600" rx="110" ry="36" fill="#7a5020" opacity="0.1" />
+                  <ellipse cx="20" cy="1180" rx="90" ry="40" fill="#3a220c" opacity="0.22" />
+                  <ellipse cx="380" cy="40" rx="50" ry="36" fill="#5a3814" opacity="0.2" />
+                  <path d="M0 0 L400 0 L400 28 Q200 8 0 28 Z" fill="#5a3a18" opacity="0.12" />
+                  <path d="M0 1172 Q200 1192 400 1170 L400 1200 L0 1200 Z" fill="#4a2c10" opacity="0.16" />
+                  <path d="M198 20 L204 1180" fill="none" stroke="#5a3c18" stroke-width="6" opacity="0.07" />
+                  <path d="M196 20 L206 1180" fill="none" stroke="#3a2410" stroke-width="1.2" opacity="0.12" />
+                </g>
+                <!-- Ocean wash, with land cutouts -->
                 <g class="adv-map-oceans" aria-hidden="true">
-                  <path fill="url(#advMapOcean)" opacity="0.82" d="M0 0 L400 0 L400 1200 L0 1200 Z M20 140 Q55 120 95 135 T165 125 Q210 115 250 140 T290 180 Q310 220 280 260 T220 280 Q160 290 120 270 T70 240 Q40 200 20 140 Z M240 320 Q290 300 340 330 T370 390 Q360 450 310 470 T250 460 Q200 440 220 390 T240 320 Z M30 520 Q80 500 130 530 T180 580 Q190 640 140 670 T80 660 Q40 620 30 560 Z M250 600 Q310 580 360 620 T380 700 Q370 780 310 800 T240 790 Q190 750 210 680 T250 600 Z M50 880 Q110 860 160 900 T190 980 Q170 1050 110 1060 T60 1020 Q40 950 50 880 Z" fill-rule="evenodd" />
-                  <path fill="#4a6e80" opacity="0.32" d="M0 260 L400 275 L400 320 L0 305 Z" />
-                  <path fill="#3a5e70" opacity="0.28" d="M0 480 L400 495 L400 540 L0 525 Z" />
-                  <path fill="#2f4f5e" opacity="0.26" d="M0 820 L400 805 L400 865 L0 850 Z" />
-                  <g fill="none" stroke="#2a4858" stroke-width="0.55" opacity="0.35">
-                    <path d="M20 120 Q80 130 140 118 T260 125 T380 115" />
-                    <path d="M15 350 Q100 365 200 352 T385 358" />
-                    <path d="M25 550 Q120 540 220 555 T390 548" />
-                    <path d="M10 750 Q150 765 280 742 T395 755" />
-                    <path d="M30 950 Q180 940 320 958 T385 945" />
+                  <path fill="url(#advMapOcean)" opacity="0.38" fill-rule="evenodd" d="M0 0 L400 0 L400 1200 L0 1200 Z
+                    M18 118 Q70 88 130 108 Q190 92 248 128 Q300 168 278 230 Q250 278 188 292 Q118 304 68 268 Q28 220 18 118 Z
+                    M228 308 Q286 286 342 328 Q378 378 362 448 Q338 492 268 498 Q208 478 218 408 Q224 352 228 308 Z
+                    M22 508 Q78 478 138 518 Q186 568 168 638 Q128 688 62 672 Q22 628 22 508 Z
+                    M236 588 Q304 562 362 612 Q388 688 358 768 Q308 812 248 798 Q198 748 214 668 Q224 622 236 588 Z
+                    M36 858 Q108 828 168 878 Q198 948 168 1038 Q118 1088 58 1062 Q22 1000 36 858 Z" />
+                  <!-- Coastline ink -->
+                  <g fill="none" stroke="#3d2a14" stroke-width="1.35" opacity="0.55">
+                    <path d="M18 118 Q70 88 130 108 Q190 92 248 128 Q300 168 278 230 Q250 278 188 292 Q118 304 68 268 Q28 220 18 118 Z" />
+                    <path d="M228 308 Q286 286 342 328 Q378 378 362 448 Q338 492 268 498 Q208 478 218 408 Q224 352 228 308 Z" />
+                    <path d="M22 508 Q78 478 138 518 Q186 568 168 638 Q128 688 62 672 Q22 628 22 508 Z" />
+                    <path d="M236 588 Q304 562 362 612 Q388 688 358 768 Q308 812 248 798 Q198 748 214 668 Q224 622 236 588 Z" />
+                    <path d="M36 858 Q108 828 168 878 Q198 948 168 1038 Q118 1088 58 1062 Q22 1000 36 858 Z" />
                   </g>
-                  <g fill="none" stroke="#1e3844" stroke-width="0.4" opacity="0.28">
-                    <path d="M60 80 Q62 90 58 100 Q64 110 60 120" />
-                    <path d="M200 90 Q202 100 198 110 Q204 120 200 130" />
-                    <path d="M320 70 Q322 82 318 92 Q324 102 320 112" />
-                    <path d="M100 400 Q102 412 98 422 Q104 432 100 442" />
-                    <path d="M280 420 Q282 432 278 442 Q284 452 280 462" />
-                    <path d="M150 700 Q152 712 148 722 Q154 732 150 742" />
-                    <path d="M340 680 Q342 692 338 702 Q344 712 340 722" />
+                  <!-- Shore hatching -->
+                  <g fill="none" stroke="#3a4a40" stroke-width="0.7" opacity="0.28">
+                    <path d="M40 250 L28 262 M70 278 L56 292 M120 296 L112 312 M180 286 L176 304 M240 250 L252 264 M270 200 L286 210" />
+                    <path d="M250 330 L238 318 M340 360 L354 348 M370 430 L384 422 M300 492 L312 506 M230 470 L218 482" />
+                    <path d="M40 530 L26 518 M150 540 L164 528 M170 640 L184 652 M80 684 L68 698 M30 600 L16 608" />
+                    <path d="M250 600 L236 588 M370 640 L384 628 M370 760 L384 772 M270 808 L258 822 M210 720 L196 732" />
+                    <path d="M50 870 L36 858 M170 900 L184 888 M180 1020 L194 1034 M90 1080 L76 1094 M40 980 L24 988" />
                   </g>
-                  <text x="318" y="248" font-family="'IM Fell English', Georgia, serif" font-size="9" fill="#2a3d48" font-style="italic" opacity="0.72">Eastern Reach</text>
-                  <text x="28" y="620" font-family="'IM Fell English', Georgia, serif" font-size="8" fill="#2a3d48" font-style="italic" opacity="0.68">Western Channel</text>
-                  <text x="175" y="455" font-family="'IM Fell English', Georgia, serif" font-size="8" fill="#2a3d48" font-style="italic" opacity="0.68">Middle Passage</text>
-                  <text x="142" y="1125" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#2a3d48" font-style="italic" opacity="0.75">Southern Ocean</text>
-                  <text x="88" y="195" font-family="'IM Fell English', Georgia, serif" font-size="8" fill="#2a3d48" font-style="italic" opacity="0.65">Northern Sea</text>
-                </g>
-                <g class="adv-map-lands">
-                  <path fill="url(#advMapLand)" stroke="#2e2418" stroke-width="1.4" d="M20 140 Q55 120 95 135 T165 125 Q210 115 250 140 T290 180 Q310 220 280 260 T220 280 Q160 290 120 270 T70 240 Q40 200 20 140 Z" />
-                  <path fill="url(#advMapLand)" stroke="#2e2418" stroke-width="1.4" d="M240 320 Q290 300 340 330 T370 390 Q360 450 310 470 T250 460 Q200 440 220 390 T240 320 Z" />
-                  <path fill="url(#advMapLand)" stroke="#2e2418" stroke-width="1.4" d="M30 520 Q80 500 130 530 T180 580 Q190 640 140 670 T80 660 Q40 620 30 560 Z" />
-                  <path fill="url(#advMapLand)" stroke="#2e2418" stroke-width="1.4" d="M250 600 Q310 580 360 620 T380 700 Q370 780 310 800 T240 790 Q190 750 210 680 T250 600 Z" />
-                  <path fill="url(#advMapLand)" stroke="#2e2418" stroke-width="1.4" d="M50 880 Q110 860 160 900 T190 980 Q170 1050 110 1060 T60 1020 Q40 950 50 880 Z" />
-                  <path fill="none" stroke="#3d3020" stroke-width="0.7" opacity="0.5" stroke-dasharray="3 4" d="M25 150 Q90 130 160 140 M245 335 Q320 350 365 400 M35 535 Q120 555 175 590 M255 615 Q330 650 375 720 M55 895 Q130 920 175 970" />
-                </g>
-                <g class="adv-map-ponds" aria-hidden="true">
-                  <path fill="url(#advMapPond)" opacity="0.92" d="M78 928 Q115 912 158 922 Q178 938 172 958 Q148 978 108 976 Q72 968 78 945 Z" />
-                  <text x="92" y="968" font-family="'IM Fell English', Georgia, serif" font-size="8" fill="#2a3d48" font-style="italic" opacity="0.82">Serpent Strait</text>
-                </g>
-                <g class="adv-map-rivers" aria-hidden="true">
-                  <path fill="url(#advMapRiver)" opacity="0.9" d="M108 182 L104 198 L98 214 L92 230 L86 246 L80 262 L74 276 L70 274 L76 258 L82 242 L88 226 L94 210 L100 194 L106 180 Z" />
-                  <path fill="url(#advMapRiver)" opacity="0.88" d="M148 148 L144 168 L138 188 L132 208 L126 228 L120 248 L114 266 L110 264 L116 244 L122 224 L128 204 L134 184 L140 164 L146 146 Z" />
-                  <path fill="url(#advMapRiver)" opacity="0.9" d="M278 332 L272 352 L266 372 L258 392 L250 412 L242 432 L234 448 L230 446 L238 426 L246 406 L254 386 L262 366 L270 346 Z" />
-                  <path fill="url(#advMapRiver)" opacity="0.88" d="M88 518 L94 538 L100 558 L106 578 L112 598 L118 618 L124 638 L120 636 L114 616 L108 596 L102 576 L96 556 L90 536 Z" />
-                  <path fill="url(#advMapRiver)" opacity="0.9" d="M298 608 L292 632 L284 656 L276 680 L268 704 L260 728 L252 748 L248 746 L256 722 L264 698 L272 674 L280 650 L288 626 Z" />
-                  <path fill="url(#advMapRiver)" opacity="0.9" d="M72 862 L78 878 L84 894 L92 910 L100 924 L108 932 L104 930 L96 914 L88 898 L82 882 L76 866 Z" />
-                  <text x="58" y="268" font-family="'IM Fell English', Georgia, serif" font-size="6.5" fill="#5a7080" font-style="italic" opacity="0.78">Bone River</text>
-                  <text x="252" y="438" font-family="'IM Fell English', Georgia, serif" font-size="6.5" fill="#5a7080" font-style="italic" opacity="0.75">Greenwater</text>
-                  <text x="272" y="758" font-family="'IM Fell English', Georgia, serif" font-size="6.5" fill="#5a7080" font-style="italic" opacity="0.75">Mire Run</text>
-                </g>
-                <g class="adv-map-mountains" aria-hidden="true">
-                  <g transform="translate(88 155)" opacity="0.72">
-                    <path fill="url(#advMapMountain)" stroke="#3d3020" stroke-width="0.7" d="M0 28 L12 0 L24 28 L18 28 L12 14 L6 28 Z" />
-                    <path fill="url(#advMapMountain)" stroke="#3d3020" stroke-width="0.65" d="M22 32 L34 6 L46 32 L40 32 L34 18 L28 32 Z" />
-                    <path fill="url(#advMapMountain)" stroke="#3d3020" stroke-width="0.6" d="M44 30 L54 10 L64 30 Z" />
-                    <path fill="none" stroke="#5c4a38" stroke-width="0.45" opacity="0.5" d="M8 28 L8 38 M20 28 L20 40 M36 32 L36 42" />
-                    <text x="-4" y="48" font-family="'IM Fell English', Georgia, serif" font-size="7" fill="#4a3d2e" font-style="italic">Skull Ridge</text>
-                  </g>
-                  <g transform="translate(228 118)" opacity="0.68">
-                    <path fill="url(#advMapMountain)" stroke="#3d3020" stroke-width="0.65" d="M0 24 L10 -4 L20 24 L14 24 L10 12 L6 24 Z" />
-                    <path fill="url(#advMapMountain)" stroke="#3d3020" stroke-width="0.6" d="M18 26 L28 2 L38 26 Z" />
-                    <text x="2" y="38" font-family="'IM Fell English', Georgia, serif" font-size="6.5" fill="#4a3d2e" font-style="italic">Mariner's Peaks</text>
-                  </g>
-                  <g transform="translate(42 318)" opacity="0.7">
-                    <path fill="url(#advMapMountain)" stroke="#3d3020" stroke-width="0.7" d="M0 30 L14 0 L28 30 L20 30 L14 16 L8 30 Z" />
-                    <path fill="url(#advMapMountain)" stroke="#3d3020" stroke-width="0.65" d="M26 28 L38 4 L50 28 Z" />
-                    <text x="0" y="44" font-family="'IM Fell English', Georgia, serif" font-size="7" fill="#4a3d2e" font-style="italic">Golden Hills</text>
-                  </g>
-                  <g transform="translate(268 288)" opacity="0.74">
-                    <path fill="url(#advMapMountain)" stroke="#3d3020" stroke-width="0.75" d="M0 36 L16 -8 L32 36 L24 36 L16 18 L8 36 Z" />
-                    <path fill="url(#advMapMountain)" stroke="#3d3020" stroke-width="0.7" d="M30 34 L44 6 L58 34 L50 34 L44 20 L38 34 Z" />
-                    <path fill="url(#advMapMountain)" stroke="#3d3020" stroke-width="0.65" d="M56 32 L68 8 L80 32 Z" />
-                    <text x="4" y="50" font-family="'IM Fell English', Georgia, serif" font-size="7" fill="#4a3d2e" font-style="italic">Serpent Spine</text>
-                  </g>
-                  <g transform="translate(55 498)" opacity="0.68">
-                    <path fill="url(#advMapMountain)" stroke="#3d3020" stroke-width="0.65" d="M0 22 L11 2 L22 22 Z" />
-                    <path fill="url(#advMapMountain)" stroke="#3d3020" stroke-width="0.6" d="M20 24 L30 6 L40 24 Z" />
-                    <text x="0" y="34" font-family="'IM Fell English', Georgia, serif" font-size="6.5" fill="#4a3d2e" font-style="italic">Compass Knoll</text>
-                  </g>
-                  <g transform="translate(278 568)" opacity="0.72">
-                    <path fill="url(#advMapMountain)" stroke="#3d3020" stroke-width="0.7" d="M0 32 L14 -6 L28 32 L20 32 L14 14 L8 32 Z" />
-                    <path fill="url(#advMapMountain)" stroke="#3d3020" stroke-width="0.65" d="M26 30 L38 4 L50 30 Z" />
-                    <text x="2" y="44" font-family="'IM Fell English', Georgia, serif" font-size="7" fill="#4a3d2e" font-style="italic">Kraken's Teeth</text>
-                  </g>
-                  <g transform="translate(168 348)" opacity="0.65">
-                    <path fill="url(#advMapMountain)" stroke="#3d3020" stroke-width="0.6" d="M0 18 L8 4 L16 18 Z M14 18 L22 0 L30 18 Z" />
-                    <text x="-2" y="28" font-family="'IM Fell English', Georgia, serif" font-size="6" fill="#4a3d2e" font-style="italic">Palmwood Rise</text>
-                  </g>
-                  <g transform="translate(72 668)" opacity="0.7">
-                    <path fill="url(#advMapMountain)" stroke="#3d3020" stroke-width="0.65" d="M0 26 L12 0 L24 26 L18 26 L12 12 L6 26 Z" />
-                    <text x="0" y="38" font-family="'IM Fell English', Georgia, serif" font-size="6.5" fill="#4a3d2e" font-style="italic">Emerald Crest</text>
-                  </g>
-                  <g transform="translate(298 748)" opacity="0.72">
-                    <path fill="#5a3830" stroke="#3d3020" stroke-width="0.65" d="M0 24 L10 -2 L20 24 Z" />
-                    <path fill="#8a4028" stroke="#5a2010" stroke-width="0.6" d="M18 22 L28 4 L38 22 Z" />
-                    <path fill="none" stroke="#e87830" stroke-width="0.7" opacity="0.75" d="M8 24 L14 8 L20 24" />
-                    <text x="0" y="36" font-family="'IM Fell English', Georgia, serif" font-size="6.5" fill="#6a3020" font-style="italic">Lava Falls</text>
-                  </g>
-                  <g transform="translate(318 168)" opacity="0.7">
-                    <path fill="url(#advMapMountain)" stroke="#3d3020" stroke-width="0.75" d="M0 40 L18 -12 L36 40 L26 40 L18 20 L10 40 Z" />
-                    <path fill="url(#advMapMountain)" stroke="#3d3020" stroke-width="0.7" d="M34 38 L50 8 L66 38 Z" />
-                    <text x="2" y="54" font-family="'IM Fell English', Georgia, serif" font-size="7" fill="#4a3d2e" font-style="italic">Treasurehorn Range</text>
-                  </g>
-                  <g transform="translate(188 518)" opacity="0.66">
-                    <path fill="url(#advMapMountain)" stroke="#3d3020" stroke-width="0.6" d="M0 20 L9 2 L18 20 Z" />
-                    <text x="0" y="30" font-family="'IM Fell English', Georgia, serif" font-size="6" fill="#4a3d2e" font-style="italic">Stormbreak Crag</text>
-                  </g>
-                  <g transform="translate(48 848)" opacity="0.72">
-                    <path fill="url(#advMapMountain)" stroke="#3d3020" stroke-width="0.7" d="M0 34 L16 -4 L32 34 L24 34 L16 16 L8 34 Z" />
-                    <path fill="url(#advMapMountain)" stroke="#3d3020" stroke-width="0.65" d="M30 32 L42 6 L54 32 Z" />
-                    <text x="0" y="48" font-family="'IM Fell English', Georgia, serif" font-size="7" fill="#4a3d2e" font-style="italic">Leviathan Depths</text>
-                  </g>
-                  <g transform="translate(248 868)" opacity="0.68">
-                    <path fill="url(#advMapMountain)" stroke="#3d3020" stroke-width="0.65" d="M0 22 L11 0 L22 22 Z" />
-                    <text x="0" y="32" font-family="'IM Fell English', Georgia, serif" font-size="6.5" fill="#4a3d2e" font-style="italic">Captain's Bluff</text>
-                  </g>
-                </g>
-                <!-- Themed land landmarks -->
-                <g class="adv-map-landmarks" aria-hidden="true">
-                  <!-- Gold Quest: treasure cave -->
-                  <g class="adv-map-landmark adv-map-landmark--gold" transform="translate(198 548)">
-                    <path fill="#5a4030" stroke="#2e2418" stroke-width="1.2" d="M-58 48 Q-70 10 -40 -8 Q-10 -28 0 -22 Q10 -28 40 -8 Q70 10 58 48 Z"/>
-                    <path fill="#1a1008" d="M-36 42 Q-40 8 -18 -2 Q0 -12 18 -2 Q40 8 36 42 Q18 52 0 54 Q-18 52 -36 42 Z"/>
-                    <ellipse cx="0" cy="28" rx="28" ry="22" fill="#fbbf24" opacity="0.35"/>
-                    <ellipse cx="0" cy="30" rx="18" ry="14" fill="#fde68a" opacity="0.45"/>
-                    <g fill="#f59e0b" stroke="#78350f" stroke-width="0.6">
-                      <ellipse cx="-10" cy="36" rx="6" ry="3.5"/>
-                      <ellipse cx="6" cy="38" rx="7" ry="4"/>
-                      <ellipse cx="14" cy="32" rx="4.5" ry="2.8"/>
-                      <rect x="-6" y="22" width="14" height="10" rx="1.5" fill="#fbbf24"/>
-                      <path d="M-7 22 Q1 14 9 22" fill="#fde68a"/>
+                  <!-- Actual ocean waves -->
+                  <g class="adv-map-waves" fill="none" stroke="#2a3a34" stroke-width="1.15" stroke-linecap="round" opacity="0.42">
+                    <g transform="translate(300 150)">
+                      <path d="M0 10 Q14 0 28 10" /><path d="M8 18 Q22 8 36 18" /><path d="M16 26 Q30 16 44 26" />
                     </g>
-                    <text x="-36" y="72" font-family="'IM Fell English', Georgia, serif" font-size="8" fill="#5a3a14" font-style="italic" opacity="0.85">Treasure Cave</text>
+                    <g transform="translate(40 360)">
+                      <path d="M0 10 Q16 0 32 10" /><path d="M10 18 Q26 8 42 18" /><path d="M20 26 Q36 16 52 26" />
+                    </g>
+                    <g transform="translate(160 430)">
+                      <path d="M0 8 Q12 0 24 8" /><path d="M8 16 Q20 8 32 16" /><path d="M16 24 Q28 16 40 24" />
+                    </g>
+                    <g transform="translate(300 530)">
+                      <path d="M0 10 Q14 0 28 10" /><path d="M8 18 Q22 8 36 18" /><path d="M16 26 Q30 16 44 26" />
+                    </g>
+                    <g transform="translate(90 760)">
+                      <path d="M0 10 Q16 0 32 10" /><path d="M10 18 Q26 8 42 18" /><path d="M20 26 Q36 16 52 26" />
+                    </g>
+                    <g transform="translate(210 840)">
+                      <path d="M0 8 Q12 0 24 8" /><path d="M8 16 Q20 8 32 16" /><path d="M16 24 Q28 16 40 24" />
+                    </g>
+                    <g transform="translate(250 1120)">
+                      <path d="M0 10 Q18 0 36 10" /><path d="M12 18 Q30 8 48 18" /><path d="M24 26 Q42 16 60 26" />
+                    </g>
+                    <g transform="translate(320 900)">
+                      <path d="M0 8 Q12 0 24 8" /><path d="M8 16 Q20 8 32 16" />
+                    </g>
+                    <g transform="translate(20 200)">
+                      <path d="M0 8 Q12 0 24 8" /><path d="M8 16 Q20 8 32 16" />
+                    </g>
                   </g>
-                  <!-- Gold Quest: ruined vault -->
-                  <g class="adv-map-landmark adv-map-landmark--gold" transform="translate(72 620)" opacity="0.78">
-                    <path fill="#8a7048" stroke="#2e2418" stroke-width="0.9" d="M0 36 L0 8 L28 8 L28 36 Z"/>
-                    <path fill="#6a5230" stroke="#2e2418" stroke-width="0.8" d="M-4 8 L32 8 L14 -6 Z"/>
-                    <circle cx="14" cy="22" r="5" fill="#1a1008" stroke="#c9a227" stroke-width="0.7"/>
-                    <text x="-6" y="48" font-family="'IM Fell English', Georgia, serif" font-size="6.5" fill="#5a3a14" font-style="italic">Gold Vault</text>
+                  <text x="292" y="236" font-family="'IM Fell English', Georgia, serif" font-size="11" fill="#3a3224" font-style="italic" opacity="0.62">Eastern Reach</text>
+                  <text x="24" y="740" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#3a3224" font-style="italic" opacity="0.58">Western Channel</text>
+                  <text x="148" y="456" font-family="'IM Fell English', Georgia, serif" font-size="11" fill="#3a3224" font-style="italic" opacity="0.6">Middle Passage</text>
+                  <text x="128" y="1138" font-family="'IM Fell English', Georgia, serif" font-size="13" fill="#3a3224" font-style="italic" opacity="0.68">Southern Ocean</text>
+                  <text x="78" y="78" font-family="'IM Fell English', Georgia, serif" font-size="11" fill="#3a3224" font-style="italic" opacity="0.58">Northern Sea</text>
+                </g>
+                <!-- Land masses -->
+                <g class="adv-map-lands">
+                  <path fill="url(#advMapLand)" stroke="#3d2a14" stroke-width="1.4" d="M18 118 Q70 88 130 108 Q190 92 248 128 Q300 168 278 230 Q250 278 188 292 Q118 304 68 268 Q28 220 18 118 Z" />
+                  <path fill="url(#advMapLandHi)" opacity="0.35" d="M40 140 Q90 110 150 128 Q200 118 240 150 Q250 190 210 230 Q140 250 80 220 Q40 180 40 140 Z" />
+                  <path fill="url(#advMapLand)" stroke="#3d2a14" stroke-width="1.4" d="M228 308 Q286 286 342 328 Q378 378 362 448 Q338 492 268 498 Q208 478 218 408 Q224 352 228 308 Z" />
+                  <path fill="url(#advMapLand)" stroke="#3d2a14" stroke-width="1.4" d="M22 508 Q78 478 138 518 Q186 568 168 638 Q128 688 62 672 Q22 628 22 508 Z" />
+                  <path fill="url(#advMapLand)" stroke="#3d2a14" stroke-width="1.4" d="M236 588 Q304 562 362 612 Q388 688 358 768 Q308 812 248 798 Q198 748 214 668 Q224 622 236 588 Z" />
+                  <path fill="url(#advMapLand)" stroke="#3d2a14" stroke-width="1.4" d="M36 858 Q108 828 168 878 Q198 948 168 1038 Q118 1088 58 1062 Q22 1000 36 858 Z" />
+                </g>
+                <!-- Mountains: cartographic ranges, sized to the islands -->
+                <g class="adv-map-mountains" aria-hidden="true">
+                  <!-- Northern range -->
+                  <g transform="translate(70 148)">
+                    <path fill="url(#advMapMountain)" stroke="#3a2814" stroke-width="1.1" d="M8 78 C18 78 28 70 38 42 C48 18 58 8 70 8 C86 8 98 28 108 48 C122 72 138 78 154 78 L154 86 L8 86 Z" />
+                    <path fill="url(#advMapMountainShade)" opacity="0.45" d="M70 8 C78 18 86 36 92 54 C98 70 118 78 154 78 L154 86 L70 86 C70 50 72 22 70 8 Z" />
+                    <path fill="#e8e0d0" opacity="0.55" d="M58 22 L70 8 L82 24 L74 24 L70 16 L66 24 Z" />
+                    <path fill="none" stroke="#3a2814" stroke-width="0.7" opacity="0.4" d="M48 50 L54 62 M62 36 L68 52 M88 40 L94 58 M108 52 L114 68" />
+                    <text x="28" y="104" font-family="'IM Fell English', Georgia, serif" font-size="9" fill="#4a3d2e" font-style="italic">Skull Ridge</text>
                   </g>
-                  <!-- Frozen Sea: icebergs -->
-                  <g class="adv-map-landmark adv-map-landmark--ice" transform="translate(210 320)">
-                    <path fill="#dbeafe" stroke="#334155" stroke-width="0.9" opacity="0.88" d="M-30 40 L-10 -8 L12 40 Z"/>
-                    <path fill="#bfdbfe" stroke="#334155" stroke-width="0.85" opacity="0.9" d="M8 42 L28 -16 L52 42 Z"/>
-                    <path fill="#93c5fd" stroke="#334155" stroke-width="0.8" opacity="0.85" d="M44 40 L60 8 L76 40 Z"/>
-                    <ellipse cx="20" cy="44" rx="48" ry="8" fill="#64748b" opacity="0.25"/>
-                    <text x="-8" y="60" font-family="'IM Fell English', Georgia, serif" font-size="7" fill="#334155" font-style="italic" opacity="0.8">Iceberg Drift</text>
+                  <g transform="translate(248 128)">
+                    <path fill="url(#advMapMountain)" stroke="#3a2814" stroke-width="1" d="M0 62 C10 62 18 50 28 28 C36 12 46 6 56 8 C68 12 76 30 84 48 C92 62 104 64 112 64 L112 70 L0 70 Z" />
+                    <path fill="url(#advMapMountainShade)" opacity="0.4" d="M56 8 C64 18 72 36 78 52 C84 64 100 64 112 64 L112 70 L56 70 Z" />
+                    <text x="8" y="86" font-family="'IM Fell English', Georgia, serif" font-size="8" fill="#4a3d2e" font-style="italic">Treasurehorn Range</text>
                   </g>
-                  <g class="adv-map-landmark adv-map-landmark--ice" transform="translate(58 360)" opacity="0.8">
-                    <path fill="#e2e8f0" stroke="#475569" stroke-width="0.8" d="M0 28 L14 -4 L28 28 Z"/>
-                    <path fill="#cbd5e1" stroke="#475569" stroke-width="0.75" d="M24 26 L36 4 L48 26 Z"/>
-                    <text x="0" y="42" font-family="'IM Fell English', Georgia, serif" font-size="6.5" fill="#334155" font-style="italic">Frost Fjord</text>
+                  <!-- Frozen peaks -->
+                  <g transform="translate(248 328)">
+                    <path fill="url(#advMapIcePeak)" stroke="#3a4038" stroke-width="1.1" d="M10 92 L42 8 L74 92 Z" />
+                    <path fill="url(#advMapIcePeak)" stroke="#3a4038" stroke-width="1.05" d="M58 92 L92 -6 L128 92 Z" />
+                    <path fill="url(#advMapIcePeak)" stroke="#3a4038" stroke-width="0.95" d="M112 92 L138 28 L164 92 Z" />
+                    <path fill="#f4f1ea" opacity="0.55" d="M36 28 L42 8 L50 32 Z M84 22 L92 -6 L102 28 Z" />
+                    <ellipse cx="86" cy="96" rx="78" ry="10" fill="#3a4038" opacity="0.12" />
+                    <text x="36" y="118" font-family="'IM Fell English', Georgia, serif" font-size="9" fill="#3a4038" font-style="italic">Iceberg Drift</text>
                   </g>
-                  <!-- Pirates Path: coastal fort + cannon -->
-                  <g class="adv-map-landmark adv-map-landmark--pirates" transform="translate(310 980)">
-                    <path fill="#6b5340" stroke="#2e2418" stroke-width="1" d="M0 40 L0 12 L18 12 L18 0 L38 0 L38 12 L56 12 L56 40 Z"/>
-                    <rect x="8" y="18" width="10" height="12" fill="#1c1410"/>
-                    <rect x="38" y="18" width="10" height="12" fill="#1c1410"/>
-                    <rect x="-8" y="28" width="22" height="7" rx="1.5" fill="#1a1008"/>
-                    <circle cx="-4" cy="31" r="4" fill="#3f2a1a" stroke="#1c1008" stroke-width="0.6"/>
-                    <path d="M-18 28 Q-28 24 -34 20" fill="none" stroke="#fb923c" stroke-width="1.2" opacity="0.7"/>
-                    <text x="-4" y="54" font-family="'IM Fell English', Georgia, serif" font-size="7" fill="#4a3d2e" font-style="italic">Cannon Fort</text>
+                  <g transform="translate(38 528)">
+                    <path fill="url(#advMapMountain)" stroke="#3a2814" stroke-width="1" d="M4 70 C16 70 24 58 36 32 C46 14 58 8 70 10 C84 14 94 34 104 54 C114 70 128 72 140 72 L140 80 L4 80 Z" />
+                    <path fill="url(#advMapMountainShade)" opacity="0.42" d="M70 10 C80 22 90 42 98 58 C106 72 124 72 140 72 L140 80 L70 80 Z" />
+                    <text x="18" y="96" font-family="'IM Fell English', Georgia, serif" font-size="9" fill="#4a3d2e" font-style="italic">Compass Knoll</text>
                   </g>
-                  <g class="adv-map-landmark adv-map-landmark--pirates" transform="translate(48 1020)" opacity="0.75">
-                    <path fill="#5c4030" stroke="#2e2418" stroke-width="0.9" d="M0 24 L8 0 L40 0 L48 24 Z"/>
-                    <rect x="20" y="-18" width="4" height="20" fill="#2a1810"/>
-                    <path d="M24 -16 L42 -6 L24 2 Z" fill="#e8d9b8" opacity="0.7"/>
-                    <text x="0" y="36" font-family="'IM Fell English', Georgia, serif" font-size="6.5" fill="#4a3d2e" font-style="italic">Galleon Bay</text>
+                  <g transform="translate(248 618)">
+                    <path fill="url(#advMapMountain)" stroke="#3a2814" stroke-width="1.1" d="M6 88 C20 88 32 74 48 40 C60 16 74 6 90 8 C110 12 124 38 138 62 C152 84 170 88 186 88 L186 96 L6 96 Z" />
+                    <path fill="url(#advMapMountainShade)" opacity="0.44" d="M90 8 C104 22 118 48 130 68 C142 86 168 88 186 88 L186 96 L90 96 Z" />
+                    <path fill="#e8e0d0" opacity="0.4" d="M78 24 L90 8 L102 28 L94 28 L90 18 L86 28 Z" />
+                    <text x="42" y="114" font-family="'IM Fell English', Georgia, serif" font-size="9" fill="#4a3d2e" font-style="italic">Kraken's Teeth</text>
+                  </g>
+                  <g transform="translate(48 888)">
+                    <path fill="url(#advMapMountain)" stroke="#3a2814" stroke-width="1.1" d="M8 96 C22 96 34 80 50 44 C64 16 80 4 98 6 C118 10 132 38 146 64 C160 90 180 96 196 96 L196 104 L8 104 Z" />
+                    <path fill="url(#advMapMountainShade)" opacity="0.44" d="M98 6 C112 20 126 48 138 70 C150 92 176 96 196 96 L196 104 L98 104 Z" />
+                    <path fill="#e8e0d0" opacity="0.42" d="M86 24 L98 6 L110 28 L102 28 L98 16 L94 28 Z" />
+                    <text x="44" y="122" font-family="'IM Fell English', Georgia, serif" font-size="9" fill="#4a3d2e" font-style="italic">Leviathan Depths</text>
                   </g>
                 </g>
-                <g fill="none" stroke="#2e2418" stroke-width="0.8" opacity="0.25">
-                  <path d="M0 300 Q100 280 200 300 T400 290" />
-                  <path d="M0 700 Q120 720 240 700 T400 710" />
+                <!-- Caves: hillside + dark mouth -->
+                <g class="adv-map-caves" aria-hidden="true">
+                  <g transform="translate(168 210)">
+                    <path fill="#8a6840" stroke="#3a2814" stroke-width="1.15" d="M0 58 C8 28 28 8 52 10 C78 12 96 32 104 58 C104 70 0 70 0 58 Z" />
+                    <path fill="url(#advMapCaveMouth)" d="M32 58 C32 34 44 22 54 22 C64 22 76 34 76 58 C68 64 40 64 32 58 Z" />
+                    <ellipse cx="54" cy="40" rx="8" ry="10" fill="#0c0804" opacity="0.45" />
+                    <text x="8" y="86" font-family="'IM Fell English', Georgia, serif" font-size="8.5" fill="#4a3d2e" font-style="italic">Smuggler's Cave</text>
+                  </g>
+                  <g transform="translate(48 598)">
+                    <path fill="#8a6840" stroke="#3a2814" stroke-width="1.15" d="M0 62 C10 30 32 8 58 10 C86 12 108 34 116 62 C116 76 0 76 0 62 Z" />
+                    <path fill="url(#advMapCaveMouth)" d="M36 62 C36 36 50 22 60 22 C70 22 84 36 84 62 C74 70 46 70 36 62 Z" />
+                    <ellipse cx="60" cy="42" rx="9" ry="11" fill="#0c0804" opacity="0.5" />
+                    <text x="10" y="94" font-family="'IM Fell English', Georgia, serif" font-size="8.5" fill="#4a3d2e" font-style="italic">Gold Vault Cave</text>
+                  </g>
+                  <g transform="translate(292 448)">
+                    <path fill="#8a6840" stroke="#3a2814" stroke-width="1.15" d="M0 64 C12 28 36 6 64 8 C94 10 116 34 124 64 C124 78 0 78 0 64 Z" />
+                    <path fill="url(#advMapCaveMouth)" d="M40 64 C40 36 54 20 66 20 C78 20 92 36 92 64 C80 74 52 74 40 64 Z" />
+                    <ellipse cx="66" cy="42" rx="10" ry="12" fill="#0c0804" opacity="0.5" />
+                    <text x="12" y="96" font-family="'IM Fell English', Georgia, serif" font-size="8.5" fill="#4a3d2e" font-style="italic">Kraken's Grotto</text>
+                  </g>
+                  <g transform="translate(70 980)">
+                    <path fill="#8a6840" stroke="#3a2814" stroke-width="1.2" d="M0 70 C14 32 40 6 70 8 C102 10 128 36 138 70 C138 86 0 86 0 70 Z" />
+                    <path fill="url(#advMapCaveMouth)" d="M44 70 C44 40 60 22 72 22 C84 22 100 40 100 70 C86 82 58 82 44 70 Z" />
+                    <ellipse cx="72" cy="46" rx="11" ry="13" fill="#0c0804" opacity="0.52" />
+                    <path fill="#c9a227" opacity="0.35" d="M64 58 Q72 50 80 58 Q76 66 72 68 Q68 66 64 58 Z" />
+                    <text x="18" y="104" font-family="'IM Fell English', Georgia, serif" font-size="9" fill="#4a3d2e" font-style="italic">Treasure Cave</text>
+                  </g>
+                  <g transform="translate(268 728)">
+                    <path fill="#8a6840" stroke="#3a2814" stroke-width="1.1" d="M0 56 C10 26 30 8 54 10 C80 12 98 32 106 56 C106 70 0 70 0 56 Z" />
+                    <path fill="url(#advMapCaveMouth)" d="M34 56 C34 34 46 22 56 22 C66 22 78 34 78 56 C68 64 44 64 34 56 Z" />
+                    <text x="6" y="86" font-family="'IM Fell English', Georgia, serif" font-size="8.5" fill="#4a3d2e" font-style="italic">Dead Man's Cave</text>
+                  </g>
                 </g>
-                <g class="adv-map-decor" fill="none" stroke="#2e2418">
-                  <g opacity="0.62">
-                    <path stroke-width="1" d="M108 248 Q124 232 142 248 L138 268 Q122 274 108 268 Z" />
-                    <path fill="#3d3020" opacity="0.45" d="M112 252 Q124 242 134 252 L131 264 Q122 268 112 264 Z" />
-                    <text x="108" y="282" font-family="'IM Fell English', Georgia, serif" font-size="7" fill="#4a3d2e" font-style="italic">Smuggler's Cave</text>
-                  </g>
-                  <g transform="translate(318 465)" opacity="0.58">
-                    <path stroke-width="1" d="M0 0 Q18 -10 36 0 L32 22 Q18 28 4 22 Z" />
-                    <path fill="#3d3020" opacity="0.5" d="M4 4 Q18 -4 32 4 L29 18 Q18 22 4 18 Z" />
-                    <text x="-2" y="36" font-family="'IM Fell English', Georgia, serif" font-size="7" fill="#4a3d2e" font-style="italic">Kraken's Grotto</text>
-                  </g>
-                  <g transform="translate(72 735)" opacity="0.6">
-                    <path stroke-width="1.1" d="M0 8 Q14 -6 28 8 L24 28 Q14 34 0 28 Z" />
-                    <ellipse cx="14" cy="20" rx="9" ry="6" fill="#3d3020" opacity="0.48" />
-                    <text x="-4" y="42" font-family="'IM Fell English', Georgia, serif" font-size="7" fill="#4a3d2e" font-style="italic">Dead Man's Cave</text>
-                  </g>
-                  <g transform="translate(328 920)" opacity="0.55">
-                    <path stroke-width="1" d="M0 4 Q16 -8 32 4 L28 24 Q16 30 0 24 Z" />
-                    <path fill="#3d3020" opacity="0.42" d="M4 8 Q16 0 28 8 L25 20 Q16 24 4 20 Z" />
-                    <text x="0" y="38" font-family="'IM Fell English', Georgia, serif" font-size="7" fill="#4a3d2e" font-style="italic">Hidden Cove</text>
-                  </g>
-                  <g transform="translate(175 1085)" opacity="0.65">
-                    <path stroke-width="1.1" d="M0 0 Q20 -12 40 0 L36 26 Q20 32 0 26 Z" />
-                    <path fill="#3d3020" opacity="0.5" d="M6 4 Q20 -6 34 4 L31 22 Q20 26 6 22 Z" />
-                    <text x="2" y="42" font-family="'IM Fell English', Georgia, serif" font-size="7" fill="#4a3d2e" font-style="italic">Treasure Cave</text>
-                  </g>
-                  <g transform="translate(220 395)" opacity="0.5">
-                    <path stroke-width="0.9" d="M0 18 L8 0 L16 18 L12 28 L4 28 Z" />
-                    <path stroke-width="0.5" d="M2 20 L6 8 M10 20 L14 8" />
-                  </g>
-                  <g transform="translate(95 395)" opacity="0.48">
-                    <path stroke-width="0.9" d="M0 16 L6 4 L12 16 L10 24 L2 24 Z" />
-                    <path stroke-width="0.5" d="M2 16 L6 10 M8 16 L10 10" />
-                  </g>
-                  <g transform="translate(155 580)" opacity="0.45">
-                    <path stroke-width="0.8" d="M0 14 L7 0 L14 14 L10 20 L4 20 Z" />
-                  </g>
-                  <g transform="translate(340 680)" opacity="0.5" stroke-width="0.85">
-                    <path d="M0 0 L4 -10 L8 0 M12 0 L16 -10 L20 0" />
-                    <path d="M2 0 L2 14 M18 0 L18 14" />
-                  </g>
-                  <g transform="translate(168 355)" opacity="0.52">
-                    <circle r="1.2" fill="#2e2418" />
-                    <path d="M-8 -4 L8 -4 M0 -12 L0 4" stroke-width="1.4" />
-                  </g>
-                  <g transform="translate(62 520)" opacity="0.55">
-                    <path stroke-width="1.1" d="M0 24 L6 0 L12 24 Z" />
-                    <path stroke-width="0.7" d="M-4 24 L16 24 M6 0 L6 28" />
-                  </g>
-                  <g transform="translate(88 280)" opacity="0.5">
-                    <line x1="0" y1="0" x2="0" y2="22" stroke-width="1" />
-                    <path d="M0 22 L-10 32 L10 32 Z" fill="#2e2418" opacity="0.35" stroke-width="0.8" />
-                    <circle cx="0" cy="26" r="3" stroke-width="0.8" />
-                  </g>
-                  <g transform="translate(365 340)" opacity="0.48">
-                    <path stroke-width="0.9" d="M0 0 L5 -14 L10 0 M15 0 L20 -14 L25 0" />
-                    <path stroke-width="0.6" d="M2 0 L2 8 M8 0 L8 8 M17 0 L17 8 M23 0 L23 8" />
-                  </g>
-                  <g transform="translate(42 880)" opacity="0.5">
-                    <path stroke-width="0.9" d="M0 8 L4 0 L8 4 L12 0 L16 8 L12 16 L4 16 Z" />
-                    <line x1="8" y1="4" x2="8" y2="16" stroke-width="0.7" />
-                  </g>
-                  <g transform="translate(295 1050)" opacity="0.55">
-                    <rect x="0" y="4" width="14" height="10" rx="1" stroke-width="0.9" fill="#2e2418" opacity="0.2" />
-                    <path stroke-width="0.9" d="M2 4 Q7 -2 12 4" />
-                    <path stroke-width="0.8" d="M-2 14 L16 14" />
-                  </g>
-                  <g transform="translate(125 950)" opacity="0.45">
-                    <path stroke-width="0.85" d="M0 0 C12 -8 28 0 28 16 C28 28 0 32 0 16 C-8 28 -16 12 0 0" />
-                  </g>
-                  <g transform="translate(250 620)" opacity="0.48">
-                    <path stroke-width="1" d="M0 18 Q18 0 40 10 Q48 28 28 40 Q8 42 0 28 Z" />
-                    <path stroke-width="0.7" d="M8 22 Q22 18 34 24" />
-                    <path stroke-width="0.65" d="M12 30 Q24 34 36 28" />
-                    <path stroke-width="0.8" d="M36 12 Q52 4 58 18 Q50 30 38 24" />
-                  </g>
-                  <g transform="translate(195 720)" opacity="0.5">
-                    <path stroke-width="0.9" d="M0 18 L14 0 L28 18 L22 28 L6 28 Z" />
-                    <line x1="14" y1="0" x2="14" y2="32" stroke-width="0.8" />
-                    <path d="M6 18 L22 18" stroke-width="0.7" />
-                  </g>
-                  <g transform="translate(48 640)" opacity="0.55">
-                    <path stroke-width="1.1" d="M0 30 L20 0 L45 20 L35 45 L5 40 Z" />
-                    <line x1="22" y1="0" x2="22" y2="-10" stroke-width="0.9" />
-                    <path stroke-width="0.7" d="M8 38 L10 48 M30 36 L33 47" />
-                    <path stroke-width="0.55" d="M16 8 L20 18 L24 8" />
-                  </g>
-                  <g transform="translate(285 200)" opacity="0.52">
-                    <path stroke-width="0.9" d="M-4 22 L4 0 L12 22" />
-                    <path stroke-width="0.7" d="M0 22 L0 32 M4 22 Q8 28 12 22" />
-                    <path stroke-width="0.7" d="M18 20 L22 8 L26 20" />
-                  </g>
-                  <g transform="translate(52 1020)" opacity="0.48">
-                    <path stroke-width="1" d="M0 20 C20 0 50 5 60 30 C45 50 15 45 0 20 Z" />
-                    <path stroke-width="0.7" d="M15 8 L18 0 L21 8" />
-                    <path stroke-width="0.6" d="M5 25 Q30 35 55 25" />
-                  </g>
-                  <g transform="translate(30 1080)" opacity="0.5">
-                    <path stroke-width="0.9" d="M0 12 L6 0 L12 6 L18 0 L24 12" />
-                    <ellipse cx="12" cy="14" rx="10" ry="4" stroke-width="0.7" />
-                  </g>
-                  <g transform="translate(380 150)" opacity="0.48">
-                    <path stroke-width="0.85" d="M0 0 L8 12 L16 0 L24 12" />
-                    <path stroke-width="0.6" d="M4 0 L4 18 M12 0 L12 18 M20 0 L20 18" />
-                  </g>
-                  <text x="58" y="430" font-family="'IM Fell English', Georgia, serif" font-size="8" fill="#4a3d2e" font-style="italic" opacity="0.55">Wreck Point</text>
-                  <text x="300" y="580" font-family="'IM Fell English', Georgia, serif" font-size="8" fill="#4a3d2e" font-style="italic" opacity="0.55">Serpent Shoals</text>
-                  <text x="330" y="1050" font-family="'IM Fell English', Georgia, serif" font-size="8" fill="#4a3d2e" font-style="italic" opacity="0.5">Gold Reef</text>
+                <g id="advMapCompassRose" transform="translate(318 92)">
+                  <circle r="34" fill="#c4a06a" opacity="0.35" />
+                  <circle r="34" fill="none" stroke="#3a2814" stroke-width="1.15" opacity="0.7" />
+                  <circle r="24" fill="none" stroke="#3a2814" stroke-width="0.65" opacity="0.45" />
+                  <path d="M0 -34 L0 34 M-34 0 L34 0" stroke="#3a2814" stroke-width="0.8" opacity="0.55" />
+                  <polygon points="0,-42 6,-18 -6,-18" fill="#5a2010" opacity="0.85" />
+                  <polygon points="0,42 5,20 -5,20" fill="#3a2814" opacity="0.55" />
+                  <polygon points="-42,0 -18,5 -18,-5" fill="#3a2814" opacity="0.5" />
+                  <polygon points="42,0 18,5 18,-5" fill="#3a2814" opacity="0.5" />
+                  <text y="56" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="12" fill="#3a2814" opacity="0.8">N</text>
                 </g>
-                <g transform="translate(42 118)" fill="none" stroke="#2e2418" stroke-width="0.9" opacity="0.5">
-                  <line x1="0" y1="40" x2="55" y2="40" />
-                  <line x1="0" y1="44" x2="35" y2="44" />
-                  <text x="0" y="36" font-family="'IM Fell English', Georgia, serif" font-size="8" fill="#2e2418">Lg.</text>
-                </g>
-                <g id="advMapCompassRose" transform="translate(300 88)">
-                  <circle r="32" fill="none" stroke="#2e2418" stroke-width="1" opacity="0.65" />
-                  <circle r="24" fill="none" stroke="#2e2418" stroke-width="0.6" opacity="0.4" />
-                  <path d="M0 -32 L0 32 M-32 0 L32 0 M-22 -22 L22 22 M22 -22 L-22 22" stroke="#2e2418" stroke-width="0.75" opacity="0.55" />
-                  <polygon points="0,-40 4,-28 -4,-28" fill="#2e2418" opacity="0.7" />
-                  <text y="52" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="11" fill="#2e2418" opacity="0.75">N</text>
-                </g>
-                <!-- Dark chart flourishes — wrecks, reefs, storm marks (no cartoon skulls/faces) -->
-                <g class="adv-map-pirates" fill="none" stroke="#2e2418" opacity="0.58">
-                  <g transform="translate(68 1108)">
-                    <path d="M-14 8 L14 8 L10 2 L-10 2 Z" fill="#2e2418" opacity="0.28" stroke-width="0.7"/>
-                    <path d="M-8 2 L-4 -10 L0 2 M4 2 L8 -8 L12 2" stroke-width="0.85"/>
-                    <path d="M-16 10 Q0 16 16 10" stroke-width="0.7"/>
-                    <text x="-18" y="24" font-family="'IM Fell English', Georgia, serif" font-size="6.5" fill="#4a3d2e" font-style="italic" opacity="0.75">Broken mast</text>
-                  </g>
-                  <g transform="translate(310 280)">
-                    <path d="M0 12 L4 18 L26 18 L30 12 Z" fill="#2e2418" opacity="0.42" stroke-width="0.7"/>
-                    <path d="M14 4 L14 16" stroke-width="1"/>
-                    <path d="M14 5 L24 10 L14 14 Z" fill="#2e2418" opacity="0.22" stroke-width="0.6"/>
-                    <path d="M4 18 Q16 24 28 18" stroke-width="0.6" opacity="0.7"/>
-                  </g>
-                  <g transform="translate(55 400)">
-                    <path d="M0 14 L5 20 L28 20 L33 14 Z" fill="#2e2418" opacity="0.4" stroke-width="0.7"/>
-                    <path d="M16 4 L16 18" stroke-width="1"/>
-                    <path d="M16 5 L27 11 L16 15 Z" fill="#2e2418" opacity="0.2" stroke-width="0.6"/>
-                    <path d="M2 12 L8 8 M28 12 L34 7" stroke-width="0.55" opacity="0.65"/>
-                  </g>
-                  <g transform="translate(330 750)">
-                    <path d="M0 12 L3 17 L22 17 L25 12 Z" fill="#2e2418" opacity="0.38" stroke-width="0.65"/>
-                    <path d="M12 4 L12 15" stroke-width="0.9"/>
-                    <path d="M12 5 L20 9 L12 12.5 Z" fill="#2e2418" opacity="0.18" stroke-width="0.55"/>
-                  </g>
-                  <g transform="translate(355 520)">
-                    <path d="M8 0 L8 18 M8 6 L2 6 M8 6 L14 6" stroke-width="1.2" stroke-linecap="round"/>
-                    <path d="M2 14 Q8 22 14 14" stroke-width="1.3" fill="none"/>
-                    <circle cx="8" cy="0" r="2.2" stroke-width="0.9"/>
-                  </g>
-                  <g transform="translate(120 1088)" opacity="0.7">
-                    <path d="M0 0 L6 4 L0 8 M10 0 L16 4 L10 8 M5 -2 L5 10" stroke-width="1.1" stroke-linecap="round"/>
-                    <text x="-6" y="18" font-family="'IM Fell English', Georgia, serif" font-size="6.5" fill="#5a2a1c" font-style="italic">Reef</text>
-                  </g>
-                  <g transform="translate(280 430)" opacity="0.55">
-                    <path d="M0 8 Q10 0 20 8 Q10 16 0 8 M8 2 Q14 -6 22 2" stroke-width="0.85"/>
-                    <text x="-4" y="24" font-family="'IM Fell English', Georgia, serif" font-size="6.5" fill="#4a3d2e" font-style="italic">Gale</text>
-                  </g>
-                  <path d="M90 220 Q140 300 120 380 Q100 460 160 540 Q230 620 200 720 Q170 820 220 920" stroke-width="0.9" stroke-dasharray="2 5" opacity="0.38"/>
-                  <text x="195" y="160" font-family="'IM Fell English SC', Georgia, serif" font-size="9" fill="#3d2414" opacity="0.58" transform="rotate(-4 195 160)">Forbidden Chart</text>
-                  <text x="248" y="1010" font-family="'IM Fell English', Georgia, serif" font-size="7.5" fill="#5a2a1c" font-style="italic" opacity="0.55">Blackwater Reach</text>
-                </g>
-                <text id="advMapTitle" x="200" y="175" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="28" fill="#2a2014" opacity="0.88">Chart of the Reefs</text>
-                <text id="advMapSubtitle" x="200" y="198" text-anchor="middle" font-family="'IM Fell English', Georgia, serif" font-size="12" fill="#4a3d2e" font-style="italic" opacity="0.75">Pirates Path · Gold Quest · Frozen Sea · The Lost City</text>
+                <text id="advMapTitle" x="200" y="172" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="26" fill="#2a1c10" opacity="0.88">Chart of the Reefs</text>
+                <text id="advMapSubtitle" x="200" y="192" text-anchor="middle" font-family="'IM Fell English', Georgia, serif" font-size="11" fill="#4a3d2e" font-style="italic" opacity="0.72">Pirates Path · Gold Quest · Frozen Sea · The Lost City</text>
                 <g id="advMapLostCity" class="adv-map-lost-city" hidden aria-hidden="true">
                   <rect x="24" y="28" width="352" height="232" fill="#9ebdd0" opacity="0.1" rx="6" />
-                  <rect x="24" y="28" width="352" height="232" fill="url(#advMapSeaWash)" opacity="0.35" rx="6" />
                   <g fill="none" stroke="#2e2418" stroke-width="0.7" opacity="0.38" stroke-dasharray="5 4">
                     <ellipse cx="200" cy="218" rx="158" ry="24" />
                     <ellipse cx="200" cy="198" rx="132" ry="20" />
                     <ellipse cx="200" cy="178" rx="106" ry="16" />
                     <ellipse cx="200" cy="158" rx="78" ry="12" />
                   </g>
-                  <g fill="none" stroke="#5a8a9c" stroke-width="0.55" opacity="0.32">
-                    <path d="M40 240 Q120 228 200 236 T360 240" />
-                    <path d="M55 248 Q200 252 345 246" />
-                  </g>
                   <g class="adv-map-lost-city__ruins" fill="none" stroke="#2e2418">
                     <g transform="translate(58 175)" opacity="0.68">
                       <rect x="0" y="28" width="8" height="34" fill="#e6d9c0" stroke-width="0.85" />
                       <rect x="14" y="18" width="7" height="44" fill="#e6d9c0" stroke-width="0.85" />
                       <rect x="26" y="32" width="8" height="30" fill="#d8cdb8" stroke-width="0.8" transform="rotate(12 30 47)" />
-                      <path stroke-width="0.75" d="M-4 62 L38 62" opacity="0.55" />
-                      <ellipse cx="6" cy="58" rx="5" ry="2.5" fill="#3d3020" opacity="0.35" stroke-width="0.65" />
-                      <ellipse cx="22" cy="60" rx="4" ry="2" fill="#3d3020" opacity="0.32" stroke-width="0.6" />
-                      <rect x="32" y="52" width="9" height="5" rx="0.5" fill="#3d3020" opacity="0.38" stroke-width="0.6" transform="rotate(-18 36 54)" />
                     </g>
                     <g transform="translate(300 168)" opacity="0.66">
                       <rect x="0" y="22" width="7" height="40" fill="#e6d9c0" stroke-width="0.85" />
                       <rect x="12" y="30" width="8" height="32" fill="#e6d9c0" stroke-width="0.85" />
-                      <rect x="24" y="14" width="6" height="22" fill="#d8cdb8" stroke-width="0.75" transform="rotate(-14 27 25)" />
-                      <path stroke-width="0.75" d="M-2 62 L34 62" opacity="0.5" />
-                      <ellipse cx="8" cy="58" rx="4.5" ry="2.2" fill="#3d3020" opacity="0.34" stroke-width="0.6" />
-                      <rect x="18" y="54" width="7" height="4" rx="0.5" fill="#3d3020" opacity="0.36" stroke-width="0.55" transform="rotate(10 21 56)" />
                     </g>
                     <g transform="translate(200 88)" opacity="0.78">
                       <path fill="#f0e6d0" stroke-width="0.95" d="M-48 78 L-48 38 L-36 38 L-36 78 Z" />
@@ -1262,63 +1082,15 @@
                       <path fill="#f0e6d0" stroke-width="0.95" d="M48 78 L48 38 L60 38 L60 78 Z" />
                       <path fill="#e6d9c0" stroke-width="0.85" d="M-52 78 L64 78 L64 84 L-52 84 Z" />
                       <path fill="#f2ead8" stroke-width="0.9" d="M-54 38 L66 38 L0 18 Z" />
-                      <ellipse cx="0" cy="14" rx="20" ry="9" fill="#faf6eb" stroke-width="0.85" />
-                      <ellipse cx="0" cy="11" rx="12" ry="5" fill="#f0e6d0" opacity="0.85" stroke-width="0.6" />
-                      <line x1="-36" y1="38" x2="-36" y2="48" stroke-width="0.55" opacity="0.45" />
-                      <line x1="12" y1="22" x2="12" y2="34" stroke-width="0.55" opacity="0.45" />
                     </g>
-                    <g transform="translate(118 148)" opacity="0.62">
-                      <rect x="0" y="20" width="28" height="22" fill="#e6d9c0" stroke-width="0.85" />
-                      <rect x="4" y="12" width="4" height="12" fill="#f0e6d0" stroke-width="0.7" />
-                      <rect x="12" y="8" width="4" height="16" fill="#f0e6d0" stroke-width="0.7" />
-                      <rect x="20" y="12" width="4" height="12" fill="#f0e6d0" stroke-width="0.7" />
-                      <path fill="#d4c4a8" stroke-width="0.75" d="M0 20 L28 20 L14 10 Z" />
-                    </g>
-                    <g transform="translate(248 150)" opacity="0.6">
-                      <rect x="0" y="18" width="30" height="24" fill="#e6d9c0" stroke-width="0.85" />
-                      <rect x="4" y="10" width="4" height="12" fill="#f0e6d0" stroke-width="0.7" />
-                      <rect x="13" y="6" width="4" height="16" fill="#f0e6d0" stroke-width="0.7" />
-                      <rect x="22" y="10" width="4" height="12" fill="#f0e6d0" stroke-width="0.7" />
-                      <rect x="18" y="0" width="5" height="10" fill="#d8cdb8" stroke-width="0.65" transform="rotate(8 20 5)" />
-                      <path fill="#d4c4a8" stroke-width="0.75" d="M0 18 L30 18 L15 8 Z" />
-                    </g>
-                    <g opacity="0.58" stroke-width="0.8">
-                      <path d="M88 228 Q104 216 120 228" />
-                      <path d="M280 226 Q296 214 312 226" />
-                      <path d="M148 232 L152 218 L156 232" />
-                      <path d="M244 232 L248 218 L252 232" />
-                    </g>
-                  </g>
-                  <g fill="#3d3020" opacity="0.42" stroke="#2e2418" stroke-width="0.55">
-                    <ellipse cx="72" cy="232" rx="6" ry="2.8" />
-                    <ellipse cx="86" cy="236" rx="4.5" ry="2.2" />
-                    <rect x="78" y="224" width="5" height="8" rx="0.5" transform="rotate(-22 80 228)" />
-                    <rect x="94" y="230" width="4" height="6" rx="0.5" transform="rotate(28 96 233)" />
-                    <ellipse cx="328" cy="234" rx="5.5" ry="2.5" />
-                    <rect x="318" y="226" width="5" height="7" rx="0.5" transform="rotate(16 320 229)" />
-                    <rect x="336" y="232" width="7" height="4" rx="0.5" transform="rotate(-14 339 234)" />
-                    <ellipse cx="168" cy="238" rx="4" ry="2" />
-                    <ellipse cx="232" cy="237" rx="5" ry="2.2" />
                   </g>
                   <text x="200" y="52" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="13" fill="#2a2014" opacity="0.82">The Lost City</text>
-                  <text x="200" y="66" text-anchor="middle" font-family="'IM Fell English', Georgia, serif" font-size="8" fill="#4a6878" font-style="italic" opacity="0.72">Sunken pillars &amp; rubble · chart north</text>
-                  <text x="58" y="192" font-family="'IM Fell English', Georgia, serif" font-size="7" fill="#4a3d2e" font-style="italic" opacity="0.58">Fallen colonnade</text>
-                  <text x="292" y="190" font-family="'IM Fell English', Georgia, serif" font-size="7" fill="#4a3d2e" font-style="italic" opacity="0.55">Broken gate</text>
                 </g>
-                <rect x="24" y="24" width="352" height="1152" fill="none" stroke="#3d3020" stroke-width="1.2" opacity="0.35" />
-                <rect x="32" y="32" width="336" height="1136" fill="none" stroke="#3d3020" stroke-width="0.6" opacity="0.22" />
                 <path id="adventureMapTrail" class="adventure-map-trail" fill="none" d="" />
                 <path id="adventureMapTrailReveal" class="adventure-map-trail adventure-map-trail--reveal" fill="none" d="" />
-                <text x="38" y="1140" font-family="'IM Fell English', Georgia, serif" font-size="13" fill="#4a2010" opacity="0.72" transform="rotate(-7 38 1140)">Hic sunt monstra</text>
+                <text x="36" y="1168" font-family="'IM Fell English', Georgia, serif" font-size="13" fill="#5a2010" opacity="0.62" transform="rotate(-6 36 1168)">Hic sunt monstra</text>
               </g>
-              <path class="adventure-map-edge" fill="none" stroke="#5c4030" stroke-width="2.2" opacity="0.35" d="M8 32 L22 10 L48 18 L78 6 L112 16 L148 4 L186 14 L222 5 L258 15 L292 6 L328 14 L358 8 L386 28 L396 58 L399 110 L394 210 L398 340 L392 470 L397 600 L390 730 L396 860 L388 990 L394 1100 L382 1165 L348 1192 L300 1186 L252 1196 L204 1184 L158 1194 L112 1186 L68 1195 L28 1180 L10 1145 L4 1080 L8 960 L3 820 L9 680 L4 540 L10 400 L5 260 L12 140 L6 70 Z" />
-              <!-- Torn paper rips outside the chart -->
-              <g class="adv-map-rips" fill="#b89a72" opacity="0.55" pointer-events="none">
-                <path d="M0 200 L8 190 L6 210 Z"/>
-                <path d="M392 480 L400 468 L398 492 Z"/>
-                <path d="M0 700 L10 688 L7 714 Z"/>
-                <path d="M395 900 L400 888 L399 914 Z"/>
-              </g>
+              <path class="adventure-map-edge" fill="none" stroke="#5c4030" stroke-width="2.4" opacity="0.4" d="M10 28 L36 10 L78 16 L122 6 L168 14 L214 5 L262 13 L308 6 L352 14 L386 30 L396 70 L399 160 L394 320 L398 500 L392 680 L397 860 L390 1040 L382 1168 L348 1192 L292 1186 L230 1196 L168 1186 L108 1194 L52 1182 L14 1150 L5 1080 L8 920 L3 740 L9 560 L4 380 L10 200 L6 90 Z" />
             </svg>
             <div class="adventure-map-lost-city-theme" aria-hidden="true"></div>
             <div id="adventureMapSections" class="adventure-map-sections" aria-hidden="true">
