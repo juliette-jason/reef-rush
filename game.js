@@ -1198,7 +1198,7 @@ const PROGRESS_BACKUP_KEY = "reefRushProgressBackup_v1";
 
 const TREASURE_CHESTS_TO_UNLOCK_ADVENTURE = 20;
 const SECRET_TREASURE_CHEST_GRANT = 19;
-const ADVENTURE_MAIN_LEVEL_COUNT = 16;
+const ADVENTURE_MAIN_LEVEL_COUNT = 15;
 const ADVENTURE_BONUS_LEVEL_COUNT = 7;
 const ADVENTURE_ICE_LEVEL_COUNT = 5;
 const ADVENTURE_LOST_CITY_LEVEL_COUNT = 5;
@@ -1207,7 +1207,7 @@ const ADVENTURE_LEVEL_COUNT =
   ADVENTURE_BONUS_LEVEL_COUNT +
   ADVENTURE_ICE_LEVEL_COUNT +
   ADVENTURE_LOST_CITY_LEVEL_COUNT;
-/** Index of Treasure Cove (level 16) — clearing it unlocks bonus voyages. */
+/** Index of Treasure Cove (level 15) — clearing it unlocks bonus voyages. */
 const TREASURE_COVE_INDEX = ADVENTURE_MAIN_LEVEL_COUNT - 1;
 /** Index of Legend's Gate (last Gold Quest voyage) — clearing it unlocks ice voyages. */
 const LEGENDS_GATE_INDEX = ADVENTURE_MAIN_LEVEL_COUNT + ADVENTURE_BONUS_LEVEL_COUNT - 1;
@@ -1216,7 +1216,7 @@ const ADVENTURE_LOST_CITY_START_INDEX = ADVENTURE_ICE_START_INDEX + ADVENTURE_IC
 /** Index of Aurora Reach — clearing it unlocks The Lost City. */
 const AURORA_REACH_INDEX = ADVENTURE_LOST_CITY_START_INDEX - 1;
 /** Bump when inserting voyages mid-chart so saved progress can remapped. */
-const ADVENTURE_MAP_CONTENT_REV = 3;
+const ADVENTURE_MAP_CONTENT_REV = 4;
 /** Ice start index before Middle Passage / Kraken's Grotto were added to Gold Quest. */
 const ADVENTURE_PREV_ICE_START_FOR_REV1 = 20;
 
@@ -1307,7 +1307,6 @@ function buildAdventureMapNodeLayout() {
     { x: 70, y: 72 },
     { x: 54, y: 80 },
     { x: 40, y: 70 },
-    { x: 44, y: 58 },
     { x: 50, y: 52 },
     { x: 64, y: 48 },
     { x: 76, y: 38 },
@@ -1359,7 +1358,6 @@ const ADVENTURE_MAP_PLACES = [
   "Lava Falls",
   "Stormbreak Isle",
   "Treasurehorn Peak",
-  "Skull Cave",
   "Leviathan Deep",
   "Captain's Landing",
   "Treasure Cove",
@@ -1396,7 +1394,6 @@ const ADVENTURE_LEVEL_THEMES = [
   "lava-falls",
   "stormbreak-isle",
   "treasurehorn-peak",
-  "skull-cave",
   "leviathan-deep",
   "captains-landing",
   "treasure-cove",
@@ -1552,19 +1549,6 @@ function adventureMapSceneSvg(themeId, idSuffix = "") {
       <path d="M34 14 L36 4 L38 14" fill="#f0d860" stroke="#a88020" stroke-width="0.8"/>
       <path d="M32 8 Q36 2 40 8" fill="none" stroke="#f0e880" stroke-width="1"/>
       <path d="M0 44 Q36 40 72 44" fill="none" stroke="#6a8898" stroke-width="1"/>
-    </svg>`,
-    "skull-cave": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <rect width="72" height="52" fill="#120c10"/>
-      <path d="M0 0 L18 0 Q10 28 0 52 Z" fill="#2a221c"/>
-      <path d="M72 0 L54 0 Q62 28 72 52 Z" fill="#2a221c"/>
-      <path d="M36 6 Q54 8 58 22 Q60 32 52 40 Q44 48 36 50 Q28 48 20 40 Q12 32 14 22 Q18 8 36 6 Z" fill="#3a3028" stroke="#1a1410" stroke-width="0.9"/>
-      <ellipse cx="26" cy="22" rx="7" ry="8" fill="#08060a"/>
-      <ellipse cx="46" cy="22" rx="7" ry="8" fill="#08060a"/>
-      <circle cx="26" cy="22" r="1.8" fill="#22c55e" opacity="0.45"/>
-      <circle cx="46" cy="22" r="1.8" fill="#22c55e" opacity="0.45"/>
-      <path d="M36 26 L32 34 L40 34 Z" fill="#08060a"/>
-      <path d="M22 40 L24 46 L26 40 L28 46 L30 40 L32 46 L34 40 L36 46 L38 40 L40 46 L42 40 L44 46 L46 40 L48 46 L50 40" fill="none" stroke="#c8b8a8" stroke-width="1.1" stroke-linecap="round"/>
-      <path d="M18 0 L20 10 L22 0 M32 0 L34 14 L36 0 M50 0 L52 12 L54 0" fill="none" stroke="#1a1410" stroke-width="1.4" stroke-linecap="round"/>
     </svg>`,
     "leviathan-deep": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="72" height="52" fill="#0a1830"/>
@@ -1853,9 +1837,7 @@ const ADVENTURE_THEME_REEF_ID = {
 };
 
 function isSkullShoalsPlay() {
-  if (!playing || !adventureSession) return false;
-  const theme = getAdventureLevelTheme(adventureSession.levelIndex);
-  return theme === "skull-shoals" || theme === "skull-cave";
+  return Boolean(playing && adventureSession && getAdventureLevelTheme(adventureSession.levelIndex) === "skull-shoals");
 }
 
 function pickSkullShoalsSpecies() {
@@ -1904,14 +1886,6 @@ const ADVENTURE_PLAY_ATMOSPHERE = {
   },
   "stormbreak-isle": { stops: [[0, "rgba(25, 35, 55, 0.35)"], [1, "rgba(40, 50, 70, 0.2)"]], effect: "stormbreak-isle" },
   "treasurehorn-peak": { stops: [[0, "rgba(160, 170, 185, 0.12)"], [1, "rgba(90, 80, 70, 0.22)"]], effect: "treasurehorn-peak" },
-  "skull-cave": {
-    stops: [
-      [0, "rgba(8, 4, 10, 0.58)"],
-      [0.4, "rgba(22, 12, 16, 0.42)"],
-      [1, "rgba(4, 2, 6, 0.7)"],
-    ],
-    effect: "skull-cave",
-  },
   "leviathan-deep": { stops: [[0, "rgba(5, 15, 35, 0.35)"], [1, "rgba(10, 25, 50, 0.45)"]], effect: "leviathan-deep" },
   "captains-landing": { stops: [[0, "rgba(140, 120, 90, 0.12)"], [1, "rgba(60, 50, 40, 0.18)"]], effect: "captains-landing" },
   "treasure-cove": {
@@ -2106,15 +2080,6 @@ const ADVENTURE_THEME_SAND = {
     ],
     speck: "rgba(130, 120, 110, 0.2)",
   },
-  "skull-cave": {
-    stops: [
-      [0, "rgba(22, 16, 18, 0)"],
-      [0.3, "rgba(36, 26, 28, 0.32)"],
-      [0.7, "rgba(48, 34, 36, 0.52)"],
-      [1, "rgba(18, 12, 14, 0.78)"],
-    ],
-    speck: "rgba(70, 56, 52, 0.24)",
-  },
   "leviathan-deep": {
     stops: [
       [0, "rgba(8, 18, 35, 0)"],
@@ -2295,12 +2260,6 @@ const ADVENTURE_THEME_REEF_OVERRIDES = {
     shaft: ["rgba(200, 190, 170, 0.12)", "rgba(200, 190, 170, 0)"],
     silhouette: "rgba(35, 40, 50, 0.75)",
     bubble: "rgba(180, 170, 150, 0.14)",
-  },
-  "skull-cave": {
-    gradient: ["#0a080c", "#141018", "#1a1418", "#060408"],
-    shaft: ["rgba(80, 30, 40, 0.08)", "rgba(80, 30, 40, 0)"],
-    silhouette: "rgba(6, 4, 8, 0.86)",
-    bubble: "rgba(120, 70, 90, 0.14)",
   },
   "leviathan-deep": {
     gradient: ["#020818", "#040c20", "#061028", "#010408"],
@@ -2976,125 +2935,6 @@ function drawAdventureSkullShoalsEffect(now) {
   if (Math.sin(now * 0.0025) > 0.88) {
     ctx.fillStyle = "rgba(120, 20, 30, 0.04)";
     ctx.fillRect(0, waterTop, w, h - waterTop);
-  }
-}
-
-function drawSkullCaveBed() {
-  const sandTop = h - dpr * 92;
-  const wy = waterTop;
-  const base = sandTop + dpr * 12;
-
-  ctx.fillStyle = "rgba(28, 20, 18, 0.88)";
-  ctx.beginPath();
-  ctx.moveTo(0, wy);
-  ctx.lineTo(w * 0.24, wy);
-  ctx.quadraticCurveTo(w * 0.16, sandTop - dpr * 20, w * 0.1, h);
-  ctx.lineTo(0, h);
-  ctx.closePath();
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(w, wy);
-  ctx.lineTo(w * 0.76, wy);
-  ctx.quadraticCurveTo(w * 0.84, sandTop - dpr * 24, w * 0.9, h);
-  ctx.lineTo(w, h);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.fillStyle = "rgba(18, 14, 14, 0.72)";
-  for (const sx of [0.08, 0.18, 0.32, 0.5, 0.66, 0.8, 0.9]) {
-    const x = w * sx;
-    const len = dpr * (16 + (sx * 40) % 22);
-    ctx.beginPath();
-    ctx.moveTo(x - dpr * 5, wy);
-    ctx.lineTo(x, wy + len);
-    ctx.lineTo(x + dpr * 5, wy);
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  const cx = w * 0.5;
-  const cy = waterTop + (sandTop - waterTop) * 0.42;
-  const rx = w * 0.22;
-  const ry = dpr * 58;
-  ctx.fillStyle = "rgba(58, 48, 42, 0.55)";
-  ctx.beginPath();
-  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "rgba(6, 4, 8, 0.78)";
-  ctx.beginPath();
-  ctx.ellipse(cx - rx * 0.32, cy - ry * 0.12, rx * 0.22, ry * 0.28, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(cx + rx * 0.32, cy - ry * 0.12, rx * 0.22, ry * 0.28, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(cx, cy + ry * 0.02);
-  ctx.lineTo(cx - rx * 0.1, cy + ry * 0.28);
-  ctx.lineTo(cx + rx * 0.1, cy + ry * 0.28);
-  ctx.closePath();
-  ctx.fill();
-  ctx.fillStyle = "rgba(8, 6, 10, 0.7)";
-  ctx.beginPath();
-  ctx.ellipse(cx, cy + ry * 0.52, rx * 0.42, ry * 0.22, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.strokeStyle = "rgba(168, 152, 136, 0.4)";
-  ctx.lineWidth = dpr * 1.4;
-  ctx.lineCap = "round";
-  for (let i = 0; i < 7; i++) {
-    const tx = cx - rx * 0.34 + i * rx * 0.11;
-    ctx.beginPath();
-    ctx.moveTo(tx, cy + ry * 0.42);
-    ctx.lineTo(tx + (i % 2 ? 1 : -1) * dpr * 2, cy + ry * 0.62);
-    ctx.stroke();
-  }
-
-  ctx.fillStyle = "rgba(42, 34, 32, 0.6)";
-  ctx.beginPath();
-  ctx.ellipse(w * 0.22, base - dpr * 6, w * 0.1, dpr * 10, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(w * 0.78, base - dpr * 4, w * 0.09, dpr * 8, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  drawSkullShoalsSandSkeletons();
-}
-
-function drawAdventureSkullCaveEffect(now) {
-  const t = now * 0.001;
-  const wh = h - waterTop;
-  ctx.fillStyle = "rgba(20, 6, 12, 0.1)";
-  ctx.fillRect(0, waterTop, w, wh);
-
-  const vig = ctx.createRadialGradient(w * 0.5, h * 0.48, w * 0.08, w * 0.5, h * 0.48, w * 0.78);
-  vig.addColorStop(0, "rgba(0, 0, 0, 0)");
-  vig.addColorStop(0.7, "rgba(8, 2, 6, 0.22)");
-  vig.addColorStop(1, "rgba(4, 0, 4, 0.52)");
-  ctx.fillStyle = vig;
-  ctx.fillRect(0, waterTop, w, wh);
-
-  const blobCount = PERF_CHROMEBOOK ? 2 : 3;
-  for (let i = 0; i < blobCount; i++) {
-    const x = ((i * 151 + Math.floor(t * 9)) % 1000) / 1000 * w;
-    const y = waterTop + ((i * 97) % 1000) / 1000 * wh * 0.65;
-    ctx.fillStyle = `rgba(70, 16, 24, ${0.05 + i * 0.014})`;
-    ctx.beginPath();
-    ctx.arc(x, y, dpr * (18 + i * 9), 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  ctx.fillStyle = "rgba(180, 160, 140, 0.18)";
-  for (let i = 0; i < perfN(8); i++) {
-    const bx = w * (0.18 + ((i * 83 + Math.floor(t * 10)) % 640) / 1000);
-    const by = waterTop + dpr * (10 + (i * 41) % Math.floor(wh * 0.5));
-    ctx.beginPath();
-    ctx.arc(bx, by, dpr * (0.7 + (i % 2) * 0.3), 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  if (Math.sin(now * 0.0022) > 0.9) {
-    ctx.fillStyle = "rgba(110, 18, 28, 0.05)";
-    ctx.fillRect(0, waterTop, w, wh);
   }
 }
 
@@ -4490,7 +4330,6 @@ const ADVENTURE_THEME_BED_DRAW = {
   "lava-falls": drawLavaFallsBed,
   "stormbreak-isle": drawStormbreakIsleBed,
   "treasurehorn-peak": drawTreasurehornPeakBed,
-  "skull-cave": drawSkullCaveBed,
   "leviathan-deep": drawLeviathanDeepBed,
   "captains-landing": drawCaptainsLandingBed,
   "treasure-cove": drawTreasureCoveBed,
@@ -5057,7 +4896,6 @@ const ADVENTURE_THEME_EFFECT_DRAW = {
   "emerald-lagoon": drawAdventureEmeraldLagoonEffect,
   "lava-falls": drawAdventureLavaFallsEffect,
   "treasurehorn-peak": drawAdventureTreasurehornPeakEffect,
-  "skull-cave": drawAdventureSkullCaveEffect,
   "leviathan-deep": drawAdventureLeviathanDeepEffect,
   "captains-landing": drawAdventureCaptainsLandingEffect,
   "treasure-cove": drawAdventureTreasureCoveEffect,
@@ -5304,10 +5142,10 @@ function migrateAdventureMapProgress(highestLevel, contentRev) {
     if (highest >= ADVENTURE_PREV_ICE_START_FOR_REV1) highest += 2;
     rev = 2;
   }
-  if (rev < 3) {
-    // Pirates Path gained Skull Cave after Treasurehorn Peak (old index 12).
-    if (highest > 12) highest += 1;
-    rev = 3;
+  if (rev === 3) {
+    // Skull Cave was briefly a voyage after Treasurehorn Peak; undo that insert.
+    if (highest > 12) highest -= 1;
+    rev = 4;
   }
   if (rev < ADVENTURE_MAP_CONTENT_REV) rev = ADVENTURE_MAP_CONTENT_REV;
   return {
@@ -6760,13 +6598,9 @@ function getReef() {
   if (themeVis) {
     merged.visuals = { ...reefBase.visuals, ...themeVis, corals: [] };
   }
-  if (themeId === "skull-shoals" || themeId === "skull-cave") {
+  if (themeId === "skull-shoals") {
     merged.weights = { common: 48, uncommon: 28, rare: 14, epic: 7, legendary: 3 };
     merged.fishSpeed = Math.max(lvl.fishSpeed * 1.42, 1.12);
-  }
-  if (themeId === "skull-cave") {
-    merged.subtitle = "Bone-dark cavern";
-    merged.desc = `Skull-mouth cave · graveyard waters · score ${lvl.passScore}+ to continue`;
   }
   if (themeId === "lava-falls") {
     merged.subtitle = "Volcanic shallows";
@@ -19161,7 +18995,7 @@ function drawJackpotCrab() {
   const facing = jackpotCrab.active.vx >= 0 ? 1 : -1;
   const leg = jackpotCrab.active.legT;
   const sc = dpr * 1.05;
-  const skeletonCrab = getActiveAdventureTheme() === "skull-shoals" || getActiveAdventureTheme() === "skull-cave";
+  const skeletonCrab = getActiveAdventureTheme() === "skull-shoals";
 
   ctx.save();
   ctx.translate(x, y);
