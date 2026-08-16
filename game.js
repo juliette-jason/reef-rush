@@ -980,11 +980,38 @@ function companionInnerMarkup(id) {
   }
 }
 
+/** Center + scale each pal so it fills the circle without clipping. */
+const COMPANION_ART_FIT = {
+  harbor_gull: { cx: 80, cy: 91.5, scale: 1.28 },
+  clownfish: { cx: 82, cy: 85, scale: 1.175 },
+  sea_turtle: { cx: 86.1, cy: 89, scale: 0.946 },
+  octopus: { cx: 79, cy: 96, scale: 1.28 },
+  dolphin: { cx: 84, cy: 85, scale: 0.784 },
+  seahorse: { cx: 83, cy: 92, scale: 1.28 },
+  jellyfish: { cx: 80, cy: 96, scale: 1.28 },
+  crab: { cx: 80, cy: 89, scale: 1.016 },
+  manta: { cx: 80, cy: 91, scale: 1.28 },
+  puffer: { cx: 80, cy: 88, scale: 1.28 },
+  otter: { cx: 88, cy: 86.5, scale: 1.28 },
+  pirate_gull: { cx: 80, cy: 75, scale: 1.203 },
+  cowboy_shark: { cx: 76, cy: 68, scale: 1.016 },
+  party_fish: { cx: 81, cy: 65, scale: 1.028 },
+  ninja_octopus: { cx: 83, cy: 96, scale: 1.28 },
+  wizard_turtle: { cx: 89, cy: 80, scale: 0.842 },
+  super_dolphin: { cx: 84, cy: 85, scale: 0.784 },
+  chef_crab: { cx: 80, cy: 87.5, scale: 1.059 },
+  disco_jelly: { cx: 80, cy: 96, scale: 1.28 },
+  knight_seahorse: { cx: 93, cy: 81.5, scale: 1.051 },
+  viking_seal: { cx: 80, cy: 78, scale: 1.277 },
+  royal_manta: { cx: 80, cy: 89, scale: 1.28 },
+};
+
 function companionArtSvg(id, { className = "companion-art" } = {}) {
   const def = COMPANION_BY_ID[id] ? id : STARTER_COMPANION_ID;
+  const fit = COMPANION_ART_FIT[def] || { cx: 80, cy: 86, scale: 1.22 };
   return (
     `<svg class="${className}" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">` +
-    `<g transform="translate(80 80) scale(1.28) translate(-80 -80)">` +
+    `<g transform="translate(80 80) scale(${fit.scale}) translate(${-fit.cx} ${-fit.cy})">` +
     companionInnerMarkup(def) +
     `</g></svg>`
   );
