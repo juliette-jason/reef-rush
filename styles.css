@@ -7499,6 +7499,11 @@ button.seagull-avatar:active {
   filter: drop-shadow(0 1px 0 rgba(46, 36, 24, 0.12));
 }
 
+.adventure-chart__art .adv-map-lands path {
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
 .adventure-map-trail {
   stroke: #dc2626;
   stroke-width: 2.8;
