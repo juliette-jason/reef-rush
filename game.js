@@ -9259,6 +9259,9 @@ const adventureLevelList = document.getElementById("adventureLevelList");
 const adventureMapScroll = document.getElementById("adventureMapScroll");
 const adventureMapBanner = document.getElementById("adventureMapBanner");
 const adventureMapHere = document.getElementById("adventureMapHere");
+const adventureMapPager = document.getElementById("adventureMapPager");
+const btnAdventureMapPrev = document.getElementById("btnAdventureMapPrev");
+const btnAdventureMapNext = document.getElementById("btnAdventureMapNext");
 const btnAdventureBack = document.getElementById("btnAdventureBack");
 const panelAdventurePrep = document.getElementById("panelAdventurePrep");
 const adventurePrepSection = document.getElementById("adventurePrepSection");
@@ -10152,6 +10155,62 @@ function adventureChartEl(sectionId) {
   return adventureMapScroll?.querySelector(`.adventure-chart[data-section="${sectionId}"]`);
 }
 
+function adventureMapPhoneMode() {
+  return typeof window !== "undefined" && window.matchMedia("(max-width: 560px)").matches;
+}
+
+function unlockedAdventureSectionIds() {
+  return ADVENTURE_MAP_SECTION_IDS.filter((id) => isAdventureSectionUnlocked(id));
+}
+
+let adventureMapPhoneSection = "pirates";
+
+function updateAdventureMapPager() {
+  if (!adventureMapPager) return;
+  const phone = adventureMapPhoneMode();
+  const unlocked = unlockedAdventureSectionIds();
+  const show = phone && unlocked.length > 1;
+  adventureMapPager.hidden = !show;
+  if (!show) return;
+  const idx = Math.max(0, unlocked.indexOf(adventureMapPhoneSection));
+  if (btnAdventureMapPrev) btnAdventureMapPrev.disabled = idx <= 0;
+  if (btnAdventureMapNext) btnAdventureMapNext.disabled = idx >= unlocked.length - 1;
+}
+
+function setAdventureMapPhoneSection(sectionId, remasureTrail = true) {
+  const unlocked = unlockedAdventureSectionIds();
+  adventureMapPhoneSection = unlocked.includes(sectionId) ? sectionId : unlocked[0] || "pirates";
+  applyAdventureMapExtent();
+  if (remasureTrail) {
+    window.requestAnimationFrame(() => {
+      if (!pendingAdventureTrailReveal) syncAdventureMapTrail(false);
+    });
+  }
+}
+
+function stepAdventureMapPhoneSection(dir) {
+  const unlocked = unlockedAdventureSectionIds();
+  const idx = unlocked.indexOf(adventureMapPhoneSection);
+  const next = unlocked[idx + dir];
+  if (!next) return;
+  setAdventureMapPhoneSection(next);
+}
+
+function applyAdventureMapExtent() {
+  const phone = adventureMapPhoneMode();
+  const unlocked = unlockedAdventureSectionIds();
+  if (phone && !unlocked.includes(adventureMapPhoneSection)) {
+    adventureMapPhoneSection = unlocked[0] || "pirates";
+  }
+  for (const id of ADVENTURE_MAP_SECTION_IDS) {
+    const chart = adventureChartEl(id);
+    if (!chart) continue;
+    const show = isAdventureSectionUnlocked(id) && (!phone || id === adventureMapPhoneSection);
+    chart.hidden = !show;
+  }
+  updateAdventureMapPager();
+}
+
 function adventureTrailEl(sectionId) {
   return document.getElementById(`adventureMapTrail-${sectionId}`);
 }
@@ -10185,14 +10244,6 @@ function adventureMapCoords(index) {
   };
 }
 
-function applyAdventureMapExtent() {
-  for (const id of ADVENTURE_MAP_SECTION_IDS) {
-    const chart = adventureChartEl(id);
-    if (!chart) continue;
-    chart.hidden = !isAdventureSectionUnlocked(id);
-  }
-}
-
 function syncAdventureMapSections() {
   applyAdventureMapExtent();
 }
@@ -10200,6 +10251,10 @@ function syncAdventureMapSections() {
 function scrollAdventureMapToSection(sectionId, instant = true) {
   const chart = adventureChartEl(sectionId);
   if (!chart || !adventureMapScroll) return;
+  if (adventureMapPhoneMode()) {
+    setAdventureMapPhoneSection(sectionId);
+    return;
+  }
   const run = () => {
     chart.scrollIntoView({ block: "center", behavior: instant ? "instant" : "smooth" });
   };
@@ -10208,6 +10263,7 @@ function scrollAdventureMapToSection(sectionId, instant = true) {
 }
 
 function runAdventureMapSectionReveal(kind) {
+  if (adventureMapPhoneMode()) setAdventureMapPhoneSection(kind, false);
   const chart = adventureChartEl(kind);
   if (!chart || !adventureLevelList) return;
   const prefersReducedMotion =
@@ -10427,6 +10483,10 @@ function scrollAdventureMapToProgress(instant = true) {
     (clearedNodes.length ? clearedNodes[clearedNodes.length - 1] : null) ||
     adventureLevelList.querySelector(".adventure-map-node");
   if (!target) return;
+  if (adventureMapPhoneMode()) {
+    setAdventureMapPhoneSection(target.dataset.section || "pirates");
+    return;
+  }
   const run = () => {
     target.scrollIntoView({ block: "center", behavior: instant ? "instant" : "smooth" });
   };
@@ -19978,6 +20038,41 @@ btnAdventureBack?.addEventListener("click", () => {
   if (homeAudioUnlocked) startHomeWaves();
   startHomeMusic();
 });
+
+btnAdventureMapPrev?.addEventListener("click", () => stepAdventureMapPhoneSection(-1));
+btnAdventureMapNext?.addEventListener("click", () => stepAdventureMapPhoneSection(1));
+
+if (typeof window !== "undefined" && window.matchMedia) {
+  const adventureMapPhoneMql = window.matchMedia("(max-width: 560px)");
+  const onAdventureMapPhoneMode = () => {
+    applyAdventureMapExtent();
+    if (panelAdventure && !panelAdventure.hidden) {
+      window.requestAnimationFrame(() => {
+        if (!pendingAdventureTrailReveal) syncAdventureMapTrail(false);
+        if (!adventureMapPhoneMode()) scrollAdventureMapToProgress(true);
+      });
+    }
+  };
+  if (adventureMapPhoneMql.addEventListener) adventureMapPhoneMql.addEventListener("change", onAdventureMapPhoneMode);
+  else adventureMapPhoneMql.addListener?.(onAdventureMapPhoneMode);
+}
+
+let adventureMapSwipeX = 0;
+let adventureMapSwipeY = 0;
+adventureMapScroll?.addEventListener("touchstart", (e) => {
+  if (!adventureMapPhoneMode() || e.touches.length !== 1) return;
+  adventureMapSwipeX = e.touches[0].clientX;
+  adventureMapSwipeY = e.touches[0].clientY;
+}, { passive: true });
+adventureMapScroll?.addEventListener("touchend", (e) => {
+  if (!adventureMapPhoneMode() || adventureMapPager?.hidden) return;
+  const t = e.changedTouches[0];
+  if (!t) return;
+  const dx = t.clientX - adventureMapSwipeX;
+  const dy = t.clientY - adventureMapSwipeY;
+  if (Math.abs(dx) < 56 || Math.abs(dx) < Math.abs(dy) * 1.15) return;
+  stepAdventureMapPhoneSection(dx < 0 ? 1 : -1);
+}, { passive: true });
 
 btnAdventureRetry?.addEventListener("click", () => {
   openAdventurePrep(pendingAdventureLevelIndex);

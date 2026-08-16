@@ -7796,6 +7796,45 @@ button.seagull-avatar:active {
     inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
 }
 
+.adventure-map-pager {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 36;
+  pointer-events: none;
+}
+
+.adventure-map-pager__btn {
+  pointer-events: auto;
+  position: absolute;
+  top: 48%;
+  width: 42px;
+  height: 52px;
+  margin: 0;
+  padding: 0;
+  border: 2px solid rgba(70, 35, 10, 0.5);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255, 244, 214, 0.96), rgba(232, 198, 128, 0.92));
+  color: #3a2008;
+  font-family: "IM Fell English SC", Georgia, serif;
+  font-size: 2rem;
+  line-height: 1;
+  box-shadow: 0 4px 12px rgba(40, 20, 5, 0.32);
+}
+
+.adventure-map-pager__btn:disabled {
+  opacity: 0.35;
+}
+
+#btnAdventureMapPrev {
+  left: max(4px, env(safe-area-inset-left, 0px));
+}
+
+#btnAdventureMapNext {
+  right: max(4px, env(safe-area-inset-right, 0px));
+}
+
 .adventure-map-node {
   position: absolute;
   z-index: 6;
@@ -8122,13 +8161,23 @@ button.seagull-avatar:active {
 }
 
 @media (max-width: 560px) {
+  .adventure-map-scroll {
+    overflow: hidden;
+  }
+
   .adventure-map-atlas {
-    gap: 28px;
-    padding: 124px 6px 140px;
+    min-height: 100%;
+    justify-content: center;
+    gap: 0;
+    padding: 118px 6px 120px;
   }
 
   .adventure-chart {
-    width: min(98vw, 760px);
+    width: min(96vw, 760px);
+  }
+
+  .adventure-map-pager:not([hidden]) {
+    display: block;
   }
 
   .adventure-map-node {
