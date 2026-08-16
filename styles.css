@@ -2958,6 +2958,7 @@ button.seagull-avatar:active {
 }
 
 .leaderboard__ini {
+  font-family: "Nunito", system-ui, sans-serif;
   font-weight: 800;
   letter-spacing: 0.02em;
   color: var(--gold-hot);
@@ -2988,33 +2989,6 @@ button.seagull-avatar:active {
   font-size: 0.82rem;
   color: var(--muted);
   text-align: center;
-}
-
-@media (max-width: 560px) {
-  .leaderboard__row {
-    grid-template-columns: 1.6rem minmax(0, 1fr) auto;
-    grid-template-areas:
-      "rank name pts"
-      ". reef reef";
-    row-gap: 1px;
-  }
-
-  .leaderboard__rank {
-    grid-area: rank;
-  }
-
-  .leaderboard__ini {
-    grid-area: name;
-  }
-
-  .leaderboard__pts {
-    grid-area: pts;
-  }
-
-  .leaderboard__reef {
-    grid-area: reef;
-    font-size: 0.68rem;
-  }
 }
 
 .initials-panel {
