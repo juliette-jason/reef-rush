@@ -983,8 +983,9 @@ function companionArtSvg(id, { className = "companion-art" } = {}) {
   const def = COMPANION_BY_ID[id] ? id : STARTER_COMPANION_ID;
   return (
     `<svg class="${className}" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">` +
+    `<g transform="translate(80 80) scale(1.28) translate(-80 -80)">` +
     companionInnerMarkup(def) +
-    `</svg>`
+    `</g></svg>`
   );
 }
 

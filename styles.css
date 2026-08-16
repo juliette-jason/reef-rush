@@ -866,7 +866,7 @@ body {
   justify-content: center;
   width: 72px;
   height: 72px;
-  padding: 6px;
+  padding: 1px;
   overflow: hidden;
   border-radius: 50%;
   background:
@@ -2612,8 +2612,8 @@ button.seagull-avatar:active {
 .seagull-avatar__art,
 .companion-avatar__art {
   display: block;
-  width: 86%;
-  height: 86%;
+  width: 108%;
+  height: 108%;
   overflow: visible;
 }
 
@@ -5279,7 +5279,7 @@ button.seagull-avatar:active {
     radial-gradient(circle at 50% 30%, rgba(186, 230, 253, 0.22), transparent 55%),
     rgba(12, 90, 120, 0.4);
   border-radius: 50%;
-  padding: 6px;
+  padding: 1px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
