@@ -688,30 +688,30 @@ function companionInnerMarkup(id) {
         <path d="M128 76 Q132 72 136 76" fill="none" stroke="#9a3412" stroke-width="0.9"/>`;
     case "sea_turtle":
       return `${shadow}
-        <path d="M46 112 C30 122 22 138 40 140 C52 134 58 120 56 112Z" fill="#5a4630" stroke="#2a2418" stroke-width="1.05"/>
-        <path d="M58 120 C50 136 56 150 72 144 C78 132 72 118 64 114Z" fill="#6a5438" stroke="#2a2418" stroke-width="1.05"/>
-        <path d="M102 54 C92 30 70 24 62 42 C70 56 90 64 108 66Z" fill="#4a3c28" stroke="#2a2418" stroke-width="1.15"/>
-        <path d="M94 58 C86 40 74 36 70 48" fill="none" stroke="#c4b896" stroke-width="0.7" opacity="0.45"/>
-        <path d="M74 94 C50 108 22 118 20 100 C34 86 62 84 80 86Z" fill="#6b5434" stroke="#2a2418" stroke-width="1.2"/>
-        <path d="M66 96 L42 106 M62 102 L36 112 M58 108 L38 116" stroke="#2a2418" stroke-width="0.7" opacity="0.38"/>
-        <ellipse cx="90" cy="104" rx="20" ry="11" transform="rotate(-26 90 104)" fill="#d4c4a0"/>
-        <g transform="rotate(-26 84 88)">
-          <ellipse cx="84" cy="88" rx="46" ry="29" fill="#6b3a18" stroke="#3a2414" stroke-width="1.45"/>
-          <ellipse cx="86" cy="86" rx="38" ry="23" fill="#8a4e22"/>
-          <path d="M86 66 L100 78 L86 90 L72 78 Z" fill="#c47a38" stroke="#f0d8a8" stroke-width="1.15"/>
-          <path d="M86 90 L100 102 L86 112 L72 102 Z" fill="#b86a2c" stroke="#f0d8a8" stroke-width="1.05"/>
-          <path d="M72 78 L86 90 L72 102 L58 90 Z" fill="#a85c24" stroke="#ead4a4" stroke-width="1"/>
-          <path d="M100 78 L114 90 L100 102 L86 90 Z" fill="#c47a38" stroke="#ead4a4" stroke-width="1"/>
-          <path d="M58 90 L72 102 L62 112 L50 100 Z" fill="#8a4a20" stroke="#ead4a4" stroke-width="0.9"/>
-          <path d="M100 102 L114 90 L122 100 L108 112 Z" fill="#9a5420" stroke="#ead4a4" stroke-width="0.9"/>
+        <path d="M48 110 C34 118 26 134 44 138 C56 132 60 118 58 110Z" fill="#6fa85a" stroke="#2f5a28" stroke-width="1.05"/>
+        <path d="M60 118 C52 134 58 148 74 142 C80 130 74 116 66 112Z" fill="#7bb862" stroke="#2f5a28" stroke-width="1.05"/>
+        <path d="M100 56 C92 34 74 30 66 46 C74 58 92 66 108 66Z" fill="#6fa85a" stroke="#2f5a28" stroke-width="1.1"/>
+        <path d="M76 94 C52 108 24 116 24 98 C38 86 64 84 82 86Z" fill="#7bb862" stroke="#2f5a28" stroke-width="1.15"/>
+        <path d="M68 96 L46 104 M64 102 L40 110 M60 108 L42 114" stroke="#2f5a28" stroke-width="0.7" opacity="0.28"/>
+        <ellipse cx="90" cy="104" rx="21" ry="12" transform="rotate(-24 90 104)" fill="#eaf6b8"/>
+        <g transform="rotate(-24 84 88)">
+          <ellipse cx="84" cy="88" rx="46" ry="30" fill="#1f6b38" stroke="#164a28" stroke-width="1.45"/>
+          <ellipse cx="86" cy="86" rx="38" ry="24" fill="#2f8a48"/>
+          <path d="M86 66 L101 78 L86 90 L71 78 Z" fill="#4cbe62" stroke="#d9f99d" stroke-width="1.2"/>
+          <path d="M86 90 L101 102 L86 114 L71 102 Z" fill="#3daa54" stroke="#d9f99d" stroke-width="1.1"/>
+          <path d="M71 78 L86 90 L71 102 L56 90 Z" fill="#37a04c" stroke="#ecfccb" stroke-width="1.05"/>
+          <path d="M101 78 L116 90 L101 102 L86 90 Z" fill="#4cbe62" stroke="#ecfccb" stroke-width="1.05"/>
+          <path d="M56 90 L71 102 L62 112 L50 100 Z" fill="#2f8a48" stroke="#ecfccb" stroke-width="0.95"/>
+          <path d="M101 102 L116 90 L124 100 L110 112 Z" fill="#348c44" stroke="#ecfccb" stroke-width="0.95"/>
+          <ellipse cx="86" cy="82" rx="10" ry="6" fill="#86efac" opacity="0.35"/>
         </g>
-        <path d="M108 74 C118 68 128 70 132 78 C128 86 116 88 106 82Z" fill="#5c4a32" stroke="#2a2418" stroke-width="0.9"/>
-        <ellipse cx="130" cy="70" rx="16.5" ry="13" transform="rotate(-16 130 70)" fill="#5c4a32" stroke="#2a2418" stroke-width="1.15"/>
-        <path d="M122 64 L128 58 M126 62 L134 58 M132 64 L138 60" stroke="#c4b896" stroke-width="0.65" opacity="0.5"/>
-        <path d="M142 72 Q152 74 148 82 Q140 80 142 72Z" fill="#3a3020" stroke="#2a2418" stroke-width="0.8"/>
-        ${companionEye(134, 68, 3.7)}
-        <ellipse cx="122" cy="66" rx="2.1" ry="1.6" fill="#1a140c" opacity="0.45"/>
-        <path d="M136 78 Q140 84 134 84" fill="none" stroke="#2a2418" stroke-width="1.05" stroke-linecap="round"/>`;
+        <path d="M108 74 C118 70 128 72 130 80 C126 88 114 88 106 82Z" fill="#7bb862" stroke="#2f5a28" stroke-width="0.9"/>
+        <ellipse cx="128" cy="70" rx="17.5" ry="14.5" transform="rotate(-12 128 70)" fill="#8fce6e" stroke="#2f5a28" stroke-width="1.15"/>
+        <ellipse cx="122" cy="68" rx="7" ry="5.5" fill="#f9a8d4" opacity="0.45"/>
+        <ellipse cx="118" cy="64" rx="2.4" ry="1.8" fill="#3f6b32" opacity="0.35"/>
+        ${companionEye(132, 67, 5.1)}
+        <path d="M138 76 Q144 82 136 83" fill="none" stroke="#2f5a28" stroke-width="1.15" stroke-linecap="round"/>
+        <ellipse cx="140" cy="74" rx="3.2" ry="2.2" fill="#5a8a40"/>`;
     case "octopus":
       return `${shadow}
         <path d="M48 108 Q40 128 52 132 Q56 114 52 106" fill="#fb7185" stroke="#9f1239" stroke-width="1"/>
@@ -876,23 +876,24 @@ function companionInnerMarkup(id) {
         <path d="M62 90 H98" stroke="#0f172a" stroke-width="3" opacity="0.45"/>`;
     case "wizard_turtle":
       return `${shadow}
-        <path d="M46 114 C30 124 22 140 40 142 C52 136 58 122 56 114Z" fill="#5a4630" stroke="#2a2418" stroke-width="1.05"/>
-        <path d="M58 122 C50 138 56 152 72 146 C78 134 72 120 64 116Z" fill="#6a5438" stroke="#2a2418" stroke-width="1.05"/>
-        <path d="M102 56 C92 32 70 26 62 44 C70 58 90 66 108 68Z" fill="#4a3c28" stroke="#2a2418" stroke-width="1.15"/>
-        <path d="M74 96 C50 110 22 120 20 102 C34 88 62 86 80 88Z" fill="#6b5434" stroke="#2a2418" stroke-width="1.2"/>
-        <ellipse cx="90" cy="106" rx="20" ry="11" transform="rotate(-26 90 106)" fill="#d4c4a0"/>
-        <g transform="rotate(-26 84 90)">
-          <ellipse cx="84" cy="90" rx="46" ry="29" fill="#6b3a18" stroke="#3a2414" stroke-width="1.4"/>
-          <ellipse cx="86" cy="88" rx="38" ry="23" fill="#8a4e22"/>
-          <path d="M86 68 L100 80 L86 92 L72 80 Z" fill="#c47a38" stroke="#f0d8a8" stroke-width="1.1"/>
-          <path d="M86 92 L100 104 L86 114 L72 104 Z" fill="#b86a2c" stroke="#f0d8a8" stroke-width="1"/>
-          <path d="M72 80 L86 92 L72 104 L58 92 Z" fill="#a85c24" stroke="#ead4a4" stroke-width="0.95"/>
-          <path d="M100 80 L114 92 L100 104 L86 92 Z" fill="#c47a38" stroke="#ead4a4" stroke-width="0.95"/>
+        <path d="M48 112 C34 120 26 136 44 140 C56 134 60 120 58 112Z" fill="#6fa85a" stroke="#2f5a28" stroke-width="1.05"/>
+        <path d="M60 120 C52 136 58 150 74 144 C80 132 74 118 66 114Z" fill="#7bb862" stroke="#2f5a28" stroke-width="1.05"/>
+        <path d="M100 58 C92 36 74 32 66 48 C74 60 92 68 108 68Z" fill="#6fa85a" stroke="#2f5a28" stroke-width="1.1"/>
+        <path d="M76 96 C52 110 24 118 24 100 C38 88 64 86 82 88Z" fill="#7bb862" stroke="#2f5a28" stroke-width="1.15"/>
+        <ellipse cx="90" cy="106" rx="21" ry="12" transform="rotate(-24 90 106)" fill="#eaf6b8"/>
+        <g transform="rotate(-24 84 90)">
+          <ellipse cx="84" cy="90" rx="46" ry="30" fill="#1f6b38" stroke="#164a28" stroke-width="1.4"/>
+          <ellipse cx="86" cy="88" rx="38" ry="24" fill="#2f8a48"/>
+          <path d="M86 68 L101 80 L86 92 L71 80 Z" fill="#4cbe62" stroke="#d9f99d" stroke-width="1.15"/>
+          <path d="M86 92 L101 104 L86 116 L71 104 Z" fill="#3daa54" stroke="#d9f99d" stroke-width="1.05"/>
+          <path d="M71 80 L86 92 L71 104 L56 92 Z" fill="#37a04c" stroke="#ecfccb" stroke-width="1"/>
+          <path d="M101 80 L116 92 L101 104 L86 92 Z" fill="#4cbe62" stroke="#ecfccb" stroke-width="1"/>
         </g>
-        <path d="M108 76 C118 70 128 72 132 80 C128 88 116 90 106 84Z" fill="#5c4a32" stroke="#2a2418" stroke-width="0.9"/>
-        <ellipse cx="130" cy="72" rx="16" ry="12.5" transform="rotate(-16 130 72)" fill="#5c4a32" stroke="#2a2418" stroke-width="1.1"/>
-        ${companionEye(134, 70, 3.6)}
-        <path d="M136 80 Q140 86 134 86" fill="none" stroke="#2a2418" stroke-width="1" stroke-linecap="round"/>
+        <path d="M108 76 C118 72 128 74 130 82 C126 90 114 90 106 84Z" fill="#7bb862" stroke="#2f5a28" stroke-width="0.9"/>
+        <ellipse cx="128" cy="72" rx="17" ry="14" transform="rotate(-12 128 72)" fill="#8fce6e" stroke="#2f5a28" stroke-width="1.1"/>
+        <ellipse cx="122" cy="70" rx="6.5" ry="5" fill="#f9a8d4" opacity="0.4"/>
+        ${companionEye(132, 69, 4.8)}
+        <path d="M138 78 Q144 84 136 85" fill="none" stroke="#2f5a28" stroke-width="1.1" stroke-linecap="round"/>
         <path d="M112 64 L122 22 Q134 10 148 24 L154 66 Q140 78 130 78 Q118 74 112 64Z" fill="#4c1d95" stroke="#2e1065" stroke-width="1.2"/>
         <path d="M124 56 Q136 46 148 56" fill="none" stroke="#c4b5fd" stroke-width="1.35"/>
         <circle cx="136" cy="34" r="4" fill="#fde047"/>
