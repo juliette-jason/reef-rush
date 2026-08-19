@@ -2110,13 +2110,22 @@
                 <summary class="event-card__info" aria-label="About Co-op Haul">
                   <span class="event-card__info-glyph" aria-hidden="true">i</span>
                 </summary>
-                <p class="event-card__blurb">Fish with a partner · combine scores · chest reward.</p>
+                <div class="event-card__blurb event-card__blurb--stack">
+                  <p id="coopEventMatchup" class="event-card__matchup">Enter the lobby — match a real partner, or haul with COM if nobody's waiting.</p>
+                  <p id="coopEventReef" class="event-card__reef-pick">Random reef each haul · 60 seconds · COM fallback</p>
+                </div>
               </details>
             </div>
             <p class="event-card__reset">60 seconds</p>
           </header>
           <p id="coopEventTickets" class="event-card__tickets">Tickets: 5</p>
-          <button type="button" id="btnStartCoop" class="btn event-card__play">Play Co-op Haul</button>
+          <div id="coopLobbyCountdown" class="duel-lobby-countdown" hidden aria-hidden="true">
+            <p class="duel-lobby-countdown__label" id="coopLobbyCountdownLabel">Trying to find a partner</p>
+            <p class="duel-lobby-countdown__time" id="coopLobbyCountdownValue" aria-live="polite">15</p>
+            <p class="duel-lobby-countdown__unit">seconds</p>
+          </div>
+          <p id="coopEventStatus" class="event-card__status" hidden></p>
+          <button type="button" id="btnStartCoop" class="btn event-card__play">Find co-op partner</button>
         </article>
 
         <article class="event-card event-card--survivor" id="eventCardSurvivor">
@@ -2660,6 +2669,6 @@
       </section>
     </div>
 
-    <script src="game.js?v=pals-equip-scroll-1" defer></script>
+    <script src="game.js?v=coop-matchmaking-1" defer></script>
   </body>
 </html>

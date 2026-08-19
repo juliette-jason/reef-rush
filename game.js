@@ -7711,6 +7711,11 @@ const DUEL_STATE_SYNC_MS = 220;
 const DUEL_OPPONENT_POLL_MS = 350;
 const DUEL_MATCH_START_DELAY_MS = 4000;
 const DUEL_LOBBY_MAX_AGE_MS = 120_000;
+const MATCH_KIND_DUEL = "duel";
+const MATCH_KIND_COOP = "coop";
+const COOP_LOBBY_TIMEOUT_MS = DUEL_LOBBY_TIMEOUT_MS;
+const COOP_STATE_SYNC_MS = DUEL_STATE_SYNC_MS;
+const COOP_PARTNER_POLL_MS = DUEL_OPPONENT_POLL_MS;
 /** null during classic/adventure play; set for split-screen duel fishing. */
 let duelSession = null;
 /** Event mini-games on the main canvas: roulette | coop | survivor. */
@@ -7772,6 +7777,10 @@ function duelHookFieldsFromRow(row) {
 }
 let duelLobbyMatchId = null;
 let duelMatchmakingActive = false;
+let coopLobbyMatchId = null;
+let coopMatchmakingActive = false;
+let coopPendingTargetScore = DUEL_RIVAL_MIN_TARGET;
+let coopLobbyCountdownTimer = null;
 
 function duelSleep(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
@@ -7836,7 +7845,8 @@ function normalizeDuelMatchRow(row) {
     hostScore: Math.max(0, Math.floor(Number(row.host_score ?? row.hostScore) || 0)),
     guestScore: Math.max(0, Math.floor(Number(row.guest_score ?? row.guestScore) || 0)),
     roundStartMs: Number(row.round_start_ms ?? row.roundStartMs) || 0,
-    roundMs: DUEL_ROUND_MS,
+    roundMs: Number(row.round_ms ?? row.roundMs) || DUEL_ROUND_MS,
+    matchKind: row.match_kind || row.matchKind || MATCH_KIND_DUEL,
     isComGuest: Boolean(row.is_com_guest ?? row.isComGuest),
     status: row.status || "lobby",
     ...duelHookFieldsFromRow(row),
@@ -7886,12 +7896,13 @@ async function fetchDuelMatchById(matchId) {
   return normalizeDuelMatchRow(rows[0]);
 }
 
-async function fetchOldestOpenDuelLobby() {
+async function fetchOldestOpenDuelLobby(matchKind = MATCH_KIND_DUEL) {
   const since = new Date(Date.now() - DUEL_LOBBY_MAX_AGE_MS).toISOString();
   const mine = encodeURIComponent(getDuelClientId());
   const url =
     `${DUEL_MATCH_TABLE_URL}?select=*` +
     `&status=eq.lobby&guest_client_id=is.null&host_client_id=neq.${mine}` +
+    `&match_kind=eq.${encodeURIComponent(matchKind)}` +
     `&created_at=gte.${encodeURIComponent(since)}` +
     `&order=created_at.asc&limit=1`;
   const res = await fetch(url, { headers: leaderboardHeaders() });
@@ -7901,7 +7912,7 @@ async function fetchOldestOpenDuelLobby() {
   return normalizeDuelMatchRow(rows[0]);
 }
 
-async function createDuelLobby(reefId, roundMs) {
+async function createDuelLobby(reefId, roundMs, matchKind = MATCH_KIND_DUEL) {
   const res = await fetch(DUEL_MATCH_TABLE_URL, {
     method: "POST",
     headers: leaderboardHeaders({
@@ -7916,6 +7927,7 @@ async function createDuelLobby(reefId, roundMs) {
       guest_initials: "",
       status: "lobby",
       round_ms: roundMs,
+      match_kind: matchKind,
       is_com_guest: false,
     }),
   });
@@ -8150,47 +8162,60 @@ function setDuelMatchmakingUi(active, message = "") {
   }
 }
 
-async function findDuelMatchOnline(roundMs, deadlineMs) {
-  setDuelMatchmakingUi(true, "Trying to find a rival…");
+async function findOnlineMatch(matchKind, roundMs, deadlineMs) {
+  const isCoop = matchKind === MATCH_KIND_COOP;
+  const setUi = isCoop ? setCoopMatchmakingUi : setDuelMatchmakingUi;
+  const partnerWord = isCoop ? "partner" : "rival";
+  const comLine = isCoop ? "No partner found — hauling with COM…" : "No rival found — facing COM…";
+  const hideCountdown = isCoop ? hideCoopLobbyCountdown : hideDuelLobbyCountdown;
+  const planFromMatch = isCoop ? coopPlanFromMatch : duelPlanFromMatch;
+  const buildLocalComPlan = isCoop ? buildLocalComCoopPlan : buildLocalComDuelPlan;
+  const cancelLobbyIfHost = isCoop ? cancelCoopLobbyIfHost : cancelDuelLobbyIfHost;
+  let hostedMatchId = isCoop ? coopLobbyMatchId : duelLobbyMatchId;
+
+  setUi(true, `Trying to find a ${partnerWord}…`);
   await probeDuelBackendReady();
 
   const startedAt = Date.now();
-  let hostedMatchId = null;
 
   while (Date.now() < deadlineMs) {
-    if (!duelMatchmakingActive) throw new Error("Duel matchmaking cancelled");
+    const active = isCoop ? coopMatchmakingActive : duelMatchmakingActive;
+    if (!active) throw new Error(isCoop ? "Co-op matchmaking cancelled" : "Duel matchmaking cancelled");
 
-    const lobby = await fetchOldestOpenDuelLobby();
+    const lobby = await fetchOldestOpenDuelLobby(matchKind);
     if (lobby?.matchId) {
       const joined = await tryJoinDuelLobby(lobby.matchId);
       if (joined) {
         const role = duelRoleFromMatch(joined);
         if (role) {
           if (hostedMatchId && hostedMatchId !== joined.matchId) {
-            await cancelDuelLobbyIfHost(hostedMatchId);
+            await cancelLobbyIfHost(hostedMatchId);
           }
-          duelLobbyMatchId = null;
+          if (isCoop) coopLobbyMatchId = null;
+          else duelLobbyMatchId = null;
           duelPendingReefId = joined.reefId;
-          hideDuelLobbyCountdown();
-          return duelPlanFromMatch(joined, role);
+          hideCountdown();
+          return planFromMatch(joined, role);
         }
       }
     }
 
     if (!hostedMatchId && Date.now() - startedAt >= DUEL_LOBBY_CREATE_GRACE_MS) {
-      const reefId = pickRandomDuelReefId(duelLastReefId);
+      const reefId = isCoop ? pickMinigameReef("coop").id : pickRandomDuelReefId(duelLastReefId);
       duelPendingReefId = reefId;
-      const created = await createDuelLobby(reefId, roundMs);
-      if (!created?.matchId) throw new Error("Duel lobby missing id");
+      const created = await createDuelLobby(reefId, roundMs, matchKind);
+      if (!created?.matchId) throw new Error(isCoop ? "Co-op lobby missing id" : "Duel lobby missing id");
       hostedMatchId = created.matchId;
-      duelLobbyMatchId = hostedMatchId;
+      if (isCoop) coopLobbyMatchId = hostedMatchId;
+      else duelLobbyMatchId = hostedMatchId;
     } else if (hostedMatchId) {
       const row = await fetchDuelMatchById(hostedMatchId);
-      if (!row || row.status === "cancelled") throw new Error("Duel lobby cancelled");
+      if (!row || row.status === "cancelled") throw new Error(isCoop ? "Co-op lobby cancelled" : "Duel lobby cancelled");
       if (row.guestClientId && !row.isComGuest) {
-        hideDuelLobbyCountdown();
-        duelLobbyMatchId = null;
-        return duelPlanFromMatch(row, "host");
+        hideCountdown();
+        if (isCoop) coopLobbyMatchId = null;
+        else duelLobbyMatchId = null;
+        return planFromMatch(row, "host");
       }
     }
 
@@ -8198,18 +8223,27 @@ async function findDuelMatchOnline(roundMs, deadlineMs) {
   }
 
   if (hostedMatchId) {
-    hideDuelLobbyCountdown();
-    setDuelMatchmakingUi(true, "No rival found — facing COM…");
+    hideCountdown();
+    setUi(true, comLine);
     const comRow = await activateComDuelGuest(hostedMatchId);
-    duelLobbyMatchId = null;
-    return duelPlanFromMatch(comRow, "host");
+    if (isCoop) coopLobbyMatchId = null;
+    else duelLobbyMatchId = null;
+    return planFromMatch(comRow, "host");
   }
 
-  hideDuelLobbyCountdown();
-  setDuelMatchmakingUi(true, "No rival found — facing COM…");
-  const reefId = pickRandomDuelReefId(duelLastReefId);
+  hideCountdown();
+  setUi(true, comLine);
+  const reefId = isCoop ? pickMinigameReef("coop").id : pickRandomDuelReefId(duelLastReefId);
   duelPendingReefId = reefId;
-  return buildLocalComDuelPlan(reefId);
+  return buildLocalComPlan(reefId);
+}
+
+async function findDuelMatchOnline(roundMs, deadlineMs) {
+  return findOnlineMatch(MATCH_KIND_DUEL, roundMs, deadlineMs);
+}
+
+async function findCoopMatchOnline(roundMs, deadlineMs) {
+  return findOnlineMatch(MATCH_KIND_COOP, roundMs, deadlineMs);
 }
 
 async function waitForDuelRoundStart(plan) {
@@ -8237,6 +8271,44 @@ function buildLocalComDuelPlan(reefId) {
   };
 }
 
+function coopPlanFromMatch(row, role) {
+  const mode = row.isComGuest ? "com" : "pvp";
+  const partnerInitials = duelOpponentInitialsFromRow(row, role);
+  const partnerScore = role === "host" ? row.guestScore : row.hostScore;
+  return {
+    matchId: row.matchId,
+    role,
+    mode,
+    reefId: row.reefId,
+    partnerInitials,
+    partnerScore,
+    roundStartMs: row.roundStartMs,
+    roundMs: MINIGAME_COOP_MS,
+    partnerTarget: mode === "com" ? rollDuelRivalTargetScore() : 0,
+    pacingBias: 0.88 + Math.random() * 0.24,
+  };
+}
+
+function buildLocalComCoopPlan(reefId) {
+  const reef = REEFS.find((r) => r.id === reefId) || REEFS[0];
+  return {
+    matchId: null,
+    role: "host",
+    mode: "com",
+    reefId: reef.id,
+    partnerInitials: "COM",
+    partnerScore: 0,
+    roundStartMs: Date.now() + 800,
+    roundMs: MINIGAME_COOP_MS,
+    partnerTarget: rollDuelRivalTargetScore(),
+    pacingBias: 0.88 + Math.random() * 0.24,
+  };
+}
+
+async function cancelCoopLobbyIfHost(matchId) {
+  return cancelDuelLobbyIfHost(matchId);
+}
+
 async function resolveDuelMatchPlan(deadlineMs) {
   try {
     return await findDuelMatchOnline(DUEL_ROUND_MS, deadlineMs);
@@ -8252,6 +8324,205 @@ async function resolveDuelMatchPlan(deadlineMs) {
     duelPendingReefId = reefId;
     return buildLocalComDuelPlan(reefId);
   }
+}
+
+async function resolveCoopMatchPlan(deadlineMs) {
+  try {
+    return await findCoopMatchOnline(MINIGAME_COOP_MS, deadlineMs);
+  } catch (err) {
+    console.warn(err);
+    if (coopLobbyMatchId) {
+      await cancelCoopLobbyIfHost(coopLobbyMatchId);
+      coopLobbyMatchId = null;
+    }
+    if (isDuelBackendMissingError(err)) throw err;
+    showToast("Lobby offline — co-op with COM instead.", 2600);
+    const reef = pickMinigameReef("coop");
+    return buildLocalComCoopPlan(reef.id);
+  }
+}
+
+function updateCoopLobbyCountdown(secondsLeft, label = "Trying to find a partner") {
+  if (!coopLobbyCountdown) return;
+  coopLobbyCountdown.hidden = false;
+  coopLobbyCountdown.setAttribute("aria-hidden", "false");
+  if (coopLobbyCountdownLabel) coopLobbyCountdownLabel.textContent = label;
+  if (coopLobbyCountdownValue) {
+    coopLobbyCountdownValue.textContent = String(Math.max(0, Math.ceil(secondsLeft)));
+  }
+}
+
+function hideCoopLobbyCountdown() {
+  if (coopLobbyCountdownTimer) {
+    clearInterval(coopLobbyCountdownTimer);
+    coopLobbyCountdownTimer = null;
+  }
+  if (!coopLobbyCountdown) return;
+  coopLobbyCountdown.hidden = true;
+  coopLobbyCountdown.setAttribute("aria-hidden", "true");
+}
+
+function startCoopLobbyCountdown(deadlineMs, label = "Trying to find a partner") {
+  hideCoopLobbyCountdown();
+  const tick = () => {
+    const secsLeft = Math.max(0, (deadlineMs - Date.now()) / 1000);
+    updateCoopLobbyCountdown(secsLeft, label);
+    if (secsLeft <= 0 && coopLobbyCountdownTimer) {
+      clearInterval(coopLobbyCountdownTimer);
+      coopLobbyCountdownTimer = null;
+    }
+  };
+  tick();
+  coopLobbyCountdownTimer = setInterval(tick, 250);
+}
+
+function setCoopMatchmakingUi(active, message = "") {
+  coopMatchmakingActive = active;
+  if (!active) hideCoopLobbyCountdown();
+  if (coopEventStatus) {
+    coopEventStatus.hidden = !active || !message;
+    coopEventStatus.textContent = message;
+  }
+  const btn = document.getElementById("btnStartCoop");
+  if (btn) {
+    btn.disabled = active || getDuelTicketCount() <= 0;
+    if (active) btn.textContent = "Searching…";
+    else refreshCoopEventCard();
+  }
+}
+
+function formatCoopEventMatchupLine() {
+  return "Enter the lobby — match a real partner, or haul with COM if nobody's waiting.";
+}
+
+function refreshCoopEventCard() {
+  if (coopMatchmakingActive) return;
+  const tickets = getDuelTicketCount();
+  const ticketEl = document.getElementById("coopEventTickets");
+  const btn = document.getElementById("btnStartCoop");
+  if (ticketEl) ticketEl.textContent = `Tickets: ${tickets}`;
+  coopPendingTargetScore = rollDuelRivalTargetScore();
+  if (coopEventMatchup) coopEventMatchup.textContent = formatCoopEventMatchupLine();
+  const previewReef = REEFS[Math.floor(Math.random() * REEFS.length)] || REEFS[0];
+  if (coopEventReef) {
+    coopEventReef.textContent = `Random reef each haul (e.g. ${previewReef.name}) · 60 seconds · COM fallback ${coopPendingTargetScore.toLocaleString()} pts`;
+  }
+  if (btn) {
+    btn.disabled = tickets <= 0;
+    btn.textContent = tickets <= 0 ? "No tickets — visit shop" : "Find co-op partner";
+  }
+}
+
+function isCoopPvpSession() {
+  return Boolean(eventMinigameSession?.kind === "coop" && eventMinigameSession.mode === "pvp");
+}
+
+function getCoopPartnerDisplayName() {
+  const s = eventMinigameSession;
+  if (!s || s.kind !== "coop") return "Partner";
+  if (s.mode === "com") return "COM";
+  return formatDuelInitials(s.partnerInitials) || "Partner";
+}
+
+async function pushCoopMatchState() {
+  const s = eventMinigameSession;
+  if (!s || s.kind !== "coop" || s.mode !== "pvp" || !s.matchId || !s.role) return;
+  const scoreField = s.role === "host" ? "host_score" : "guest_score";
+  try {
+    await fetch(`${DUEL_MATCH_TABLE_URL}?id=eq.${encodeURIComponent(s.matchId)}`, {
+      method: "PATCH",
+      headers: leaderboardHeaders({
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      }),
+      body: JSON.stringify({ [scoreField]: score }),
+    });
+  } catch (err) {
+    console.warn(err);
+  }
+}
+
+async function pushCoopMatchStateNow() {
+  if (eventMinigameSession?.kind === "coop") eventMinigameSession.lastStatePush = 0;
+  await pushCoopMatchState();
+}
+
+function scheduleCoopScoreSync() {
+  if (!isCoopPvpSession() || !eventMinigameSession) return;
+  const now = performance.now();
+  if (now - (eventMinigameSession.lastStatePush || 0) < COOP_STATE_SYNC_MS) return;
+  eventMinigameSession.lastStatePush = now;
+  void pushCoopMatchState();
+}
+
+async function pollCoopPartnerFromMatch() {
+  const s = eventMinigameSession;
+  if (!s || s.kind !== "coop" || s.mode !== "pvp" || !s.matchId || !s.role) return;
+  try {
+    const row = await fetchDuelMatchById(s.matchId);
+    if (!row) return;
+    const partner = s.role === "host" ? row.guestScore : row.hostScore;
+    const partnerIni = duelOpponentInitialsFromRow(row, s.role);
+    if (partner !== s.partnerScore) {
+      s.partnerScore = partner;
+      syncCoopHud(true);
+    }
+    if (partnerIni && partnerIni !== s.partnerInitials) {
+      s.partnerInitials = partnerIni;
+      syncCoopHud(true);
+    }
+  } catch (err) {
+    console.warn(err);
+  }
+}
+
+async function finishCoopMatchOnServer(session, finalScore) {
+  if (!session?.matchId || session.mode !== "pvp" || !session.role) return;
+  const scoreField = session.role === "host" ? "host_score" : "guest_score";
+  try {
+    await fetch(`${DUEL_MATCH_TABLE_URL}?id=eq.${encodeURIComponent(session.matchId)}`, {
+      method: "PATCH",
+      headers: leaderboardHeaders({
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      }),
+      body: JSON.stringify({
+        status: "finished",
+        [scoreField]: finalScore,
+      }),
+    });
+  } catch (err) {
+    console.warn(err);
+  }
+}
+
+async function resolveCoopFinalPartnerScore(session, localScore) {
+  if (!session?.matchId || session.mode !== "pvp" || !session.role) {
+    return Math.max(0, session?.partnerScore || 0);
+  }
+  const savedScore = score;
+  score = localScore;
+  await pushCoopMatchStateNow();
+  await finishCoopMatchOnServer(session, localScore);
+  score = savedScore;
+  let partnerScore = session.partnerScore || 0;
+  for (let i = 0; i < 5; i++) {
+    if (i > 0) await duelSleep(250);
+    const row = await fetchDuelMatchById(session.matchId);
+    if (!row) continue;
+    partnerScore = session.role === "host" ? row.guestScore : row.hostScore;
+  }
+  return partnerScore;
+}
+
+async function waitForCoopRoundStart(plan) {
+  const waitMs = Math.max(0, plan.roundStartMs - Date.now());
+  if (waitMs <= 0) return;
+  const secs = Math.ceil(waitMs / 1000);
+  if (plan.mode === "pvp") {
+    setCoopMatchmakingUi(true, `Matched ${plan.partnerInitials}! Starting in ${secs}s…`);
+  }
+  await duelSleep(waitMs);
 }
 
 function scheduleDuelStateSync(force = false) {
@@ -8875,7 +9146,7 @@ function beginDuelSession(plan) {
 }
 
 async function startDuelFromEvents() {
-  if (playing || duelMatchmakingActive) return;
+  if (playing || duelMatchmakingActive || coopMatchmakingActive) return;
   if (!isDuelAvailableOnThisDevice()) {
     showToast("Duel Fishing needs a tablet or computer — not available on phones.", 3200);
     refreshDuelEventCard();
@@ -9330,6 +9601,12 @@ const dailyEventReset = document.getElementById("dailyEventReset");
 const dailyEventPlayerHint = document.getElementById("dailyEventPlayerHint");
 const duelEventMatchup = document.getElementById("duelEventMatchup");
 const duelEventStatus = document.getElementById("duelEventStatus");
+const coopEventMatchup = document.getElementById("coopEventMatchup");
+const coopEventReef = document.getElementById("coopEventReef");
+const coopEventStatus = document.getElementById("coopEventStatus");
+const coopLobbyCountdown = document.getElementById("coopLobbyCountdown");
+const coopLobbyCountdownLabel = document.getElementById("coopLobbyCountdownLabel");
+const coopLobbyCountdownValue = document.getElementById("coopLobbyCountdownValue");
 const duelLobbyCountdown = document.getElementById("duelLobbyCountdown");
 const duelLobbyCountdownLabel = document.getElementById("duelLobbyCountdownLabel");
 const duelLobbyCountdownValue = document.getElementById("duelLobbyCountdownValue");
@@ -12967,8 +13244,8 @@ function syncCoopHud(show) {
   }
   duelHud.hidden = false;
   duelHud.classList.add("duel-hud--coop");
-  if (you) you.textContent = "You";
-  if (rival) rival.textContent = "Partner";
+  if (you) you.textContent = isCoopPvpSession() ? getDuelPlayerInitials() : "You";
+  if (rival) rival.textContent = getCoopPartnerDisplayName();
   if (vs) vs.textContent = "+";
   const pScore = document.getElementById("duelHudPlayerScore");
   const oScore = document.getElementById("duelHudOpponentScore");
@@ -12976,16 +13253,40 @@ function syncCoopHud(show) {
   if (oScore) oScore.textContent = String(eventMinigameSession.partnerScore || 0);
 }
 
+function coopExpectedPartnerScore(now) {
+  const s = eventMinigameSession;
+  if (!s || s.kind !== "coop") return 0;
+  const elapsed = now - (s.startedAt || now);
+  const t = Math.min(1, Math.max(0, elapsed / (s.roundMs || MINIGAME_COOP_MS)));
+  const ease = t * t * (3 - 2 * t);
+  return Math.floor((s.partnerTarget || 0) * ease * (s.pacingBias || 1));
+}
+
+function boostCoopPartnerIfBehind(now) {
+  const s = eventMinigameSession;
+  if (!s || s.kind !== "coop" || s.mode !== "com") return;
+  const expected = coopExpectedPartnerScore(now);
+  if ((s.partnerScore || 0) >= expected - 8) return;
+  if (Math.random() > 0.035) return;
+  const bump = Math.min(38, Math.max(12, expected - (s.partnerScore || 0)));
+  s.partnerScore = (s.partnerScore || 0) + bump;
+  syncCoopHud(true);
+}
+
 function updateCoopPartner(now) {
   const s = eventMinigameSession;
   if (!s || s.kind !== "coop") return;
-  const elapsed = Math.max(0, now - (s.startedAt || now));
-  const progress = Math.min(1, elapsed / (s.roundMs || MINIGAME_COOP_MS));
-  const paced = Math.floor((s.partnerTarget || 2200) * (progress * progress * 0.85 + progress * 0.15));
-  if (paced > (s.partnerScore || 0)) s.partnerScore = paced;
-  // Nudge partner when you score well.
-  const assist = Math.floor(score * 0.12);
-  if (assist > s.partnerScore) s.partnerScore = Math.min(assist + s.partnerScore, s.partnerScore + 40);
+  if (s.mode === "pvp") {
+    if (now - (s.lastPartnerPoll || 0) >= COOP_PARTNER_POLL_MS) {
+      s.lastPartnerPoll = now;
+      void pollCoopPartnerFromMatch();
+    }
+    syncCoopHud(true);
+    return;
+  }
+  const expected = coopExpectedPartnerScore(now);
+  if (expected > (s.partnerScore || 0)) s.partnerScore = expected;
+  boostCoopPartnerIfBehind(now);
   syncCoopHud(true);
 }
 
@@ -12993,7 +13294,6 @@ function refreshEventMinigameCards() {
   const tickets = getDuelTicketCount();
   const map = [
     ["rouletteEventTickets", "btnStartRoulette", "Play Reef Roulette"],
-    ["coopEventTickets", "btnStartCoop", "Play Co-op Haul"],
     ["survivorEventTickets", "btnStartSurvivor", "Play Kraken Survivor"],
   ];
   for (const [ticketId, btnId, label] of map) {
@@ -13005,6 +13305,7 @@ function refreshEventMinigameCards() {
       btn.textContent = tickets <= 0 ? "No tickets — visit shop" : label;
     }
   }
+  refreshCoopEventCard();
 }
 
 function spendTicketOrToast() {
@@ -13029,8 +13330,102 @@ function pickMinigameReef(kind) {
   return REEFS[Math.floor(Math.random() * REEFS.length)] || REEFS[0];
 }
 
+function beginCoopSession(plan) {
+  hideAllPanels();
+  if (panelCrabReward) panelCrabReward.hidden = true;
+  stopEventsMusic();
+  const reef = REEFS.find((r) => r.id === plan.reefId) || pickMinigameReef("coop");
+  const now = performance.now();
+  eventMinigameSession = {
+    kind: "coop",
+    reefId: reef.id,
+    reefName: `Co-op · ${reef.name}`,
+    roundMs: MINIGAME_COOP_MS,
+    spawnMult: 0.9,
+    speedMult: 1,
+    maxFishMult: 1.15,
+    startedAt: now,
+    partnerScore: 0,
+    mode: plan.mode,
+    matchId: plan.matchId,
+    role: plan.role,
+    partnerInitials: plan.partnerInitials || "COM",
+    partnerTarget: plan.partnerTarget || 0,
+    pacingBias: plan.pacingBias || 1,
+    lastStatePush: 0,
+    lastPartnerPoll: 0,
+  };
+  if (plan.mode === "pvp") {
+    showToast(`Co-op with ${plan.partnerInitials}!`, 2200);
+  } else if (plan.matchId) {
+    showToast("No partner found — hauling with COM.", 2400);
+  } else {
+    showToast("Co-op Haul — hauling with COM!", 2200);
+  }
+  startRound();
+  if (plan.mode === "pvp") {
+    void pollCoopPartnerFromMatch();
+    void pushCoopMatchState();
+  }
+}
+
+async function startCoopFromEvents() {
+  if (playing || coopMatchmakingActive || duelMatchmakingActive || eventMinigameSession) return;
+  if (crabTrapSession || duelSession || adventureSession) {
+    showToast("Finish your current run first", 2000);
+    return;
+  }
+  refreshDuelTicketsForToday();
+  if (getDuelTicketCount() <= 0) {
+    showToast("No tickets — visit the shop", 2200);
+    refreshCoopEventCard();
+    return;
+  }
+  if (!spendDuelTicket()) {
+    refreshCoopEventCard();
+    return;
+  }
+
+  hideAllPanels();
+  if (panelEvents) panelEvents.hidden = false;
+  if (eventsOcean) eventsOcean.hidden = true;
+  appRoot?.classList.add("app--events-mode");
+  const matchmakingDeadline = Date.now() + COOP_LOBBY_TIMEOUT_MS;
+  setCoopMatchmakingUi(true, "Trying to find a partner…");
+  startCoopLobbyCountdown(matchmakingDeadline, "Trying to find a partner");
+
+  try {
+    const plan = await resolveCoopMatchPlan(matchmakingDeadline);
+    hideCoopLobbyCountdown();
+    await waitForCoopRoundStart(plan);
+    setCoopMatchmakingUi(false);
+    beginCoopSession(plan);
+  } catch (err) {
+    console.warn(err);
+    setCoopMatchmakingUi(false);
+    gameMeta.duelTickets += 1;
+    saveMeta();
+    refreshCoopEventCard();
+    refreshCrabTrapEventCard();
+    refreshDuelEventCard();
+    if (isDuelBackendMissingError(err)) {
+      showToast(
+        "Co-op matchmaking isn't set up yet — run supabase/duel_matches_coop_kind.sql in your Supabase SQL editor, then try again.",
+        5200,
+      );
+    } else {
+      showToast("Co-op matchmaking cancelled.", 2400);
+    }
+    openEvents();
+  }
+}
+
 function beginEventMinigame(kind) {
-  if (playing || crabTrapSession || duelSession || adventureSession) {
+  if (kind === "coop") {
+    void startCoopFromEvents();
+    return;
+  }
+  if (playing || crabTrapSession || duelSession || adventureSession || coopMatchmakingActive) {
     showToast("Finish your current run first", 2000);
     return;
   }
@@ -13053,20 +13448,6 @@ function beginEventMinigame(kind) {
       startedAt: now,
     };
     showToast(`Reef Roulette: ${reef.name}!`, 2200);
-  } else if (kind === "coop") {
-    eventMinigameSession = {
-      kind: "coop",
-      reefId: reef.id,
-      reefName: `Co-op · ${reef.name}`,
-      roundMs: MINIGAME_COOP_MS,
-      spawnMult: 0.9,
-      speedMult: 1,
-      maxFishMult: 1.15,
-      startedAt: now,
-      partnerScore: 0,
-      partnerTarget: 1800 + Math.floor(Math.random() * 2200),
-    };
-    showToast("Co-op Haul — haul with your partner!", 2200);
   } else {
     eventMinigameSession = {
       kind: "survivor",
@@ -13120,6 +13501,10 @@ function showEventMinigameReward({ source, title, summaryHtml, scorePts, tier })
 }
 
 function endEventMinigameRound() {
+  void endEventMinigameRoundAsync();
+}
+
+async function endEventMinigameRoundAsync() {
   const session = eventMinigameSession;
   eventMinigameSession = null;
   syncCoopHud(false);
@@ -13146,13 +13531,17 @@ function endEventMinigameRound() {
     return;
   }
   if (session.kind === "coop") {
-    const partner = Math.max(0, session.partnerScore || 0);
+    let partner = Math.max(0, session.partnerScore || 0);
+    const partnerName = session.mode === "com" ? "COM" : formatDuelInitials(session.partnerInitials) || "Partner";
+    if (session.mode === "pvp" && session.matchId) {
+      partner = await resolveCoopFinalPartnerScore(session, fishScore);
+    }
     const combined = fishScore + partner;
     const tier = minigameFishTierForScore(combined);
     showEventMinigameReward({
       source: "coop",
       title: "Co-op Haul!",
-      summaryHtml: `You <strong>${fishScore}</strong> + Partner <strong>${partner}</strong> = <strong>${combined}</strong> pts`,
+      summaryHtml: `You <strong>${fishScore}</strong> + ${partnerName} <strong>${partner}</strong> = <strong>${combined}</strong> pts`,
       scorePts: combined,
       tier,
     });
@@ -15026,7 +15415,11 @@ function startRound() {
   } else if (eventMinigameSession?.kind === "roulette") {
     controlHint.textContent = `Reef Roulette · ${reef.name} · rack up pts for a better chest`;
   } else if (eventMinigameSession?.kind === "coop") {
-    controlHint.textContent = "Co-op Haul · your catch + partner score fill the chest";
+    const partnerName = getCoopPartnerDisplayName();
+    controlHint.textContent =
+      eventMinigameSession.mode === "pvp"
+        ? `Co-op Haul · you + ${partnerName} combine scores for the chest`
+        : `Co-op Haul · you + COM partner combine scores for the chest`;
   } else {
     controlHint.textContent = isTouchControlsPreferred()
       ? `Drag left/right to aim · tap to cast the line${passHint}`
@@ -15379,6 +15772,10 @@ function tryCatchFish(opts) {
 
   scoreDisplay.textContent = String(score);
   if (isDuelActive()) updateDuelHudScores();
+  if (eventMinigameSession?.kind === "coop") {
+    syncCoopHud(true);
+    scheduleCoopScoreSync();
+  }
 
   if (candidates.length === 1) {
     const f = candidates[0];
@@ -19729,7 +20126,10 @@ function gameLoop(now) {
           updateDuelOpponent(dt, now);
           if (isDuelPvpSession()) scheduleDuelStateSync();
         }
-        if (eventMinigameSession?.kind === "coop") updateCoopPartner(now);
+        if (eventMinigameSession?.kind === "coop") {
+          updateCoopPartner(now);
+          if (isCoopPvpSession()) scheduleCoopScoreSync();
+        }
       }
       if (isDuelActive()) {
         drawDuelPlayfield();
