@@ -660,29 +660,23 @@ function companionEyes(lx, ly, rx, ry, size = 5) {
   return companionEye(lx, ly, size) + companionEye(rx, ry, size);
 }
 
-/** Side-profile seahorse — thick body with tube snout, round belly, and curly tail. */
+/** Side-profile seahorse — matches in-game lined seahorse morph (S-spine, round head, dorsal fin). */
 function companionSeahorseMarkup({
-  body = "#facc15",
+  body = "#fdba74",
   stroke = "#b45309",
-  belly = "#fb923c",
-  fin = "#bae6fd",
-  finStroke = "#38bdf8",
+  belly = "#ffedd5",
+  fin = "#b45309",
+  finStroke = "#92400e",
   spot = "#7c2d12",
   plate = "#d97706",
 } = {}) {
   return `
-        <path d="M68 96 C60 98 52 104 48 114 C44 122 48 130 56 130 C64 128 68 118 66 108 C64 100 68 96 68 96 Z" fill="${body}" stroke="${stroke}" stroke-width="1.4"/>
-        <path d="M92 44 C86 38 78 36 72 38 C66 40 60 46 58 56 C56 66 56 76 58 86 C60 94 64 98 68 96 C72 88 74 78 76 68 C78 58 82 50 88 46 L 92 44 Z" fill="${body}" stroke="${stroke}" stroke-width="1.45"/>
-        <path d="M92 44 L116 38 C120 38 122 42 118 46 L96 50 Z" fill="${body}" stroke="${stroke}" stroke-width="1.35"/>
-        <path d="M62 48 C56 58 54 70 56 82 C58 92 64 96 70 90 C76 82 76 68 72 58 C68 50 62 48 62 48 Z" fill="${belly}" stroke="${stroke}" stroke-width="0.9" opacity="0.92"/>
-        <path d="M74 28 C76 22 80 20 84 24 C82 28 78 30 74 28 Z" fill="${body}" stroke="${stroke}" stroke-width="1"/>
-        <path d="M76 22 C78 16 82 14 86 18" fill="none" stroke="${stroke}" stroke-width="1.05" stroke-linecap="round"/>
-        <path d="M56 72 C46 68 44 74 48 80 C50 84 54 80 56 76 Z" fill="${fin}" stroke="${finStroke}" stroke-width="0.9"/>
-        <ellipse cx="78" cy="58" rx="4.8" ry="2.8" transform="rotate(-8 78 58)" fill="${fin}" stroke="${finStroke}" stroke-width="0.75" opacity="0.9"/>
-        ${companionEye(86, 42, 3.7)}
-        <circle cx="64" cy="66" r="1.4" fill="${spot}"/>
-        <circle cx="60" cy="78" r="1.3" fill="${spot}"/>
-        <circle cx="58" cy="90" r="1.3" fill="${spot}"/>`;
+        <path d="M90 19 Q107 38 87 55 Q70 76 78 96" fill="none" stroke="${stroke}" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M90 19 Q107 38 87 55 Q70 76 78 96" fill="none" stroke="${body}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        <ellipse cx="88" cy="31" rx="12" ry="10" transform="rotate(11 88 31)" fill="${body}" stroke="${stroke}" stroke-width="1.2"/>
+        <ellipse cx="90" cy="33" rx="6.5" ry="4.5" transform="rotate(11 90 33)" fill="${belly}" opacity="0.55"/>
+        <path d="M82 47 L65 53 L82 62 Z" fill="${fin}" stroke="${finStroke}" stroke-width="0.85"/>
+        ${companionEye(94, 29, 3.5)}`;
 }
 
 /** Below-view manta — wide diamond wings, white belly, cephalic lobes, eyes, long tail below. */
@@ -995,10 +989,10 @@ function companionInnerMarkup(id) {
         spot: "#475569",
       })}
         <path d="M100 88 C114 78 126 74 126 82 C124 88 110 94 100 98Z" fill="#e2e8f0" stroke="#475569" stroke-width="1"/>
-        <path d="M64 42 C66 26 76 20 84 22 C94 24 100 34 98 46 C92 56 82 60 74 58 C66 56 62 50 64 42Z" fill="#64748b" stroke="#1e293b" stroke-width="1.15"/>
-        <path d="M76 20 L76 12" stroke="#fbbf24" stroke-width="2.1" stroke-linecap="round"/>
-        <circle cx="76" cy="10" r="3.1" fill="#fbbf24"/>
-        <path d="M68 46 H88" stroke="#e2e8f0" stroke-width="1.25"/>`;
+        <path d="M66 36 C68 22 78 16 88 18 C98 20 104 30 102 42 C96 52 86 56 78 54 C70 52 66 46 66 36Z" fill="#64748b" stroke="#1e293b" stroke-width="1.15"/>
+        <path d="M80 16 L80 8" stroke="#fbbf24" stroke-width="2.1" stroke-linecap="round"/>
+        <circle cx="80" cy="6" r="3.1" fill="#fbbf24"/>
+        <path d="M72 40 H92" stroke="#e2e8f0" stroke-width="1.25"/>`;
     case "viking_seal":
       return `${shadow}
         <path d="M44 108 C38 96 48 86 62 84 C66 64 72 54 80 52 C90 54 98 66 100 84 C116 86 124 98 116 110 C106 124 92 128 80 128 C64 128 50 118 44 108Z" fill="#94a3b8" stroke="#334155" stroke-width="1.25"/>
@@ -1106,7 +1100,7 @@ const COMPANION_ART_FIT = {
   sea_turtle: { cx: 80, cy: 92, scale: 1.0 },
   octopus: { cx: 79, cy: 96, scale: 1.28 },
   dolphin: { cx: 84, cy: 85, scale: 0.784 },
-  seahorse: { cx: 80, cy: 80, scale: 1.1 },
+  seahorse: { cx: 84, cy: 78, scale: 1.18 },
   jellyfish: { cx: 80, cy: 96, scale: 1.28 },
   crab: { cx: 80, cy: 89, scale: 1.016 },
   manta: { cx: 80, cy: 90, scale: 1.0 },
@@ -1120,7 +1114,7 @@ const COMPANION_ART_FIT = {
   super_dolphin: { cx: 84, cy: 85, scale: 0.784 },
   chef_crab: { cx: 80, cy: 94, scale: 1.018 },
   disco_jelly: { cx: 80, cy: 96, scale: 1.28 },
-  knight_seahorse: { cx: 80, cy: 78, scale: 1.08 },
+  knight_seahorse: { cx: 84, cy: 76, scale: 1.16 },
   viking_seal: { cx: 80, cy: 83, scale: 1.28 },
   royal_manta: { cx: 80, cy: 90, scale: 1.0 },
   starfish: { cx: 80, cy: 86, scale: 1.22 },
