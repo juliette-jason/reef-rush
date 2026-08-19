@@ -660,7 +660,7 @@ function companionEyes(lx, ly, rx, ry, size = 5) {
   return companionEye(lx, ly, size) + companionEye(rx, ry, size);
 }
 
-/** Side-profile seahorse — thick one-piece silhouette from player outline: short snout, full belly, spiral tail. */
+/** Side-profile seahorse — thick body with tube snout, round belly, and curly tail. */
 function companionSeahorseMarkup({
   body = "#facc15",
   stroke = "#b45309",
@@ -671,15 +671,18 @@ function companionSeahorseMarkup({
   plate = "#d97706",
 } = {}) {
   return `
-        <path d="M94 38 C88 30 80 26 72 28 C66 30 60 36 58 44 C54 52 50 62 48 72 C46 82 42 92 40 102 C38 112 40 122 46 128 C52 132 58 126 64 116 C70 106 72 94 74 82 C76 70 80 58 84 48 C88 42 92 38 94 38 Z" fill="${body}" stroke="${stroke}" stroke-width="1.5"/>
-        <path d="M58 44 C54 54 52 66 54 78 C58 68 64 58 72 50 C66 46 60 44 58 44 Z" fill="${belly}" opacity="0.84"/>
-        <path d="M74 24 C76 18 80 16 84 20 C82 24 78 26 74 24 Z" fill="${body}" stroke="${stroke}" stroke-width="1"/>
-        <path d="M76 18 C78 12 82 10 86 14" fill="none" stroke="${stroke}" stroke-width="1.05" stroke-linecap="round"/>
+        <path d="M68 96 C60 98 52 104 48 114 C44 122 48 130 56 130 C64 128 68 118 66 108 C64 100 68 96 68 96 Z" fill="${body}" stroke="${stroke}" stroke-width="1.4"/>
+        <path d="M92 44 C86 38 78 36 72 38 C66 40 60 46 58 56 C56 66 56 76 58 86 C60 94 64 98 68 96 C72 88 74 78 76 68 C78 58 82 50 88 46 L 92 44 Z" fill="${body}" stroke="${stroke}" stroke-width="1.45"/>
+        <path d="M92 44 L116 38 C120 38 122 42 118 46 L96 50 Z" fill="${body}" stroke="${stroke}" stroke-width="1.35"/>
+        <path d="M62 48 C56 58 54 70 56 82 C58 92 64 96 70 90 C76 82 76 68 72 58 C68 50 62 48 62 48 Z" fill="${belly}" stroke="${stroke}" stroke-width="0.9" opacity="0.92"/>
+        <path d="M74 28 C76 22 80 20 84 24 C82 28 78 30 74 28 Z" fill="${body}" stroke="${stroke}" stroke-width="1"/>
+        <path d="M76 22 C78 16 82 14 86 18" fill="none" stroke="${stroke}" stroke-width="1.05" stroke-linecap="round"/>
         <path d="M56 72 C46 68 44 74 48 80 C50 84 54 80 56 76 Z" fill="${fin}" stroke="${finStroke}" stroke-width="0.9"/>
-        ${companionEye(80, 34, 3.7)}
-        <circle cx="66" cy="68" r="1.4" fill="${spot}"/>
-        <circle cx="62" cy="80" r="1.3" fill="${spot}"/>
-        <circle cx="58" cy="92" r="1.3" fill="${spot}"/>`;
+        <ellipse cx="78" cy="58" rx="4.8" ry="2.8" transform="rotate(-8 78 58)" fill="${fin}" stroke="${finStroke}" stroke-width="0.75" opacity="0.9"/>
+        ${companionEye(86, 42, 3.7)}
+        <circle cx="64" cy="66" r="1.4" fill="${spot}"/>
+        <circle cx="60" cy="78" r="1.3" fill="${spot}"/>
+        <circle cx="58" cy="90" r="1.3" fill="${spot}"/>`;
 }
 
 /** Below-view manta — wide diamond wings, white belly, cephalic lobes, eyes, long tail below. */
