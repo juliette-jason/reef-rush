@@ -660,7 +660,7 @@ function companionEyes(lx, ly, rx, ry, size = 5) {
   return companionEye(lx, ly, size) + companionEye(rx, ry, size);
 }
 
-/** Side-profile seahorse — classic clipart silhouette ([Magnific-style](https://www.magnific.com/free-photos-vectors/sea-horse-clipart)), yellow. */
+/** Side-profile seahorse — classic clipart silhouette, yellow pal colors. */
 function companionSeahorseMarkup({
   body = "#facc15",
   stroke = "#b45309",
