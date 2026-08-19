@@ -545,6 +545,12 @@ const COMPANION_DEFS = [
   { id: "manta", name: "Manta Ray", kind: "regular", price: 280, icon: "🌊", blurb: "Glide regular." },
   { id: "puffer", name: "Pufferfish", kind: "regular", price: 210, icon: "🐡", blurb: "Puff regular." },
   { id: "otter", name: "Sea Otter", kind: "regular", price: 250, icon: "🦦", blurb: "Kelp regular." },
+  { id: "starfish", name: "Starfish", kind: "regular", price: 195, icon: "⭐", blurb: "Five-armed tidepool pal." },
+  { id: "angelfish", name: "Angelfish", kind: "regular", price: 230, icon: "🐟", blurb: "Reef royalty." },
+  { id: "lobster", name: "Lobster", kind: "regular", price: 245, icon: "🦞", blurb: "Clawed cruiser." },
+  { id: "blue_tang", name: "Blue Tang", kind: "regular", price: 210, icon: "💙", blurb: "Bright reef dart." },
+  { id: "sailfish", name: "Sailfish", kind: "regular", price: 270, icon: "⛵", blurb: "Fast finned flyer." },
+  { id: "nautilus", name: "Nautilus", kind: "regular", price: 220, icon: "🐚", blurb: "Spiral shell drifter." },
   { id: "pirate_gull", name: "Pirate Seagull", kind: "costume", price: 360, icon: "🏴‍☠️", blurb: "Ahoy from the yardarm." },
   { id: "cowboy_shark", name: "Cowboy Shark", kind: "costume", price: 380, icon: "🤠", blurb: "Howdy from the deep." },
   { id: "party_fish", name: "Party Hat Fish", kind: "costume", price: 320, icon: "🎉", blurb: "Confetti in the current." },
@@ -556,6 +562,8 @@ const COMPANION_DEFS = [
   { id: "knight_seahorse", name: "Knight Seahorse", kind: "costume", price: 370, icon: "🛡️", blurb: "Honor of the seagrass." },
   { id: "viking_seal", name: "Viking Seal", kind: "costume", price: 360, icon: "🪓", blurb: "Raid the ice floe." },
   { id: "royal_manta", name: "Royal Manta", kind: "costume", price: 430, icon: "👑", blurb: "Court of the current." },
+  { id: "space_fish", name: "Space Fish", kind: "costume", price: 400, icon: "🚀", blurb: "Orbiting the reef." },
+  { id: "coral_angel", name: "Coral Angel", kind: "costume", price: 380, icon: "🪸", blurb: "Reef guardian glow." },
 ];
 
 const COMPANION_BY_ID = Object.fromEntries(COMPANION_DEFS.map((c) => [c.id, c]));
@@ -650,6 +658,28 @@ function companionEyes(lx, ly, rx, ry, size = 5) {
   return companionEye(lx, ly, size) + companionEye(rx, ry, size);
 }
 
+/** One-piece seahorse silhouette — snout, S-curve body, and curled tail as a single shape. */
+function companionSeahorseMarkup({
+  body = "#facc15",
+  stroke = "#b45309",
+  belly = "#fb923c",
+  fin = "#bae6fd",
+  finStroke = "#38bdf8",
+  spot = "#7c2d12",
+} = {}) {
+  return `
+        <path d="M18 58 C12 56 10 60 16 62 C24 64 32 60 38 56 C44 48 52 44 60 48 C66 52 70 58 72 66 C74 78 76 92 78 106 C80 118 84 126 90 124 C96 122 102 128 98 136 C94 144 86 142 82 134 C78 126 80 116 78 106 C74 88 68 72 62 62 C54 54 38 52 22 54 C20 54 19 56 18 58 Z" fill="${body}" stroke="${stroke}" stroke-width="1.25"/>
+        <path d="M24 58 C34 54 48 54 58 60 C66 66 72 78 74 92 C76 106 78 118 82 128 C78 118 72 98 68 82 C62 68 52 58 40 56 C32 56 26 57 24 58 Z" fill="${belly}" opacity="0.82"/>
+        <path d="M76 72 C88 66 98 72 96 84 C94 94 86 98 80 92 C76 84 76 76 76 72 Z" fill="${fin}" stroke="${finStroke}" stroke-width="0.85" opacity="0.9"/>
+        <path d="M58 48 C60 42 64 40 68 44 C72 40 76 42 78 48 C74 46 62 46 58 48 Z" fill="${body}" stroke="${stroke}" stroke-width="0.85"/>
+        ${companionEye(64, 52, 3.8)}
+        <circle cx="74" cy="78" r="1.35" fill="${spot}"/>
+        <circle cx="80" cy="86" r="1.5" fill="${spot}"/>
+        <circle cx="76" cy="96" r="1.25" fill="${spot}"/>
+        <circle cx="82" cy="102" r="1.4" fill="${spot}"/>
+        <circle cx="78" cy="112" r="1.2" fill="${spot}"/>`;
+}
+
 function companionInnerMarkup(id) {
   const shadow = `<ellipse cx="80" cy="136" rx="28" ry="5" fill="#020617" opacity="0.28"/>`;
   switch (id) {
@@ -738,36 +768,7 @@ function companionInnerMarkup(id) {
         <path d="M144 76 Q158 86 166 76" fill="none" stroke="#1e293b" stroke-width="1.45" stroke-linecap="round"/>
         <path d="M138 66 Q142 62 146 66" fill="none" stroke="#64748b" stroke-width="0.8"/>`;
     case "seahorse":
-      return `${shadow}
-        <path d="M86 108 C108 110 122 124 114 140 C104 156 82 154 78 140 C76 128 90 128 94 138 C96 146 86 148 84 140 C82 130 92 124 88 114Z" fill="#f97316" stroke="#b45309" stroke-width="1.2"/>
-        <path d="M90 128 C98 130 104 138 96 144 C90 148 86 142 88 136" fill="#c2410c"/>
-        <path d="M92 122 C100 126 102 136 94 140" fill="none" stroke="#9a3412" stroke-width="1.15" stroke-linecap="round"/>
-        <path d="M76 68 C94 62 108 74 106 96 C104 116 96 128 86 136 C74 124 68 98 70 82 C70 74 72 70 76 68Z" fill="#facc15" stroke="#b45309" stroke-width="1.3"/>
-        <path d="M74 78 C78 96 80 116 84 130 C76 120 70 96 72 80Z" fill="#fb923c" opacity="0.88"/>
-        <ellipse cx="92" cy="88" rx="10" ry="16" fill="#fde047" opacity="0.45"/>
-        <path d="M72 80 L100 76 M70 92 L102 90 M72 104 L100 102 M76 116 L96 114" stroke="#d97706" stroke-width="1.05" stroke-linecap="round" opacity="0.5"/>
-        <path d="M102 82 C122 72 130 94 122 110 C114 122 104 116 100 100 C98 90 98 84 102 82Z" fill="#bae6fd" stroke="#38bdf8" stroke-width="0.95" opacity="0.92"/>
-        <path d="M106 86 L122 80 M106 94 L124 94 M106 102 L120 110" stroke="#7dd3fc" stroke-width="0.75" stroke-linecap="round" opacity="0.85"/>
-        <path d="M98 70 C104 62 108 62 108 70 C106 76 100 78 98 70Z" fill="#f97316" stroke="#b45309" stroke-width="0.85"/>
-        <path d="M102 84 C110 74 116 76 112 86 C108 92 102 92 102 84Z" fill="#ea580c" stroke="#9a3412" stroke-width="0.85"/>
-        <path d="M102 98 C110 90 114 94 108 104 C104 108 100 104 102 98Z" fill="#f97316" stroke="#b45309" stroke-width="0.85"/>
-        <path d="M68 52 C58 48 44 54 32 58 C22 62 18 58 20 54 C16 62 24 70 40 68 C54 68 66 66 74 70 C78 62 76 54 68 52Z" fill="#fde047" stroke="#b45309" stroke-width="1.2"/>
-        <path d="M24 58 C36 54 52 54 66 54" fill="none" stroke="#fef08a" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/>
-        <path d="M20 56 C18 54 20 52 24 54 C26 58 22 60 20 56Z" fill="#facc15" stroke="#b45309" stroke-width="0.7"/>
-        <path d="M66 50 C68 38 74 36 78 46 C82 34 88 36 90 48 C94 40 98 44 94 54 C86 50 74 48 66 50Z" fill="#facc15" stroke="#b45309" stroke-width="1"/>
-        <path d="M64 56 C68 50 80 50 86 58 C80 62 70 62 64 56Z" fill="#fef08a"/>
-        ${companionEye(66, 56, 3.9)}
-        <path d="M56 66 C46 70 42 80 54 78 C62 76 64 70 56 66Z" fill="#fbbf24" stroke="#b45309" stroke-width="0.9"/>
-        <circle cx="84" cy="84" r="1.55" fill="#7c2d12"/>
-        <circle cx="92" cy="90" r="1.8" fill="#431407"/>
-        <circle cx="86" cy="98" r="1.45" fill="#7c2d12"/>
-        <circle cx="94" cy="102" r="1.7" fill="#431407"/>
-        <circle cx="82" cy="108" r="1.35" fill="#7c2d12"/>
-        <circle cx="90" cy="112" r="1.6" fill="#7c2d12"/>
-        <circle cx="96" cy="82" r="1.25" fill="#431407"/>
-        <circle cx="80" cy="92" r="1.2" fill="#7c2d12"/>
-        <circle cx="88" cy="76" r="1.15" fill="#9a3412"/>
-        <circle cx="98" cy="96" r="1.3" fill="#7c2d12"/>`;
+      return `${shadow}${companionSeahorseMarkup()}`;
     case "jellyfish":
       return `${shadow}
         <path d="M56 100 Q52 122 58 132" fill="none" stroke="#c4b5fd" stroke-width="2.6" stroke-linecap="round"/>
@@ -973,19 +974,13 @@ function companionInnerMarkup(id) {
         <path d="M62 80 H78 M82 80 H98" stroke="#0f172a" stroke-width="3.2" stroke-linecap="round"/>
         <path d="M64 78 H76 M84 78 H96" stroke="#f8fafc" stroke-width="1.2"/>`;
     case "knight_seahorse":
-      return `${shadow}
-        <path d="M86 108 C108 110 122 124 114 140 C104 156 82 154 78 140 C76 128 90 128 94 138 C96 146 86 148 84 140 C82 130 92 124 88 114Z" fill="#64748b" stroke="#1e293b" stroke-width="1.2"/>
-        <path d="M90 128 C98 130 104 138 96 144 C90 148 86 142 88 136" fill="#334155"/>
-        <path d="M76 68 C94 62 108 74 106 96 C104 116 96 128 86 136 C74 124 68 98 70 82 C70 74 72 70 76 68Z" fill="#94a3b8" stroke="#334155" stroke-width="1.3"/>
-        <path d="M74 78 C78 96 80 116 84 130 C76 120 70 96 72 80Z" fill="#cbd5e1" opacity="0.55"/>
-        <path d="M72 80 L100 76 M70 92 L102 90 M72 104 L100 102 M76 116 L96 114" stroke="#475569" stroke-width="1.05" stroke-linecap="round" opacity="0.55"/>
-        <path d="M102 82 C122 72 130 94 122 110 C114 122 104 116 100 100 C98 90 98 84 102 82Z" fill="#bae6fd" stroke="#38bdf8" stroke-width="0.95" opacity="0.88"/>
-        <path d="M106 86 L122 80 M106 94 L124 94 M106 102 L120 110" stroke="#7dd3fc" stroke-width="0.75" stroke-linecap="round" opacity="0.8"/>
+      return `${shadow}${companionSeahorseMarkup({
+        body: "#94a3b8",
+        stroke: "#334155",
+        belly: "#cbd5e1",
+        spot: "#475569",
+      })}
         <path d="M100 88 C114 78 128 74 128 82 C126 88 112 94 100 98Z" fill="#e2e8f0" stroke="#475569" stroke-width="1"/>
-        <path d="M68 52 C58 48 44 54 32 58 C22 62 18 58 20 54 C16 62 24 70 40 68 C54 68 66 66 74 70 C78 62 76 54 68 52Z" fill="#94a3b8" stroke="#334155" stroke-width="1.2"/>
-        <path d="M64 56 C68 50 80 50 86 58 C80 62 70 62 64 56Z" fill="#cbd5e1"/>
-        ${companionEye(66, 56, 3.7)}
-        <path d="M56 66 C46 70 42 80 54 78 C62 76 64 70 56 66Z" fill="#94a3b8" stroke="#334155" stroke-width="0.9"/>
         <path d="M58 50 C60 32 72 24 80 26 C90 28 96 40 94 52 C88 64 78 68 70 66 C62 64 58 58 58 50Z" fill="#64748b" stroke="#1e293b" stroke-width="1.15"/>
         <path d="M74 28 L74 20" stroke="#fbbf24" stroke-width="2.1" stroke-linecap="round"/>
         <circle cx="74" cy="18" r="3.1" fill="#fbbf24"/>
@@ -1014,6 +1009,76 @@ function companionInnerMarkup(id) {
         <circle cx="80" cy="72" r="3.4" fill="#ef4444"/>
         <path d="M42 96 C36 80 48 80 48 90Z" fill="#7c3aed" opacity="0.8"/>
         <path d="M118 96 C124 80 112 80 112 90Z" fill="#7c3aed" opacity="0.8"/>`;
+    case "starfish":
+      return `${shadow}
+        <path d="M80 44 L92 72 L122 76 L98 96 L104 126 L80 110 L56 126 L62 96 L38 76 L68 72 Z" fill="#fb7185" stroke="#be123c" stroke-width="1.2"/>
+        <path d="M80 54 L86 72 L104 74 L90 86 L94 104 L80 94 L66 104 L70 86 L56 74 L74 72 Z" fill="#fda4af"/>
+        <circle cx="80" cy="82" r="5" fill="#fef2f2" stroke="#be123c" stroke-width="0.8"/>
+        <circle cx="80" cy="83" r="2.2" fill="#881337"/>`;
+    case "angelfish":
+      return `${shadow}
+        <path d="M36 88 C24 72 18 80 22 90 C18 100 28 104 36 88Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1"/>
+        <path d="M38 88 C44 62 72 52 100 58 C118 62 132 74 136 84 C138 90 132 96 122 102 C98 114 68 112 48 102 C40 98 38 92 38 88Z" fill="#fde047" stroke="#ca8a04" stroke-width="1.3"/>
+        <path d="M78 60 C86 48 100 50 104 64 C96 60 86 60 78 60Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1"/>
+        <path d="M52 78 C58 68 102 68 108 78 C98 86 62 86 52 78Z" fill="#1e40af" opacity="0.55"/>
+        ${companionEye(120, 80, 4.2)}`;
+    case "lobster":
+      return `${shadow}
+        <path d="M44 88 C34 76 26 70 22 74 C26 66 38 72 42 84" fill="none" stroke="#dc2626" stroke-width="3.2" stroke-linecap="round"/>
+        <path d="M116 88 C126 76 134 70 138 74 C134 66 122 72 118 84" fill="none" stroke="#dc2626" stroke-width="3.2" stroke-linecap="round"/>
+        <path d="M22 72 C12 60 20 50 32 60 C36 66 30 74 22 72Z" fill="#ef4444" stroke="#7f1d1d" stroke-width="1"/>
+        <path d="M138 72 C148 60 140 50 128 60 C124 66 130 74 138 72Z" fill="#ef4444" stroke="#7f1d1d" stroke-width="1"/>
+        <path d="M48 98 C50 78 64 72 80 72 C98 72 112 80 112 96 C110 114 96 122 80 122 C62 122 46 112 48 98Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="1.3"/>
+        <path d="M58 112 C54 124 50 132 52 132 C56 128 62 116 62 112" fill="none" stroke="#991b1b" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M70 114 C68 126 66 134 68 134 C72 128 74 116 74 114" fill="none" stroke="#991b1b" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M90 114 C92 126 94 134 92 134 C88 128 86 116 86 114" fill="none" stroke="#991b1b" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M102 112 C106 124 110 132 108 132 C104 128 98 116 98 112" fill="none" stroke="#991b1b" stroke-width="2.2" stroke-linecap="round"/>
+        ${companionEyes(68, 90, 92, 90, 4)}`;
+    case "blue_tang":
+      return `${shadow}
+        <path d="M36 88 C24 72 18 80 22 90 C18 100 28 104 36 88Z" fill="#0284c7" stroke="#0c4a6e" stroke-width="1"/>
+        <path d="M38 88 C44 64 72 54 102 60 C122 64 136 76 138 86 C140 92 134 98 124 104 C100 116 68 112 48 102 C40 98 38 92 38 88Z" fill="#0ea5e9" stroke="#0369a1" stroke-width="1.3"/>
+        <path d="M78 60 C88 48 104 50 108 64 C98 60 86 60 78 60Z" fill="#0284c7" stroke="#0c4a6e" stroke-width="1"/>
+        <path d="M88 104 C92 118 78 122 76 108 C80 106 84 104 88 104Z" fill="#0369a1" stroke="#0c4a6e" stroke-width="0.9"/>
+        <path d="M52 68 C48 86 52 104 56 108" fill="none" stroke="#facc15" stroke-width="5" stroke-linecap="round"/>
+        ${companionEye(122, 80, 4.2)}`;
+    case "sailfish":
+      return `${shadow}
+        <path d="M28 88 C14 82 12 92 28 96 C16 102 22 110 34 102 C36 96 34 90 28 88Z" fill="#64748b" stroke="#1e293b" stroke-width="1"/>
+        <path d="M34 90 C40 70 62 56 92 60 C112 64 126 74 132 84 C128 90 118 100 96 106 C70 112 44 104 34 90Z" fill="#38bdf8" stroke="#0369a1" stroke-width="1.3"/>
+        <path d="M52 96 C68 110 100 108 120 90 C108 102 80 108 60 102 C54 100 52 98 52 96Z" fill="#e0f2fe"/>
+        <path d="M72 58 C76 28 92 18 96 52 C88 44 80 44 72 58Z" fill="#0284c7" stroke="#0c4a6e" stroke-width="1.15"/>
+        <path d="M118 86 C132 76 144 78 142 90 C140 100 128 100 118 94Z" fill="#0ea5e9" stroke="#0369a1" stroke-width="1"/>
+        ${companionEye(104, 78, 4.2)}
+        <path d="M58 94 Q80 106 104 94" fill="none" stroke="#0369a1" stroke-width="3.2" stroke-linecap="round"/>`;
+    case "nautilus":
+      return `${shadow}
+        <path d="M52 88 C48 68 62 54 82 52 C104 50 122 64 124 84 C126 104 110 120 88 122 C66 124 50 108 52 88Z" fill="#fde68a" stroke="#b45309" stroke-width="1.2"/>
+        <path d="M58 88 C56 72 68 62 82 62 C98 62 110 72 110 86 C110 100 98 110 82 110 C66 110 54 100 58 88Z" fill="#fef3c7"/>
+        <path d="M64 88 C62 76 72 70 82 70 C92 70 102 76 102 86 C102 96 92 102 82 102 C72 102 64 96 64 88Z" fill="#fcd34d"/>
+        <path d="M70 88 C68 80 76 76 82 76 C88 76 96 80 96 86 C96 92 88 96 82 96 C76 96 70 92 70 88Z" fill="#fbbf24"/>
+        <path d="M76 88 C74 84 80 82 82 82 C84 82 90 84 88 88 C86 92 80 92 76 88Z" fill="#92400e"/>
+        <path d="M124 84 C132 78 138 82 136 90 C132 96 124 94 124 84Z" fill="#fde68a" stroke="#b45309" stroke-width="0.9"/>
+        ${companionEyes(72, 78, 92, 78, 3.6)}`;
+    case "space_fish":
+      return `${shadow}
+        <path d="M36 88 C24 72 18 80 22 90 C18 100 28 104 36 88Z" fill="#6366f1" stroke="#312e81" stroke-width="1"/>
+        <path d="M38 88 C44 64 72 54 100 60 C118 64 132 74 138 84 C140 90 134 96 124 102 C100 112 70 110 48 100 C40 96 38 92 38 88Z" fill="#4338ca" stroke="#312e81" stroke-width="1.3"/>
+        <path d="M48 78 C56 66 104 66 112 78 C98 86 62 86 48 78Z" fill="#818cf8" opacity="0.45"/>
+        ${companionEye(120, 80, 4.2)}
+        <ellipse cx="80" cy="72" rx="22" ry="10" fill="none" stroke="#c4b5fd" stroke-width="1.4" opacity="0.85"/>
+        <circle cx="68" cy="68" r="2.2" fill="#fde047"/>
+        <circle cx="92" cy="66" r="1.8" fill="#67e8f9"/>
+        <circle cx="80" cy="62" r="1.6" fill="#f472b6"/>`;
+    case "coral_angel":
+      return `${shadow}
+        <path d="M36 88 C24 72 18 80 22 90 C18 100 28 104 36 88Z" fill="#fb7185" stroke="#be123c" stroke-width="1"/>
+        <path d="M38 88 C44 62 72 52 100 58 C118 62 132 74 136 84 C138 90 132 96 122 102 C98 114 68 112 48 102 C40 98 38 92 38 88Z" fill="#fda4af" stroke="#be123c" stroke-width="1.3"/>
+        <path d="M78 60 C86 48 100 50 104 64 C96 60 86 60 78 60Z" fill="#f472b6" stroke="#be123c" stroke-width="1"/>
+        <path d="M52 78 C58 68 102 68 108 78 C98 86 62 86 52 78Z" fill="#fb7185" opacity="0.55"/>
+        ${companionEye(120, 80, 4.2)}
+        <path d="M62 74 C68 58 74 52 80 58 C86 52 92 58 98 74 C90 68 70 68 62 74Z" fill="#fecdd3" stroke="#f472b6" stroke-width="1"/>
+        <circle cx="80" cy="62" r="3" fill="#fde047" stroke="#ca8a04" stroke-width="0.7"/>`;
     default:
       return companionInnerMarkup("harbor_gull");
   }
@@ -1026,7 +1091,7 @@ const COMPANION_ART_FIT = {
   sea_turtle: { cx: 86.1, cy: 89, scale: 0.946 },
   octopus: { cx: 79, cy: 96, scale: 1.28 },
   dolphin: { cx: 84, cy: 85, scale: 0.784 },
-  seahorse: { cx: 74, cy: 88, scale: 1.12 },
+  seahorse: { cx: 58, cy: 88, scale: 1.18 },
   jellyfish: { cx: 80, cy: 96, scale: 1.28 },
   crab: { cx: 80, cy: 89, scale: 1.016 },
   manta: { cx: 80, cy: 91, scale: 1.28 },
@@ -1040,9 +1105,17 @@ const COMPANION_ART_FIT = {
   super_dolphin: { cx: 84, cy: 85, scale: 0.784 },
   chef_crab: { cx: 80, cy: 94, scale: 1.018 },
   disco_jelly: { cx: 80, cy: 96, scale: 1.28 },
-  knight_seahorse: { cx: 74, cy: 86, scale: 1.08 },
+  knight_seahorse: { cx: 58, cy: 86, scale: 1.14 },
   viking_seal: { cx: 80, cy: 83, scale: 1.28 },
   royal_manta: { cx: 80, cy: 93, scale: 1.28 },
+  starfish: { cx: 80, cy: 86, scale: 1.22 },
+  angelfish: { cx: 82, cy: 85, scale: 1.12 },
+  lobster: { cx: 80, cy: 92, scale: 1.05 },
+  blue_tang: { cx: 82, cy: 85, scale: 1.12 },
+  sailfish: { cx: 78, cy: 82, scale: 0.95 },
+  nautilus: { cx: 82, cy: 88, scale: 1.15 },
+  space_fish: { cx: 81, cy: 75.1, scale: 1.08 },
+  coral_angel: { cx: 82, cy: 85, scale: 1.1 },
 };
 
 function companionArtSvg(id, { className = "companion-art" } = {}) {
@@ -12550,6 +12623,7 @@ function refreshCollectablesUI() {
         tile.setAttribute("aria-selected", on ? "true" : "false");
         tile.title = on ? `Using ${def.name}` : `Use ${def.name}`;
         tile.innerHTML =
+          `<span class="wardrobe-tile__kind wardrobe-tile__kind--${def.kind}">${companionKindLabel(def.kind)}</span>` +
           companionArtSvg(def.id, { className: "wardrobe-tile__art" }) +
           `<span class="wardrobe-tile__name">${def.name}</span>` +
           `<span class="wardrobe-tile__state">${on ? "Using" : "Use"}</span>`;
