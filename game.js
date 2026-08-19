@@ -7671,6 +7671,8 @@ const DUEL_SCORE_SYNC_MS = 400;
 const DUEL_STATE_SYNC_MS = 220;
 const DUEL_OPPONENT_POLL_MS = 350;
 const DUEL_MATCH_START_DELAY_MS = 4000;
+/** Co-op / duel rival screen duration before the round begins. */
+const ONLINE_MATCHUP_DISPLAY_MS = DUEL_MATCH_START_DELAY_MS;
 const DUEL_LOBBY_MAX_AGE_MS = 120_000;
 const MATCH_KIND_DUEL = "duel";
 const MATCH_KIND_COOP = "coop";
@@ -7940,7 +7942,7 @@ async function activateComDuelGuest(matchId) {
       guest_companion_id: COM_COMPANION_ID,
       is_com_guest: true,
       status: "active",
-      round_start_ms: Date.now() + 2000,
+      round_start_ms: Date.now() + DUEL_MATCH_START_DELAY_MS,
     }),
   });
   if (!res.ok) throw new Error(`Duel COM fallback failed: ${res.status}`);
@@ -8227,7 +8229,7 @@ function buildLocalComDuelPlan(reefId) {
     opponentInitials: "COM",
     opponentCompanionId: COM_COMPANION_ID,
     opponentScore: 0,
-    roundStartMs: Date.now() + 800,
+    roundStartMs: Date.now() + DUEL_MATCH_START_DELAY_MS,
     roundMs: DUEL_ROUND_MS,
     targetScore: rollDuelRivalTargetScore(),
   };
