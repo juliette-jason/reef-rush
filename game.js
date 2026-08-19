@@ -39,7 +39,7 @@ const FISH_SPECIES = [
   { id: "common_cuttlefish", name: "Common Cuttlefish", rarity: "uncommon", size: "medium", morph: "cuttlefish", speed: 0.72, hue: 265, colors: ["#a78bfa", "#4c1d95", "#ede9fe"] },
   { id: "dolphinfish_mahi", name: "Dolphinfish (Mahi-Mahi)", rarity: "rare", size: "large", morph: "mahi", speed: 1.55, hue: 185, colors: ["#22d3ee", "#15803d", "#fef08a"] },
   { id: "yellowtail_amberjack", name: "Yellowtail Amberjack", rarity: "rare", size: "large", morph: "amberjack", speed: 1.62, hue: 48, colors: ["#facc15", "#854d0e", "#fef9c3"] },
-  { id: "atlantic_halibut", name: "Atlantic Halibut", rarity: "rare", size: "large", morph: "halibut", speed: 0.62, hue: 215, colors: ["#9ca3af", "#374151", "#f3f4f6"] },
+  { id: "atlantic_halibut", name: "Atlantic Halibut", rarity: "rare", size: "large", morph: "halibut", speed: 0.62, hue: 205, colors: ["#7d8b72", "#3a4234", "#f0f2eb"] },
   { id: "australian_blacktip", name: "Australian Blacktip Shark", rarity: "rare", size: "large", morph: "reefshark", speed: 1.52, hue: 210, colors: ["#64748b", "#0f172a", "#cbd5e1"] },
   { id: "green_sea_turtle", name: "Green Sea Turtle", rarity: "rare", size: "large", morph: "seaturtle", speed: 0.68, hue: 145, colors: ["#4ade80", "#166534", "#d9f99d"] },
   { id: "reef_octopus", name: "Reef Octopus", rarity: "rare", size: "medium", morph: "octopus", speed: 0.7, hue: 330, colors: ["#fb7185", "#9f1239", "#ffe4e6"] },
@@ -19715,29 +19715,110 @@ function drawFishMorph(morph, L, body, shade, accent, speciesId, phase = 0) {
   }
 
   if (morph === "halibut") {
+    const topGrad = ctx.createLinearGradient(0, -L * 0.36, 0, L * 0.3);
+    topGrad.addColorStop(0, shade);
+    topGrad.addColorStop(0.32, body);
+    topGrad.addColorStop(0.68, accent);
+    topGrad.addColorStop(1, "#f8fafc");
+
+    ctx.fillStyle = topGrad;
+    ctx.beginPath();
+    ctx.moveTo(L * 0.48, -L * 0.01);
+    ctx.quadraticCurveTo(L * 0.34, -L * 0.34, L * 0.04, -L * 0.28);
+    ctx.quadraticCurveTo(-L * 0.26, -L * 0.22, -L * 0.44, -L * 0.07);
+    ctx.quadraticCurveTo(-L * 0.5, L * 0.02, -L * 0.44, L * 0.13);
+    ctx.quadraticCurveTo(-L * 0.2, L * 0.3, L * 0.06, L * 0.24);
+    ctx.quadraticCurveTo(L * 0.32, L * 0.18, L * 0.48, L * 0.04);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = "rgba(248, 250, 252, 0.94)";
+    ctx.beginPath();
+    ctx.moveTo(L * 0.4, L * 0.1);
+    ctx.quadraticCurveTo(L * 0.02, L * 0.28, -L * 0.38, L * 0.12);
+    ctx.quadraticCurveTo(-L * 0.26, L * 0.2, L * 0.04, L * 0.2);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = shade;
+    ctx.globalAlpha = 0.58;
+    const spots = [
+      [L * 0.26, -L * 0.14, L * 0.056, 0.72],
+      [L * 0.08, -L * 0.1, L * 0.048, 0.2],
+      [-L * 0.1, -L * 0.14, L * 0.052, -0.15],
+      [-L * 0.24, -L * 0.08, L * 0.042, 0.35],
+      [L * 0.34, -L * 0.06, L * 0.04, 0.1],
+      [-L * 0.04, -L * 0.2, L * 0.036, -0.2],
+      [L * -0.18, -L * 0.16, L * 0.034, 0.5],
+    ];
+    for (const [sx, sy, sr, rot] of spots) {
+      ctx.beginPath();
+      ctx.ellipse(sx, sy, sr, sr * 0.72, rot, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    ctx.strokeStyle = shade;
+    ctx.lineWidth = Math.max(1, L * 0.016);
+    ctx.globalAlpha = 0.72;
+    ctx.beginPath();
+    ctx.moveTo(L * 0.36, -L * 0.22);
+    ctx.quadraticCurveTo(L * 0.02, -L * 0.33, -L * 0.4, -L * 0.15);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(L * 0.28, L * 0.18);
+    ctx.quadraticCurveTo(-L * 0.02, L * 0.24, -L * 0.36, L * 0.14);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    const tailWag = Math.sin(phase * 2.1) * 0.08;
     ctx.save();
-    ctx.rotate(-0.12);
+    ctx.translate(-L * 0.42, 0);
+    ctx.rotate(tailWag);
     ctx.fillStyle = body;
     ctx.beginPath();
-    ctx.ellipse(0, 0, L * 0.52, L * 0.36, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = shade;
-    ctx.beginPath();
-    ctx.ellipse(L * 0.12, -L * 0.08, L * 0.14, L * 0.1, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#0a1a22";
-    ctx.beginPath();
-    ctx.arc(L * 0.16, -L * 0.05, L * 0.028, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#0a1a22";
-    ctx.beginPath();
-    ctx.arc(L * 0.22, -L * 0.02, L * 0.022, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "rgba(248, 250, 252, 0.55)";
-    ctx.beginPath();
-    ctx.ellipse(-L * 0.06, L * 0.12, L * 0.36, L * 0.1, 0.08, 0, Math.PI * 2);
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(-L * 0.12, -L * 0.15, -L * 0.11, 0);
+    ctx.quadraticCurveTo(-L * 0.12, L * 0.15, 0, 0);
     ctx.fill();
     ctx.restore();
+
+    ctx.strokeStyle = "#1f2937";
+    ctx.lineWidth = Math.max(1, L * 0.024);
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(L * 0.44, L * 0.03);
+    ctx.quadraticCurveTo(L * 0.4, L * 0.13, L * 0.26, L * 0.11);
+    ctx.stroke();
+    ctx.fillStyle = "rgba(31, 41, 55, 0.35)";
+    ctx.beginPath();
+    ctx.moveTo(L * 0.44, L * 0.04);
+    ctx.quadraticCurveTo(L * 0.36, L * 0.1, L * 0.28, L * 0.08);
+    ctx.lineTo(L * 0.42, L * 0.02);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = "#f8fafc";
+    ctx.beginPath();
+    ctx.ellipse(L * 0.34, -L * 0.12, L * 0.044, L * 0.034, -0.18, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(L * 0.18, -L * 0.1, L * 0.038, L * 0.028, -0.08, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#0f172a";
+    ctx.beginPath();
+    ctx.arc(L * 0.35, -L * 0.11, L * 0.019, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(L * 0.19, -L * 0.09, L * 0.016, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.arc(L * 0.356, -L * 0.115, L * 0.006, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(L * 0.196, -L * 0.095, L * 0.005, 0, Math.PI * 2);
+    ctx.fill();
     return;
   }
 
