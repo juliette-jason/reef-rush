@@ -1126,12 +1126,15 @@ const COMPANION_ART_FIT = {
   coral_angel: { cx: 82, cy: 88, scale: 1.05 },
 };
 
-function companionArtSvg(id, { className = "companion-art" } = {}) {
+const COMPANION_AVATAR_FIT_SCALE = 0.84;
+
+function companionArtSvg(id, { className = "companion-art", avatar = false } = {}) {
   const def = COMPANION_BY_ID[id] ? id : STARTER_COMPANION_ID;
   const fit = COMPANION_ART_FIT[def] || { cx: 80, cy: 86, scale: 1.22 };
+  const scale = fit.scale * (avatar ? COMPANION_AVATAR_FIT_SCALE : 1);
   return (
     `<svg class="${className}" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" stroke-linejoin="round" stroke-linecap="round">` +
-    `<g transform="translate(80 80) scale(${fit.scale}) translate(${-fit.cx} ${-fit.cy})">` +
+    `<g transform="translate(80 80) scale(${scale}) translate(${-fit.cx} ${-fit.cy})">` +
     companionInnerMarkup(def) +
     `</g></svg>`
   );
@@ -1158,7 +1161,7 @@ function syncSeagullOutfit() {
   if (!gameMeta.ownedAvatarFrames) gameMeta.ownedAvatarFrames = normalizeOwnedAvatarFrames([]);
   gameMeta.equippedClothes = equippedCompanionId();
   gameMeta.equippedAvatarFrame = equippedAvatarFrameId();
-  const svg = companionArtSvg(gameMeta.equippedClothes, { className: "companion-avatar__art" });
+  const svg = companionArtSvg(gameMeta.equippedClothes, { className: "companion-avatar__art", avatar: true });
   const frameId = gameMeta.equippedAvatarFrame;
   document.querySelectorAll("[data-companion-avatar]").forEach((host) => {
     host.innerHTML = svg;
@@ -9039,12 +9042,14 @@ function showOnlineMatchup({
   if (onlineMatchupPlayerAvatar) {
     onlineMatchupPlayerAvatar.innerHTML = companionArtSvg(playerCompanionId, {
       className: "online-matchup__art",
+      avatar: true,
     });
     applyAvatarFrameStyle(onlineMatchupPlayerAvatar, equippedAvatarFrameId());
   }
   if (onlineMatchupRivalAvatar) {
     onlineMatchupRivalAvatar.innerHTML = companionArtSvg(rivalCompanionId, {
       className: "online-matchup__art",
+      avatar: true,
     });
   }
   if (onlineMatchupReef) onlineMatchupReef.textContent = reefName || "";

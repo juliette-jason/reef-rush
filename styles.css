@@ -2669,6 +2669,33 @@ body {
 .online-matchup__avatar .online-matchup__art {
   position: relative;
   z-index: 1;
+  width: 78%;
+  height: 78%;
+  max-width: 78%;
+  max-height: 78%;
+  overflow: visible;
+}
+
+.seagull-avatar:has(.avatar-frame-ring) .companion-avatar__art,
+.online-matchup__avatar:has(.avatar-frame-ring) .online-matchup__art {
+  width: 66%;
+  height: 66%;
+  max-width: 66%;
+  max-height: 66%;
+}
+
+.seagull-avatar--profile .companion-avatar__art {
+  width: 76%;
+  height: 76%;
+  max-width: 76%;
+  max-height: 76%;
+}
+
+.seagull-avatar--profile:has(.avatar-frame-ring) .companion-avatar__art {
+  width: 64%;
+  height: 64%;
+  max-width: 64%;
+  max-height: 64%;
 }
 
 .seagull-avatar--profile {
@@ -2921,8 +2948,10 @@ button.seagull-avatar:active {
 
 .online-matchup__art {
   display: block;
-  width: 112%;
-  height: 112%;
+  width: 78%;
+  height: 78%;
+  max-width: 78%;
+  max-height: 78%;
 }
 
 .online-matchup__name {
