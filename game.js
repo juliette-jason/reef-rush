@@ -1142,14 +1142,14 @@ function opponentCompanionFromRow(row, role) {
 
 function syncSeagullOutfit() {
   if (!gameMeta.ownedClothes) gameMeta.ownedClothes = normalizeOwnedClothes([]);
+  if (!gameMeta.ownedAvatarFrames) gameMeta.ownedAvatarFrames = normalizeOwnedAvatarFrames([]);
   gameMeta.equippedClothes = equippedCompanionId();
+  gameMeta.equippedAvatarFrame = equippedAvatarFrameId();
   const svg = companionArtSvg(gameMeta.equippedClothes, { className: "companion-avatar__art" });
+  const frameId = gameMeta.equippedAvatarFrame;
   document.querySelectorAll("[data-companion-avatar]").forEach((host) => {
     host.innerHTML = svg;
-  });
-  const preview = companionArtSvg(gameMeta.equippedClothes, { className: "companion-preview__art" });
-  document.querySelectorAll("[data-companion-preview]").forEach((host) => {
-    host.innerHTML = preview;
+    applyAvatarFrameStyle(host, frameId);
   });
 }
 
@@ -1186,8 +1186,470 @@ function buyClothingItem(id) {
   showToast(`${def.name} unlocked!`, 1800);
 }
 
+/** Avatar ring frames — colors, gradients, and pattern rings for profile circles. */
+const STARTER_AVATAR_FRAME_ID = "reef_blue";
 
-/** Compact SVG portrait of a full fishing rod for shop + home picker. */
+const AVATAR_FRAME_DEFS = [
+  {
+    id: "reef_blue",
+    name: "Reef Blue",
+    kind: "gradient",
+    price: 0,
+    starter: true,
+    icon: "🌀",
+    blurb: "Classic reef ring.",
+    style: {
+      background:
+        "radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.22), transparent 42%), linear-gradient(160deg, #0e7490, #0c4a6e 55%, #082f49)",
+      border: "2px solid rgba(255, 213, 74, 0.7)",
+      boxShadow:
+        "0 0 0 2px rgba(8, 28, 48, 0.85), 0 6px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.22)",
+    },
+  },
+  {
+    id: "hot_coral",
+    name: "Hot Coral",
+    kind: "solid",
+    price: 110,
+    icon: "🪸",
+    blurb: "Bold reef pink.",
+    style: {
+      background: "linear-gradient(165deg, #fb7185, #e11d48)",
+      border: "2px solid #fecdd3",
+      boxShadow: "0 0 0 2px rgba(136, 19, 55, 0.7), 0 6px 16px rgba(225, 29, 72, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.28)",
+    },
+  },
+  {
+    id: "kelp_green",
+    name: "Kelp Green",
+    kind: "solid",
+    price: 110,
+    icon: "🌿",
+    blurb: "Fresh kelp pop.",
+    style: {
+      background: "linear-gradient(165deg, #4ade80, #15803d)",
+      border: "2px solid #bbf7d0",
+      boxShadow: "0 0 0 2px rgba(20, 83, 45, 0.72), 0 6px 16px rgba(21, 128, 61, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.24)",
+    },
+  },
+  {
+    id: "violet_abyss",
+    name: "Violet Abyss",
+    kind: "solid",
+    price: 120,
+    icon: "💜",
+    blurb: "Deep purple glow.",
+    style: {
+      background: "linear-gradient(165deg, #a78bfa, #6d28d9)",
+      border: "2px solid #ddd6fe",
+      boxShadow: "0 0 0 2px rgba(76, 29, 149, 0.72), 0 6px 16px rgba(109, 40, 217, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.24)",
+    },
+  },
+  {
+    id: "bubblegum",
+    name: "Bubblegum",
+    kind: "solid",
+    price: 115,
+    icon: "🍬",
+    blurb: "Sweet pink ring.",
+    style: {
+      background: "linear-gradient(165deg, #f472b6, #db2777)",
+      border: "2px solid #fbcfe8",
+      boxShadow: "0 0 0 2px rgba(157, 23, 77, 0.68), 0 6px 16px rgba(219, 39, 119, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.26)",
+    },
+  },
+  {
+    id: "sunset_coral",
+    name: "Sunset Coral",
+    kind: "gradient",
+    price: 150,
+    icon: "🌅",
+    blurb: "Golden hour glow.",
+    style: {
+      background:
+        "radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.28), transparent 45%), linear-gradient(145deg, #fb923c, #ea580c 45%, #9a3412)",
+      border: "2px solid #fed7aa",
+      boxShadow: "0 0 0 2px rgba(69, 26, 3, 0.75), 0 6px 16px rgba(234, 88, 12, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25)",
+    },
+  },
+  {
+    id: "ocean_teal",
+    name: "Ocean Teal",
+    kind: "gradient",
+    price: 145,
+    icon: "🌊",
+    blurb: "Tropical shallows.",
+    style: {
+      background:
+        "radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.24), transparent 44%), linear-gradient(150deg, #2dd4bf, #0891b2 52%, #164e63)",
+      border: "2px solid #99f6e4",
+      boxShadow: "0 0 0 2px rgba(8, 51, 68, 0.78), 0 6px 16px rgba(8, 145, 178, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.22)",
+    },
+  },
+  {
+    id: "aurora_wave",
+    name: "Aurora Wave",
+    kind: "gradient",
+    price: 165,
+    icon: "✨",
+    blurb: "Northern lights swirl.",
+    style: {
+      background:
+        "radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.2), transparent 42%), linear-gradient(135deg, #34d399, #22d3ee 38%, #818cf8 72%, #c084fc)",
+      border: "2px solid #c7d2fe",
+      boxShadow: "0 0 0 2px rgba(49, 46, 129, 0.72), 0 6px 18px rgba(99, 102, 241, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.24)",
+    },
+  },
+  {
+    id: "candy_pop",
+    name: "Candy Pop",
+    kind: "gradient",
+    price: 155,
+    icon: "🍭",
+    blurb: "Rainbow sherbet ring.",
+    style: {
+      background:
+        "radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.26), transparent 42%), linear-gradient(140deg, #fde047, #fb7185 42%, #a78bfa 78%, #38bdf8)",
+      border: "2px solid #fef08a",
+      boxShadow: "0 0 0 2px rgba(113, 63, 18, 0.65), 0 6px 16px rgba(251, 113, 133, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.26)",
+    },
+  },
+  {
+    id: "midnight_glow",
+    name: "Midnight Glow",
+    kind: "gradient",
+    price: 170,
+    icon: "🌙",
+    blurb: "Moonlit deep water.",
+    style: {
+      background:
+        "radial-gradient(circle at 35% 28%, rgba(186, 230, 253, 0.18), transparent 44%), linear-gradient(155deg, #1e3a8a, #312e81 48%, #4c1d95)",
+      border: "2px solid #93c5fd",
+      boxShadow: "0 0 0 2px rgba(15, 23, 42, 0.85), 0 6px 18px rgba(79, 70, 229, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.16)",
+    },
+  },
+  {
+    id: "lifeguard_buoy",
+    name: "Lifeguard Buoy",
+    kind: "pattern",
+    price: 320,
+    icon: "🛟",
+    blurb: "On duty at the reef.",
+    pattern: "lifeguard_buoy",
+    style: {
+      background:
+        "radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.16), transparent 42%), linear-gradient(160deg, #0284c7, #0369a1 55%, #0c4a6e)",
+      border: "none",
+      boxShadow: "0 0 0 2px rgba(8, 28, 48, 0.85), 0 6px 16px rgba(2, 132, 199, 0.34)",
+    },
+  },
+  {
+    id: "anchor_rope",
+    name: "Anchor Rope",
+    kind: "pattern",
+    price: 280,
+    icon: "⚓",
+    blurb: "Nautical rope coil.",
+    pattern: "anchor_rope",
+    style: {
+      background:
+        "radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.14), transparent 42%), linear-gradient(160deg, #334155, #1e293b 55%, #0f172a)",
+      border: "none",
+      boxShadow: "0 0 0 2px rgba(15, 23, 42, 0.88), 0 6px 16px rgba(0, 0, 0, 0.42)",
+    },
+  },
+  {
+    id: "starfish_wreath",
+    name: "Starfish Wreath",
+    kind: "pattern",
+    price: 260,
+    icon: "⭐",
+    blurb: "Tidepool stars all around.",
+    pattern: "starfish_wreath",
+    style: {
+      background:
+        "radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.18), transparent 42%), linear-gradient(160deg, #f59e0b, #d97706 55%, #92400e)",
+      border: "none",
+      boxShadow: "0 0 0 2px rgba(69, 26, 3, 0.72), 0 6px 16px rgba(217, 119, 6, 0.32)",
+    },
+  },
+  {
+    id: "pearl_shell",
+    name: "Pearl Shell",
+    kind: "pattern",
+    price: 300,
+    icon: "🐚",
+    blurb: "Iridescent shell edge.",
+    pattern: "pearl_shell",
+    style: {
+      background:
+        "radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.28), transparent 42%), linear-gradient(155deg, #fbcfe8, #c4b5fd 45%, #7dd3fc)",
+      border: "none",
+      boxShadow: "0 0 0 2px rgba(76, 29, 149, 0.55), 0 6px 16px rgba(192, 132, 252, 0.28)",
+    },
+  },
+  {
+    id: "bubble_chain",
+    name: "Bubble Chain",
+    kind: "pattern",
+    price: 250,
+    icon: "🫧",
+    blurb: "Floating bubble beads.",
+    pattern: "bubble_chain",
+    style: {
+      background:
+        "radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.2), transparent 42%), linear-gradient(160deg, #06b6d4, #0284c7 55%, #1d4ed8)",
+      border: "none",
+      boxShadow: "0 0 0 2px rgba(8, 28, 48, 0.82), 0 6px 16px rgba(6, 182, 212, 0.32)",
+    },
+  },
+];
+
+const AVATAR_FRAME_BY_ID = Object.fromEntries(AVATAR_FRAME_DEFS.map((f) => [f.id, f]));
+
+function avatarFrameKindLabel(kind) {
+  if (kind === "pattern") return "Pattern";
+  if (kind === "solid") return "Solid";
+  return "Gradient";
+}
+
+function normalizeOwnedAvatarFrames(raw) {
+  const ids = new Set(AVATAR_FRAME_DEFS.map((f) => f.id));
+  const out = [];
+  const seen = new Set();
+  if (Array.isArray(raw)) {
+    for (const id of raw) {
+      if (typeof id !== "string" || !ids.has(id) || seen.has(id)) continue;
+      seen.add(id);
+      out.push(id);
+    }
+  }
+  if (!seen.has(STARTER_AVATAR_FRAME_ID)) out.unshift(STARTER_AVATAR_FRAME_ID);
+  return out;
+}
+
+function normalizeEquippedAvatarFrame(raw, ownedIds) {
+  const owned = new Set(ownedIds || []);
+  if (typeof raw === "string" && owned.has(raw)) return raw;
+  if (owned.has(STARTER_AVATAR_FRAME_ID)) return STARTER_AVATAR_FRAME_ID;
+  return (ownedIds && ownedIds[0]) || STARTER_AVATAR_FRAME_ID;
+}
+
+function normalizeDailyAvatarFrameShop(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const dayKey = String(raw.dayKey || "");
+  const itemIds = Array.isArray(raw.itemIds)
+    ? raw.itemIds
+        .filter((id) => typeof id === "string" && AVATAR_FRAME_BY_ID[id] && !AVATAR_FRAME_BY_ID[id].starter)
+        .filter((id, i, arr) => arr.indexOf(id) === i)
+        .slice(0, 4)
+    : [];
+  if (!dayKey || itemIds.length !== 4) return null;
+  return { dayKey, itemIds };
+}
+
+function isAvatarFrameOwned(id) {
+  return Array.isArray(gameMeta.ownedAvatarFrames) && gameMeta.ownedAvatarFrames.includes(id);
+}
+
+function rollDailyAvatarFramesForDay(dayKey) {
+  const pool = AVATAR_FRAME_DEFS.filter((f) => !f.starter);
+  let seed = hashDailyCatchSeed(`avatar-frames:${dayKey}`);
+  const arr = pool.slice();
+  for (let i = arr.length - 1; i > 0; i--) {
+    seed = (Math.imul(seed, 1103515245) + 12345) >>> 0;
+    const j = seed % (i + 1);
+    const t = arr[i];
+    arr[i] = arr[j];
+    arr[j] = t;
+  }
+  return { dayKey, itemIds: arr.slice(0, 4).map((f) => f.id) };
+}
+
+function ensureDailyAvatarFrameShop() {
+  const today = getDailyDayKey();
+  const cur = normalizeDailyAvatarFrameShop(gameMeta.dailyAvatarFrameShop);
+  if (cur && cur.dayKey === today) {
+    gameMeta.dailyAvatarFrameShop = cur;
+    return cur;
+  }
+  gameMeta.dailyAvatarFrameShop = rollDailyAvatarFramesForDay(today);
+  saveMeta();
+  return gameMeta.dailyAvatarFrameShop;
+}
+
+function equippedAvatarFrameId() {
+  return normalizeEquippedAvatarFrame(gameMeta.equippedAvatarFrame, gameMeta.ownedAvatarFrames);
+}
+
+function avatarFrameRingSvg(patternId, uid = patternId) {
+  const safe = String(uid).replace(/[^a-z0-9_-]/gi, "");
+  switch (patternId) {
+    case "lifeguard_buoy":
+      return (
+        `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">` +
+        `<defs>` +
+        `<pattern id="lb-${safe}" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">` +
+        `<rect width="5" height="10" fill="#ef4444"/>` +
+        `<rect x="5" width="5" height="10" fill="#ffffff"/>` +
+        `</pattern>` +
+        `</defs>` +
+        `<circle cx="50" cy="50" r="47" fill="none" stroke="url(#lb-${safe})" stroke-width="9"/>` +
+        `<circle cx="50" cy="50" r="47" fill="none" stroke="#991b1b" stroke-width="1.2" opacity="0.55"/>` +
+        `<g transform="translate(50 90)">` +
+        `<ellipse cx="0" cy="0" rx="11" ry="6.5" fill="#ef4444" stroke="#991b1b" stroke-width="1.4"/>` +
+        `<rect x="-11" y="-9" width="22" height="4.5" fill="#fff" stroke="#991b1b" stroke-width="1"/>` +
+        `<rect x="-11" y="-4.5" width="22" height="4.5" fill="#ef4444"/>` +
+        `<rect x="-1.5" y="-12" width="3" height="5" rx="1" fill="#fde047" stroke="#ca8a04" stroke-width="0.8"/>` +
+        `</g>` +
+        `</svg>`
+      );
+    case "anchor_rope":
+      return (
+        `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">` +
+        `<defs>` +
+        `<pattern id="rope-${safe}" width="8" height="8" patternUnits="userSpaceOnUse">` +
+        `<path d="M0 4 C2 0 6 0 8 4 C6 8 2 8 0 4 Z" fill="#a16207"/>` +
+        `<path d="M0 4 C2 2 6 2 8 4" fill="none" stroke="#ca8a04" stroke-width="0.8"/>` +
+        `</pattern>` +
+        `</defs>` +
+        `<circle cx="50" cy="50" r="47" fill="none" stroke="url(#rope-${safe})" stroke-width="8"/>` +
+        `<circle cx="50" cy="50" r="47" fill="none" stroke="#78350f" stroke-width="1.2" opacity="0.6"/>` +
+        `<g transform="translate(50 88) scale(0.72)">` +
+        `<path d="M0 -8 C6 -8 8 -2 8 4 C8 10 4 14 0 14 C-4 14 -8 10 -8 4 C-8 -2 -6 -8 0 -8 Z" fill="#64748b" stroke="#334155" stroke-width="1.4"/>` +
+        `<path d="M0 -14 L0 -22 M-4 -18 L4 -18" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round"/>` +
+        `<circle cx="0" cy="2" r="2.5" fill="#cbd5e1" stroke="#475569" stroke-width="1"/>` +
+        `</g>` +
+        `</svg>`
+      );
+    case "starfish_wreath":
+      return (
+        `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">` +
+        `<circle cx="50" cy="50" r="47" fill="none" stroke="#fde68a" stroke-width="3.5" opacity="0.85"/>` +
+        `<g fill="#fb923c" stroke="#c2410c" stroke-width="1.1">` +
+        `<polygon points="50,6 53,14 62,14 55,19 58,28 50,22 42,28 45,19 38,14 47,14"/>` +
+        `<polygon points="88,34 84,41 90,47 82,46 79,54 76,45 68,44 74,38 71,30 80,33"/>` +
+        `<polygon points="88,66 80,63 74,69 76,61 68,60 76,56 79,48 82,56 90,55 84,61"/>` +
+        `<polygon points="50,94 47,86 38,86 45,81 42,72 50,78 58,72 55,81 62,86 53,86"/>` +
+        `<polygon points="12,66 20,63 26,69 24,61 32,60 24,56 21,48 18,56 10,55 16,61"/>` +
+        `<polygon points="12,34 18,38 24,32 22,40 30,41 22,45 21,53 18,45 10,46 16,40"/>` +
+        `</g>` +
+        `</svg>`
+      );
+    case "pearl_shell":
+      return (
+        `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">` +
+        `<defs>` +
+        `<linearGradient id="pearl-${safe}" x1="0" y1="0" x2="1" y2="1">` +
+        `<stop offset="0%" stop-color="#fff1f2"/>` +
+        `<stop offset="35%" stop-color="#fbcfe8"/>` +
+        `<stop offset="68%" stop-color="#c4b5fd"/>` +
+        `<stop offset="100%" stop-color="#bae6fd"/>` +
+        `</linearGradient>` +
+        `</defs>` +
+        `<circle cx="50" cy="50" r="47" fill="none" stroke="url(#pearl-${safe})" stroke-width="8"/>` +
+        `<path d="M50 8 C58 18 62 28 62 38 C62 48 58 58 50 68 C42 58 38 48 38 38 C38 28 42 18 50 8 Z" fill="none" stroke="#f8fafc" stroke-width="1.6" opacity="0.65"/>` +
+        `<path d="M50 12 C56 20 58 28 58 36 C58 44 56 52 50 60 C44 52 42 44 42 36 C42 28 44 20 50 12 Z" fill="none" stroke="#e9d5ff" stroke-width="1.2" opacity="0.55"/>` +
+        `<circle cx="50" cy="86" r="4.5" fill="#fff" stroke="#c4b5fd" stroke-width="1.2" opacity="0.9"/>` +
+        `</svg>`
+      );
+    case "bubble_chain":
+      return (
+        `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">` +
+        `<g fill="none" stroke="#e0f2fe" stroke-width="1.4">` +
+        `<circle cx="50" cy="5" r="4.5" fill="rgba(224,242,254,0.55)"/>` +
+        `<circle cx="78" cy="14" r="4" fill="rgba(224,242,254,0.5)"/>` +
+        `<circle cx="93" cy="36" r="4.5" fill="rgba(224,242,254,0.55)"/>` +
+        `<circle cx="93" cy="64" r="4" fill="rgba(224,242,254,0.5)"/>` +
+        `<circle cx="78" cy="86" r="4.5" fill="rgba(224,242,254,0.55)"/>` +
+        `<circle cx="50" cy="95" r="4" fill="rgba(224,242,254,0.5)"/>` +
+        `<circle cx="22" cy="86" r="4.5" fill="rgba(224,242,254,0.55)"/>` +
+        `<circle cx="7" cy="64" r="4" fill="rgba(224,242,254,0.5)"/>` +
+        `<circle cx="7" cy="36" r="4.5" fill="rgba(224,242,254,0.55)"/>` +
+        `<circle cx="22" cy="14" r="4" fill="rgba(224,242,254,0.5)"/>` +
+        `</g>` +
+        `<circle cx="50" cy="50" r="47" fill="none" stroke="rgba(186,230,253,0.45)" stroke-width="2.5" stroke-dasharray="4 5"/>` +
+        `</svg>`
+      );
+    default:
+      return "";
+  }
+}
+
+function applyAvatarFrameStyle(el, frameId) {
+  if (!el) return;
+  const def = AVATAR_FRAME_BY_ID[frameId] || AVATAR_FRAME_BY_ID[STARTER_AVATAR_FRAME_ID];
+  const style = def.style || AVATAR_FRAME_BY_ID[STARTER_AVATAR_FRAME_ID].style;
+  for (const cls of [...el.classList]) {
+    if (cls.startsWith("avatar-frame--")) el.classList.remove(cls);
+  }
+  el.classList.add(`avatar-frame--${def.id}`);
+  el.dataset.avatarFrame = def.id;
+  el.style.background = style.background || "";
+  el.style.border = style.border || "";
+  el.style.boxShadow = style.boxShadow || "";
+  el.querySelector(".avatar-frame-ring")?.remove();
+  if (def.kind === "pattern" && def.pattern) {
+    const ring = document.createElement("span");
+    ring.className = "avatar-frame-ring";
+    ring.setAttribute("aria-hidden", "true");
+    ring.innerHTML = avatarFrameRingSvg(def.pattern, def.id);
+    el.prepend(ring);
+  }
+}
+
+function avatarFrameSwatchHtml(frameId, { className = "avatar-frame-swatch" } = {}) {
+  const def = AVATAR_FRAME_BY_ID[frameId] || AVATAR_FRAME_BY_ID[STARTER_AVATAR_FRAME_ID];
+  const style = def.style || {};
+  const ring =
+    def.kind === "pattern" && def.pattern
+      ? `<span class="avatar-frame-ring">${avatarFrameRingSvg(def.pattern, `swatch-${def.id}`)}</span>`
+      : "";
+  const styleBits = [
+    style.background ? `background:${style.background}` : "",
+    style.border ? `border:${style.border}` : "",
+    style.boxShadow ? `box-shadow:${style.boxShadow}` : "",
+  ]
+    .filter(Boolean)
+    .join(";");
+  return `<div class="${className} avatar-frame--${def.id}" data-frame-id="${def.id}" style="${styleBits}">${ring}</div>`;
+}
+
+function equipAvatarFrame(id) {
+  const def = AVATAR_FRAME_BY_ID[id];
+  if (!def || !isAvatarFrameOwned(id)) return false;
+  gameMeta.equippedAvatarFrame = id;
+  saveMeta();
+  syncSeagullOutfit();
+  refreshCollectablesUI();
+  return true;
+}
+
+function buyAvatarFrame(id) {
+  const def = AVATAR_FRAME_BY_ID[id];
+  if (!def || def.starter) return;
+  if (isAvatarFrameOwned(id)) {
+    showToast("Already owned", 1400);
+    return;
+  }
+  if (gameMeta.coins < def.price) {
+    showToast("Not enough coins", 1600);
+    return;
+  }
+  gameMeta.coins -= def.price;
+  if (!Array.isArray(gameMeta.ownedAvatarFrames)) {
+    gameMeta.ownedAvatarFrames = normalizeOwnedAvatarFrames([]);
+  }
+  gameMeta.ownedAvatarFrames.push(id);
+  gameMeta.equippedAvatarFrame = id;
+  saveMeta();
+  refreshCoinDisplays();
+  buildShopUI();
+  syncSeagullOutfit();
+  refreshCollectablesUI();
+  showToast(`${def.name} ring unlocked!`, 1800);
+}
+
 function rodArtSvg(rod) {
   const v = rod.visual || {};
   const body = v.reelBody || "#5c4033";
@@ -5277,6 +5739,9 @@ function defaultMeta() {
     ownedClothes: normalizeOwnedClothes([...STARTER_COMPANION_IDS]),
     equippedClothes: STARTER_COMPANION_ID,
     dailyClothesShop: null,
+    ownedAvatarFrames: normalizeOwnedAvatarFrames([STARTER_AVATAR_FRAME_ID]),
+    equippedAvatarFrame: STARTER_AVATAR_FRAME_ID,
+    dailyAvatarFrameShop: null,
   };
 }
 
@@ -5357,6 +5822,12 @@ function loadMeta() {
       ownedClothes: normalizeOwnedClothes(o.ownedClothes),
       equippedClothes: normalizeEquippedClothes(o.equippedClothes, normalizeOwnedClothes(o.ownedClothes)),
       dailyClothesShop: normalizeDailyClothesShop(o.dailyClothesShop),
+      ownedAvatarFrames: normalizeOwnedAvatarFrames(o.ownedAvatarFrames),
+      equippedAvatarFrame: normalizeEquippedAvatarFrame(
+        o.equippedAvatarFrame,
+        normalizeOwnedAvatarFrames(o.ownedAvatarFrames)
+      ),
+      dailyAvatarFrameShop: normalizeDailyAvatarFrameShop(o.dailyAvatarFrameShop),
     };
   } catch {
     return defaultMeta();
@@ -8556,6 +9027,7 @@ function showOnlineMatchup({
     onlineMatchupPlayerAvatar.innerHTML = companionArtSvg(playerCompanionId, {
       className: "online-matchup__art",
     });
+    applyAvatarFrameStyle(onlineMatchupPlayerAvatar, equippedAvatarFrameId());
   }
   if (onlineMatchupRivalAvatar) {
     onlineMatchupRivalAvatar.innerHTML = companionArtSvg(rivalCompanionId, {
@@ -9689,6 +10161,8 @@ const collectablesStamps = document.getElementById("collectablesStamps");
 const collectablesStampCount = document.getElementById("collectablesStampCount");
 const collectablesWardrobe = document.getElementById("collectablesWardrobe");
 const collectablesWardrobeCount = document.getElementById("collectablesWardrobeCount");
+const collectablesFrames = document.getElementById("collectablesFrames");
+const collectablesFramesCount = document.getElementById("collectablesFramesCount");
 const eventsOcean = document.getElementById("eventsOcean");
 const dailyLeaderboardEvents = document.getElementById("dailyLeaderboardEvents");
 const dailyLeaderboardTitle = document.getElementById("dailyLeaderboardTitle");
@@ -10346,6 +10820,12 @@ function loadMetaFromObject(o) {
       ownedClothes: normalizeOwnedClothes(o.ownedClothes),
       equippedClothes: normalizeEquippedClothes(o.equippedClothes, normalizeOwnedClothes(o.ownedClothes)),
       dailyClothesShop: normalizeDailyClothesShop(o.dailyClothesShop),
+      ownedAvatarFrames: normalizeOwnedAvatarFrames(o.ownedAvatarFrames),
+      equippedAvatarFrame: normalizeEquippedAvatarFrame(
+        o.equippedAvatarFrame,
+        normalizeOwnedAvatarFrames(o.ownedAvatarFrames)
+      ),
+      dailyAvatarFrameShop: normalizeDailyAvatarFrameShop(o.dailyAvatarFrameShop),
     };
   } catch {
     return defaultMeta();
@@ -12854,6 +13334,45 @@ function buildShopUI() {
     clothesSec.list.appendChild(li);
   }
   shopList.appendChild(clothesSec.section);
+
+  const dailyFrames = ensureDailyAvatarFrameShop();
+  const framesSec = shopSection("Daily rings", "FRAMES");
+  const frameResetNote = document.createElement("p");
+  frameResetNote.className = "shop-section__note";
+  frameResetNote.textContent = formatDailyResetCountdown(msUntilDailyReset());
+  framesSec.section.insertBefore(frameResetNote, framesSec.list);
+  for (const id of dailyFrames.itemIds) {
+    const def = AVATAR_FRAME_BY_ID[id];
+    if (!def) continue;
+    const owned = isAvatarFrameOwned(id);
+    const li = document.createElement("li");
+    li.className = `shop-item shop-item--frame${owned ? " shop-item--owned" : ""}`;
+    const art = document.createElement("div");
+    art.className = "shop-item__icon shop-item__icon--frame";
+    art.setAttribute("aria-hidden", "true");
+    art.innerHTML = avatarFrameSwatchHtml(id, { className: "shop-item__frame-swatch" });
+    const body = document.createElement("div");
+    body.className = "shop-item__body";
+    const title = document.createElement("h3");
+    title.className = "shop-item__title";
+    title.textContent = def.name;
+    const meta = document.createElement("div");
+    meta.className = "shop-item__meta";
+    meta.innerHTML = owned
+      ? `<span class="shop-item__stock shop-item__stock--owned">${avatarFrameKindLabel(def.kind)} · Owned</span>`
+      : `<span class="shop-item__stock">${avatarFrameKindLabel(def.kind)}</span>`;
+    body.append(title, meta);
+    const buy = shopBuyButton({
+      owned,
+      price: def.price,
+      disabled: owned || gameMeta.coins < def.price,
+      label: owned ? "Owned" : "Buy",
+    });
+    buy.addEventListener("click", () => buyAvatarFrame(id));
+    li.append(art, body, buy);
+    framesSec.list.appendChild(li);
+  }
+  shopList.appendChild(framesSec.section);
 }
 
 function openShop() {
@@ -13014,6 +13533,39 @@ function refreshCollectablesUI() {
   if (collectablesWardrobeCount) {
     const n = (gameMeta.ownedClothes || []).length;
     collectablesWardrobeCount.textContent = `${n} / ${COMPANION_DEFS.length} pals`;
+  }
+  if (collectablesFrames) {
+    collectablesFrames.replaceChildren();
+    const ownedFrameIds = new Set(gameMeta.ownedAvatarFrames || []);
+    const equippedFrame = equippedAvatarFrameId();
+    const ownedFrames = AVATAR_FRAME_DEFS.filter((d) => ownedFrameIds.has(d.id));
+    if (!ownedFrames.length) {
+      const empty = document.createElement("p");
+      empty.className = "wardrobe-empty";
+      empty.textContent = "No rings yet — check Daily rings in the shop.";
+      collectablesFrames.appendChild(empty);
+    } else {
+      for (const def of ownedFrames) {
+        const on = equippedFrame === def.id;
+        const tile = document.createElement("button");
+        tile.type = "button";
+        tile.className = `wardrobe-tile wardrobe-tile--frame${on ? " wardrobe-tile--equipped" : ""}`;
+        tile.dataset.equipFrame = def.id;
+        tile.setAttribute("role", "option");
+        tile.setAttribute("aria-selected", on ? "true" : "false");
+        tile.title = on ? `Using ${def.name}` : `Use ${def.name}`;
+        tile.innerHTML =
+          `<span class="wardrobe-tile__kind wardrobe-tile__kind--${def.kind}">${avatarFrameKindLabel(def.kind)}</span>` +
+          avatarFrameSwatchHtml(def.id, { className: "wardrobe-tile__frame-swatch" }) +
+          `<span class="wardrobe-tile__name">${def.name}</span>` +
+          `<span class="wardrobe-tile__state">${on ? "Using" : "Use"}</span>`;
+        collectablesFrames.appendChild(tile);
+      }
+    }
+  }
+  if (collectablesFramesCount) {
+    const n = (gameMeta.ownedAvatarFrames || []).length;
+    collectablesFramesCount.textContent = `${n} / ${AVATAR_FRAME_DEFS.length} rings`;
   }
   syncSeagullOutfit();
 }
@@ -20520,6 +21072,11 @@ collectablesWardrobe?.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-equip-clothes]");
   if (!btn) return;
   equipClothingItem(btn.dataset.equipClothes);
+});
+collectablesFrames?.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-equip-frame]");
+  if (!btn) return;
+  equipAvatarFrame(btn.dataset.equipFrame);
 });
 btnStartDuel?.addEventListener("click", () => {
   void startDuelFromEvents();

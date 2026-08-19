@@ -2304,9 +2304,16 @@
         <header class="profile-hero">
           <p class="profile-hero__eyebrow">Captain card</p>
           <h2 class="panel__headline profile-hero__title">My Profile</h2>
-          <p class="panel__lede profile-hero__lede">Name your fisher &amp; pick a sea pal.</p>
+          <p class="panel__lede profile-hero__lede">Name your fisher, pick a sea pal &amp; ring.</p>
         </header>
-          <div class="collectables-seagull-preview" data-companion-preview aria-hidden="true"></div>
+        <div class="collectables-seagull-preview">
+          <div
+            id="profileAvatarPreview"
+            class="seagull-avatar seagull-avatar--profile"
+            data-companion-avatar
+            aria-hidden="true"
+          ></div>
+        </div>
         <label class="profile-name">
           <span class="profile-name__label">My name</span>
           <input
@@ -2327,6 +2334,15 @@
           </div>
           <p class="wardrobe-hint">Tap a pal to use on my profile. New ones rotate in the shop each day.</p>
           <div id="collectablesWardrobe" class="wardrobe-grid" role="listbox" aria-label="My sea pals"></div>
+        </section>
+
+        <section class="wardrobe-stage profile-wardrobe profile-frames" aria-label="Avatar rings">
+          <div class="wardrobe-stage__head">
+            <h3 class="collectables-section__title">Avatar rings</h3>
+            <p id="collectablesFramesCount" class="collectables-count-pill">0 / 0 rings</p>
+          </div>
+          <p class="wardrobe-hint">Tap a ring to frame your avatar. New ones rotate in the shop each day.</p>
+          <div id="collectablesFrames" class="wardrobe-grid wardrobe-grid--frames" role="listbox" aria-label="My avatar rings"></div>
         </section>
 
       </section>
@@ -2689,6 +2705,6 @@
       </section>
     </div>
 
-    <script src="game.js?v=animal-pals-1" defer></script>
+    <script src="game.js?v=avatar-rings-1" defer></script>
   </body>
 </html>

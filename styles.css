@@ -881,6 +881,63 @@ body {
   display: block;
 }
 
+.shop-item__icon--frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  padding: 4px;
+  overflow: visible;
+  border-radius: 50%;
+  background: rgba(8, 47, 73, 0.45);
+}
+
+.shop-item__frame-swatch,
+.avatar-frame-swatch,
+.wardrobe-tile__frame-swatch {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.shop-item__frame-swatch {
+  width: 58px;
+  height: 58px;
+}
+
+.wardrobe-tile__frame-swatch {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 4px;
+}
+
+.wardrobe-tile--frame .wardrobe-tile__art {
+  display: none;
+}
+
+.wardrobe-tile__kind--solid {
+  color: #bbf7d0;
+  background: rgba(21, 128, 61, 0.35);
+}
+
+.wardrobe-tile__kind--gradient {
+  color: #bae6fd;
+  background: rgba(2, 132, 199, 0.35);
+}
+
+.wardrobe-tile__kind--pattern {
+  color: #fde68a;
+  background: rgba(217, 119, 6, 0.35);
+}
+
+.wardrobe-grid--frames {
+  grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+}
+
 .shop-list {
   list-style: none;
   margin: 0;
@@ -2571,6 +2628,7 @@ body {
   border-radius: 50%;
   overflow: hidden;
   isolation: isolate;
+  position: relative;
   padding: 0;
   appearance: none;
   -webkit-appearance: none;
@@ -2582,6 +2640,29 @@ body {
     0 0 0 2px rgba(8, 28, 48, 0.85),
     0 6px 16px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.avatar-frame-ring {
+  position: absolute;
+  inset: -4px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.avatar-frame-ring svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.seagull-avatar--profile {
+  width: 132px;
+  height: 132px;
+}
+
+.seagull-avatar--profile .companion-avatar__art {
+  animation: collectablesSeagullIdle 3.6s ease-in-out infinite;
+  filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.4));
 }
 
 button.seagull-avatar {
@@ -2803,6 +2884,8 @@ button.seagull-avatar:active {
   border-radius: 999px;
   display: grid;
   place-items: center;
+  position: relative;
+  overflow: hidden;
   background:
     radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.18), transparent 58%),
     rgba(15, 23, 42, 0.72);
@@ -2810,7 +2893,6 @@ button.seagull-avatar:active {
   box-shadow:
     0 8px 22px rgba(2, 8, 23, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  overflow: hidden;
 }
 
 .online-matchup--coop .online-matchup__avatar {
@@ -4951,13 +5033,15 @@ button.seagull-avatar:active {
 }
 
 .panel--profile .collectables-seagull-preview {
-  width: 168px;
-  height: 168px;
+  width: auto;
+  height: auto;
   margin: 8px auto 0;
-  padding: 10px;
-  border-radius: 50%;
+  padding: 16px 10px 12px;
+  border-radius: 20px;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow: visible;
+  display: flex;
+  justify-content: center;
 }
 
 .profile-name {
@@ -5011,6 +5095,10 @@ button.seagull-avatar:active {
 }
 
 .panel--profile .profile-wardrobe {
+  margin-bottom: 12px;
+}
+
+.panel--profile .profile-frames {
   margin-bottom: 12px;
 }
 
@@ -5300,16 +5388,6 @@ button.seagull-avatar:active {
     radial-gradient(ellipse at 50% 70%, rgba(14, 116, 144, 0.45), transparent 62%),
     linear-gradient(180deg, rgba(12, 90, 120, 0.55), rgba(3, 24, 40, 0.72));
   box-shadow: inset 0 -18px 30px rgba(2, 12, 24, 0.35);
-}
-
-.collectables-seagull-preview__art,
-.companion-preview__art {
-  width: 100%;
-  height: 100%;
-  filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.4));
-  overflow: visible;
-  transform-origin: 50% 58%;
-  animation: collectablesSeagullIdle 3.6s ease-in-out infinite;
 }
 
 .collectables-seagull-figure {
