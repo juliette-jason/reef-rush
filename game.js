@@ -660,12 +660,12 @@ function companionEyes(lx, ly, rx, ry, size = 5) {
   return companionEye(lx, ly, size) + companionEye(rx, ry, size);
 }
 
-/** Side-profile seahorse — matches in-game lined seahorse morph (S-spine, round head, dorsal fin). */
+/** Side-profile seahorse — matches in-game lined seahorse morph, yellow pal colors. */
 function companionSeahorseMarkup({
-  body = "#fdba74",
+  body = "#facc15",
   stroke = "#b45309",
-  belly = "#ffedd5",
-  fin = "#b45309",
+  belly = "#fef08a",
+  fin = "#ca8a04",
   finStroke = "#92400e",
   spot = "#7c2d12",
   plate = "#d97706",
