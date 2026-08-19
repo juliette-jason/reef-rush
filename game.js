@@ -1601,7 +1601,7 @@ function applyAvatarFrameStyle(el, frameId) {
     ring.className = "avatar-frame-ring";
     ring.setAttribute("aria-hidden", "true");
     ring.innerHTML = avatarFrameRingSvg(def.pattern, def.id);
-    el.prepend(ring);
+    el.insertBefore(ring, el.firstChild);
   }
 }
 
