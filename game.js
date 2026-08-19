@@ -807,11 +807,12 @@ function companionInnerMarkup(id) {
       return `${shadow}
         <path d="M28 96 C40 70 60 54 80 52 C100 54 120 70 132 96 C118 112 96 122 80 122 C64 122 42 112 28 96Z" fill="#334155" stroke="#0f172a" stroke-width="1.3"/>
         <path d="M48 100 C62 112 98 112 112 100 C96 90 64 90 48 100Z" fill="#e2e8f0"/>
+        <path d="M52 76 C46 62 54 58 58 70 C56 74 54 76 52 76Z" fill="#475569" stroke="#1e293b" stroke-width="0.8"/>
+        <path d="M108 76 C114 62 106 58 102 70 C104 74 106 76 108 76Z" fill="#475569" stroke="#1e293b" stroke-width="0.8"/>
         <path d="M68 96 C70 100 72 104 72 104 M88 96 C90 100 92 104 92 104 M80 98 C80 102 80 106 80 106" stroke="#94a3b8" stroke-width="1.1" stroke-linecap="round"/>
         <path d="M80 118 C76 128 76 134 80 136 C84 134 84 128 80 118Z" fill="#1e293b"/>
-        <path d="M54 78 C48 66 56 64 58 74Z" fill="#475569"/>
-        <path d="M106 78 C112 66 104 64 102 74Z" fill="#475569"/>
         ${companionEyes(68, 88, 92, 88, 3.8)}
+        <path d="M72 98 Q80 104 88 98" fill="none" stroke="#64748b" stroke-width="1.1" stroke-linecap="round"/>
         <path d="M80 94 C86 100 80 106 80 106 C74 100 80 94 80 94Z" fill="#0f172a"/>`;
     case "puffer":
       return `${shadow}
@@ -1020,9 +1021,12 @@ function companionInnerMarkup(id) {
     case "angelfish":
       return `${shadow}
         <path d="M36 88 C24 72 18 80 22 90 C18 100 28 104 36 88Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1"/>
-        <path d="M38 88 C44 62 72 52 100 58 C118 62 132 74 136 84 C138 90 132 96 122 102 C98 114 68 112 48 102 C40 98 38 92 38 88Z" fill="#fde047" stroke="#ca8a04" stroke-width="1.3"/>
-        <path d="M78 60 C86 48 100 50 104 64 C96 60 86 60 78 60Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1"/>
+        <path d="M46 40 C42 56 44 72 48 86" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1"/>
+        <path d="M114 40 C118 56 116 72 112 86" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1"/>
+        <path d="M38 88 C42 58 70 48 98 54 C118 58 132 70 136 82 C138 88 128 98 110 104 C88 112 56 108 40 96 C38 92 38 88 38 88Z" fill="#fde047" stroke="#ca8a04" stroke-width="1.3"/>
         <path d="M52 78 C58 68 102 68 108 78 C98 86 62 86 52 78Z" fill="#1e40af" opacity="0.55"/>
+        <path d="M76 54 C78 66 82 66 84 54" fill="none" stroke="#1e3a8a" stroke-width="4.8" stroke-linecap="round" opacity="0.32"/>
+        <ellipse cx="88" cy="82" rx="14" ry="8" fill="#fff" opacity="0.18"/>
         ${companionEye(120, 80, 4.2)}`;
     case "lobster":
       return `${shadow}
@@ -1038,11 +1042,12 @@ function companionInnerMarkup(id) {
         ${companionEyes(68, 90, 92, 90, 4)}`;
     case "blue_tang":
       return `${shadow}
-        <path d="M36 88 C24 72 18 80 22 90 C18 100 28 104 36 88Z" fill="#0284c7" stroke="#0c4a6e" stroke-width="1"/>
+        <path d="M36 88 C24 72 18 80 22 90 C18 100 28 104 36 88Z" fill="#facc15" stroke="#ca8a04" stroke-width="1"/>
         <path d="M38 88 C44 64 72 54 102 60 C122 64 136 76 138 86 C140 92 134 98 124 104 C100 116 68 112 48 102 C40 98 38 92 38 88Z" fill="#0ea5e9" stroke="#0369a1" stroke-width="1.3"/>
         <path d="M78 60 C88 48 104 50 108 64 C98 60 86 60 78 60Z" fill="#0284c7" stroke="#0c4a6e" stroke-width="1"/>
         <path d="M88 104 C92 118 78 122 76 108 C80 106 84 104 88 104Z" fill="#0369a1" stroke="#0c4a6e" stroke-width="0.9"/>
-        <path d="M52 68 C48 86 52 104 56 108" fill="none" stroke="#facc15" stroke-width="5" stroke-linecap="round"/>
+        <path d="M108 62 C118 58 126 64 124 74 C118 78 110 74 108 68 Z" fill="#0f172a" opacity="0.82"/>
+        <path d="M54 118 C74 126 108 112 136 84 C122 100 90 118 66 122 C58 122 54 118 54 118Z" fill="#bae6fd" opacity="0.45"/>
         ${companionEye(122, 80, 4.2)}`;
     case "sailfish":
       return `${shadow}
@@ -1075,8 +1080,9 @@ function companionInnerMarkup(id) {
     case "coral_angel":
       return `${shadow}
         <path d="M36 88 C24 72 18 80 22 90 C18 100 28 104 36 88Z" fill="#fb7185" stroke="#be123c" stroke-width="1"/>
-        <path d="M38 88 C44 62 72 52 100 58 C118 62 132 74 136 84 C138 90 132 96 122 102 C98 114 68 112 48 102 C40 98 38 92 38 88Z" fill="#fda4af" stroke="#be123c" stroke-width="1.3"/>
-        <path d="M78 60 C86 48 100 50 104 64 C96 60 86 60 78 60Z" fill="#f472b6" stroke="#be123c" stroke-width="1"/>
+        <path d="M46 40 C42 56 44 72 48 86" fill="#f472b6" stroke="#be123c" stroke-width="1"/>
+        <path d="M114 40 C118 56 116 72 112 86" fill="#f472b6" stroke="#be123c" stroke-width="1"/>
+        <path d="M38 88 C42 58 70 48 98 54 C118 58 132 70 136 82 C138 88 128 98 110 104 C88 112 56 108 40 96 C38 92 38 88 38 88Z" fill="#fda4af" stroke="#be123c" stroke-width="1.3"/>
         <path d="M52 78 C58 68 102 68 108 78 C98 86 62 86 52 78Z" fill="#fb7185" opacity="0.55"/>
         ${companionEye(120, 80, 4.2)}
         <path d="M62 74 C68 58 74 52 80 58 C86 52 92 58 98 74 C90 68 70 68 62 74Z" fill="#fecdd3" stroke="#f472b6" stroke-width="1"/>
@@ -1111,13 +1117,13 @@ const COMPANION_ART_FIT = {
   viking_seal: { cx: 80, cy: 83, scale: 1.28 },
   royal_manta: { cx: 80, cy: 93, scale: 1.28 },
   starfish: { cx: 80, cy: 86, scale: 1.22 },
-  angelfish: { cx: 82, cy: 85, scale: 1.12 },
+  angelfish: { cx: 82, cy: 88, scale: 1.05 },
   lobster: { cx: 80, cy: 92, scale: 1.05 },
-  blue_tang: { cx: 82, cy: 85, scale: 1.12 },
+  blue_tang: { cx: 82, cy: 84, scale: 1.1 },
   sailfish: { cx: 78, cy: 82, scale: 0.95 },
   nautilus: { cx: 82, cy: 88, scale: 1.15 },
   space_fish: { cx: 81, cy: 75.1, scale: 1.08 },
-  coral_angel: { cx: 82, cy: 85, scale: 1.1 },
+  coral_angel: { cx: 82, cy: 88, scale: 1.05 },
 };
 
 function companionArtSvg(id, { className = "companion-art" } = {}) {
