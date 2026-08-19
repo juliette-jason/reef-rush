@@ -4996,12 +4996,16 @@ button.seagull-avatar:active {
   inset: 0;
   isolation: isolate;
   max-width: none;
-  max-height: none;
+  max-height: 100%;
   width: auto;
-  height: auto;
+  height: 100%;
+  min-height: 0;
   gap: 14px;
   overflow-y: auto;
   overflow-x: hidden;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   z-index: 41;
   padding: 18px 14px max(28px, env(safe-area-inset-bottom, 0px) + 18px);
   background-color: var(--ocean-deep);
@@ -5017,6 +5021,8 @@ button.seagull-avatar:active {
 .panel--profile > *:not(.ocean-bubbles) {
   position: relative;
   z-index: 1;
+  flex-shrink: 0;
+  align-self: center;
   max-width: min(540px, 96vw);
   width: 100%;
 }
@@ -5289,7 +5295,7 @@ button.seagull-avatar:active {
 
 .profile-wardrobe {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   border-color: rgba(94, 234, 212, 0.42);
   background:
     radial-gradient(ellipse at 18% 0%, rgba(255, 213, 74, 0.16), transparent 42%),

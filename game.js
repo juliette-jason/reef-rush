@@ -10396,11 +10396,14 @@ let musicEnabled = loadMusicEnabledPref();
 let musicCtx = null;
 let musicMaster = null;
 let musicTimer = null;
-let musicStep = 0;
+let homeMusicTrackIndex = 0;
+let homeMusicBarIndex = 0;
 let gameMusicTimer = null;
-let gameMusicStep = 0;
+let reefMusicTrackIndex = 0;
+let reefMusicBarIndex = 0;
 let adventureMusicTimer = null;
-let adventureMusicStep = 0;
+let adventureMusicTrackIndex = 0;
+let adventureMusicBarIndex = 0;
 let eventsMusicTimer = null;
 let eventsMusicStep = 0;
 let homeAudioUnlocked = false;
@@ -12393,115 +12396,364 @@ function syncMusicMasterGain() {
   }
 }
 
-function scheduleSailingMusicBar() {
-  if (!musicSchedulerReady() || playing || isEventsMusicActive() || isAdventureMusicActive()) return;
+function randomMusicTrackIndex(count, avoid = -1) {
+  if (count <= 1) return 0;
+  let idx = Math.floor(Math.random() * count);
+  while (idx === avoid && count > 1) idx = Math.floor(Math.random() * count);
+  return idx;
+}
+
+/** Soft yacht-rock radio beds for menus and home — each track is its own progression. */
+const YACHT_ROCK_HOME_TRACKS = [
+  {
+    id: "harbor_haze",
+    tempoMs: 1680,
+    leadType: "triangle",
+    bassType: "sine",
+    bars: [
+      [220.0, 277.18, 329.63, 415.3, 493.88],
+      [185.0, 220.0, 277.18, 329.63, 415.3],
+      [146.83, 185.0, 220.0, 277.18, 329.63],
+      [164.81, 207.65, 246.94, 329.63, 369.99],
+      [220.0, 277.18, 329.63, 415.3, 493.88],
+      [196.0, 246.94, 293.66, 369.99, 440.0],
+    ],
+  },
+  {
+    id: "coastal_cruiser",
+    tempoMs: 1540,
+    leadType: "sine",
+    bassType: "sine",
+    bars: [
+      [196.0, 246.94, 293.66, 369.99, 440.0],
+      [220.0, 261.63, 329.63, 392.0, 493.88],
+      [246.94, 293.66, 369.99, 440.0, 554.37],
+      [261.63, 329.63, 392.0, 493.88, 587.33],
+      [220.0, 261.63, 329.63, 392.0, 440.0],
+      [196.0, 246.94, 293.66, 369.99, 440.0],
+    ],
+  },
+  {
+    id: "sunset_slip",
+    tempoMs: 1760,
+    leadType: "triangle",
+    bassType: "sine",
+    bars: [
+      [174.61, 220.0, 261.63, 329.63, 392.0],
+      [164.81, 196.0, 246.94, 293.66, 349.23],
+      [220.0, 261.63, 329.63, 392.0, 493.88],
+      [146.83, 174.61, 220.0, 261.63, 329.63],
+      [174.61, 220.0, 261.63, 329.63, 392.0],
+      [185.0, 220.0, 277.18, 329.63, 415.3],
+    ],
+  },
+  {
+    id: "marina_nights",
+    tempoMs: 1620,
+    leadType: "sine",
+    bassType: "triangle",
+    bars: [
+      [261.63, 329.63, 392.0, 493.88, 587.33],
+      [220.0, 261.63, 329.63, 392.0, 440.0],
+      [174.61, 220.0, 261.63, 329.63, 392.0],
+      [196.0, 246.94, 293.66, 349.23, 440.0],
+      [261.63, 329.63, 392.0, 493.88, 587.33],
+      [246.94, 293.66, 369.99, 440.0, 554.37],
+    ],
+  },
+  {
+    id: "boardwalk_breeze",
+    tempoMs: 1700,
+    leadType: "triangle",
+    bassType: "sine",
+    bars: [
+      [155.56, 196.0, 233.08, 293.66, 349.23],
+      [130.81, 155.56, 196.0, 233.08, 293.66],
+      [174.61, 207.65, 261.63, 311.13, 392.0],
+      [233.08, 293.66, 349.23, 415.3, 523.25],
+      [155.56, 196.0, 233.08, 293.66, 349.23],
+      [146.83, 174.61, 220.0, 261.63, 329.63],
+    ],
+  },
+  {
+    id: "pelican_bay",
+    tempoMs: 1580,
+    leadType: "sine",
+    bassType: "sine",
+    bars: [
+      [146.83, 185.0, 220.0, 277.18, 329.63],
+      [196.0, 246.94, 293.66, 369.99, 440.0],
+      [220.0, 277.18, 329.63, 415.3, 493.88],
+      [185.0, 220.0, 277.18, 329.63, 415.3],
+      [146.83, 185.0, 220.0, 277.18, 329.63],
+      [164.81, 207.65, 246.94, 311.13, 369.99],
+    ],
+  },
+];
+
+/** Yacht-rock play beds for reef rounds — rotate so fishing loops feel like different radio tracks. */
+const YACHT_ROCK_PLAY_TRACKS = [
+  {
+    id: "reef_radio_one",
+    tempoMs: 1320,
+    type: "triangle",
+    bassType: "sine",
+    gain: 0.0042,
+    bassGain: 0.011,
+    chords: [
+      [220.0, 277.18, 329.63, 415.3, 493.88],
+      [185.0, 220.0, 277.18, 329.63, 440.0],
+      [146.83, 185.0, 220.0, 277.18, 329.63],
+      [164.81, 207.65, 246.94, 329.63, 369.99],
+      [196.0, 246.94, 293.66, 369.99, 440.0],
+      [174.61, 220.0, 261.63, 329.63, 392.0],
+    ],
+    sparkle: [659.25, 783.99, 987.77],
+    noise: 0.0012,
+  },
+  {
+    id: "reef_radio_two",
+    tempoMs: 1460,
+    type: "sine",
+    bassType: "triangle",
+    gain: 0.0055,
+    bassGain: 0.013,
+    chords: [
+      [261.63, 329.63, 392.0, 493.88, 587.33],
+      [246.94, 311.13, 369.99, 466.16, 554.37],
+      [220.0, 277.18, 329.63, 415.3, 493.88],
+      [196.0, 246.94, 293.66, 369.99, 440.0],
+      [261.63, 329.63, 392.0, 493.88, 587.33],
+      [233.08, 293.66, 349.23, 440.0, 523.25],
+    ],
+    sparkle: [554.37, 659.25, 739.99],
+    noise: 0.0016,
+  },
+  {
+    id: "reef_radio_three",
+    tempoMs: 1180,
+    type: "triangle",
+    bassType: "sine",
+    gain: 0.005,
+    bassGain: 0.014,
+    chords: [
+      [174.61, 220.0, 261.63, 329.63, 392.0],
+      [164.81, 196.0, 246.94, 293.66, 349.23],
+      [155.56, 196.0, 233.08, 293.66, 349.23],
+      [146.83, 185.0, 220.0, 277.18, 329.63],
+      [174.61, 220.0, 261.63, 329.63, 392.0],
+      [196.0, 246.94, 293.66, 369.99, 440.0],
+    ],
+    sparkle: [392.0, 440.0, 493.88],
+    noise: 0.0018,
+  },
+  {
+    id: "reef_radio_four",
+    tempoMs: 1380,
+    type: "sine",
+    bassType: "sine",
+    gain: 0.0048,
+    bassGain: 0.012,
+    chords: [
+      [196.0, 246.94, 293.66, 369.99, 440.0],
+      [220.0, 261.63, 329.63, 392.0, 493.88],
+      [246.94, 293.66, 369.99, 440.0, 554.37],
+      [261.63, 329.63, 392.0, 493.88, 587.33],
+      [220.0, 261.63, 329.63, 392.0, 440.0],
+      [185.0, 220.0, 277.18, 329.63, 415.3],
+    ],
+    sparkle: [587.33, 698.46, 880.0],
+    noise: 0.0014,
+  },
+  {
+    id: "reef_radio_five",
+    tempoMs: 1520,
+    type: "triangle",
+    bassType: "triangle",
+    gain: 0.0045,
+    bassGain: 0.013,
+    chords: [
+      [146.83, 185.0, 220.0, 277.18, 329.63],
+      [164.81, 207.65, 246.94, 311.13, 369.99],
+      [174.61, 220.0, 261.63, 329.63, 392.0],
+      [196.0, 246.94, 293.66, 369.99, 440.0],
+      [220.0, 277.18, 329.63, 415.3, 493.88],
+      [185.0, 220.0, 277.18, 329.63, 440.0],
+    ],
+    sparkle: [523.25, 659.25, 783.99],
+    noise: 0.001,
+  },
+  {
+    id: "reef_radio_six",
+    tempoMs: 1260,
+    type: "sine",
+    bassType: "sine",
+    gain: 0.0052,
+    bassGain: 0.012,
+    chords: [
+      [233.08, 293.66, 349.23, 440.0, 523.25],
+      [220.0, 261.63, 329.63, 392.0, 493.88],
+      [196.0, 246.94, 293.66, 369.99, 440.0],
+      [174.61, 220.0, 261.63, 329.63, 392.0],
+      [233.08, 293.66, 349.23, 440.0, 523.25],
+      [246.94, 311.13, 369.99, 466.16, 554.37],
+    ],
+    sparkle: [698.46, 830.61, 987.77],
+    noise: 0.0015,
+  },
+];
+
+/** Pirate shanty beds for adventure map and levels — distinct tempos and motifs. */
+const ADVENTURE_PIRATE_TRACKS = [
+  {
+    id: "black_flag_march",
+    tempoMs: 680,
+    leadType: "square",
+    bars: [
+      { bass: 73.42, melody: [146.83, 174.61, 220.0, 261.63, 293.66] },
+      { bass: 65.41, melody: [130.81, 155.56, 196.0, 233.08, 261.63] },
+      { bass: 73.42, melody: [146.83, 174.61, 220.0, 261.63, 293.66] },
+      { bass: 58.27, melody: [116.54, 138.59, 174.61, 207.65, 233.08] },
+      { bass: 55.0, melody: [110.0, 130.81, 164.81, 196.0, 220.0] },
+      { bass: 65.41, melody: [130.81, 155.56, 196.0, 233.08, 261.63] },
+      { bass: 73.42, melody: [146.83, 174.61, 220.0, 261.63, 293.66] },
+      { bass: 49.0, melody: [98.0, 116.54, 146.83, 174.61, 196.0] },
+    ],
+  },
+  {
+    id: "doubloon_jig",
+    tempoMs: 620,
+    leadType: "triangle",
+    bars: [
+      { bass: 82.41, melody: [164.81, 196.0, 246.94, 293.66, 329.63] },
+      { bass: 73.42, melody: [146.83, 174.61, 220.0, 261.63, 293.66] },
+      { bass: 65.41, melody: [130.81, 155.56, 196.0, 233.08, 261.63] },
+      { bass: 82.41, melody: [164.81, 196.0, 246.94, 293.66, 329.63] },
+      { bass: 87.31, melody: [174.61, 207.65, 261.63, 311.13, 349.23] },
+      { bass: 73.42, melody: [146.83, 174.61, 220.0, 261.63, 293.66] },
+      { bass: 61.74, melody: [123.47, 146.83, 185.0, 220.0, 246.94] },
+      { bass: 82.41, melody: [164.81, 196.0, 246.94, 293.66, 329.63] },
+    ],
+  },
+  {
+    id: "storm_deck_shanty",
+    tempoMs: 740,
+    leadType: "sawtooth",
+    bars: [
+      { bass: 55.0, melody: [110.0, 130.81, 164.81, 196.0, 220.0] },
+      { bass: 49.0, melody: [98.0, 116.54, 146.83, 174.61, 196.0] },
+      { bass: 58.27, melody: [116.54, 138.59, 174.61, 207.65, 233.08] },
+      { bass: 65.41, melody: [130.81, 155.56, 196.0, 233.08, 261.63] },
+      { bass: 55.0, melody: [110.0, 130.81, 164.81, 196.0, 220.0] },
+      { bass: 46.25, melody: [92.5, 110.0, 138.59, 164.81, 185.0] },
+      { bass: 58.27, melody: [116.54, 138.59, 174.61, 207.65, 233.08] },
+      { bass: 73.42, melody: [146.83, 174.61, 220.0, 261.63, 293.66] },
+    ],
+  },
+  {
+    id: "cannon_row",
+    tempoMs: 660,
+    leadType: "square",
+    bars: [
+      { bass: 61.74, melody: [123.47, 146.83, 185.0, 220.0, 246.94] },
+      { bass: 55.0, melody: [110.0, 130.81, 164.81, 196.0, 220.0] },
+      { bass: 65.41, melody: [130.81, 155.56, 196.0, 233.08, 261.63] },
+      { bass: 58.27, melody: [116.54, 138.59, 174.61, 207.65, 233.08] },
+      { bass: 73.42, melody: [146.83, 174.61, 220.0, 261.63, 293.66] },
+      { bass: 55.0, melody: [110.0, 130.81, 164.81, 196.0, 220.0] },
+      { bass: 49.0, melody: [98.0, 116.54, 146.83, 174.61, 196.0] },
+      { bass: 65.41, melody: [130.81, 155.56, 196.0, 233.08, 261.63] },
+    ],
+  },
+  {
+    id: "grog_song",
+    tempoMs: 720,
+    leadType: "triangle",
+    bars: [
+      { bass: 73.42, melody: [146.83, 174.61, 220.0, 261.63, 293.66] },
+      { bass: 69.3, melody: [138.59, 164.81, 207.65, 246.94, 277.18] },
+      { bass: 65.41, melody: [130.81, 155.56, 196.0, 233.08, 261.63] },
+      { bass: 61.74, melody: [123.47, 146.83, 185.0, 220.0, 246.94] },
+      { bass: 58.27, melody: [116.54, 138.59, 174.61, 207.65, 233.08] },
+      { bass: 55.0, melody: [110.0, 130.81, 164.81, 196.0, 220.0] },
+      { bass: 73.42, melody: [146.83, 174.61, 220.0, 261.63, 293.66] },
+      { bass: 82.41, melody: [164.81, 196.0, 246.94, 293.66, 329.63] },
+    ],
+  },
+  {
+    id: "kraken_watch",
+    tempoMs: 700,
+    leadType: "sawtooth",
+    bars: [
+      { bass: 46.25, melody: [92.5, 110.0, 138.59, 164.81, 185.0] },
+      { bass: 55.0, melody: [110.0, 130.81, 164.81, 196.0, 220.0] },
+      { bass: 58.27, melody: [116.54, 138.59, 174.61, 207.65, 233.08] },
+      { bass: 65.41, melody: [130.81, 155.56, 196.0, 233.08, 261.63] },
+      { bass: 49.0, melody: [98.0, 116.54, 146.83, 174.61, 196.0] },
+      { bass: 73.42, melody: [146.83, 174.61, 220.0, 261.63, 293.66] },
+      { bass: 55.0, melody: [110.0, 130.81, 164.81, 196.0, 220.0] },
+      { bass: 41.2, melody: [82.41, 98.0, 123.47, 146.83, 164.81] },
+    ],
+  },
+];
+
+function playYachtRockHomeBar(chord, track, barIndex) {
   const now = musicCtx.currentTime + 0.04;
   const v = HOME_MUSIC_VOLUME_BOOST;
-  // Original soft yacht-rock radio bed: smooth major-7/add-9 colors, not a cover melody.
-  const chords = [
-    [220.0, 277.18, 329.63, 415.3, 493.88],
-    [185.0, 220.0, 277.18, 329.63, 440.0],
-    [146.83, 185.0, 220.0, 277.18, 329.63],
-    [164.81, 207.65, 246.94, 329.63, 369.99],
-  ];
-  const chord = chords[musicStep % chords.length];
   const bass = chord[0] / 2;
-  playMusicNote(bass, now, 0.62, 0.044 * v, "sine");
-  playMusicNote(bass * 2, now + 0.84, 0.44, 0.026 * v, "sine");
+  const leadType = track.leadType || "triangle";
+  const bassType = track.bassType || "sine";
+  playMusicNote(bass, now, 0.62, 0.044 * v, bassType);
+  playMusicNote(bass * 2, now + 0.84, 0.44, 0.026 * v, bassType);
   for (let i = 0; i < chord.length; i++) {
-    playMusicNote(chord[i], now + i * 0.035, 1.72, 0.014 * v, "triangle");
+    playMusicNote(chord[i], now + i * 0.035, 1.72, 0.014 * v, leadType);
     playMusicNote(chord[i] * 1.003, now + i * 0.035, 1.72, 0.006 * v, "sine");
   }
-  playMusicNote(chord[2] * 2, now + 0.52, 0.24, 0.012 * v, "sine");
-  playMusicNote(chord[4] * 1.5, now + 0.98, 0.32, 0.011 * v, "sine");
-  playMusicNote(chord[3] * 2, now + 1.28, 0.26, 0.009 * v, "triangle");
+  if (barIndex % 2 === 0) {
+    playMusicNote(chord[2] * 2, now + 0.52, 0.24, 0.012 * v, "sine");
+    playMusicNote(chord[Math.min(4, chord.length - 1)] * 1.5, now + 0.98, 0.32, 0.011 * v, "sine");
+  } else {
+    playMusicNote(chord[3] * 2, now + 0.48, 0.26, 0.01 * v, leadType);
+    playMusicNote(chord[1] * 2, now + 1.12, 0.28, 0.009 * v, "sine");
+  }
   playNoiseHit(now + 0.58, 0.09, 0.006 * v);
   playNoiseHit(now + 1.36, 0.12, 0.008 * v);
-  musicStep++;
 }
 
-function reefMusicSpec(reefId) {
-  const specs = {
-    australia: {
-      tempoMs: 1320,
-      type: "triangle",
-      bassType: "sine",
-      gain: 0.0035,
-      bassGain: 0.007,
-      chords: [
-        [261.63, 329.63, 392.0, 523.25],
-        [293.66, 369.99, 440.0, 587.33],
-        [349.23, 440.0, 523.25, 659.25],
-        [392.0, 493.88, 587.33, 783.99],
-      ],
-      sparkle: [659.25, 783.99, 1046.5],
-      noise: 0.0008,
-    },
-    caribbean: {
-      tempoMs: 1460,
-      type: "sine",
-      bassType: "triangle",
-      gain: 0.006,
-      bassGain: 0.012,
-      chords: [
-        [220.0, 277.18, 329.63, 440.0],
-        [246.94, 311.13, 369.99, 493.88],
-        [196.0, 246.94, 293.66, 392.0],
-        [261.63, 329.63, 392.0, 523.25],
-      ],
-      sparkle: [554.37, 659.25, 739.99],
-      noise: 0.0015,
-    },
-    mediterranean: {
-      tempoMs: 1180,
-      type: "triangle",
-      bassType: "sine",
-      gain: 0.0055,
-      bassGain: 0.015,
-      chords: [
-        [174.61, 220.0, 261.63, 329.63],
-        [196.0, 246.94, 293.66, 369.99],
-        [164.81, 207.65, 246.94, 329.63],
-        [146.83, 185.0, 220.0, 293.66],
-      ],
-      sparkle: [392.0, 440.0, 493.88],
-      noise: 0.002,
-    },
-    japan_kuroshio: {
-      tempoMs: 920,
-      type: "sawtooth",
-      bassType: "triangle",
-      gain: 0.0045,
-      bassGain: 0.014,
-      chords: [
-        [146.83, 196.0, 233.08, 293.66],
-        [164.81, 207.65, 246.94, 329.63],
-        [138.59, 185.0, 220.0, 277.18],
-        [155.56, 196.0, 246.94, 311.13],
-      ],
-      sparkle: [369.99, 415.3, 493.88],
-      noise: 0.0025,
-    },
-    mariana_trench: {
-      tempoMs: 1760,
-      type: "sine",
-      bassType: "sawtooth",
-      gain: 0.004,
-      bassGain: 0.012,
-      chords: [
-        [82.41, 123.47, 164.81, 196.0],
-        [73.42, 110.0, 146.83, 185.0],
-        [92.5, 138.59, 174.61, 207.65],
-        [69.3, 103.83, 138.59, 164.81],
-      ],
-      sparkle: [246.94, 277.18, 329.63],
-      noise: 0.003,
-    },
+function armHomeMusicTimer() {
+  if (musicTimer) {
+    clearInterval(musicTimer);
+    musicTimer = null;
+  }
+  const track = YACHT_ROCK_HOME_TRACKS[homeMusicTrackIndex] || YACHT_ROCK_HOME_TRACKS[0];
+  musicTimer = setInterval(scheduleSailingMusicBar, track.tempoMs);
+}
+
+function scheduleSailingMusicBar() {
+  if (!musicSchedulerReady() || playing || isEventsMusicActive() || isAdventureMusicActive()) return;
+  const track = YACHT_ROCK_HOME_TRACKS[homeMusicTrackIndex] || YACHT_ROCK_HOME_TRACKS[0];
+  const chord = track.bars[homeMusicBarIndex % track.bars.length];
+  playYachtRockHomeBar(chord, track, homeMusicBarIndex);
+  homeMusicBarIndex++;
+  if (homeMusicBarIndex >= track.bars.length) {
+    const prev = homeMusicTrackIndex;
+    homeMusicBarIndex = 0;
+    homeMusicTrackIndex = randomMusicTrackIndex(YACHT_ROCK_HOME_TRACKS.length, prev);
+    armHomeMusicTimer();
+  }
+}
+
+function reefMusicTuning(reefId) {
+  const tunings = {
+    australia: { tempoScale: 0.95, gainScale: 0.85, bassDivisor: 1.5, sparkleType: "sine" },
+    caribbean: { tempoScale: 1, gainScale: 1.1, bassDivisor: 1.5, sparkleType: "sine" },
+    mediterranean: { tempoScale: 0.88, gainScale: 1.05, bassDivisor: 1.5, sparkleType: "sine" },
+    japan_kuroshio: { tempoScale: 0.72, gainScale: 0.92, bassDivisor: 1.5, sparkleType: "triangle", leadOverride: "sawtooth" },
+    mariana_trench: { tempoScale: 1.15, gainScale: 0.82, bassDivisor: 2, sparkleType: "sine", noiseMult: 2.2 },
   };
-  return specs[reefId] || specs.caribbean;
+  return tunings[reefId] || tunings.caribbean;
 }
 
-const ADVENTURE_PIRATE_TEMPO_MS = 700;
 const EVENTS_MUSIC_TEMPO_MS = 2600;
 const EVENTS_MUSIC_VOLUME_BOOST = 5;
 const EVENTS_MUSIC_MASTER_GAIN = 0.45;
@@ -12538,32 +12790,31 @@ function scheduleEventsLaidbackMusicBar() {
   eventsMusicStep++;
 }
 
-function scheduleAdventurePirateMusicBar() {
-  if (!musicSchedulerReady() || !isAdventureMusicActive()) return;
+function playAdventurePirateBar(bar, track, pulse) {
   const now = musicCtx.currentTime + 0.04;
   const v = 1.25;
-  const bars = [
-    { bass: 73.42, melody: [146.83, 174.61, 220.0, 261.63, 293.66] },
-    { bass: 65.41, melody: [130.81, 155.56, 196.0, 233.08, 261.63] },
-    { bass: 58.27, melody: [116.54, 138.59, 174.61, 207.65, 233.08] },
-    { bass: 55.0, melody: [110.0, 130.81, 164.81, 196.0, 220.0] },
-  ];
-  const bar = bars[adventureMusicStep % bars.length];
-  const pulse = adventureMusicStep % 8;
+  const leadType = track.leadType || "square";
+  const accentType = leadType === "triangle" ? "square" : leadType;
 
   playMusicNote(bar.bass, now, 0.42, 0.068 * v, "sawtooth");
   playMusicNote(bar.bass * 0.5, now, 0.5, 0.038 * v, "sine");
 
   if (pulse % 4 === 0) {
-    playMusicNote(bar.melody[0], now + 0.02, 0.35, 0.028 * v, "square");
+    playMusicNote(bar.melody[0], now + 0.02, 0.35, 0.028 * v, accentType);
     playMusicNote(bar.melody[0] * 1.005, now + 0.02, 0.35, 0.018 * v, "sawtooth");
     playMusicNote(bar.melody[2], now + 0.02, 0.32, 0.022 * v, "triangle");
   }
 
   const melIdx = pulse % bar.melody.length;
-  playMusicNote(bar.melody[melIdx], now + 0.12 + (pulse % 4) * 0.08, 0.22, 0.024 * v, pulse % 2 ? "triangle" : "square");
+  playMusicNote(
+    bar.melody[melIdx],
+    now + 0.12 + (pulse % 4) * 0.08,
+    0.22,
+    0.024 * v,
+    pulse % 2 ? "triangle" : accentType,
+  );
 
-  if (adventureMusicStep % 2 === 1) {
+  if (pulse % 2 === 1) {
     playMusicNote(bar.melody[3], now + 0.44, 0.14, 0.02 * v, "sawtooth");
     playMusicNote(bar.melody[4] || bar.melody[3] * 1.12, now + 0.54, 0.12, 0.017 * v, "triangle");
   }
@@ -12571,12 +12822,34 @@ function scheduleAdventurePirateMusicBar() {
   playNoiseHit(now + 0.18, 0.05, 0.014 * v);
   if (pulse % 2 === 1) playNoiseHit(now + 0.52, 0.07, 0.018 * v);
 
-  if (adventureMusicStep % 8 === 4) {
+  if (pulse === 4) {
     playMusicNote(98.0, now + 0.28, 0.3, 0.03 * v, "triangle");
     playMusicNote(123.47, now + 0.38, 0.25, 0.026 * v, "sine");
   }
+}
 
-  adventureMusicStep++;
+function armAdventureMusicTimer() {
+  if (adventureMusicTimer) {
+    clearInterval(adventureMusicTimer);
+    adventureMusicTimer = null;
+  }
+  const track = ADVENTURE_PIRATE_TRACKS[adventureMusicTrackIndex] || ADVENTURE_PIRATE_TRACKS[0];
+  adventureMusicTimer = setInterval(scheduleAdventurePirateMusicBar, track.tempoMs);
+}
+
+function scheduleAdventurePirateMusicBar() {
+  if (!musicSchedulerReady() || !isAdventureMusicActive()) return;
+  const track = ADVENTURE_PIRATE_TRACKS[adventureMusicTrackIndex] || ADVENTURE_PIRATE_TRACKS[0];
+  const bar = track.bars[adventureMusicBarIndex % track.bars.length];
+  const pulse = adventureMusicBarIndex % 8;
+  playAdventurePirateBar(bar, track, pulse);
+  adventureMusicBarIndex++;
+  if (adventureMusicBarIndex >= track.bars.length) {
+    const prev = adventureMusicTrackIndex;
+    adventureMusicBarIndex = 0;
+    adventureMusicTrackIndex = randomMusicTrackIndex(ADVENTURE_PIRATE_TRACKS.length, prev);
+    armAdventureMusicTimer();
+  }
 }
 
 function startEventsMusic(forceRestart = true) {
@@ -12618,9 +12891,10 @@ function startAdventureMusic(forceRestart = true) {
     clearInterval(adventureMusicTimer);
     adventureMusicTimer = null;
   }
-  adventureMusicStep = 0;
+  adventureMusicTrackIndex = randomMusicTrackIndex(ADVENTURE_PIRATE_TRACKS.length);
+  adventureMusicBarIndex = 0;
   scheduleAdventurePirateMusicBar();
-  adventureMusicTimer = setInterval(scheduleAdventurePirateMusicBar, ADVENTURE_PIRATE_TEMPO_MS);
+  armAdventureMusicTimer();
   void resumeMusicContext();
 }
 
@@ -12631,25 +12905,55 @@ function stopAdventureMusic() {
   }
 }
 
+function armReefMusicTimer() {
+  if (gameMusicTimer) {
+    clearInterval(gameMusicTimer);
+    gameMusicTimer = null;
+  }
+  const reef = getReef();
+  const track = YACHT_ROCK_PLAY_TRACKS[reefMusicTrackIndex] || YACHT_ROCK_PLAY_TRACKS[0];
+  const tune = reefMusicTuning(reef.id);
+  const tempoMs = Math.round(track.tempoMs * (tune.tempoScale || 1));
+  gameMusicTimer = setInterval(scheduleReefMusicBar, tempoMs);
+}
+
 function scheduleReefMusicBar() {
   if (!musicSchedulerReady() || !playing || adventureSession) return;
   const reef = getReef();
-  const spec = reefMusicSpec(reef.id);
+  const track = YACHT_ROCK_PLAY_TRACKS[reefMusicTrackIndex] || YACHT_ROCK_PLAY_TRACKS[0];
+  const tune = reefMusicTuning(reef.id);
+  const tempoMs = Math.round(track.tempoMs * (tune.tempoScale || 1));
   const now = musicCtx.currentTime + 0.035;
-  const chord = spec.chords[gameMusicStep % spec.chords.length];
-  const bass = chord[0] / (reef.id === "mariana_trench" ? 2 : 1.5);
-  playMusicNote(bass, now, spec.tempoMs / 1000 + 0.2, spec.bassGain, spec.bassType);
+  const chord = track.chords[reefMusicBarIndex % track.chords.length];
+  const bass = chord[0] / (tune.bassDivisor || 1.5);
+  const leadType = tune.leadOverride || track.type;
+  const gain = track.gain * (tune.gainScale || 1);
+  const bassGain = track.bassGain * (tune.gainScale || 1);
+  playMusicNote(bass, now, tempoMs / 1000 + 0.2, bassGain, track.bassType);
   for (let i = 0; i < chord.length; i++) {
-    playMusicNote(chord[i], now + i * 0.04, spec.tempoMs / 1000 * 0.85, spec.gain, spec.type);
+    playMusicNote(chord[i], now + i * 0.04, tempoMs / 1000 * 0.85, gain, leadType);
   }
-  for (let i = 0; i < spec.sparkle.length; i++) {
-    const beat = now + 0.22 + i * (spec.tempoMs / 1000 / 4);
-    playMusicNote(spec.sparkle[(gameMusicStep + i) % spec.sparkle.length], beat, 0.16, spec.gain * 0.72, reef.id === "japan_kuroshio" ? "triangle" : "sine");
+  for (let i = 0; i < track.sparkle.length; i++) {
+    const beat = now + 0.22 + i * (tempoMs / 1000 / 4);
+    playMusicNote(
+      track.sparkle[(reefMusicBarIndex + i) % track.sparkle.length],
+      beat,
+      0.16,
+      gain * 0.72,
+      tune.sparkleType || "sine",
+    );
   }
-  if (spec.noise > 0) {
-    playNoiseHit(now + spec.tempoMs / 1000 * 0.45, reef.id === "mariana_trench" ? 0.22 : 0.08, spec.noise);
+  if (track.noise > 0) {
+    const noiseDur = reef.id === "mariana_trench" ? 0.22 : 0.08;
+    playNoiseHit(now + tempoMs / 1000 * 0.45, noiseDur, track.noise * (tune.noiseMult || 1));
   }
-  gameMusicStep++;
+  reefMusicBarIndex++;
+  if (reefMusicBarIndex >= track.chords.length) {
+    const prev = reefMusicTrackIndex;
+    reefMusicBarIndex = 0;
+    reefMusicTrackIndex = randomMusicTrackIndex(YACHT_ROCK_PLAY_TRACKS.length, prev);
+    armReefMusicTimer();
+  }
 }
 
 function startReefMusic(forceRestart = true) {
@@ -12666,9 +12970,10 @@ function startReefMusic(forceRestart = true) {
     clearInterval(gameMusicTimer);
     gameMusicTimer = null;
   }
-  gameMusicStep = 0;
+  reefMusicTrackIndex = randomMusicTrackIndex(YACHT_ROCK_PLAY_TRACKS.length);
+  reefMusicBarIndex = 0;
   scheduleReefMusicBar();
-  gameMusicTimer = setInterval(scheduleReefMusicBar, reefMusicSpec(getReef().id).tempoMs);
+  armReefMusicTimer();
   void resumeMusicContext();
 }
 
@@ -12697,8 +13002,10 @@ function startHomeMusic(forceRestart = true) {
     clearInterval(musicTimer);
     musicTimer = null;
   }
+  homeMusicTrackIndex = randomMusicTrackIndex(YACHT_ROCK_HOME_TRACKS.length);
+  homeMusicBarIndex = 0;
   scheduleSailingMusicBar();
-  musicTimer = setInterval(scheduleSailingMusicBar, 1600);
+  armHomeMusicTimer();
   void resumeMusicContext();
 }
 
@@ -13646,8 +13953,10 @@ function openProfile() {
   showExclusiveMenu("profile");
   syncHomeLaunchButtons();
   requestAnimationFrame(() => {
-    profileNameInput?.focus();
-    profileNameInput?.select();
+    if (window.matchMedia("(pointer: fine)").matches) {
+      profileNameInput?.focus();
+      profileNameInput?.select();
+    }
   });
 }
 
