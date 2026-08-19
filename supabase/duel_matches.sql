@@ -8,6 +8,8 @@ create table if not exists public.duel_matches (
   guest_client_id text,
   host_initials text not null default 'AAA',
   guest_initials text not null default '',
+  host_companion_id text not null default 'harbor_gull',
+  guest_companion_id text not null default '',
   host_score integer not null default 0,
   guest_score integer not null default 0,
   round_start_ms bigint,

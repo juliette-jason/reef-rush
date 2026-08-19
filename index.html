@@ -78,6 +78,26 @@
 
       <div class="canvas-wrap">
         <canvas id="gameCanvas" aria-label="Fishing game playfield"></canvas>
+        <div id="onlineMatchup" class="online-matchup" hidden aria-hidden="true">
+          <div class="online-matchup__card">
+            <p id="onlineMatchupHeadline" class="online-matchup__headline">Fishing against</p>
+            <div class="online-matchup__row">
+              <div class="online-matchup__player">
+                <div id="onlineMatchupPlayerAvatar" class="online-matchup__avatar" aria-hidden="true"></div>
+                <span id="onlineMatchupPlayerName" class="online-matchup__name">You</span>
+              </div>
+              <div class="online-matchup__center">
+                <span id="onlineMatchupCountdown" class="online-matchup__countdown" aria-live="polite">3</span>
+                <span class="online-matchup__countdown-label">starting</span>
+              </div>
+              <div class="online-matchup__player online-matchup__player--rival">
+                <div id="onlineMatchupRivalAvatar" class="online-matchup__avatar" aria-hidden="true"></div>
+                <span id="onlineMatchupRivalName" class="online-matchup__name">COM</span>
+              </div>
+            </div>
+            <p id="onlineMatchupReef" class="online-matchup__reef"></p>
+          </div>
+        </div>
         <div id="eventsOcean" class="events-ocean" hidden aria-hidden="true">
           <svg class="events-ocean__sky" viewBox="0 0 800 420" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -2669,6 +2689,6 @@
       </section>
     </div>
 
-    <script src="game.js?v=coop-matchmaking-1" defer></script>
+    <script src="game.js?v=matchup-pals-1" defer></script>
   </body>
 </html>

@@ -532,6 +532,8 @@ function rollSpecialChestPrize(tier) {
 /** Profile sea pals — daily shop mascots (regular animals + costumes). */
 const STARTER_COMPANION_ID = "harbor_gull";
 const STARTER_COMPANION_IDS = ["harbor_gull"];
+/** Sea pal shown for COM rivals/partners on matchup screens. */
+const COM_COMPANION_ID = "space_fish";
 
 const COMPANION_DEFS = [
   { id: "harbor_gull", name: "Harbor Gull", kind: "regular", price: 0, starter: true, icon: "🕊️", blurb: "Your starter pal." },
@@ -1131,6 +1133,18 @@ function companionArtSvg(id, { className = "companion-art" } = {}) {
 
 function equippedCompanionId() {
   return normalizeEquippedClothes(gameMeta.equippedClothes, gameMeta.ownedClothes);
+}
+
+function normalizeCompanionId(id) {
+  if (typeof id === "string" && COMPANION_BY_ID[id]) return id;
+  return STARTER_COMPANION_ID;
+}
+
+function opponentCompanionFromRow(row, role) {
+  if (!row) return COM_COMPANION_ID;
+  if (row.isComGuest) return COM_COMPANION_ID;
+  const id = role === "host" ? row.guestCompanionId : row.hostCompanionId;
+  return normalizeCompanionId(id);
 }
 
 function syncSeagullOutfit() {
@@ -7842,6 +7856,8 @@ function normalizeDuelMatchRow(row) {
     guestInitials: Boolean(row.is_com_guest ?? row.isComGuest)
       ? "COM"
       : formatDuelInitials(row.guest_initials || row.guestInitials),
+    hostCompanionId: normalizeCompanionId(row.host_companion_id ?? row.hostCompanionId),
+    guestCompanionId: String(row.guest_companion_id ?? row.guestCompanionId ?? ""),
     hostScore: Math.max(0, Math.floor(Number(row.host_score ?? row.hostScore) || 0)),
     guestScore: Math.max(0, Math.floor(Number(row.guest_score ?? row.guestScore) || 0)),
     roundStartMs: Number(row.round_start_ms ?? row.roundStartMs) || 0,
@@ -7871,6 +7887,7 @@ function duelPlanFromMatch(row, role) {
     reefId: row.reefId,
     opponentInitials,
     opponentScore,
+    opponentCompanionId: opponentCompanionFromRow(row, role),
     hostClientId: row.hostClientId,
     guestClientId: row.guestClientId,
     roundStartMs: row.roundStartMs,
@@ -7923,6 +7940,7 @@ async function createDuelLobby(reefId, roundMs, matchKind = MATCH_KIND_DUEL) {
       reef_id: reefId,
       host_client_id: getDuelClientId(),
       host_initials: getDuelPlayerInitials(),
+      host_companion_id: equippedCompanionId(),
       guest_client_id: null,
       guest_initials: "",
       status: "lobby",
@@ -7949,6 +7967,7 @@ async function tryJoinDuelLobby(lobbyId) {
       body: JSON.stringify({
         guest_client_id: getDuelClientId(),
         guest_initials: getDuelPlayerInitials(),
+        guest_companion_id: equippedCompanionId(),
         status: "active",
         round_start_ms: Date.now() + DUEL_MATCH_START_DELAY_MS,
         is_com_guest: false,
@@ -7971,6 +7990,7 @@ async function activateComDuelGuest(matchId) {
     body: JSON.stringify({
       guest_client_id: `com-${matchId}`,
       guest_initials: "COM",
+      guest_companion_id: COM_COMPANION_ID,
       is_com_guest: true,
       status: "active",
       round_start_ms: Date.now() + 2000,
@@ -8247,13 +8267,7 @@ async function findCoopMatchOnline(roundMs, deadlineMs) {
 }
 
 async function waitForDuelRoundStart(plan) {
-  const waitMs = Math.max(0, plan.roundStartMs - Date.now());
-  if (waitMs <= 0) return;
-  const secs = Math.ceil(waitMs / 1000);
-  if (plan.mode === "pvp") {
-    setDuelMatchmakingUi(true, `Matched ${plan.opponentInitials}! Starting in ${secs}s…`);
-  }
-  await duelSleep(waitMs);
+  await waitForOnlineRoundStart(plan, { mode: "duel" });
 }
 
 function buildLocalComDuelPlan(reefId) {
@@ -8264,6 +8278,7 @@ function buildLocalComDuelPlan(reefId) {
     mode: "com",
     reefId: reef.id,
     opponentInitials: "COM",
+    opponentCompanionId: COM_COMPANION_ID,
     opponentScore: 0,
     roundStartMs: Date.now() + 800,
     roundMs: DUEL_ROUND_MS,
@@ -8282,6 +8297,7 @@ function coopPlanFromMatch(row, role) {
     reefId: row.reefId,
     partnerInitials,
     partnerScore,
+    partnerCompanionId: opponentCompanionFromRow(row, role),
     roundStartMs: row.roundStartMs,
     roundMs: MINIGAME_COOP_MS,
     partnerTarget: mode === "com" ? rollDuelRivalTargetScore() : 0,
@@ -8297,6 +8313,7 @@ function buildLocalComCoopPlan(reefId) {
     mode: "com",
     reefId: reef.id,
     partnerInitials: "COM",
+    partnerCompanionId: COM_COMPANION_ID,
     partnerScore: 0,
     roundStartMs: Date.now() + 800,
     roundMs: MINIGAME_COOP_MS,
@@ -8516,13 +8533,98 @@ async function resolveCoopFinalPartnerScore(session, localScore) {
 }
 
 async function waitForCoopRoundStart(plan) {
+  await waitForOnlineRoundStart(plan, { mode: "coop" });
+}
+
+let onlineMatchupTimer = null;
+
+function showOnlineMatchup({
+  mode,
+  relation,
+  playerName,
+  rivalName,
+  playerCompanionId,
+  rivalCompanionId,
+  reefName,
+  deadlineMs,
+}) {
+  hideOnlineMatchup();
+  if (!onlineMatchup) return;
+  onlineMatchup.hidden = false;
+  onlineMatchup.setAttribute("aria-hidden", "false");
+  onlineMatchup.classList.toggle("online-matchup--coop", mode === "coop");
+  onlineMatchup.classList.toggle("online-matchup--duel", mode === "duel");
+  if (onlineMatchupHeadline) onlineMatchupHeadline.textContent = relation;
+  if (onlineMatchupPlayerName) onlineMatchupPlayerName.textContent = playerName;
+  if (onlineMatchupRivalName) onlineMatchupRivalName.textContent = rivalName;
+  if (onlineMatchupPlayerAvatar) {
+    onlineMatchupPlayerAvatar.innerHTML = companionArtSvg(playerCompanionId, {
+      className: "online-matchup__art",
+    });
+  }
+  if (onlineMatchupRivalAvatar) {
+    onlineMatchupRivalAvatar.innerHTML = companionArtSvg(rivalCompanionId, {
+      className: "online-matchup__art",
+    });
+  }
+  if (onlineMatchupReef) onlineMatchupReef.textContent = reefName || "";
+  const tick = () => {
+    const secsLeft = Math.max(0, (deadlineMs - Date.now()) / 1000);
+    if (onlineMatchupCountdown) {
+      onlineMatchupCountdown.textContent = secsLeft > 0 ? String(Math.ceil(secsLeft)) : "GO!";
+    }
+  };
+  tick();
+  onlineMatchupTimer = setInterval(tick, 200);
+}
+
+function hideOnlineMatchup() {
+  if (onlineMatchupTimer) {
+    clearInterval(onlineMatchupTimer);
+    onlineMatchupTimer = null;
+  }
+  if (!onlineMatchup) return;
+  onlineMatchup.hidden = true;
+  onlineMatchup.setAttribute("aria-hidden", "true");
+}
+
+async function waitForOnlineRoundStart(plan, { mode }) {
   const waitMs = Math.max(0, plan.roundStartMs - Date.now());
   if (waitMs <= 0) return;
-  const secs = Math.ceil(waitMs / 1000);
-  if (plan.mode === "pvp") {
-    setCoopMatchmakingUi(true, `Matched ${plan.partnerInitials}! Starting in ${secs}s…`);
-  }
+  const isCoop = mode === "coop";
+  const reef = REEFS.find((r) => r.id === plan.reefId);
+  const rivalName =
+    plan.mode === "com"
+      ? "COM"
+      : formatDuelInitials(isCoop ? plan.partnerInitials : plan.opponentInitials) ||
+        (isCoop ? "Partner" : "Rival");
+  const rivalCompanionId =
+    plan.mode === "com"
+      ? COM_COMPANION_ID
+      : normalizeCompanionId(isCoop ? plan.partnerCompanionId : plan.opponentCompanionId);
+
+  hideAllPanels();
+  if (eventsOcean) eventsOcean.hidden = true;
+  appRoot?.classList.remove("app--events-mode");
+  appRoot?.classList.add("app--matchup");
+
+  showOnlineMatchup({
+    mode,
+    relation: isCoop ? "Fishing with" : "Fishing against",
+    playerName: getDuelPlayerInitials(),
+    rivalName,
+    playerCompanionId: equippedCompanionId(),
+    rivalCompanionId,
+    reefName: reef ? `${isCoop ? "Co-op" : "Duel"} · ${reef.name}` : "",
+    deadlineMs: plan.roundStartMs,
+  });
+
+  if (isCoop) setCoopMatchmakingUi(false);
+  else setDuelMatchmakingUi(false);
+
   await duelSleep(waitMs);
+  hideOnlineMatchup();
+  appRoot?.classList.remove("app--matchup");
 }
 
 function scheduleDuelStateSync(force = false) {
@@ -9176,14 +9278,11 @@ async function startDuelFromEvents() {
     hideDuelLobbyCountdown();
     await waitForDuelRoundStart(plan);
     setDuelMatchmakingUi(false);
-    if (plan.mode === "pvp") {
-      showToast(`Matched with ${plan.opponentInitials}!`, 2200);
-    } else if (plan.matchId) {
-      showToast("No rival found — duel vs COM.", 2400);
-    }
     beginDuelSession(plan);
   } catch (err) {
     console.warn(err);
+    hideOnlineMatchup();
+    appRoot?.classList.remove("app--matchup");
     setDuelMatchmakingUi(false);
     gameMeta.duelTickets += 1;
     saveMeta();
@@ -9607,6 +9706,14 @@ const coopEventStatus = document.getElementById("coopEventStatus");
 const coopLobbyCountdown = document.getElementById("coopLobbyCountdown");
 const coopLobbyCountdownLabel = document.getElementById("coopLobbyCountdownLabel");
 const coopLobbyCountdownValue = document.getElementById("coopLobbyCountdownValue");
+const onlineMatchup = document.getElementById("onlineMatchup");
+const onlineMatchupHeadline = document.getElementById("onlineMatchupHeadline");
+const onlineMatchupPlayerAvatar = document.getElementById("onlineMatchupPlayerAvatar");
+const onlineMatchupPlayerName = document.getElementById("onlineMatchupPlayerName");
+const onlineMatchupRivalAvatar = document.getElementById("onlineMatchupRivalAvatar");
+const onlineMatchupRivalName = document.getElementById("onlineMatchupRivalName");
+const onlineMatchupCountdown = document.getElementById("onlineMatchupCountdown");
+const onlineMatchupReef = document.getElementById("onlineMatchupReef");
 const duelLobbyCountdown = document.getElementById("duelLobbyCountdown");
 const duelLobbyCountdownLabel = document.getElementById("duelLobbyCountdownLabel");
 const duelLobbyCountdownValue = document.getElementById("duelLobbyCountdownValue");
@@ -13355,13 +13462,6 @@ function beginCoopSession(plan) {
     lastStatePush: 0,
     lastPartnerPoll: 0,
   };
-  if (plan.mode === "pvp") {
-    showToast(`Co-op with ${plan.partnerInitials}!`, 2200);
-  } else if (plan.matchId) {
-    showToast("No partner found — hauling with COM.", 2400);
-  } else {
-    showToast("Co-op Haul — hauling with COM!", 2200);
-  }
   startRound();
   if (plan.mode === "pvp") {
     void pollCoopPartnerFromMatch();
@@ -13402,6 +13502,8 @@ async function startCoopFromEvents() {
     beginCoopSession(plan);
   } catch (err) {
     console.warn(err);
+    hideOnlineMatchup();
+    appRoot?.classList.remove("app--matchup");
     setCoopMatchmakingUi(false);
     gameMeta.duelTickets += 1;
     saveMeta();
