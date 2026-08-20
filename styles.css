@@ -2669,6 +2669,32 @@ body {
 .online-matchup__avatar .online-matchup__art {
   position: relative;
   z-index: 1;
+  grid-area: 1 / 1;
+}
+
+.seagull-avatar.companion-host--manta,
+.online-matchup__avatar.companion-host--manta {
+  overflow: visible;
+}
+
+.seagull-avatar .companion-avatar__tail,
+.online-matchup__avatar .companion-avatar__tail {
+  grid-area: 1 / 1;
+  place-self: center;
+  display: block;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.seagull-avatar .companion-avatar__tail {
+  width: 108%;
+  height: 108%;
+}
+
+.online-matchup__avatar .companion-avatar__tail {
+  width: 112%;
+  height: 112%;
 }
 
 .seagull-avatar--profile {
