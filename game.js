@@ -7249,7 +7249,9 @@ function getReef() {
   return merged;
 }
 
-const LEADERBOARD_KEY = "reefRushLeaderboard_v2";
+/** Synced-remote cache only — bump key to drop polluted device-only boards. */
+const LEADERBOARD_KEY = "reefRushLeaderboard_v3";
+const LEADERBOARD_LEGACY_KEYS = ["reefRushLeaderboard_v2", "reefRushLeaderboard_v1"];
 const LEADERBOARD_MAX = 10;
 /** Pull extra rows so exact duplicates can be collapsed and we still fill the top 10. */
 const LEADERBOARD_FETCH_LIMIT = 80;
@@ -7260,6 +7262,8 @@ let leaderboardRows = [];
 let leaderboardLoading = false;
 let leaderboardLoadId = 0;
 let leaderboardSaveInFlight = false;
+/** True after at least one successful shared Top 10 fetch this page life. */
+let leaderboardRemoteSynced = false;
 
 function leaderboardEntryKey(e) {
   return `${e.initials}|${e.score}|${e.reefId || ""}`;
@@ -7337,6 +7341,21 @@ function leaderboardHeaders(extra = {}) {
 
 const LEADERBOARD_FETCH_OPTS = { cache: "no-store" };
 
+function withLeaderboardCacheBust(url) {
+  const sep = url.includes("?") ? "&" : "?";
+  return `${url}${sep}_=${Date.now()}`;
+}
+
+function purgeLegacyLeaderboardCaches() {
+  for (const key of LEADERBOARD_LEGACY_KEYS) {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
 const DUEL_BACKEND_MISSING = "DUEL_BACKEND_MISSING";
 
 function isDuelBackendMissingResponse(res, body) {
@@ -7372,8 +7391,11 @@ function loadLocalLeaderboard() {
   try {
     const raw = localStorage.getItem(LEADERBOARD_KEY);
     if (!raw) return [];
-    const arr = JSON.parse(raw);
-    return normalizeLeaderboardRows(arr);
+    const parsed = JSON.parse(raw);
+    /* Old bare arrays mixed device-only scores into the global Top 10 — ignore them. */
+    if (Array.isArray(parsed)) return [];
+    if (!parsed || typeof parsed !== "object" || !parsed.syncedAt || !Array.isArray(parsed.rows)) return [];
+    return normalizeLeaderboardRows(parsed.rows);
   } catch {
     return [];
   }
@@ -7381,14 +7403,22 @@ function loadLocalLeaderboard() {
 
 function saveLocalLeaderboard(rows) {
   try {
-    localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(normalizeLeaderboardRows(rows)));
+    localStorage.setItem(
+      LEADERBOARD_KEY,
+      JSON.stringify({
+        syncedAt: Date.now(),
+        rows: normalizeLeaderboardRows(rows),
+      })
+    );
   } catch {
     /* ignore quota */
   }
 }
 
 function loadLeaderboard() {
-  return leaderboardRows.length ? leaderboardRows : loadLocalLeaderboard();
+  /* Prefer live shared rows. Local is only a last-good remote cache, never a device board. */
+  if (leaderboardRows.length) return leaderboardRows;
+  return loadLocalLeaderboard();
 }
 
 async function fetchSharedLeaderboard() {
@@ -7398,26 +7428,34 @@ async function fetchSharedLeaderboard() {
   renderLeaderboardOl(leaderboardOver);
   renderLeaderboardOl(leaderboardEvents);
   try {
-    const url = `${LEADERBOARD_TABLE_URL}?select=initials,display_name,score,reef_id,created_at&order=score.desc,created_at.asc&limit=${LEADERBOARD_FETCH_LIMIT}`;
+    const url = withLeaderboardCacheBust(
+      `${LEADERBOARD_TABLE_URL}?select=initials,display_name,score,reef_id,created_at&order=score.desc,created_at.asc&limit=${LEADERBOARD_FETCH_LIMIT}`
+    );
     const res = await fetch(url, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
     if (!res.ok) {
       /* Older schemas may not have display_name yet. */
-      const fallbackUrl = `${LEADERBOARD_TABLE_URL}?select=initials,score,reef_id,created_at&order=score.desc,created_at.asc&limit=${LEADERBOARD_FETCH_LIMIT}`;
+      const fallbackUrl = withLeaderboardCacheBust(
+        `${LEADERBOARD_TABLE_URL}?select=initials,score,reef_id,created_at&order=score.desc,created_at.asc&limit=${LEADERBOARD_FETCH_LIMIT}`
+      );
       const fallbackRes = await fetch(fallbackUrl, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
       if (!fallbackRes.ok) throw new Error(`Leaderboard fetch failed: ${fallbackRes.status}`);
       const rows = normalizeLeaderboardRows(await fallbackRes.json());
       if (loadId !== leaderboardLoadId) return;
       leaderboardRows = rows;
+      leaderboardRemoteSynced = true;
       saveLocalLeaderboard(rows);
       return;
     }
     const rows = normalizeLeaderboardRows(await res.json());
     if (loadId !== leaderboardLoadId) return;
     leaderboardRows = rows;
+    leaderboardRemoteSynced = true;
     saveLocalLeaderboard(rows);
   } catch (err) {
     console.warn(err);
-    if (loadId === leaderboardLoadId) leaderboardRows = loadLocalLeaderboard();
+    if (loadId === leaderboardLoadId && !leaderboardRemoteSynced) {
+      leaderboardRows = loadLocalLeaderboard();
+    }
   } finally {
     if (loadId === leaderboardLoadId) {
       leaderboardLoading = false;
@@ -7449,9 +7487,6 @@ async function addLeaderboardEntry(initials, score, reefId, displayName = "") {
   if (rows.some((r) => leaderboardEntryKey(r) === leaderboardEntryKey(entry))) {
     return true;
   }
-  const merged = [...rows, entry];
-  leaderboardRows = normalizeLeaderboardRows(merged);
-  saveLocalLeaderboard(leaderboardRows);
   const payloadWithName = {
     initials: entry.initials,
     display_name: entry.name,
@@ -7483,6 +7518,7 @@ async function addLeaderboardEntry(initials, score, reefId, displayName = "") {
       });
     }
     if (!res.ok) throw new Error(`Leaderboard save failed: ${res.status}`);
+    /* Always re-read the shared board so every device shows the same Top 10. */
     await fetchSharedLeaderboard();
     return true;
   } catch (err) {
@@ -7543,33 +7579,33 @@ let dailyLeaderboardLoadId = 0;
 let dailyEventCountdownTimer = 0;
 
 function getDailyDayKey(d = new Date()) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
+  /* UTC so phones and computers share the same Fisher of the Day calendar day. */
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(d.getUTCDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 }
 
 function getPreviousDailyDayKey() {
   const d = new Date();
-  d.setDate(d.getDate() - 1);
+  d.setUTCDate(d.getUTCDate() - 1);
   return getDailyDayKey(d);
 }
 
 function formatDailyDayLabel(dayKey) {
   const [y, m, d] = dayKey.split("-").map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString(undefined, {
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(undefined, {
     weekday: "long",
     month: "short",
     day: "numeric",
+    timeZone: "UTC",
   });
 }
 
 function msUntilDailyReset() {
   const now = new Date();
-  const tomorrow = new Date(now);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(0, 0, 0, 0);
-  return Math.max(0, tomorrow.getTime() - now.getTime());
+  const tomorrowUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1);
+  return Math.max(0, tomorrowUtc - now.getTime());
 }
 
 function formatDailyResetCountdown(ms) {
@@ -7641,10 +7677,14 @@ function normalizeDailyLeaderboardRows(rows) {
 
 async function fetchDailyLeaderboardForDay(dayKey = getDailyDayKey()) {
   try {
-    const url = `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=initials,display_name,score,reef_id,created_at,day_key&order=score.desc,created_at.asc&limit=${DAILY_LEADERBOARD_FETCH_LIMIT}`;
+    const url = withLeaderboardCacheBust(
+      `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=initials,display_name,score,reef_id,created_at,day_key&order=score.desc,created_at.asc&limit=${DAILY_LEADERBOARD_FETCH_LIMIT}`
+    );
     let res = await fetch(url, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
     if (!res.ok) {
-      const fallbackUrl = `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=initials,score,reef_id,created_at,day_key&order=score.desc,created_at.asc&limit=${DAILY_LEADERBOARD_FETCH_LIMIT}`;
+      const fallbackUrl = withLeaderboardCacheBust(
+        `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=initials,score,reef_id,created_at,day_key&order=score.desc,created_at.asc&limit=${DAILY_LEADERBOARD_FETCH_LIMIT}`
+      );
       res = await fetch(fallbackUrl, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
     }
     if (!res.ok) throw new Error(`Daily leaderboard fetch failed: ${res.status}`);
@@ -7903,8 +7943,14 @@ function startDailyEventCountdown() {
     updateDailyEventResetLine();
     if (panelEvents && !panelEvents.hidden) {
       void fetchTodayDailyLeaderboard().then((rows) => updateDailyEventPlayerHint(rows));
+      void fetchSharedLeaderboard();
     }
   }, 30000);
+}
+
+function refreshSharedBoardsFromServer() {
+  void fetchSharedLeaderboard();
+  void fetchTodayDailyLeaderboard();
 }
 
 async function processDailyPrizePayouts() {
@@ -21627,16 +21673,20 @@ window.addEventListener("keydown", (e) => {
   }
 });
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden || !musicEnabled) return;
+  if (document.hidden) return;
+  refreshSharedBoardsFromServer();
+  if (!musicEnabled) return;
   unlockAudioFromGesture();
   void resumeMusicContext().then(() => restartSceneMusic(true));
 });
 window.addEventListener("pageshow", () => {
+  refreshSharedBoardsFromServer();
   if (!musicEnabled) return;
   unlockAudioFromGesture();
   void resumeMusicContext().then(() => restartSceneMusic(true));
 });
 window.addEventListener("focus", () => {
+  refreshSharedBoardsFromServer();
   if (!musicEnabled) return;
   void resumeMusicContext().then(() => restartSceneMusic(true));
 });
@@ -21912,6 +21962,7 @@ function deferStartupWork() {
 
 updateMusicButton();
 startMusicWatchdog();
+purgeLegacyLeaderboardCaches();
 resize();
 initBubbles();
 (function migrateSeagullShopHintForVeterans() {
