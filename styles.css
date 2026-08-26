@@ -2089,6 +2089,28 @@ body {
   color: var(--muted);
 }
 
+.panel__coinline.duel-over__prize--burst {
+  animation: duelPrizeCoinBurst 0.9s ease-out;
+  color: #ffe08a;
+  font-weight: 800;
+  text-shadow: 0 0 18px rgba(255, 213, 74, 0.65);
+}
+
+@keyframes duelPrizeCoinBurst {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  45% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 .panel__coinline strong {
   color: #f5d78e;
   font-size: 1.15rem;

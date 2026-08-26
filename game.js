@@ -812,11 +812,11 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M102 112 C106 124 110 132 108 132 C104 128 98 116 98 112" fill="none" stroke="#b91c1c" stroke-width="2.3" stroke-linecap="round"/>
         <path d="M48 96 C50 78 64 72 80 72 C98 72 112 80 112 96 C110 112 96 120 80 120 C62 120 46 110 48 96Z" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.3"/>
         <path d="M58 90 Q80 82 102 90" fill="none" stroke="#b91c1c" stroke-width="1.2"/>
-        <path d="M70 78 C68 68 66 62 68 60" fill="none" stroke="#7f1d1d" stroke-width="2" stroke-linecap="round"/>
-        <path d="M90 78 C92 68 94 62 92 60" fill="none" stroke="#7f1d1d" stroke-width="2" stroke-linecap="round"/>
-        <path d="M72 60 C70 54 74 50 78 54" fill="none" stroke="#7f1d1d" stroke-width="1.6" stroke-linecap="round"/>
-        <path d="M88 60 C90 54 86 50 82 54" fill="none" stroke="#7f1d1d" stroke-width="1.6" stroke-linecap="round"/>
-        ${companionEyes(70, 52, 90, 52, 3.4)}
+        <path d="M68 78 C66 66 64 56 66 50" fill="none" stroke="#7f1d1d" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M92 78 C94 66 96 56 94 50" fill="none" stroke="#7f1d1d" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M66 50 C64 42 70 38 76 42" fill="none" stroke="#7f1d1d" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M94 50 C96 42 90 38 84 42" fill="none" stroke="#7f1d1d" stroke-width="1.8" stroke-linecap="round"/>
+        ${companionEyes(70, 44, 90, 44, 4.2)}
         <path d="M72 104 C80 108 88 108 88 104 C84 110 76 110 72 104Z" fill="#7f1d1d" opacity="0.35"/>`;
     case "manta":
       return `${shadow}${companionMantaMarkup(mantaOpts)}`;
@@ -876,7 +876,8 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M72 62 C76 38 92 36 96 60 C88 54 80 54 72 62Z" fill="#475569" stroke="#1e293b" stroke-width="1"/>
         <path d="M118 86 C132 76 144 78 142 90 C140 100 128 100 118 94Z" fill="#64748b" stroke="#1e293b" stroke-width="1"/>
         <path d="M126 86 C136 80 140 82 138 92 C134 94 128 92 126 86Z" fill="#fff"/>
-        <path d="M128 84 L130 92 M134 83 L136 92" stroke="#0f172a" stroke-width="1.05"/>
+        <path d="M128 84 L130 94 M131 83 L133.5 94 M134.5 83 L137 94" stroke="#0f172a" stroke-width="1.15" stroke-linecap="round"/>
+        <path d="M128 92 L130.5 86 M132 93 L134.5 87 M135.5 92 L138 86" stroke="#0f172a" stroke-width="0.95" stroke-linecap="round"/>
         ${companionEye(104, 80, 4.4)}
         <g transform="rotate(-18 108 66)">
           <path d="M84 66 C86 60 96 62 108 62 C120 62 130 60 132 66 C130 72 120 70 108 70 C96 70 86 72 84 66Z" fill="#92400e"/>
@@ -945,13 +946,13 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M102 116 C106 128 110 134 108 134 C104 130 98 120 98 116" fill="none" stroke="#b91c1c" stroke-width="2.3" stroke-linecap="round"/>
         <path d="M48 100 C50 82 64 76 80 76 C98 76 112 84 112 100 C110 116 96 124 80 124 C62 124 46 114 48 100Z" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.3"/>
         <path d="M58 90 Q80 82 102 90" fill="none" stroke="#b91c1c" stroke-width="1.2"/>
-        <path d="M66 72 C64 64 68 58 72 56" fill="none" stroke="#7f1d1d" stroke-width="1.8" stroke-linecap="round"/>
-        <path d="M94 72 C96 64 92 58 88 56" fill="none" stroke="#7f1d1d" stroke-width="1.8" stroke-linecap="round"/>
         <path d="M64 104 Q80 110 96 104" fill="none" stroke="#1f2937" stroke-width="2" stroke-linecap="round"/>
-        <path d="M60 74 C62 60 72 54 80 54 C90 54 100 62 100 74 C96 84 88 88 80 88 C70 88 62 82 60 74Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
-        <path d="M58 82 C58 78 62 80 80 80 C98 80 102 78 102 82 C102 90 96 92 80 92 C64 92 58 88 58 82Z" fill="#fff" stroke="#cbd5e1" stroke-width="1"/>
-        <path d="M64 74 Q80 64 96 74" fill="none" stroke="#e2e8f0" stroke-width="2"/>
-        ${companionEyes(70, 52, 90, 52, 3.4)}`;
+        <path d="M60 78 C62 66 72 62 80 62 C90 62 100 68 100 78 C96 86 88 90 80 90 C70 90 62 84 60 78Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+        <path d="M58 86 C58 82 62 84 80 84 C98 84 102 82 102 86 C102 94 96 96 80 96 C64 96 58 92 58 86Z" fill="#fff" stroke="#cbd5e1" stroke-width="1"/>
+        <path d="M64 78 Q80 70 96 78" fill="none" stroke="#e2e8f0" stroke-width="2"/>
+        <path d="M68 78 C66 64 64 52 66 46" fill="none" stroke="#7f1d1d" stroke-width="2.3" stroke-linecap="round"/>
+        <path d="M92 78 C94 64 96 52 94 46" fill="none" stroke="#7f1d1d" stroke-width="2.3" stroke-linecap="round"/>
+        ${companionEyes(70, 42, 90, 42, 4)}`;
     case "disco_jelly":
       return `${shadow}
         <path d="M56 100 Q52 122 58 132" fill="none" stroke="#f0abfc" stroke-width="2.6" stroke-linecap="round"/>
@@ -995,14 +996,18 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <circle cx="80" cy="83" r="2.2" fill="#881337"/>`;
     case "angelfish":
       return `${shadow}
-        <path d="M36 88 C24 72 18 80 22 90 C18 100 28 104 36 88Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1"/>
-        <path d="M46 40 C42 56 44 72 48 86" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1"/>
-        <path d="M114 40 C118 56 116 72 112 86" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1"/>
-        <path d="M38 88 C42 58 70 48 98 54 C118 58 132 70 136 82 C138 88 128 98 110 104 C88 112 56 108 40 96 C38 92 38 88 38 88Z" fill="#fde047" stroke="#ca8a04" stroke-width="1.3"/>
-        <path d="M52 78 C58 68 102 68 108 78 C98 86 62 86 52 78Z" fill="#1e40af" opacity="0.55"/>
-        <path d="M76 54 C78 66 82 66 84 54" fill="none" stroke="#1e3a8a" stroke-width="4.8" stroke-linecap="round" opacity="0.32"/>
-        <ellipse cx="88" cy="82" rx="14" ry="8" fill="#fff" opacity="0.18"/>
-        ${companionEye(120, 80, 4.2)}`;
+        <path d="M80 34 C92 28 108 36 112 52 C116 70 108 92 96 108 C88 118 72 118 64 108 C52 92 44 70 48 52 C52 36 68 28 80 34Z" fill="#facc15" stroke="#ca8a04" stroke-width="1.35"/>
+        <path d="M80 40 C90 36 102 42 104 54 C108 70 100 90 90 102 C84 110 76 110 70 102 C60 90 52 70 56 54 C58 42 70 36 80 40Z" fill="#fde047"/>
+        <path d="M66 28 C72 18 88 18 94 28 C88 24 72 24 66 28Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1"/>
+        <path d="M58 118 C66 132 94 132 102 118 C94 126 66 126 58 118Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1"/>
+        <path d="M42 78 C28 70 24 78 30 88 C36 96 44 90 42 78Z" fill="#2563eb" stroke="#1e3a8a" stroke-width="1"/>
+        <path d="M118 78 C132 70 136 78 130 88 C124 96 116 90 118 78Z" fill="#2563eb" stroke="#1e3a8a" stroke-width="1"/>
+        <path d="M64 50 C66 70 66 90 64 104" fill="none" stroke="#1e40af" stroke-width="5.2" stroke-linecap="round" opacity="0.55"/>
+        <path d="M80 48 C82 70 82 90 80 106" fill="none" stroke="#1e40af" stroke-width="5.2" stroke-linecap="round" opacity="0.55"/>
+        <path d="M96 50 C94 70 94 90 96 104" fill="none" stroke="#1e40af" stroke-width="5.2" stroke-linecap="round" opacity="0.55"/>
+        <ellipse cx="92" cy="62" rx="10" ry="7" fill="#fff" opacity="0.22"/>
+        ${companionEye(98, 60, 4.4)}
+        <path d="M106 68 Q112 72 108 74" fill="none" stroke="#92400e" stroke-width="1.1" stroke-linecap="round"/>`;
     case "lobster":
       return `${shadow}
         <path d="M44 88 C34 76 26 70 22 74 C26 66 38 72 42 84" fill="none" stroke="#dc2626" stroke-width="3.2" stroke-linecap="round"/>
@@ -1075,7 +1080,7 @@ const COMPANION_ART_FIT = {
   octopus: { cx: 79, cy: 96, scale: 1.28 },
   dolphin: { cx: 84, cy: 85, scale: 0.784 },
   jellyfish: { cx: 80, cy: 96, scale: 1.28 },
-  crab: { cx: 80, cy: 89, scale: 1.016 },
+  crab: { cx: 80, cy: 86, scale: 1.0 },
   manta: { cx: 80, cy: 90, scale: 1.0 },
   puffer: { cx: 80, cy: 88, scale: 1.28 },
   otter: { cx: 88, cy: 86.5, scale: 1.28 },
@@ -1085,12 +1090,12 @@ const COMPANION_ART_FIT = {
   ninja_octopus: { cx: 83, cy: 96, scale: 1.28 },
   wizard_turtle: { cx: 80, cy: 90, scale: 0.98 },
   super_dolphin: { cx: 84, cy: 85, scale: 0.784 },
-  chef_crab: { cx: 80, cy: 94, scale: 1.018 },
+  chef_crab: { cx: 80, cy: 88, scale: 0.98 },
   disco_jelly: { cx: 80, cy: 96, scale: 1.28 },
   viking_seal: { cx: 80, cy: 83, scale: 1.28 },
   royal_manta: { cx: 80, cy: 90, scale: 1.0 },
   starfish: { cx: 80, cy: 86, scale: 1.22 },
-  angelfish: { cx: 82, cy: 88, scale: 1.05 },
+  angelfish: { cx: 80, cy: 78, scale: 1.12 },
   lobster: { cx: 80, cy: 92, scale: 1.05 },
   blue_tang: { cx: 82, cy: 84, scale: 1.1 },
   sailfish: { cx: 78, cy: 82, scale: 0.95 },
@@ -1859,10 +1864,10 @@ function adventureLevelTimeBonusMs(levelIndex) {
   return piratesBonus + (levelIndex - ADVENTURE_MAIN_LEVEL_COUNT) * ADVENTURE_GOLD_TO_LOST_CITY_TIME_BONUS_MS + legendsGateBonus;
 }
 
-const TREASURE_CINEMATIC_ANTICIPATE_MS = 800;
-const TREASURE_CINEMATIC_FLY_MS = 2400;
-const TREASURE_CINEMATIC_OPEN_MS = 1600;
-const TREASURE_CINEMATIC_HOLD_MS = 1400;
+const TREASURE_CINEMATIC_ANTICIPATE_MS = 1000;
+const TREASURE_CINEMATIC_FLY_MS = 2600;
+const TREASURE_CINEMATIC_OPEN_MS = 2200;
+const TREASURE_CINEMATIC_HOLD_MS = 1800;
 
 /** Logical chart size for trail SVG coords (matches adventure-chart__art viewBox). */
 const ADVENTURE_MAP_SVG_WIDTH = 800;
@@ -7341,11 +7346,6 @@ function leaderboardHeaders(extra = {}) {
 
 const LEADERBOARD_FETCH_OPTS = { cache: "no-store" };
 
-function withLeaderboardCacheBust(url) {
-  const sep = url.includes("?") ? "&" : "?";
-  return `${url}${sep}_=${Date.now()}`;
-}
-
 function purgeLegacyLeaderboardCaches() {
   for (const key of LEADERBOARD_LEGACY_KEYS) {
     try {
@@ -7423,20 +7423,19 @@ function loadLeaderboard() {
 
 async function fetchSharedLeaderboard() {
   const loadId = ++leaderboardLoadId;
-  leaderboardLoading = true;
-  renderLeaderboardOl(leaderboardStart);
-  renderLeaderboardOl(leaderboardOver);
-  renderLeaderboardOl(leaderboardEvents);
+  const keepExisting = leaderboardRows.length > 0;
+  leaderboardLoading = !keepExisting;
+  if (!keepExisting) {
+    renderLeaderboardOl(leaderboardStart);
+    renderLeaderboardOl(leaderboardOver);
+    renderLeaderboardOl(leaderboardEvents);
+  }
   try {
-    const url = withLeaderboardCacheBust(
-      `${LEADERBOARD_TABLE_URL}?select=initials,display_name,score,reef_id,created_at&order=score.desc,created_at.asc&limit=${LEADERBOARD_FETCH_LIMIT}`
-    );
+    const url = `${LEADERBOARD_TABLE_URL}?select=initials,display_name,score,reef_id,created_at&order=score.desc,created_at.asc&limit=${LEADERBOARD_FETCH_LIMIT}`;
     const res = await fetch(url, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
     if (!res.ok) {
       /* Older schemas may not have display_name yet. */
-      const fallbackUrl = withLeaderboardCacheBust(
-        `${LEADERBOARD_TABLE_URL}?select=initials,score,reef_id,created_at&order=score.desc,created_at.asc&limit=${LEADERBOARD_FETCH_LIMIT}`
-      );
+      const fallbackUrl = `${LEADERBOARD_TABLE_URL}?select=initials,score,reef_id,created_at&order=score.desc,created_at.asc&limit=${LEADERBOARD_FETCH_LIMIT}`;
       const fallbackRes = await fetch(fallbackUrl, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
       if (!fallbackRes.ok) throw new Error(`Leaderboard fetch failed: ${fallbackRes.status}`);
       const rows = normalizeLeaderboardRows(await fallbackRes.json());
@@ -7453,7 +7452,7 @@ async function fetchSharedLeaderboard() {
     saveLocalLeaderboard(rows);
   } catch (err) {
     console.warn(err);
-    if (loadId === leaderboardLoadId && !leaderboardRemoteSynced) {
+    if (loadId === leaderboardLoadId && !leaderboardRows.length) {
       leaderboardRows = loadLocalLeaderboard();
     }
   } finally {
@@ -7677,14 +7676,10 @@ function normalizeDailyLeaderboardRows(rows) {
 
 async function fetchDailyLeaderboardForDay(dayKey = getDailyDayKey()) {
   try {
-    const url = withLeaderboardCacheBust(
-      `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=initials,display_name,score,reef_id,created_at,day_key&order=score.desc,created_at.asc&limit=${DAILY_LEADERBOARD_FETCH_LIMIT}`
-    );
+    const url = `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=initials,display_name,score,reef_id,created_at,day_key&order=score.desc,created_at.asc&limit=${DAILY_LEADERBOARD_FETCH_LIMIT}`;
     let res = await fetch(url, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
     if (!res.ok) {
-      const fallbackUrl = withLeaderboardCacheBust(
-        `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=initials,score,reef_id,created_at,day_key&order=score.desc,created_at.asc&limit=${DAILY_LEADERBOARD_FETCH_LIMIT}`
-      );
+      const fallbackUrl = `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=initials,score,reef_id,created_at,day_key&order=score.desc,created_at.asc&limit=${DAILY_LEADERBOARD_FETCH_LIMIT}`;
       res = await fetch(fallbackUrl, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
     }
     if (!res.ok) throw new Error(`Daily leaderboard fetch failed: ${res.status}`);
@@ -9769,7 +9764,7 @@ function beginDuelSession(plan) {
   }
 }
 
-async function startDuelFromEvents() {
+async function startDuelFromEvents(fromPrep = false) {
   if (playing || duelMatchmakingActive || coopMatchmakingActive) return;
   if (!isDuelAvailableOnThisDevice()) {
     showToast("Duel Fishing needs a tablet or computer — not available on phones.", 3200);
@@ -9780,6 +9775,10 @@ async function startDuelFromEvents() {
   if (getDuelTicketCount() <= 0) {
     showToast("No duel tickets left — buy more in the shop or come back tomorrow.", 2800);
     refreshDuelEventCard();
+    return;
+  }
+  if (!fromPrep) {
+    openEventPrep("duel");
     return;
   }
   if (!spendDuelTicket()) {
@@ -9901,9 +9900,13 @@ async function endDuelRoundAsync() {
       refreshCoinDisplays();
       duelOverPrize.hidden = false;
       duelOverPrize.textContent = `+${DUEL_WIN_COINS} coins!`;
+      duelOverPrize.classList.add("duel-over__prize--burst");
+      spawnDuelWinCoinAnimation();
+      playCatchCelebrationSound(3);
     } else {
       duelOverPrize.hidden = true;
       duelOverPrize.textContent = "";
+      duelOverPrize.classList.remove("duel-over__prize--burst");
     }
   }
   roundBait = { catchRadiusMult: 1, rareAssistAdd: 0, lightRadiusMult: 1 };
@@ -10323,6 +10326,14 @@ const adventurePrepBoosts = document.getElementById("adventurePrepBoosts");
 const adventurePrepArmed = document.getElementById("adventurePrepArmed");
 const btnAdventurePrepStart = document.getElementById("btnAdventurePrepStart");
 const btnAdventurePrepBack = document.getElementById("btnAdventurePrepBack");
+const panelEventPrep = document.getElementById("panelEventPrep");
+const eventPrepEyebrow = document.getElementById("eventPrepEyebrow");
+const eventPrepTitle = document.getElementById("eventPrepTitle");
+const eventPrepDetail = document.getElementById("eventPrepDetail");
+const eventPrepBait = document.getElementById("eventPrepBait");
+const eventPrepRod = document.getElementById("eventPrepRod");
+const btnEventPrepStart = document.getElementById("btnEventPrepStart");
+const btnEventPrepBack = document.getElementById("btnEventPrepBack");
 const panelAdventureFail = document.getElementById("panelAdventureFail");
 const adventureFailScore = document.getElementById("adventureFailScore");
 const adventureFailGoal = document.getElementById("adventureFailGoal");
@@ -10908,6 +10919,7 @@ function hideAllPanels() {
   if (panelIntro) panelIntro.hidden = true;
   if (panelAdventure) panelAdventure.hidden = true;
   if (panelAdventurePrep) panelAdventurePrep.hidden = true;
+  if (panelEventPrep) panelEventPrep.hidden = true;
   if (panelAdventureFail) panelAdventureFail.hidden = true;
   if (panelAdventureWin) panelAdventureWin.hidden = true;
   if (panelDuelOver) panelDuelOver.hidden = true;
@@ -11116,6 +11128,11 @@ function startAdventureHomeUnlockAnimation() {
     finishRise();
   };
   btnAdventureMode.addEventListener("animationend", onRiseDone);
+  window.setTimeout(() => {
+    if (!btnAdventureMode.classList.contains("adventure-launch--rise")) return;
+    btnAdventureMode.removeEventListener("animationend", onRiseDone);
+    finishRise();
+  }, 1900);
 }
 
 function showHomePanel() {
@@ -11150,7 +11167,7 @@ function isHomeScreenActive() {
   if (playing) return false;
   if (isSplashScreenActive()) return false;
   if (!panelStart || panelStart.hidden) return false;
-  const blocking = [panelOver, panelShop, panelEvents, panelCollectables, panelProfile, panelIntro, panelAdventure, panelAdventurePrep, panelAdventureFail, panelAdventureWin, panelDuelOver];
+  const blocking = [panelOver, panelShop, panelEvents, panelCollectables, panelProfile, panelIntro, panelAdventure, panelAdventurePrep, panelEventPrep, panelAdventureFail, panelAdventureWin, panelDuelOver];
   for (const panel of blocking) {
     if (panel && !panel.hidden) return false;
   }
@@ -12351,11 +12368,15 @@ function updateTreasureChestCinematic(now) {
     }
   } else if (c.phase === "open") {
     const openT = Math.min(1, (now - c.openStartedAt) / TREASURE_CINEMATIC_OPEN_MS);
-    c.lidOpen = openT ** 0.85;
-    c.glowPulse = 0.65 + Math.sin(openT * Math.PI * 3) * 0.35;
-    if (openT > 0.35 && now - c.lastSparkleAt > 160) {
-      spawnTreasureCinematicBurst(c.x, c.y - 20 * dpr * c.scale, 8, 52);
+    c.lidOpen = openT ** 0.75;
+    c.glowPulse = 0.7 + Math.sin(openT * Math.PI * 4) * 0.3;
+    if (openT > 0.18 && now - c.lastSparkleAt > 110) {
+      spawnTreasureCinematicBurst(c.x, c.y - 28 * dpr * c.scale, 14, 52);
+      spawnTreasureCinematicBurst(c.x + (Math.random() - 0.5) * 40 * dpr, c.y - 8 * dpr * c.scale, 8, 44);
       c.lastSparkleAt = now;
+    }
+    if (openT > 0.55 && openT < 0.62) {
+      spawnTreasureCinematicBurst(c.x, c.y - 36 * dpr * c.scale, 40, 48);
     }
     if (openT >= 1) {
       c.phase = "hold";
@@ -13282,7 +13303,7 @@ function baitBucketSvg(baitId) {
 }
 
 function baitChoiceRoots() {
-  return [baitChoices, adventurePrepBait].filter(Boolean);
+  return [baitChoices, adventurePrepBait, eventPrepBait].filter(Boolean);
 }
 
 function fillBaitChoices(root) {
@@ -13325,7 +13346,7 @@ function buildBaitUI() {
 }
 
 function rodChoiceRoots() {
-  return [rodChoices, adventurePrepRod].filter(Boolean);
+  return [rodChoices, adventurePrepRod, eventPrepRod].filter(Boolean);
 }
 
 function fillRodChoices(root) {
@@ -14424,7 +14445,7 @@ function beginCoopSession(plan) {
   }
 }
 
-async function startCoopFromEvents() {
+async function startCoopFromEvents(fromPrep = false) {
   if (playing || coopMatchmakingActive || duelMatchmakingActive || eventMinigameSession) return;
   if (crabTrapSession || duelSession || adventureSession) {
     showToast("Finish your current run first", 2000);
@@ -14434,6 +14455,10 @@ async function startCoopFromEvents() {
   if (getDuelTicketCount() <= 0) {
     showToast("No tickets — visit the shop", 2200);
     refreshCoopEventCard();
+    return;
+  }
+  if (!fromPrep) {
+    openEventPrep("coop");
     return;
   }
   if (!spendDuelTicket()) {
@@ -14477,9 +14502,90 @@ async function startCoopFromEvents() {
   }
 }
 
-function beginEventMinigame(kind) {
+let pendingEventPrepKind = null;
+
+function eventPrepCopy(kind) {
+  if (kind === "duel") {
+    return {
+      eyebrow: "Duel Fishing",
+      title: "Ready your gear",
+      detail: "Pick bait and a rod before you enter the lobby.",
+    };
+  }
   if (kind === "coop") {
-    void startCoopFromEvents();
+    return {
+      eyebrow: "Co-op Haul",
+      title: "Ready your gear",
+      detail: "Pick bait and a rod before you find a partner.",
+    };
+  }
+  if (kind === "roulette") {
+    return {
+      eyebrow: "Reef Roulette",
+      title: "Ready your gear",
+      detail: "Pick bait and a rod for a random reef run.",
+    };
+  }
+  return {
+    eyebrow: "Kraken Survivor",
+    title: "Ready your gear",
+    detail: "Pick bait and a rod before you hunt the beast.",
+  };
+}
+
+function openEventPrep(kind) {
+  if (playing || crabTrapSession || duelSession || adventureSession) {
+    showToast("Finish your current run first", 2000);
+    return;
+  }
+  pendingEventPrepKind = kind;
+  const copy = eventPrepCopy(kind);
+  if (eventPrepEyebrow) eventPrepEyebrow.textContent = copy.eyebrow;
+  if (eventPrepTitle) eventPrepTitle.textContent = copy.title;
+  if (eventPrepDetail) eventPrepDetail.textContent = copy.detail;
+  hideAllPanels();
+  if (panelEventPrep) panelEventPrep.hidden = false;
+  appRoot?.classList.add("app--events-mode");
+  buildBaitUI();
+  buildRodUI();
+  stopEventsMusic();
+  if (musicEnabled) startHomeMusic();
+}
+
+function closeEventPrep() {
+  pendingEventPrepKind = null;
+  if (panelEventPrep) panelEventPrep.hidden = true;
+  openEvents();
+}
+
+function confirmEventPrepStart() {
+  const kind = pendingEventPrepKind;
+  pendingEventPrepKind = null;
+  if (panelEventPrep) panelEventPrep.hidden = true;
+  if (kind === "duel") {
+    void startDuelFromEvents(true);
+    return;
+  }
+  if (kind === "coop") {
+    void startCoopFromEvents(true);
+    return;
+  }
+  if (kind === "roulette" || kind === "survivor") {
+    beginEventMinigame(kind, true);
+  }
+}
+
+function beginEventMinigame(kind, fromPrep = false) {
+  if (kind === "coop") {
+    if (!fromPrep) {
+      openEventPrep("coop");
+      return;
+    }
+    void startCoopFromEvents(true);
+    return;
+  }
+  if (!fromPrep && (kind === "roulette" || kind === "survivor")) {
+    openEventPrep(kind);
     return;
   }
   if (playing || crabTrapSession || duelSession || adventureSession || coopMatchmakingActive) {
@@ -16602,6 +16708,34 @@ function hookTipY() {
   return hook.tipY;
 }
 
+function spawnCoinBurstFX(worldX, worldY, count = 36) {
+  const n = Math.max(12, Math.floor(count * (PERF_CHROMEBOOK ? 0.55 : 1)));
+  for (let i = 0; i < n; i++) {
+    const ang = (Math.PI * 2 * i) / n + (Math.random() - 0.5) * 0.55;
+    const sp = (2.4 + Math.random() * 5.2) * dpr;
+    celebration.particles.push({
+      x: worldX,
+      y: worldY,
+      vx: Math.cos(ang) * sp,
+      vy: Math.sin(ang) * sp - 2.2 * dpr,
+      life: 1.15 + Math.random() * 0.55,
+      size: (3.2 + Math.random() * 5.5) * dpr,
+      spin: (Math.random() - 0.5) * 0.28,
+      color: i % 3 === 0 ? "hsla(48, 96%, 58%, 1)" : i % 3 === 1 ? "hsla(38, 92%, 52%, 1)" : "hsla(45, 100%, 72%, 1)",
+    });
+  }
+  celebration.rings.push({ x: worldX, y: worldY, t: 0, life: 1.2 });
+}
+
+function spawnDuelWinCoinAnimation() {
+  const cx = w * 0.5 || 200;
+  const cy = h * 0.42 || 180;
+  spawnCoinBurstFX(cx, cy, 48);
+  window.setTimeout(() => spawnCoinBurstFX(cx, cy - dpr * 24, 28), 180);
+  window.setTimeout(() => spawnCoinBurstFX(cx + dpr * 40, cy + dpr * 10, 18), 320);
+  window.setTimeout(() => spawnCoinBurstFX(cx - dpr * 40, cy + dpr * 10, 18), 360);
+}
+
 function spawnCatchFX(worldX, worldY, hue) {
   const n = perfN(38);
   for (let i = 0; i < n; i++) {
@@ -17899,6 +18033,19 @@ function tryCatchKraken(opts) {
   return true;
 }
 
+function spawnKrakenEntranceBubbles(k, count = 28) {
+  const n = Math.max(12, Math.floor(count * (PERF_CHROMEBOOK ? 0.55 : 1)));
+  for (let i = 0; i < n; i++) {
+    bubbles.push({
+      x: k.x + (Math.random() - 0.5) * k.len * 0.85,
+      y: Math.min(h - dpr * 8, k.y + (Math.random() - 0.2) * k.len * 0.45),
+      r: (2.2 + Math.random() * 5.5) * dpr,
+      vy: (0.55 + Math.random() * 1.1) * dpr,
+      w: Math.random() * Math.PI * 2,
+    });
+  }
+}
+
 function activateKraken(k) {
   const pack = Math.max(1, k.packSize || krakens.length || 1);
   const survivor = eventMinigameSession?.kind === "survivor";
@@ -17922,6 +18069,8 @@ function activateKraken(k) {
   k.y = h + len * 0.58;
   k.phase = Math.random() * Math.PI * 2;
   k.face = k.exitDir;
+  k.bubblePulseAt = 0;
+  spawnKrakenEntranceBubbles(k, multi ? 36 : 54);
 }
 
 function tickOneKraken(k, now, dt) {
@@ -17978,10 +18127,15 @@ function tickOneKraken(k, now, dt) {
         k.riseCenterX +
         Math.sin(k.phase * 0.62) * dpr * 44 +
         Math.sin(k.phase * 0.29 + 1.1) * dpr * 14;
+      if (!k.bubblePulseAt || now - k.bubblePulseAt > 90) {
+        spawnKrakenEntranceBubbles(k, 10);
+        k.bubblePulseAt = now;
+      }
       if (k.y <= k.sweepY) {
         k.pathStage = "side";
         k.y = k.sweepY;
         k.face = k.exitDir;
+        spawnKrakenEntranceBubbles(k, 22);
       }
       return;
     }
@@ -19845,53 +19999,55 @@ function drawFishMorph(morph, L, body, shade, accent, speciesId, phase = 0) {
     ctx.stroke();
     ctx.globalAlpha = 1;
 
-    const tailWag = Math.sin(phase * 2.1) * 0.08;
+    const tailWag = Math.sin(phase * 2.1) * 0.1;
     ctx.save();
-    ctx.translate(-L * 0.42, 0);
+    ctx.translate(-L * 0.44, L * 0.02);
     ctx.rotate(tailWag);
     ctx.fillStyle = body;
     ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.quadraticCurveTo(-L * 0.12, -L * 0.15, -L * 0.11, 0);
-    ctx.quadraticCurveTo(-L * 0.12, L * 0.15, 0, 0);
+    ctx.moveTo(L * 0.06, 0);
+    ctx.quadraticCurveTo(-L * 0.04, -L * 0.12, -L * 0.2, -L * 0.04);
+    ctx.quadraticCurveTo(-L * 0.26, 0, -L * 0.2, L * 0.05);
+    ctx.quadraticCurveTo(-L * 0.04, L * 0.14, L * 0.06, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = shade;
+    ctx.beginPath();
+    ctx.moveTo(-L * 0.02, -L * 0.02);
+    ctx.lineTo(-L * 0.18, -L * 0.01);
+    ctx.lineTo(-L * 0.02, L * 0.03);
+    ctx.closePath();
     ctx.fill();
     ctx.restore();
 
-    ctx.strokeStyle = "#1f2937";
-    ctx.lineWidth = Math.max(1, L * 0.024);
+    ctx.strokeStyle = "#334155";
+    ctx.lineWidth = Math.max(1, L * 0.02);
     ctx.lineCap = "round";
     ctx.beginPath();
-    ctx.moveTo(L * 0.44, L * 0.03);
-    ctx.quadraticCurveTo(L * 0.4, L * 0.13, L * 0.26, L * 0.11);
+    ctx.moveTo(L * 0.42, L * 0.02);
+    ctx.quadraticCurveTo(L * 0.36, L * 0.08, L * 0.28, L * 0.06);
     ctx.stroke();
-    ctx.fillStyle = "rgba(31, 41, 55, 0.35)";
-    ctx.beginPath();
-    ctx.moveTo(L * 0.44, L * 0.04);
-    ctx.quadraticCurveTo(L * 0.36, L * 0.1, L * 0.28, L * 0.08);
-    ctx.lineTo(L * 0.42, L * 0.02);
-    ctx.closePath();
-    ctx.fill();
 
     ctx.fillStyle = "#f8fafc";
     ctx.beginPath();
-    ctx.ellipse(L * 0.34, -L * 0.12, L * 0.044, L * 0.034, -0.18, 0, Math.PI * 2);
+    ctx.ellipse(L * 0.32, -L * 0.1, L * 0.032, L * 0.024, -0.15, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.ellipse(L * 0.18, -L * 0.1, L * 0.038, L * 0.028, -0.08, 0, Math.PI * 2);
+    ctx.ellipse(L * 0.2, -L * 0.09, L * 0.028, L * 0.02, -0.08, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = "#0f172a";
+    ctx.fillStyle = "#1e293b";
     ctx.beginPath();
-    ctx.arc(L * 0.35, -L * 0.11, L * 0.019, 0, Math.PI * 2);
+    ctx.arc(L * 0.325, -L * 0.095, L * 0.012, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(L * 0.19, -L * 0.09, L * 0.016, 0, Math.PI * 2);
+    ctx.arc(L * 0.205, -L * 0.085, L * 0.01, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = "#fff";
     ctx.beginPath();
-    ctx.arc(L * 0.356, -L * 0.115, L * 0.006, 0, Math.PI * 2);
+    ctx.arc(L * 0.33, -L * 0.1, L * 0.004, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(L * 0.196, -L * 0.095, L * 0.005, 0, Math.PI * 2);
+    ctx.arc(L * 0.21, -L * 0.09, L * 0.0035, 0, Math.PI * 2);
     ctx.fill();
     return;
   }
@@ -20006,6 +20162,24 @@ function drawFishMorph(morph, L, body, shade, accent, speciesId, phase = 0) {
     ctx.beginPath();
     ctx.arc(L * 0.44, -L * 0.1, L * 0.038, 0, Math.PI * 2);
     ctx.fill();
+    ctx.fillStyle = "#f8fafc";
+    ctx.beginPath();
+    ctx.moveTo(L * 0.46, L * 0.04);
+    ctx.lineTo(L * 0.52, L * 0.01);
+    ctx.lineTo(L * 0.46, L * 0.07);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = "#0f172a";
+    ctx.lineWidth = Math.max(1, L * 0.018);
+    ctx.lineCap = "round";
+    for (let i = 0; i < 5; i++) {
+      const tx = L * (0.48 + i * 0.012);
+      const ty = L * (0.035 + i * 0.008);
+      ctx.beginPath();
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(tx + L * 0.045, ty - L * 0.012);
+      ctx.stroke();
+    }
     forkTail(0.14);
     return;
   }
@@ -20013,29 +20187,68 @@ function drawFishMorph(morph, L, body, shade, accent, speciesId, phase = 0) {
   if (morph === "reefshark") {
     ctx.fillStyle = body;
     ctx.beginPath();
-    ctx.moveTo(L * 0.46, 0);
-    ctx.quadraticCurveTo(L * 0.05, -L * 0.3, -L * 0.4, -L * 0.08);
+    ctx.moveTo(L * 0.5, 0);
+    ctx.quadraticCurveTo(L * 0.08, -L * 0.28, -L * 0.4, -L * 0.08);
     ctx.lineTo(-L * 0.52, L * 0.02);
     ctx.lineTo(-L * 0.4, L * 0.08);
-    ctx.quadraticCurveTo(L * 0.05, L * 0.3, L * 0.46, 0);
+    ctx.quadraticCurveTo(L * 0.08, L * 0.26, L * 0.5, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "#e2e8f0";
+    ctx.beginPath();
+    ctx.moveTo(L * 0.12, L * 0.04);
+    ctx.quadraticCurveTo(L * 0.02, L * 0.16, -L * 0.28, L * 0.06);
+    ctx.quadraticCurveTo(L * 0.02, L * 0.1, L * 0.12, L * 0.04);
     ctx.closePath();
     ctx.fill();
     ctx.fillStyle = shade;
     ctx.beginPath();
     ctx.moveTo(L * -0.04, -L * 0.24);
-    ctx.lineTo(L * 0.06, -L * 0.44);
-    ctx.lineTo(L * 0.1, -L * 0.2);
+    ctx.lineTo(L * 0.06, -L * 0.46);
+    ctx.lineTo(L * 0.12, -L * 0.2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(L * 0.08, L * 0.1);
+    ctx.lineTo(L * 0.02, L * 0.28);
+    ctx.lineTo(L * 0.16, L * 0.1);
     ctx.closePath();
     ctx.fill();
     ctx.fillStyle = "#0a1020";
     ctx.beginPath();
-    ctx.arc(L * 0.28, -L * 0.06, L * 0.032, 0, Math.PI * 2);
+    ctx.arc(L * 0.3, -L * 0.05, L * 0.032, 0, Math.PI * 2);
     ctx.fill();
+    ctx.fillStyle = "#f8fafc";
+    ctx.beginPath();
+    ctx.moveTo(L * 0.42, L * 0.02);
+    ctx.quadraticCurveTo(L * 0.52, -L * 0.01, L * 0.42, L * 0.06);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = "#0f172a";
+    ctx.lineWidth = Math.max(1.2, L * 0.022);
+    ctx.lineCap = "round";
+    for (let i = 0; i < 6; i++) {
+      const tx = L * (0.44 + i * 0.01);
+      const ty = L * (0.015 + (i % 2) * 0.012);
+      ctx.beginPath();
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(tx + L * 0.055, ty - L * 0.018);
+      ctx.stroke();
+    }
+    ctx.lineWidth = Math.max(1, L * 0.016);
+    for (let i = 0; i < 4; i++) {
+      const tx = L * (0.45 + i * 0.012);
+      const ty = L * (0.055 + (i % 2) * 0.01);
+      ctx.beginPath();
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(tx + L * 0.04, ty + L * 0.014);
+      ctx.stroke();
+    }
     if (sid === "australian_blacktip") {
       ctx.fillStyle = "#f8fafc";
       ctx.beginPath();
       ctx.moveTo(L * 0.02, -L * 0.38);
-      ctx.lineTo(L * 0.08, -L * 0.44);
+      ctx.lineTo(L * 0.08, -L * 0.46);
       ctx.lineTo(L * 0.12, -L * 0.2);
       ctx.closePath();
       ctx.fill();
@@ -21571,6 +21784,8 @@ btnStartDuel?.addEventListener("click", () => {
 });
 btnDuelPlayAgain?.addEventListener("click", () => openDuelFromResult(true));
 btnDuelBackEvents?.addEventListener("click", () => openDuelFromResult(false));
+btnEventPrepStart?.addEventListener("click", () => confirmEventPrepStart());
+btnEventPrepBack?.addEventListener("click", () => closeEventPrep());
 
 btnStartCrab?.addEventListener("click", () => startCrabTrap());
 document.getElementById("btnStartRoulette")?.addEventListener("click", () => beginEventMinigame("roulette"));

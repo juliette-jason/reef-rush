@@ -22,7 +22,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=2026-08-20-leaderboard-sync-1" />
+    <link rel="stylesheet" href="styles.css?v=2026-08-24-edits-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -2278,6 +2278,31 @@
         <button type="button" id="btnDuelBackEvents" class="btn btn--secondary">Back to Events</button>
       </section>
 
+      <section id="panelEventPrep" class="panel panel--adventure-prep panel--event-prep" hidden>
+        <header class="adventure-prep__header">
+          <p id="eventPrepEyebrow" class="adventure-prep__section">Event</p>
+          <h2 id="eventPrepTitle" class="adventure-prep__title">Ready your gear</h2>
+          <p id="eventPrepDetail" class="adventure-prep__goal">Pick bait and a rod, then cast off.</p>
+        </header>
+        <div class="adventure-prep__gear">
+          <fieldset class="rods rods--card adventure-prep__card">
+            <legend class="rods__legend">Bait</legend>
+            <div id="eventPrepBait" class="rods__grid"></div>
+          </fieldset>
+          <fieldset class="rods rods--card adventure-prep__card">
+            <legend class="rods__legend">Rod</legend>
+            <div id="eventPrepRod" class="rods__grid"></div>
+          </fieldset>
+        </div>
+        <div class="adventure-prep__actions">
+          <button type="button" id="btnEventPrepStart" class="btn btn--primary btn--start">
+            <span class="btn--start__shine" aria-hidden="true"></span>
+            <span class="btn--start__label">Cast off</span>
+          </button>
+          <button type="button" id="btnEventPrepBack" class="btn btn--secondary">Back to Events</button>
+        </div>
+      </section>
+
       <section id="panelCrabReward" class="panel panel--crab-reward" hidden>
         <h2 id="crabRewardHeadline" class="panel__headline">Crab Trap!</h2>
         <p id="crabRewardSummary" class="panel__scoreline">You trapped <strong>0</strong> treasure crabs</p>
@@ -2708,6 +2733,6 @@
       </section>
     </div>
 
-    <script src="game.js?v=2026-08-20-leaderboard-sync-1" defer></script>
+    <script src="game.js?v=2026-08-24-edits-1" defer></script>
   </body>
 </html>
