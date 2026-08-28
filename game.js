@@ -1017,6 +1017,11 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M106 68 Q112 72 108 74" fill="none" stroke="#92400e" stroke-width="1.1" stroke-linecap="round"/>`;
     case "lobster":
       return `${shadow}
+        <path d="M64 118 C58 128 52 136 44 134 C50 126 58 122 64 118Z" fill="#b91c1c" stroke="#7f1d1d" stroke-width="0.95"/>
+        <path d="M72 120 C68 132 64 140 58 138 C62 130 68 124 72 120Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="0.95"/>
+        <path d="M80 121 L76 140 L84 140 Z" fill="#ef4444" stroke="#7f1d1d" stroke-width="0.95"/>
+        <path d="M88 120 C92 132 96 140 102 138 C98 130 92 124 88 120Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="0.95"/>
+        <path d="M96 118 C102 128 108 136 116 134 C110 126 102 122 96 118Z" fill="#b91c1c" stroke="#7f1d1d" stroke-width="0.95"/>
         <path d="M44 88 C34 76 26 70 22 74 C26 66 38 72 42 84" fill="none" stroke="#dc2626" stroke-width="3.2" stroke-linecap="round"/>
         <path d="M116 88 C126 76 134 70 138 74 C134 66 122 72 118 84" fill="none" stroke="#dc2626" stroke-width="3.2" stroke-linecap="round"/>
         <path d="M22 72 C12 60 20 50 32 60 C36 66 30 74 22 72Z" fill="#ef4444" stroke="#7f1d1d" stroke-width="1"/>
@@ -1026,7 +1031,11 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M70 114 C68 126 66 134 68 134 C72 128 74 116 74 114" fill="none" stroke="#991b1b" stroke-width="2.2" stroke-linecap="round"/>
         <path d="M90 114 C92 126 94 134 92 134 C88 128 86 116 86 114" fill="none" stroke="#991b1b" stroke-width="2.2" stroke-linecap="round"/>
         <path d="M102 112 C106 124 110 132 108 132 C104 128 98 116 98 112" fill="none" stroke="#991b1b" stroke-width="2.2" stroke-linecap="round"/>
-        ${companionEyes(68, 90, 92, 90, 4)}`;
+        ${companionEyes(68, 90, 92, 90, 4)}
+        <path d="M70 76 C58 58 50 44 46 34" fill="none" stroke="#dc2626" stroke-width="2.1" stroke-linecap="round"/>
+        <path d="M90 76 C102 58 110 44 114 34" fill="none" stroke="#dc2626" stroke-width="2.1" stroke-linecap="round"/>
+        <circle cx="46" cy="34" r="2.2" fill="#ef4444" stroke="#7f1d1d" stroke-width="0.7"/>
+        <circle cx="114" cy="34" r="2.2" fill="#ef4444" stroke="#7f1d1d" stroke-width="0.7"/>`;
     case "blue_tang":
       return `${shadow}
         <path d="M36 88 C24 72 18 80 22 90 C18 100 28 104 36 88Z" fill="#facc15" stroke="#ca8a04" stroke-width="1"/>
@@ -1103,7 +1112,7 @@ const COMPANION_ART_FIT = {
   royal_manta: { cx: 80, cy: 90, scale: 1.0 },
   starfish: { cx: 80, cy: 84, scale: 1.18 },
   angelfish: { cx: 80, cy: 78, scale: 1.12 },
-  lobster: { cx: 80, cy: 92, scale: 1.05 },
+  lobster: { cx: 80, cy: 90, scale: 1.0 },
   blue_tang: { cx: 82, cy: 84, scale: 1.1 },
   sailfish: { cx: 78, cy: 82, scale: 0.95 },
   nautilus: { cx: 82, cy: 88, scale: 1.15 },
