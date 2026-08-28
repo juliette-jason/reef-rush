@@ -690,35 +690,31 @@ function companionMantaMarkup({
         <path d="M138 106 C126 100 106 92 86 86" fill="none" stroke="${fin}" stroke-width="1" opacity="0.4"/>`;
 }
 
-/** Sea turtle — four separated flippers, round shell, no tail or blush. */
+/** Sea turtle — matches the home-screen splash turtle art. */
 function companionTurtleMarkup({
-  flipper = "#6fa85a",
-  flipperLight = "#7bb862",
-  shell = "#1f6b38",
-  shellMid = "#2f8a48",
-  shellPlate = "#4cbe62",
-  shellPlateStroke = "#d9f99d",
-  shellBelly = "#3daa54",
-  head = "#8fce6e",
-  stroke = "#2f5a28",
-  strokeDark = "#164a28",
+  flipperRear = "#2a5f4c",
+  flipperFront = "#347a5e",
+  flipperFrontLight = "#3d8b6e",
+  shell = "#2f6b55",
+  shellMid = "#3d8b6e",
+  shellPlate = "#4aad80",
+  shellStroke = "#1f4d3c",
+  head = "#3d8b6e",
 } = {}) {
   return `
-        <path d="M42 106 C32 114 28 124 36 130 C46 126 50 116 48 108 Z" fill="${flipper}" stroke="${stroke}" stroke-width="1.08"/>
-        <path d="M118 106 C128 114 132 124 124 130 C114 126 110 116 112 108 Z" fill="${flipper}" stroke="${stroke}" stroke-width="1.08"/>
-        <path d="M50 90 C36 84 26 92 30 102 C38 106 46 100 50 94 Z" fill="${flipperLight}" stroke="${stroke}" stroke-width="1.08"/>
-        <path d="M110 90 C124 84 134 92 130 102 C122 106 114 100 110 94 Z" fill="${flipperLight}" stroke="${stroke}" stroke-width="1.08"/>
-        <ellipse cx="80" cy="98" rx="30" ry="24" fill="${shell}" stroke="${strokeDark}" stroke-width="1.45"/>
-        <ellipse cx="80" cy="96" rx="24" ry="18" fill="${shellMid}"/>
-        <path d="M80 80 C92 84 98 94 94 104 C88 110 72 110 66 104 C62 94 68 84 80 80Z" fill="${shellPlate}" stroke="${shellPlateStroke}" stroke-width="1.05"/>
-        <path d="M80 88 C88 90 92 96 88 102 C84 106 76 106 72 102 C68 96 72 90 80 88Z" fill="${shellBelly}" stroke="#ecfccb" stroke-width="0.95"/>
-        <ellipse cx="80" cy="92" rx="8" ry="5" fill="#86efac" opacity="0.32"/>
-        <path d="M106 78 C116 74 126 76 128 84 C124 90 114 90 106 84 Z" fill="${flipperLight}" stroke="${stroke}" stroke-width="0.95"/>
-        <path d="M112 72 C114 58 124 56 134 62 C144 70 142 84 132 88 C122 92 110 84 112 72Z" fill="${head}" stroke="${stroke}" stroke-width="1.15"/>
-        <ellipse cx="118" cy="64" rx="2.2" ry="1.6" fill="#3f6b32" opacity="0.35"/>
-        ${companionEye(132, 67, 5.1)}
-        <path d="M138 76 Q144 82 136 83" fill="none" stroke="${stroke}" stroke-width="1.15" stroke-linecap="round"/>
-        <ellipse cx="140" cy="74" rx="3.2" ry="2.2" fill="#5a8a40"/>`;
+        <path d="M54 88 C40 74 28 78 34 90 C40 96 50 94 54 88 Z" fill="${flipperRear}" stroke="${shellStroke}" stroke-width="0.95"/>
+        <path d="M56 98 C44 112 32 108 38 98 C44 94 52 96 56 98 Z" fill="${flipperRear}" stroke="${shellStroke}" stroke-width="0.95"/>
+        <path d="M72 100 C84 116 102 112 96 98 C88 94 76 96 72 100 Z" fill="${flipperFront}" stroke="${shellStroke}" stroke-width="0.95"/>
+        <path d="M76 101 C86 112 96 108 92 100" fill="none" stroke="${shellStroke}" stroke-width="1.1" opacity="0.45"/>
+        <path d="M70 84 C82 68 102 74 96 88 C88 92 74 90 70 84 Z" fill="${flipperFrontLight}" stroke="${shellStroke}" stroke-width="0.95"/>
+        <path d="M74 84 C84 74 96 78 92 87" fill="none" stroke="${shellStroke}" stroke-width="1.1" opacity="0.4"/>
+        <ellipse cx="62" cy="92" rx="30" ry="17" fill="${shell}" stroke="${shellStroke}" stroke-width="1.2"/>
+        <ellipse cx="62" cy="91" rx="22" ry="12" fill="${shellMid}"/>
+        <path d="M48 87 L60 81 L74 87 L70 97 L52 97 Z" fill="${shellPlate}" opacity="0.55"/>
+        <path d="M54 90 L64 86 L72 90" fill="none" stroke="${shell}" stroke-width="1.35" opacity="0.5"/>
+        <ellipse cx="94" cy="91" rx="11" ry="7.5" fill="${head}" stroke="${shellStroke}" stroke-width="1"/>
+        ${companionEye(100, 89, 3.2)}
+        <path d="M102 93 Q105 95 103 96" fill="none" stroke="${shellStroke}" stroke-width="1" stroke-linecap="round"/>`;
 }
 
 function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
@@ -840,18 +836,27 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M76 94 Q80 90 84 94" fill="none" stroke="#78350f" stroke-width="1.1"/>`;
     case "otter":
       return `${shadow}
-        <path d="M108 100 C122 94 134 100 132 112 C122 118 108 112 108 110Z" fill="#92400e" stroke="#451a03" stroke-width="1"/>
-        <path d="M46 108 C38 98 44 88 58 86 C62 66 70 54 80 52 C92 54 102 66 104 86 C118 88 124 100 114 110 C104 122 90 126 80 126 C66 126 52 118 46 108Z" fill="#a16207" stroke="#451a03" stroke-width="1.25"/>
-        <path d="M64 108 C72 116 88 116 96 108 C88 118 72 118 64 108Z" fill="#fef3c7"/>
-        <path d="M44 100 C40 94 46 90 54 96 C56 102 48 106 44 100Z" fill="#92400e"/>
-        <path d="M116 102 C120 96 114 90 106 96 C104 102 112 106 116 102Z" fill="#92400e"/>
-        <path d="M62 74 C60 62 68 56 80 56 C92 56 100 64 98 76 C94 84 86 88 80 88 C72 88 64 82 62 74Z" fill="#b45309" stroke="#451a03" stroke-width="1.2"/>
-        <path d="M62 76 C58 70 62 66 68 72Z" fill="#92400e"/>
-        <path d="M98 76 C102 70 98 66 92 72Z" fill="#92400e"/>
-        ${companionEyes(72, 68, 88, 68, 4)}
-        <path d="M74 78 C78 82 82 82 86 78 C82 84 78 84 74 78Z" fill="#451a03"/>
-        <path d="M62 80 C54 84 50 88 52 88 M98 80 C106 84 110 88 108 88" stroke="#451a03" stroke-width="1.05" stroke-linecap="round"/>
-        <circle cx="80" cy="76.5" r="1.1" fill="#fde68a"/>`;
+        <path d="M44 112 C36 104 38 94 50 90 C48 78 54 66 64 58 C72 52 88 52 96 58 C106 66 112 78 110 90 C122 94 124 106 116 116 C106 128 92 132 80 132 C66 132 52 124 44 112Z" fill="#c2854a" stroke="#5c3a1e" stroke-width="1.15"/>
+        <path d="M58 112 C66 122 94 122 102 112 C94 126 66 126 58 112Z" fill="#fde8c8"/>
+        <ellipse cx="80" cy="108" rx="18" ry="14" fill="#f5d7b0" opacity="0.72"/>
+        <path d="M42 104 C38 98 42 92 50 96 C52 102 46 108 42 104Z" fill="#a66f3a" stroke="#5c3a1e" stroke-width="0.9"/>
+        <path d="M118 104 C122 98 118 92 110 96 C108 102 114 108 118 104Z" fill="#a66f3a" stroke="#5c3a1e" stroke-width="0.9"/>
+        <ellipse cx="80" cy="72" rx="24" ry="22" fill="#d4a574" stroke="#5c3a1e" stroke-width="1.15"/>
+        <ellipse cx="64" cy="62" rx="7" ry="6" fill="#c2854a" stroke="#5c3a1e" stroke-width="0.95"/>
+        <ellipse cx="96" cy="62" rx="7" ry="6" fill="#c2854a" stroke="#5c3a1e" stroke-width="0.95"/>
+        <ellipse cx="64" cy="63" rx="3.2" ry="2.6" fill="#f5d7b0" opacity="0.55"/>
+        <ellipse cx="96" cy="63" rx="3.2" ry="2.6" fill="#f5d7b0" opacity="0.55"/>
+        <ellipse cx="80" cy="78" rx="12" ry="9" fill="#fde8c8"/>
+        <ellipse cx="80" cy="82" rx="7" ry="5" fill="#f5d7b0"/>
+        ${companionEyes(70, 68, 90, 68, 4.6)}
+        <ellipse cx="80" cy="84" rx="3.2" ry="2.4" fill="#5c3a1e"/>
+        <ellipse cx="80" cy="83.2" rx="1.1" ry="0.7" fill="#fde8c8" opacity="0.7"/>
+        <path d="M74 86 C78 89 82 89 86 86" fill="none" stroke="#5c3a1e" stroke-width="1.05" stroke-linecap="round"/>
+        <circle cx="66" cy="80" r="3.2" fill="#fda4af" opacity="0.42"/>
+        <circle cx="94" cy="80" r="3.2" fill="#fda4af" opacity="0.42"/>
+        <path d="M58 82 C52 84 48 88 50 88 M102 82 C108 84 112 88 110 88" stroke="#5c3a1e" stroke-width="0.95" stroke-linecap="round" opacity="0.55"/>
+        <path d="M108 100 C118 94 128 98 126 108 C118 114 108 110 108 108Z" fill="#a66f3a" stroke="#5c3a1e" stroke-width="0.95"/>
+        <ellipse cx="120" cy="104" rx="5" ry="4" fill="#fde8c8" stroke="#5c3a1e" stroke-width="0.8"/>`;
     case "pirate_gull":
       return `${shadow}
         <path d="M60 112 C56 122 54 130 52 132 C56 133 62 128 64 116Z" fill="#f97316"/>
@@ -992,8 +997,10 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
       return `${shadow}
         <path d="M80 44 L92 72 L122 76 L98 96 L104 126 L80 110 L56 126 L62 96 L38 76 L68 72 Z" fill="#fb7185" stroke="#be123c" stroke-width="1.2"/>
         <path d="M80 54 L86 72 L104 74 L90 86 L94 104 L80 94 L66 104 L70 86 L56 74 L74 72 Z" fill="#fda4af"/>
-        <circle cx="80" cy="82" r="5" fill="#fef2f2" stroke="#be123c" stroke-width="0.8"/>
-        <circle cx="80" cy="83" r="2.2" fill="#881337"/>`;
+        <circle cx="72" cy="78" r="3.4" fill="#fda4af" opacity="0.55"/>
+        <circle cx="88" cy="78" r="3.4" fill="#fda4af" opacity="0.55"/>
+        ${companionEyes(72, 74, 88, 74, 3.8)}
+        <path d="M74 88 C78 91 82 91 86 88" fill="none" stroke="#be123c" stroke-width="1" stroke-linecap="round" opacity="0.65"/>`;
     case "angelfish":
       return `${shadow}
         <path d="M80 34 C92 28 108 36 112 52 C116 70 108 92 96 108 C88 118 72 118 64 108 C52 92 44 70 48 52 C52 36 68 28 80 34Z" fill="#facc15" stroke="#ca8a04" stroke-width="1.35"/>
@@ -1076,14 +1083,14 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
 const COMPANION_ART_FIT = {
   harbor_gull: { cx: 80, cy: 91.5, scale: 1.28 },
   clownfish: { cx: 82, cy: 85, scale: 1.175 },
-  sea_turtle: { cx: 80, cy: 92, scale: 1.0 },
+  sea_turtle: { cx: 80, cy: 92, scale: 1.08 },
   octopus: { cx: 79, cy: 96, scale: 1.28 },
   dolphin: { cx: 84, cy: 85, scale: 0.784 },
   jellyfish: { cx: 80, cy: 96, scale: 1.28 },
   crab: { cx: 80, cy: 86, scale: 1.0 },
   manta: { cx: 80, cy: 90, scale: 1.0 },
   puffer: { cx: 80, cy: 88, scale: 1.28 },
-  otter: { cx: 88, cy: 86.5, scale: 1.28 },
+  otter: { cx: 80, cy: 90, scale: 1.18 },
   pirate_gull: { cx: 80, cy: 79, scale: 1.28 },
   cowboy_shark: { cx: 76, cy: 74, scale: 1.049 },
   party_fish: { cx: 81, cy: 75.1, scale: 1.111 },
@@ -1094,7 +1101,7 @@ const COMPANION_ART_FIT = {
   disco_jelly: { cx: 80, cy: 96, scale: 1.28 },
   viking_seal: { cx: 80, cy: 83, scale: 1.28 },
   royal_manta: { cx: 80, cy: 90, scale: 1.0 },
-  starfish: { cx: 80, cy: 86, scale: 1.22 },
+  starfish: { cx: 80, cy: 84, scale: 1.18 },
   angelfish: { cx: 80, cy: 78, scale: 1.12 },
   lobster: { cx: 80, cy: 92, scale: 1.05 },
   blue_tang: { cx: 82, cy: 84, scale: 1.1 },
