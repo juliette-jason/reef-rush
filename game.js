@@ -950,10 +950,9 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M90 52 C98 22 122 24 118 56 C108 48 96 48 90 52Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1.15"/>
         <path d="M104 86 C114 108 96 120 88 104 C92 94 100 88 104 86Z" fill="#2563eb" stroke="#1e3a8a" stroke-width="1"/>
         <path d="M138 64 C148 56 162 60 166 72 C160 80 148 82 138 76Z" fill="#60a5fa" stroke="#1e3a8a" stroke-width="0.95"/>
-        <path d="M28 104 C40 98 54 100 58 108 C54 112 58 114 54 116 C40 122 28 118 26 112 C26 108 27 106 28 104Z" fill="#fbbf24" stroke="#b45309" stroke-width="0.9"/>
-        <path d="M30 106 C40 102 50 104 54 108" fill="none" stroke="#fde68a" stroke-width="1.3" stroke-linecap="round"/>
-        <path d="M28 112 C38 116 48 114 52 110" fill="none" stroke="#d97706" stroke-width="1.1" stroke-linecap="round" opacity="0.55"/>
-        <circle cx="42" cy="108" r="3" fill="#fef08a" stroke="#b45309" stroke-width="0.7"/>
+        <path d="M24 104 A 18 10 0 0 1 58 106 L 56 114 A 14 7 0 0 0 26 110 Z" fill="#fbbf24" stroke="#b45309" stroke-width="0.9"/>
+        <path d="M28 105 A 15 8 0 0 1 54 107" fill="none" stroke="#fde68a" stroke-width="1.3" stroke-linecap="round"/>
+        <circle cx="54" cy="109" r="3" fill="#fef08a" stroke="#b45309" stroke-width="0.7"/>
         ${companionEye(132, 68, 4.1)}
         <path d="M144 76 Q158 86 166 76" fill="none" stroke="#1e3a8a" stroke-width="1.45" stroke-linecap="round"/>`;
     case "chef_crab":
