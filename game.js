@@ -884,17 +884,17 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M96 78 C92 84 92 92 96 98" fill="none" stroke="#1a2b4a" stroke-width="2" stroke-linecap="round"/>
         <path d="M90 77 C86 83 86 93 90 99" fill="none" stroke="#1a2b4a" stroke-width="2" stroke-linecap="round"/>
         <path d="M84 76 C80 82 80 94 84 100" fill="none" stroke="#1a2b4a" stroke-width="2" stroke-linecap="round"/>
-        <path d="M118 78 C140 72 154 78 150 88 L120 84 Z" fill="#5b9bd5" stroke="#1a2b4a" stroke-width="2"/>
-        <path d="M120 86 C142 92 154 88 146 100 L120 92 Z" fill="#5b9bd5" stroke="#1a2b4a" stroke-width="2"/>
-        <path d="M122 80 C138 78 146 82 144 92 C132 94 124 90 122 84 Z" fill="#8b2942"/>
-        <path d="M126 80 L128 86 L124 86 Z" fill="#ffffff"/>
-        <path d="M131 79 L133 85 L129 85 Z" fill="#ffffff"/>
-        <path d="M136 79 L138 85 L134 85 Z" fill="#ffffff"/>
-        <path d="M141 80 L143 86 L139 86 Z" fill="#ffffff"/>
-        <path d="M126 96 L128 90 L124 90 Z" fill="#ffffff"/>
-        <path d="M131 97 L133 91 L129 91 Z" fill="#ffffff"/>
-        <path d="M136 96 L138 90 L134 90 Z" fill="#ffffff"/>
-        <path d="M141 95 L143 89 L139 89 Z" fill="#ffffff"/>
+        <path d="M118 78 C138 74 152 80 148 86 L122 84 Z" fill="#5b9bd5" stroke="#1a2b4a" stroke-width="2"/>
+        <path d="M122 92 C146 96 152 90 144 100 L120 96 Z" fill="#5b9bd5" stroke="#1a2b4a" stroke-width="2"/>
+        <path d="M124 84 C140 82 146 86 144 94 C136 96 128 94 124 88 Z" fill="#8b2942"/>
+        <path d="M128 85 L130 89 L126 89 Z" fill="#ffffff"/>
+        <path d="M133 85 L135 89 L131 89 Z" fill="#ffffff"/>
+        <path d="M138 86 L140 90 L136 90 Z" fill="#ffffff"/>
+        <path d="M143 86 L145 90 L141 90 Z" fill="#ffffff"/>
+        <path d="M128 93 L130 89 L126 89 Z" fill="#ffffff"/>
+        <path d="M133 94 L135 90 L131 90 Z" fill="#ffffff"/>
+        <path d="M138 95 L140 91 L136 91 Z" fill="#ffffff"/>
+        <path d="M143 96 L145 92 L141 92 Z" fill="#ffffff"/>
         <circle cx="148" cy="82" r="1.3" fill="#1a2b4a"/>
         <circle cx="148" cy="86" r="1.3" fill="#1a2b4a"/>
         ${companionEye(108, 70, 5.4)}
@@ -949,13 +949,15 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M90 52 C98 22 122 24 118 56 C108 48 96 48 90 52Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1.15"/>
         <path d="M104 86 C114 108 96 120 88 104 C92 94 100 88 104 86Z" fill="#2563eb" stroke="#1e3a8a" stroke-width="1"/>
         <path d="M138 64 C148 56 162 60 166 72 C160 80 148 82 138 76Z" fill="#60a5fa" stroke="#1e3a8a" stroke-width="0.95"/>
-        <path d="M24 106 A 18 9 0 0 1 58 108 L 56 112 A 16 7 0 0 0 26 110 Z" fill="#ca8a04" stroke="#78350f" stroke-width="0.85"/>
-        <path d="M26 106.5 A 16 8 0 0 1 56 108" fill="none" stroke="#fde047" stroke-width="1.1" stroke-linecap="round"/>
-        <rect x="31.5" y="107.2" width="3.8" height="2.6" rx="0.45" fill="#92400e" stroke="#78350f" stroke-width="0.55"/>
-        <rect x="36.8" y="107.4" width="3.4" height="2.4" rx="0.45" fill="#92400e" stroke="#78350f" stroke-width="0.55"/>
-        <rect x="44" y="106.8" width="7.2" height="5.2" rx="0.7" fill="#fbbf24" stroke="#78350f" stroke-width="0.9"/>
-        <ellipse cx="47.6" cy="109.4" rx="2" ry="1.3" fill="#fde68a" stroke="#b45309" stroke-width="0.55"/>
-        <rect x="52.5" y="107.4" width="3.2" height="2.4" rx="0.45" fill="#92400e" stroke="#78350f" stroke-width="0.55"/>
+        <g transform="rotate(-24 46 116)">
+          <path d="M30 114 A 14 3.8 0 0 1 62 114 L 60 117.5 A 12 2.8 0 0 0 32 117.5 Z" fill="#ca8a04" stroke="#78350f" stroke-width="0.85"/>
+          <path d="M32 114.2 A 13 3.2 0 0 1 60 114.2" fill="none" stroke="#fde047" stroke-width="1" stroke-linecap="round"/>
+          <rect x="33" y="114.5" width="3.2" height="2.2" rx="0.4" fill="#92400e" stroke="#78350f" stroke-width="0.5"/>
+          <rect x="37.5" y="114.6" width="2.8" height="2" rx="0.4" fill="#92400e" stroke="#78350f" stroke-width="0.5"/>
+          <rect x="44" y="113.8" width="6.5" height="4.6" rx="0.65" fill="#fbbf24" stroke="#78350f" stroke-width="0.85"/>
+          <ellipse cx="47.2" cy="116.1" rx="1.7" ry="1.1" fill="#fde68a" stroke="#b45309" stroke-width="0.5"/>
+          <rect x="52.5" y="114.6" width="2.8" height="2" rx="0.4" fill="#92400e" stroke="#78350f" stroke-width="0.5"/>
+        </g>
         ${companionEye(132, 68, 4.1)}
         <path d="M144 76 Q158 86 166 76" fill="none" stroke="#1e3a8a" stroke-width="1.45" stroke-linecap="round"/>`;
     case "chef_crab":
