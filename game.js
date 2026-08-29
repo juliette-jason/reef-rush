@@ -875,13 +875,12 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M104 58 C114 64 120 70 116 72 C108 70 104 64 104 58Z" fill="#b91c1c"/>`;
     case "cowboy_shark":
       return `${shadow}
-        <path d="M30 90 C18 72 10 78 20 90 C10 102 18 108 30 90Z" fill="#5b9bd5" stroke="#1a2b4a" stroke-width="2.1"/>
-        <path d="M34 90 C42 66 72 56 104 60 C128 64 142 76 140 90 C136 104 108 110 68 110 C44 110 34 102 34 90Z" fill="#5b9bd5" stroke="#1a2b4a" stroke-width="2.2"/>
-        <path d="M40 92 C54 104 112 102 132 86 C110 98 60 104 40 94Z" fill="#f8fafc" stroke="#1a2b4a" stroke-width="1.6"/>
-        <path d="M38 94 C62 108 108 106 134 84" fill="none" stroke="#1a2b4a" stroke-width="1.8" stroke-linecap="round"/>
-        <path d="M70 56 C74 30 94 26 102 52 C90 48 78 52 70 56Z" fill="#4d8ecf" stroke="#1a2b4a" stroke-width="2"/>
-        <path d="M64 104 C52 120 40 116 50 100Z" fill="#4d8ecf" stroke="#1a2b4a" stroke-width="1.9"/>
-        <path d="M58 106 C50 116 46 112 52 102Z" fill="#f8fafc" opacity="0.85"/>
+        <path d="M34 90 C22 72 10 78 16 90 C10 102 22 108 34 96 C38 110 64 112 92 110 C124 108 142 94 140 82 C138 64 114 56 84 58 C54 60 36 72 34 90 Z" fill="#5b9bd5" stroke="#1a2b4a" stroke-width="2.2"/>
+        <path d="M40 92 C56 104 112 102 132 86 C108 98 58 106 40 96 Z" fill="#f8fafc" stroke="#1a2b4a" stroke-width="1.6"/>
+        <path d="M38 94 C62 108 108 104 132 82" fill="none" stroke="#1a2b4a" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M68 58 C74 30 94 26 102 52 C92 56 76 58 68 58 Z" fill="#5b9bd5" stroke="#1a2b4a" stroke-width="2"/>
+        <path d="M56 108 C46 122 38 118 48 104 C52 106 54 107 56 108 Z" fill="#5b9bd5" stroke="#1a2b4a" stroke-width="1.9"/>
+        <path d="M50 110 C44 118 40 114 46 106 Z" fill="#f8fafc" opacity="0.85"/>
         <path d="M96 78 C92 84 92 92 96 98" fill="none" stroke="#1a2b4a" stroke-width="2" stroke-linecap="round"/>
         <path d="M90 77 C86 83 86 93 90 99" fill="none" stroke="#1a2b4a" stroke-width="2" stroke-linecap="round"/>
         <path d="M84 76 C80 82 80 94 84 100" fill="none" stroke="#1a2b4a" stroke-width="2" stroke-linecap="round"/>
