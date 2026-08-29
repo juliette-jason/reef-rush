@@ -875,20 +875,25 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M104 58 C114 64 120 70 116 72 C108 70 104 64 104 58Z" fill="#b91c1c"/>`;
     case "cowboy_shark":
       return `${shadow}
-        <path d="M28 88 C14 82 12 92 28 96 C16 102 22 110 34 102 C36 96 34 90 28 88Z" fill="#64748b" stroke="#1e293b" stroke-width="1"/>
-        <path d="M34 90 C40 70 62 56 90 60 C110 64 124 74 132 84 C128 90 118 100 96 106 C70 112 44 104 34 90Z" fill="#94a3b8" stroke="#334155" stroke-width="1.3"/>
-        <path d="M52 96 C68 110 100 108 120 90 C108 102 80 108 60 102 C54 100 52 98 52 96Z" fill="#e2e8f0"/>
-        <path d="M72 62 C76 38 92 36 96 60 C88 54 80 54 72 62Z" fill="#475569" stroke="#1e293b" stroke-width="1"/>
-        <path d="M118 86 C132 76 144 78 142 90 C140 100 128 100 118 94Z" fill="#64748b" stroke="#1e293b" stroke-width="1"/>
-        <path d="M126 86 C136 80 140 82 138 92 C134 94 128 92 126 86Z" fill="#fff"/>
-        <path d="M128 84 L130 94 M131 83 L133.5 94 M134.5 83 L137 94" stroke="#0f172a" stroke-width="1.15" stroke-linecap="round"/>
-        <path d="M128 92 L130.5 86 M132 93 L134.5 87 M135.5 92 L138 86" stroke="#0f172a" stroke-width="0.95" stroke-linecap="round"/>
-        ${companionEye(104, 80, 4.4)}
+        <path d="M24 90 C10 88 6 96 18 100 C10 110 22 116 32 104 C34 98 30 92 24 90Z" fill="#475569" stroke="#0f172a" stroke-width="1.1"/>
+        <path d="M34 92 C38 66 64 52 96 56 C120 60 134 72 138 84 C134 96 116 106 86 108 C54 110 34 104 32 92Z" fill="#64748b" stroke="#1e293b" stroke-width="1.35"/>
+        <path d="M46 98 C60 110 98 108 122 90 C102 102 72 106 52 100 C48 99 46 98 46 98Z" fill="#e2e8f0"/>
+        <path d="M68 56 C72 24 92 20 100 52 C88 48 74 52 68 56Z" fill="#334155" stroke="#0f172a" stroke-width="1.2"/>
+        <path d="M50 100 C36 116 28 112 40 96Z" fill="#475569" stroke="#1e293b" stroke-width="0.95"/>
+        <path d="M104 88 C100 94 100 100 104 106" fill="none" stroke="#334155" stroke-width="1.25" opacity="0.75"/>
+        <path d="M98 86 C94 92 94 102 98 108" fill="none" stroke="#334155" stroke-width="1.25" opacity="0.75"/>
+        <path d="M116 84 C134 76 154 80 152 92 C142 88 126 86 116 84Z" fill="#94a3b8" stroke="#1e293b" stroke-width="1.05"/>
+        <path d="M116 100 C132 112 152 108 150 96 C140 104 126 108 116 100Z" fill="#94a3b8" stroke="#1e293b" stroke-width="1.05"/>
+        <path d="M118 92 C128 90 144 92 142 102 C132 108 120 106 118 100Z" fill="#7f1d1d"/>
+        <path d="M124 90 L126 98 M128 89 L131 98 M133 89 L136 98 M138 89 L141 98" stroke="#f8fafc" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M124 104 L127 96 M129 105 L132 97 M134 104 L137 96 M139 103 L142 95" stroke="#f8fafc" stroke-width="1.1" stroke-linecap="round"/>
+        ${companionEye(106, 76, 4.2)}
+        <path d="M98 72 L114 69" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round"/>
         <g transform="rotate(-18 108 66)">
           <path d="M84 66 C86 60 96 62 108 62 C120 62 130 60 132 66 C130 72 120 70 108 70 C96 70 86 72 84 66Z" fill="#92400e"/>
           <path d="M94 66 C96 52 100 42 108 42 C116 42 120 52 122 66Z" fill="#b45309" stroke="#78350f" stroke-width="1.15"/>
         </g>
-        <path d="M58 94 Q80 106 104 94" fill="none" stroke="#b91c1c" stroke-width="3.6" stroke-linecap="round"/>`;
+        <path d="M58 94 Q80 108 104 94" fill="none" stroke="#b91c1c" stroke-width="3.6" stroke-linecap="round"/>`;
     case "party_fish":
       return `${shadow}
         <path d="M36 88 C24 72 18 80 22 90 C18 100 28 104 36 88Z" fill="#06b6d4" stroke="#0e7490" stroke-width="1.1"/>
@@ -952,9 +957,9 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M48 100 C50 82 64 76 80 76 C98 76 112 84 112 100 C110 116 96 124 80 124 C62 124 46 114 48 100Z" fill="#ef4444" stroke="#7f1d1d" stroke-width="1.3"/>
         <path d="M58 90 Q80 82 102 90" fill="none" stroke="#b91c1c" stroke-width="1.2"/>
         <path d="M64 104 Q80 110 96 104" fill="none" stroke="#1f2937" stroke-width="2" stroke-linecap="round"/>
-        <path d="M60 78 C62 66 72 62 80 62 C90 62 100 68 100 78 C96 86 88 90 80 90 C70 90 62 84 60 78Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
-        <path d="M58 86 C58 82 62 84 80 84 C98 84 102 82 102 86 C102 94 96 96 80 96 C64 96 58 92 58 86Z" fill="#fff" stroke="#cbd5e1" stroke-width="1"/>
-        <path d="M64 78 Q80 70 96 78" fill="none" stroke="#e2e8f0" stroke-width="2"/>
+        <path d="M60 72 C62 60 72 56 80 56 C90 56 100 62 100 72 C96 80 88 84 80 84 C70 84 62 78 60 72Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+        <path d="M58 80 C58 76 62 78 80 78 C98 78 102 76 102 80 C102 88 96 90 80 90 C64 90 58 86 58 80Z" fill="#fff" stroke="#cbd5e1" stroke-width="1"/>
+        <path d="M64 72 Q80 64 96 72" fill="none" stroke="#e2e8f0" stroke-width="2"/>
         <path d="M68 78 C66 64 64 52 66 46" fill="none" stroke="#7f1d1d" stroke-width="2.3" stroke-linecap="round"/>
         <path d="M92 78 C94 64 96 52 94 46" fill="none" stroke="#7f1d1d" stroke-width="2.3" stroke-linecap="round"/>
         ${companionEyes(70, 42, 90, 42, 4)}`;
@@ -1092,7 +1097,7 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
 const COMPANION_ART_FIT = {
   harbor_gull: { cx: 80, cy: 91.5, scale: 1.28 },
   clownfish: { cx: 82, cy: 85, scale: 1.175 },
-  sea_turtle: { cx: 80, cy: 92, scale: 1.08 },
+  sea_turtle: { cx: 80, cy: 92, scale: 1.16 },
   octopus: { cx: 79, cy: 96, scale: 1.28 },
   dolphin: { cx: 84, cy: 85, scale: 0.784 },
   jellyfish: { cx: 80, cy: 96, scale: 1.28 },
@@ -1101,7 +1106,7 @@ const COMPANION_ART_FIT = {
   puffer: { cx: 80, cy: 88, scale: 1.28 },
   otter: { cx: 80, cy: 90, scale: 1.18 },
   pirate_gull: { cx: 80, cy: 79, scale: 1.28 },
-  cowboy_shark: { cx: 76, cy: 74, scale: 1.049 },
+  cowboy_shark: { cx: 78, cy: 76, scale: 1.05 },
   party_fish: { cx: 81, cy: 75.1, scale: 1.111 },
   ninja_octopus: { cx: 83, cy: 96, scale: 1.28 },
   wizard_turtle: { cx: 80, cy: 90, scale: 0.98 },
