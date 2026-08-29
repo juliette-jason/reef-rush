@@ -970,7 +970,7 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M64 72 Q80 64 96 72" fill="none" stroke="#e2e8f0" stroke-width="2"/>
         <path d="M68 78 C66 64 64 52 66 46" fill="none" stroke="#7f1d1d" stroke-width="2.3" stroke-linecap="round"/>
         <path d="M92 78 C94 64 96 52 94 46" fill="none" stroke="#7f1d1d" stroke-width="2.3" stroke-linecap="round"/>
-        ${companionEyes(70, 50, 90, 50, 4)}`;
+        ${companionEyes(70, 96, 90, 96, 3.8)}`;
     case "disco_jelly":
       return `${shadow}
         <path d="M56 100 Q52 122 58 132" fill="none" stroke="#f0abfc" stroke-width="2.6" stroke-linecap="round"/>
