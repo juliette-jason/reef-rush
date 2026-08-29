@@ -8290,6 +8290,9 @@ const MINIGAME_SURVIVOR_MS = 30 * 60_000;
 /** Fish-score chest tiers for timed mini-games. */
 const MINIGAME_FISH_RARE_MIN = 1500;
 const MINIGAME_FISH_LEGENDARY_MIN = 4000;
+/** Co-op haul needs a bigger combined score for top chests. */
+const MINIGAME_COOP_RARE_MIN = 3600;
+const MINIGAME_COOP_LEGENDARY_MIN = 7800;
 /** Survivor chest tiers (bonus haul when you hook the kraken). */
 const MINIGAME_SURVIVOR_RARE_MIN = 900;
 const MINIGAME_SURVIVOR_LEGENDARY_MIN = 2200;
@@ -8850,8 +8853,8 @@ function coopPlanFromMatch(row, role) {
     partnerCompanionId: opponentCompanionFromRow(row, role),
     roundStartMs: row.roundStartMs,
     roundMs: MINIGAME_COOP_MS,
-    partnerTarget: mode === "com" ? rollDuelRivalTargetScore() : 0,
-    pacingBias: 0.88 + Math.random() * 0.24,
+    partnerTarget: mode === "com" ? rollCoopPartnerTargetScore() : 0,
+    pacingBias: 0.72 + Math.random() * 0.16,
   };
 }
 
@@ -8867,8 +8870,8 @@ function buildLocalComCoopPlan(reefId) {
     partnerScore: 0,
     roundStartMs: Date.now() + DUEL_MATCH_START_DELAY_MS,
     roundMs: MINIGAME_COOP_MS,
-    partnerTarget: rollDuelRivalTargetScore(),
-    pacingBias: 0.88 + Math.random() * 0.24,
+    partnerTarget: rollCoopPartnerTargetScore(),
+    pacingBias: 0.72 + Math.random() * 0.16,
   };
 }
 
@@ -8968,7 +8971,7 @@ function refreshCoopEventCard() {
   const ticketEl = document.getElementById("coopEventTickets");
   const btn = document.getElementById("btnStartCoop");
   if (ticketEl) ticketEl.textContent = `Tickets: ${tickets}`;
-  coopPendingTargetScore = rollDuelRivalTargetScore();
+  coopPendingTargetScore = rollCoopPartnerTargetScore();
   if (coopEventMatchup) coopEventMatchup.textContent = formatCoopEventMatchupLine();
   const previewReef = REEFS[Math.floor(Math.random() * REEFS.length)] || REEFS[0];
   if (coopEventReef) {
@@ -9289,6 +9292,18 @@ function rollDuelRivalTargetScore() {
   const { easy, hard } = getDuelRivalTargetBounds();
   if (hard <= easy) return easy;
   return easy + Math.floor(Math.random() * (hard - easy + 1));
+}
+
+function rollCoopPartnerTargetScore() {
+  const duelTarget = rollDuelRivalTargetScore();
+  const scale = 0.48 + Math.random() * 0.14;
+  return Math.max(1600, Math.floor(duelTarget * scale));
+}
+
+function coopTierForScore(pts) {
+  if (pts >= MINIGAME_COOP_LEGENDARY_MIN) return "legendary";
+  if (pts >= MINIGAME_COOP_RARE_MIN) return "rare";
+  return "common";
 }
 
 function formatDuelRivalMatchupLine(targetScore) {
@@ -14384,9 +14399,9 @@ function boostCoopPartnerIfBehind(now) {
   const s = eventMinigameSession;
   if (!s || s.kind !== "coop" || s.mode !== "com") return;
   const expected = coopExpectedPartnerScore(now);
-  if ((s.partnerScore || 0) >= expected - 8) return;
-  if (Math.random() > 0.035) return;
-  const bump = Math.min(38, Math.max(12, expected - (s.partnerScore || 0)));
+  if ((s.partnerScore || 0) >= expected - 12) return;
+  if (Math.random() > 0.02) return;
+  const bump = Math.min(22, Math.max(6, expected - (s.partnerScore || 0)));
   s.partnerScore = (s.partnerScore || 0) + bump;
   syncCoopHud(true);
 }
@@ -14459,9 +14474,9 @@ function beginCoopSession(plan) {
     reefId: reef.id,
     reefName: `Co-op · ${reef.name}`,
     roundMs: MINIGAME_COOP_MS,
-    spawnMult: 0.9,
-    speedMult: 1,
-    maxFishMult: 1.15,
+    spawnMult: 0.76,
+    speedMult: 1.14,
+    maxFishMult: 0.95,
     startedAt: now,
     partnerScore: 0,
     mode: plan.mode,
@@ -14735,7 +14750,7 @@ async function endEventMinigameRoundAsync() {
       partner = await resolveCoopFinalPartnerScore(session, fishScore);
     }
     const combined = fishScore + partner;
-    const tier = minigameFishTierForScore(combined);
+    const tier = coopTierForScore(combined);
     showEventMinigameReward({
       source: "coop",
       title: "Co-op Haul!",
@@ -18068,6 +18083,10 @@ function tryCatchKraken(opts) {
   return true;
 }
 
+function clearKrakenBubbles() {
+  bubbles = bubbles.filter((b) => !b.kraken);
+}
+
 function spawnKrakenEntranceBubbles(k, count = 28) {
   const n = Math.max(12, Math.floor(count * (PERF_CHROMEBOOK ? 0.55 : 1)));
   for (let i = 0; i < n; i++) {
@@ -18077,6 +18096,7 @@ function spawnKrakenEntranceBubbles(k, count = 28) {
       r: (2.2 + Math.random() * 5.5) * dpr,
       vy: (0.55 + Math.random() * 1.1) * dpr,
       w: Math.random() * Math.PI * 2,
+      kraken: true,
     });
   }
 }
@@ -18137,6 +18157,7 @@ function tickOneKraken(k, now, dt) {
     k.phase += dt * 0.0045;
     if (k.biteT >= snap + k.biteHoldMs) {
       k.state = "done";
+      clearKrakenBubbles();
       k.netGrab = null;
       k.boatRockSteal = false;
       hook.krakenBiteLocked = false;
@@ -18170,7 +18191,7 @@ function tickOneKraken(k, now, dt) {
         k.pathStage = "side";
         k.y = k.sweepY;
         k.face = k.exitDir;
-        spawnKrakenEntranceBubbles(k, 22);
+        clearKrakenBubbles();
       }
       return;
     }
@@ -18180,6 +18201,7 @@ function tickOneKraken(k, now, dt) {
     k.face = k.exitDir;
     if ((k.exitDir < 0 && k.x < -L * 0.9) || (k.exitDir > 0 && k.x > w + L * 0.9)) {
       k.state = "done";
+      clearKrakenBubbles();
       if (eventMinigameSession?.kind === "survivor" && !eventMinigameSession.caughtKraken) {
         k.state = "scheduled";
         k.spawnAt = now + 220 + Math.random() * 580;
