@@ -882,11 +882,17 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M50 100 C36 116 28 112 40 96Z" fill="#475569" stroke="#1e293b" stroke-width="0.95"/>
         <path d="M104 88 C100 94 100 100 104 106" fill="none" stroke="#334155" stroke-width="1.25" opacity="0.75"/>
         <path d="M98 86 C94 92 94 102 98 108" fill="none" stroke="#334155" stroke-width="1.25" opacity="0.75"/>
-        <path d="M116 84 C134 76 154 80 152 92 C142 88 126 86 116 84Z" fill="#94a3b8" stroke="#1e293b" stroke-width="1.05"/>
-        <path d="M116 100 C132 112 152 108 150 96 C140 104 126 108 116 100Z" fill="#94a3b8" stroke="#1e293b" stroke-width="1.05"/>
-        <path d="M118 92 C128 90 144 92 142 102 C132 108 120 106 118 100Z" fill="#7f1d1d"/>
-        <path d="M124 90 L126 98 M128 89 L131 98 M133 89 L136 98 M138 89 L141 98" stroke="#f8fafc" stroke-width="1.2" stroke-linecap="round"/>
-        <path d="M124 104 L127 96 M129 105 L132 97 M134 104 L137 96 M139 103 L142 95" stroke="#f8fafc" stroke-width="1.1" stroke-linecap="round"/>
+        <path d="M116 84 C138 78 152 84 150 92 L118 90 Z" fill="#94a3b8" stroke="#1e293b" stroke-width="1.05"/>
+        <path d="M118 98 C140 104 150 98 146 106 L118 102 Z" fill="#94a3b8" stroke="#1e293b" stroke-width="1.05"/>
+        <path d="M120 90 C136 88 144 92 142 100 C132 102 122 100 120 94 Z" fill="#7f1d1d"/>
+        <path d="M124 90 L126 95 L122 95 Z" fill="#f8fafc"/>
+        <path d="M129 89 L131 94 L127 94 Z" fill="#f8fafc"/>
+        <path d="M134 89 L136 94 L132 94 Z" fill="#f8fafc"/>
+        <path d="M139 90 L141 95 L137 95 Z" fill="#f8fafc"/>
+        <path d="M124 102 L126 97 L122 97 Z" fill="#f8fafc"/>
+        <path d="M129 103 L131 98 L127 98 Z" fill="#f8fafc"/>
+        <path d="M134 102 L136 97 L132 97 Z" fill="#f8fafc"/>
+        <path d="M139 101 L141 96 L137 96 Z" fill="#f8fafc"/>
         ${companionEye(106, 76, 4.2)}
         <path d="M98 72 L114 69" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round"/>
         <g transform="rotate(-18 108 66)">
@@ -940,9 +946,10 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M90 52 C98 22 122 24 118 56 C108 48 96 48 90 52Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1.15"/>
         <path d="M104 86 C114 108 96 120 88 104 C92 94 100 88 104 86Z" fill="#2563eb" stroke="#1e3a8a" stroke-width="1"/>
         <path d="M138 64 C148 56 162 60 166 72 C160 80 148 82 138 76Z" fill="#60a5fa" stroke="#1e3a8a" stroke-width="0.95"/>
-        <path d="M30 106 C38 102 48 104 56 110 L54 116 C44 112 32 114 28 110 Z" fill="#fbbf24" stroke="#b45309" stroke-width="0.9"/>
-        <path d="M32 108 H52" stroke="#fde68a" stroke-width="1.2" stroke-linecap="round" opacity="0.8"/>
-        <circle cx="42" cy="111" r="3.2" fill="#fef08a" stroke="#b45309" stroke-width="0.7"/>
+        <path d="M28 104 C40 98 54 100 58 108 C54 112 58 114 54 116 C40 122 28 118 26 112 C26 108 27 106 28 104Z" fill="#fbbf24" stroke="#b45309" stroke-width="0.9"/>
+        <path d="M30 106 C40 102 50 104 54 108" fill="none" stroke="#fde68a" stroke-width="1.3" stroke-linecap="round"/>
+        <path d="M28 112 C38 116 48 114 52 110" fill="none" stroke="#d97706" stroke-width="1.1" stroke-linecap="round" opacity="0.55"/>
+        <circle cx="42" cy="108" r="3" fill="#fef08a" stroke="#b45309" stroke-width="0.7"/>
         ${companionEye(132, 68, 4.1)}
         <path d="M144 76 Q158 86 166 76" fill="none" stroke="#1e3a8a" stroke-width="1.45" stroke-linecap="round"/>`;
     case "chef_crab":
@@ -963,7 +970,7 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M64 72 Q80 64 96 72" fill="none" stroke="#e2e8f0" stroke-width="2"/>
         <path d="M68 78 C66 64 64 52 66 46" fill="none" stroke="#7f1d1d" stroke-width="2.3" stroke-linecap="round"/>
         <path d="M92 78 C94 64 96 52 94 46" fill="none" stroke="#7f1d1d" stroke-width="2.3" stroke-linecap="round"/>
-        ${companionEyes(70, 42, 90, 42, 4)}`;
+        ${companionEyes(70, 50, 90, 50, 4)}`;
     case "disco_jelly":
       return `${shadow}
         <path d="M56 100 Q52 122 58 132" fill="none" stroke="#f0abfc" stroke-width="2.6" stroke-linecap="round"/>
