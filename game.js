@@ -949,9 +949,13 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M90 52 C98 22 122 24 118 56 C108 48 96 48 90 52Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1.15"/>
         <path d="M104 86 C114 108 96 120 88 104 C92 94 100 88 104 86Z" fill="#2563eb" stroke="#1e3a8a" stroke-width="1"/>
         <path d="M138 64 C148 56 162 60 166 72 C160 80 148 82 138 76Z" fill="#60a5fa" stroke="#1e3a8a" stroke-width="0.95"/>
-        <path d="M24 104 A 18 10 0 0 1 58 106 L 56 114 A 14 7 0 0 0 26 110 Z" fill="#fbbf24" stroke="#b45309" stroke-width="0.9"/>
-        <path d="M28 105 A 15 8 0 0 1 54 107" fill="none" stroke="#fde68a" stroke-width="1.3" stroke-linecap="round"/>
-        <circle cx="54" cy="109" r="3" fill="#fef08a" stroke="#b45309" stroke-width="0.7"/>
+        <path d="M24 106 A 18 9 0 0 1 58 108 L 56 112 A 16 7 0 0 0 26 110 Z" fill="#ca8a04" stroke="#78350f" stroke-width="0.85"/>
+        <path d="M26 106.5 A 16 8 0 0 1 56 108" fill="none" stroke="#fde047" stroke-width="1.1" stroke-linecap="round"/>
+        <rect x="31.5" y="107.2" width="3.8" height="2.6" rx="0.45" fill="#92400e" stroke="#78350f" stroke-width="0.55"/>
+        <rect x="36.8" y="107.4" width="3.4" height="2.4" rx="0.45" fill="#92400e" stroke="#78350f" stroke-width="0.55"/>
+        <rect x="44" y="106.8" width="7.2" height="5.2" rx="0.7" fill="#fbbf24" stroke="#78350f" stroke-width="0.9"/>
+        <ellipse cx="47.6" cy="109.4" rx="2" ry="1.3" fill="#fde68a" stroke="#b45309" stroke-width="0.55"/>
+        <rect x="52.5" y="107.4" width="3.2" height="2.4" rx="0.45" fill="#92400e" stroke="#78350f" stroke-width="0.55"/>
         ${companionEye(132, 68, 4.1)}
         <path d="M144 76 Q158 86 166 76" fill="none" stroke="#1e3a8a" stroke-width="1.45" stroke-linecap="round"/>`;
     case "chef_crab":
