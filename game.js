@@ -875,31 +875,35 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M104 58 C114 64 120 70 116 72 C108 70 104 64 104 58Z" fill="#b91c1c"/>`;
     case "cowboy_shark":
       return `${shadow}
-        <path d="M24 90 C10 88 6 96 18 100 C10 110 22 116 32 104 C34 98 30 92 24 90Z" fill="#475569" stroke="#0f172a" stroke-width="1.1"/>
-        <path d="M34 92 C38 66 64 52 96 56 C120 60 134 72 138 84 C134 96 116 106 86 108 C54 110 34 104 32 92Z" fill="#64748b" stroke="#1e293b" stroke-width="1.35"/>
-        <path d="M46 98 C60 110 98 108 122 90 C102 102 72 106 52 100 C48 99 46 98 46 98Z" fill="#e2e8f0"/>
-        <path d="M68 56 C72 24 92 20 100 52 C88 48 74 52 68 56Z" fill="#334155" stroke="#0f172a" stroke-width="1.2"/>
-        <path d="M50 100 C36 116 28 112 40 96Z" fill="#475569" stroke="#1e293b" stroke-width="0.95"/>
-        <path d="M104 88 C100 94 100 100 104 106" fill="none" stroke="#334155" stroke-width="1.25" opacity="0.75"/>
-        <path d="M98 86 C94 92 94 102 98 108" fill="none" stroke="#334155" stroke-width="1.25" opacity="0.75"/>
-        <path d="M116 84 C138 78 152 84 150 92 L118 90 Z" fill="#94a3b8" stroke="#1e293b" stroke-width="1.05"/>
-        <path d="M118 98 C140 104 150 98 146 106 L118 102 Z" fill="#94a3b8" stroke="#1e293b" stroke-width="1.05"/>
-        <path d="M120 90 C136 88 144 92 142 100 C132 102 122 100 120 94 Z" fill="#7f1d1d"/>
-        <path d="M124 90 L126 95 L122 95 Z" fill="#f8fafc"/>
-        <path d="M129 89 L131 94 L127 94 Z" fill="#f8fafc"/>
-        <path d="M134 89 L136 94 L132 94 Z" fill="#f8fafc"/>
-        <path d="M139 90 L141 95 L137 95 Z" fill="#f8fafc"/>
-        <path d="M124 102 L126 97 L122 97 Z" fill="#f8fafc"/>
-        <path d="M129 103 L131 98 L127 98 Z" fill="#f8fafc"/>
-        <path d="M134 102 L136 97 L132 97 Z" fill="#f8fafc"/>
-        <path d="M139 101 L141 96 L137 96 Z" fill="#f8fafc"/>
-        ${companionEye(106, 76, 4.2)}
-        <path d="M98 72 L114 69" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round"/>
-        <g transform="rotate(-18 108 66)">
-          <path d="M84 66 C86 60 96 62 108 62 C120 62 130 60 132 66 C130 72 120 70 108 70 C96 70 86 72 84 66Z" fill="#92400e"/>
-          <path d="M94 66 C96 52 100 42 108 42 C116 42 120 52 122 66Z" fill="#b45309" stroke="#78350f" stroke-width="1.15"/>
+        <path d="M30 90 C18 72 10 78 20 90 C10 102 18 108 30 90Z" fill="#5b9bd5" stroke="#1a2b4a" stroke-width="2.1"/>
+        <path d="M34 90 C42 66 72 56 104 60 C128 64 142 76 140 90 C136 104 108 110 68 110 C44 110 34 102 34 90Z" fill="#5b9bd5" stroke="#1a2b4a" stroke-width="2.2"/>
+        <path d="M40 92 C54 104 112 102 132 86 C110 98 60 104 40 94Z" fill="#f8fafc" stroke="#1a2b4a" stroke-width="1.6"/>
+        <path d="M38 94 C62 108 108 106 134 84" fill="none" stroke="#1a2b4a" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M70 56 C74 30 94 26 102 52 C90 48 78 52 70 56Z" fill="#4d8ecf" stroke="#1a2b4a" stroke-width="2"/>
+        <path d="M64 104 C52 120 40 116 50 100Z" fill="#4d8ecf" stroke="#1a2b4a" stroke-width="1.9"/>
+        <path d="M58 106 C50 116 46 112 52 102Z" fill="#f8fafc" opacity="0.85"/>
+        <path d="M96 78 C92 84 92 92 96 98" fill="none" stroke="#1a2b4a" stroke-width="2" stroke-linecap="round"/>
+        <path d="M90 77 C86 83 86 93 90 99" fill="none" stroke="#1a2b4a" stroke-width="2" stroke-linecap="round"/>
+        <path d="M84 76 C80 82 80 94 84 100" fill="none" stroke="#1a2b4a" stroke-width="2" stroke-linecap="round"/>
+        <path d="M118 78 C140 72 154 78 150 88 L120 84 Z" fill="#5b9bd5" stroke="#1a2b4a" stroke-width="2"/>
+        <path d="M120 86 C142 92 154 88 146 100 L120 92 Z" fill="#5b9bd5" stroke="#1a2b4a" stroke-width="2"/>
+        <path d="M122 80 C138 78 146 82 144 92 C132 94 124 90 122 84 Z" fill="#8b2942"/>
+        <path d="M126 80 L128 86 L124 86 Z" fill="#ffffff"/>
+        <path d="M131 79 L133 85 L129 85 Z" fill="#ffffff"/>
+        <path d="M136 79 L138 85 L134 85 Z" fill="#ffffff"/>
+        <path d="M141 80 L143 86 L139 86 Z" fill="#ffffff"/>
+        <path d="M126 96 L128 90 L124 90 Z" fill="#ffffff"/>
+        <path d="M131 97 L133 91 L129 91 Z" fill="#ffffff"/>
+        <path d="M136 96 L138 90 L134 90 Z" fill="#ffffff"/>
+        <path d="M141 95 L143 89 L139 89 Z" fill="#ffffff"/>
+        <circle cx="148" cy="82" r="1.3" fill="#1a2b4a"/>
+        <circle cx="148" cy="86" r="1.3" fill="#1a2b4a"/>
+        ${companionEye(108, 70, 5.4)}
+        <g transform="rotate(-12 110 58)">
+          <path d="M86 58 C88 52 98 54 110 54 C122 54 132 52 134 58 C132 64 122 62 110 62 C98 62 88 64 86 58Z" fill="#92400e" stroke="#5c3a1e" stroke-width="1.1"/>
+          <path d="M96 58 C98 44 102 34 110 34 C118 34 122 44 124 58Z" fill="#b45309" stroke="#78350f" stroke-width="1.2"/>
         </g>
-        <path d="M58 94 Q80 108 104 94" fill="none" stroke="#b91c1c" stroke-width="3.6" stroke-linecap="round"/>`;
+        <path d="M58 96 Q80 110 104 96" fill="none" stroke="#b91c1c" stroke-width="3.8" stroke-linecap="round"/>`;
     case "party_fish":
       return `${shadow}
         <path d="M36 88 C24 72 18 80 22 90 C18 100 28 104 36 88Z" fill="#06b6d4" stroke="#0e7490" stroke-width="1.1"/>
@@ -1112,7 +1116,7 @@ const COMPANION_ART_FIT = {
   puffer: { cx: 80, cy: 88, scale: 1.28 },
   otter: { cx: 80, cy: 90, scale: 1.18 },
   pirate_gull: { cx: 80, cy: 79, scale: 1.28 },
-  cowboy_shark: { cx: 78, cy: 76, scale: 1.05 },
+  cowboy_shark: { cx: 80, cy: 84, scale: 1.02 },
   party_fish: { cx: 81, cy: 75.1, scale: 1.111 },
   ninja_octopus: { cx: 83, cy: 96, scale: 1.28 },
   wizard_turtle: { cx: 80, cy: 90, scale: 0.98 },
