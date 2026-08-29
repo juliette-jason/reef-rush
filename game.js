@@ -949,14 +949,14 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M90 52 C98 22 122 24 118 56 C108 48 96 48 90 52Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1.15"/>
         <path d="M104 86 C114 108 96 120 88 104 C92 94 100 88 104 86Z" fill="#2563eb" stroke="#1e3a8a" stroke-width="1"/>
         <path d="M138 64 C148 56 162 60 166 72 C160 80 148 82 138 76Z" fill="#60a5fa" stroke="#1e3a8a" stroke-width="0.95"/>
-        <g transform="rotate(-24 46 116)">
-          <path d="M30 114 A 14 3.8 0 0 1 62 114 L 60 117.5 A 12 2.8 0 0 0 32 117.5 Z" fill="#ca8a04" stroke="#78350f" stroke-width="0.85"/>
-          <path d="M32 114.2 A 13 3.2 0 0 1 60 114.2" fill="none" stroke="#fde047" stroke-width="1" stroke-linecap="round"/>
-          <rect x="33" y="114.5" width="3.2" height="2.2" rx="0.4" fill="#92400e" stroke="#78350f" stroke-width="0.5"/>
-          <rect x="37.5" y="114.6" width="2.8" height="2" rx="0.4" fill="#92400e" stroke="#78350f" stroke-width="0.5"/>
-          <rect x="44" y="113.8" width="6.5" height="4.6" rx="0.65" fill="#fbbf24" stroke="#78350f" stroke-width="0.85"/>
-          <ellipse cx="47.2" cy="116.1" rx="1.7" ry="1.1" fill="#fde68a" stroke="#b45309" stroke-width="0.5"/>
-          <rect x="52.5" y="114.6" width="2.8" height="2" rx="0.4" fill="#92400e" stroke="#78350f" stroke-width="0.5"/>
+        <g transform="rotate(-13 84 93)">
+          <path d="M68 91.5 A 16 4 0 0 1 100 91.5 L 98.5 95 A 13 2.8 0 0 0 69.5 95 Z" fill="#ca8a04" stroke="#78350f" stroke-width="0.85"/>
+          <path d="M70.5 92 A 14 3.4 0 0 1 98 92" fill="none" stroke="#fde047" stroke-width="1" stroke-linecap="round"/>
+          <rect x="71.5" y="92.3" width="3.2" height="2.2" rx="0.4" fill="#92400e" stroke="#78350f" stroke-width="0.5"/>
+          <rect x="76" y="92.4" width="2.8" height="2" rx="0.4" fill="#92400e" stroke="#78350f" stroke-width="0.5"/>
+          <rect x="82.2" y="91.6" width="6.5" height="4.6" rx="0.65" fill="#fbbf24" stroke="#78350f" stroke-width="0.85"/>
+          <ellipse cx="85.4" cy="93.9" rx="1.7" ry="1.1" fill="#fde68a" stroke="#b45309" stroke-width="0.5"/>
+          <rect x="90.5" y="92.4" width="2.8" height="2" rx="0.4" fill="#92400e" stroke="#78350f" stroke-width="0.5"/>
         </g>
         ${companionEye(132, 68, 4.1)}
         <path d="M144 76 Q158 86 166 76" fill="none" stroke="#1e3a8a" stroke-width="1.45" stroke-linecap="round"/>`;
