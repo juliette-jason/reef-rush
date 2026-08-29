@@ -940,8 +940,9 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M90 52 C98 22 122 24 118 56 C108 48 96 48 90 52Z" fill="#1d4ed8" stroke="#1e3a8a" stroke-width="1.15"/>
         <path d="M104 86 C114 108 96 120 88 104 C92 94 100 88 104 86Z" fill="#2563eb" stroke="#1e3a8a" stroke-width="1"/>
         <path d="M138 64 C148 56 162 60 166 72 C160 80 148 82 138 76Z" fill="#60a5fa" stroke="#1e3a8a" stroke-width="0.95"/>
-        <path d="M70 96 H128" stroke="#fbbf24" stroke-width="6" stroke-linecap="round"/>
-        <circle cx="98" cy="96" r="5.5" fill="#fef08a" stroke="#b45309" stroke-width="0.8"/>
+        <path d="M30 106 C38 102 48 104 56 110 L54 116 C44 112 32 114 28 110 Z" fill="#fbbf24" stroke="#b45309" stroke-width="0.9"/>
+        <path d="M32 108 H52" stroke="#fde68a" stroke-width="1.2" stroke-linecap="round" opacity="0.8"/>
+        <circle cx="42" cy="111" r="3.2" fill="#fef08a" stroke="#b45309" stroke-width="0.7"/>
         ${companionEye(132, 68, 4.1)}
         <path d="M144 76 Q158 86 166 76" fill="none" stroke="#1e3a8a" stroke-width="1.45" stroke-linecap="round"/>`;
     case "chef_crab":
@@ -1080,14 +1081,12 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <circle cx="80" cy="62" r="1.6" fill="#f472b6"/>`;
     case "coral_angel":
       return `${shadow}
-        <path d="M36 88 C24 72 18 80 22 90 C18 100 28 104 36 88Z" fill="#fb7185" stroke="#be123c" stroke-width="1"/>
-        <path d="M46 40 C42 56 44 72 48 86" fill="#f472b6" stroke="#be123c" stroke-width="1"/>
-        <path d="M114 40 C118 56 116 72 112 86" fill="#f472b6" stroke="#be123c" stroke-width="1"/>
-        <path d="M38 88 C42 58 70 48 98 54 C118 58 132 70 136 82 C138 88 128 98 110 104 C88 112 56 108 40 96 C38 92 38 88 38 88Z" fill="#fda4af" stroke="#be123c" stroke-width="1.3"/>
-        <path d="M52 78 C58 68 102 68 108 78 C98 86 62 86 52 78Z" fill="#fb7185" opacity="0.55"/>
+        <path d="M36 88 C24 72 18 80 22 90 C18 100 28 104 36 88Z" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/>
+        <path d="M38 88 C42 58 70 48 98 54 C118 58 132 70 136 82 C138 88 128 98 110 104 C88 112 56 108 40 96 C38 92 38 88 38 88Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.3"/>
+        <path d="M52 78 C58 68 102 68 108 78 C98 86 62 86 52 78Z" fill="#ffffff" opacity="0.72"/>
         ${companionEye(120, 80, 4.2)}
-        <path d="M62 74 C68 58 74 52 80 58 C86 52 92 58 98 74 C90 68 70 68 62 74Z" fill="#fecdd3" stroke="#f472b6" stroke-width="1"/>
-        <circle cx="80" cy="62" r="3" fill="#fde047" stroke="#ca8a04" stroke-width="0.7"/>`;
+        <ellipse cx="80" cy="50" rx="18" ry="5" fill="none" stroke="#fde047" stroke-width="2.2" opacity="0.95"/>
+        <ellipse cx="80" cy="50" rx="18" ry="5" fill="none" stroke="#fff7cc" stroke-width="0.9" opacity="0.65"/>`;
     default:
       return companionInnerMarkup("harbor_gull");
   }
