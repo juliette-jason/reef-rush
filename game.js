@@ -967,8 +967,6 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M60 72 C62 60 72 56 80 56 C90 56 100 62 100 72 C96 80 88 84 80 84 C70 84 62 78 60 72Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
         <path d="M58 80 C58 76 62 78 80 78 C98 78 102 76 102 80 C102 88 96 90 80 90 C64 90 58 86 58 80Z" fill="#fff" stroke="#cbd5e1" stroke-width="1"/>
         <path d="M64 72 Q80 64 96 72" fill="none" stroke="#e2e8f0" stroke-width="2"/>
-        <path d="M68 78 C66 64 64 52 66 46" fill="none" stroke="#7f1d1d" stroke-width="2.3" stroke-linecap="round"/>
-        <path d="M92 78 C94 64 96 52 94 46" fill="none" stroke="#7f1d1d" stroke-width="2.3" stroke-linecap="round"/>
         ${companionEyes(70, 96, 90, 96, 3.8)}`;
     case "disco_jelly":
       return `${shadow}
@@ -1111,7 +1109,7 @@ const COMPANION_ART_FIT = {
   puffer: { cx: 80, cy: 88, scale: 1.28 },
   otter: { cx: 80, cy: 90, scale: 1.18 },
   pirate_gull: { cx: 80, cy: 79, scale: 1.28 },
-  cowboy_shark: { cx: 80, cy: 84, scale: 1.02 },
+  cowboy_shark: { cx: 80, cy: 86, scale: 1.0 },
   party_fish: { cx: 81, cy: 75.1, scale: 1.111 },
   ninja_octopus: { cx: 83, cy: 96, scale: 1.28 },
   wizard_turtle: { cx: 80, cy: 90, scale: 0.98 },
