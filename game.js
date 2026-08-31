@@ -8278,11 +8278,11 @@ const MINIGAME_ROULETTE_MS = 45_000;
 const MINIGAME_COOP_MS = 60_000;
 const MINIGAME_SURVIVOR_MS = 30 * 60_000;
 /** Fish-score chest tiers for timed mini-games. */
-const MINIGAME_FISH_CHEST_MIN = 500;
+const MINIGAME_FISH_CHEST_MIN = 2000;
 const MINIGAME_FISH_RARE_MIN = 1500;
 const MINIGAME_FISH_LEGENDARY_MIN = 4000;
 /** Co-op haul needs a bigger combined score for top chests. */
-const MINIGAME_COOP_CHEST_MIN = 1500;
+const MINIGAME_COOP_CHEST_MIN = 5700;
 const MINIGAME_COOP_RARE_MIN = 3600;
 const MINIGAME_COOP_LEGENDARY_MIN = 7800;
 /** Survivor chest tiers (bonus haul when you hook the kraken). */
@@ -14790,7 +14790,7 @@ async function endEventMinigameRoundAsync() {
    ========================================================================= */
 const CRAB_TRAP_DURATION_MS = 60_000;
 /** Below this crab count — no chest reward. */
-const CRAB_TRAP_CHEST_MIN = 8;
+const CRAB_TRAP_CHEST_MIN = 12;
 /** A low score (~20 crabs) yields common chests. */
 const CRAB_TRAP_LOW_SCORE = 20;
 /** Score >= this counts as a medium haul (better chests). */
