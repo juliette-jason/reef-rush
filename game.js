@@ -10967,7 +10967,7 @@ function hideAllPanels() {
   if (panelCollectables) panelCollectables.hidden = true;
   if (panelProfile) panelProfile.hidden = true;
   deferDailyPrizeCelebration();
-  appRoot?.classList.remove("app--events-mode", "app--splash");
+  appRoot?.classList.remove("app--events-mode", "app--splash", "app--playing", "app--duel", "app--matchup");
   stopDailyEventCountdown();
   stopEventsMusic();
 }
@@ -10975,6 +10975,7 @@ function hideAllPanels() {
 /** Show exactly one home menu surface; every other overlay stays hidden. */
 function showExclusiveMenu(which) {
   hideAllPanels();
+  appRoot?.classList.remove("app--playing", "app--duel", "app--matchup");
   if (which === "start") {
     if (panelStart) panelStart.hidden = false;
     window.setTimeout(tryStartDailyPrizeCelebration, 200);

@@ -481,6 +481,8 @@ body {
     radial-gradient(ellipse at 88% 12%, rgba(56, 189, 248, 0.2), transparent 40%),
     radial-gradient(ellipse at 50% 100%, rgba(14, 116, 144, 0.45), transparent 55%),
     linear-gradient(180deg, #0a4d66 0%, #063548 48%, #042536 100%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   overflow-x: hidden;
 }
 
@@ -2867,6 +2869,11 @@ button.seagull-avatar:active {
   pointer-events: auto;
 }
 
+/* Keep the play reef off-screen under menus (shop, home, events, etc.). */
+#app:not(.app--playing):not(.app--matchup) .canvas-wrap {
+  visibility: hidden;
+}
+
 .online-matchup {
   position: absolute;
   inset: 0;
@@ -3168,6 +3175,18 @@ button.seagull-avatar:active {
   z-index: 42;
   justify-content: center;
   background: radial-gradient(ellipse at 50% 20%, rgba(77, 255, 243, 0.2), rgba(3, 21, 37, 0.96));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.panel--over,
+.panel--duel-over {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 213, 74, 0.16), transparent 46%),
+    radial-gradient(ellipse at 18% 85%, rgba(77, 255, 243, 0.08), transparent 42%),
+    linear-gradient(180deg, #0c5a78 0%, var(--ocean-mid) 48%, var(--ocean-deep) 100%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .intro-card {
@@ -7736,6 +7755,8 @@ button.seagull-avatar:active {
   background:
     radial-gradient(ellipse at 50% 8%, rgba(90, 58, 22, 0.45), transparent 52%),
     linear-gradient(180deg, #4a3218 0%, #2e1c0c 48%, #221408 100%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   z-index: 50;
 }
 
@@ -8696,6 +8717,8 @@ button.seagull-avatar:active {
     radial-gradient(ellipse at 50% 0%, rgba(255, 213, 74, 0.16), transparent 42%),
     radial-gradient(ellipse at 80% 90%, rgba(77, 255, 243, 0.08), transparent 40%),
     linear-gradient(180deg, #0a4d68 0%, var(--ocean-mid) 50%, var(--ocean-deep) 100%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .adventure-prep__header {
@@ -9758,6 +9781,8 @@ button.seagull-avatar:active {
   z-index: 40;
   justify-content: center;
   background: radial-gradient(ellipse at 50% 24%, rgba(255, 150, 70, 0.24), rgba(3, 21, 37, 0.95));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   overflow: hidden;
 }
 
