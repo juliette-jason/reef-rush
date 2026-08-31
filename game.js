@@ -8278,12 +8278,15 @@ const MINIGAME_ROULETTE_MS = 45_000;
 const MINIGAME_COOP_MS = 60_000;
 const MINIGAME_SURVIVOR_MS = 30 * 60_000;
 /** Fish-score chest tiers for timed mini-games. */
+const MINIGAME_FISH_CHEST_MIN = 500;
 const MINIGAME_FISH_RARE_MIN = 1500;
 const MINIGAME_FISH_LEGENDARY_MIN = 4000;
 /** Co-op haul needs a bigger combined score for top chests. */
+const MINIGAME_COOP_CHEST_MIN = 1500;
 const MINIGAME_COOP_RARE_MIN = 3600;
 const MINIGAME_COOP_LEGENDARY_MIN = 7800;
 /** Survivor chest tiers (bonus haul when you hook the kraken). */
+const MINIGAME_SURVIVOR_CHEST_MIN = 250;
 const MINIGAME_SURVIVOR_RARE_MIN = 900;
 const MINIGAME_SURVIVOR_LEGENDARY_MIN = 2200;
 
@@ -9291,6 +9294,7 @@ function rollCoopPartnerTargetScore() {
 }
 
 function coopTierForScore(pts) {
+  if (pts < MINIGAME_COOP_CHEST_MIN) return null;
   if (pts >= MINIGAME_COOP_LEGENDARY_MIN) return "legendary";
   if (pts >= MINIGAME_COOP_RARE_MIN) return "rare";
   return "common";
@@ -14288,12 +14292,14 @@ function closeEvents() {
    Event mini-games — Reef Roulette, Co-op Haul, Kraken Survivor.
    ========================================================================= */
 function minigameFishTierForScore(pts) {
+  if (pts < MINIGAME_FISH_CHEST_MIN) return null;
   if (pts >= MINIGAME_FISH_LEGENDARY_MIN) return "legendary";
   if (pts >= MINIGAME_FISH_RARE_MIN) return "rare";
   return "common";
 }
 
 function survivorTierForScore(pts) {
+  if (pts < MINIGAME_SURVIVOR_CHEST_MIN) return null;
   if (pts >= MINIGAME_SURVIVOR_LEGENDARY_MIN) return "legendary";
   if (pts >= MINIGAME_SURVIVOR_RARE_MIN) return "rare";
   return "common";
@@ -14679,27 +14685,38 @@ function beginEventMinigame(kind, fromPrep = false) {
 function showEventMinigameReward({ source, title, summaryHtml, scorePts, tier }) {
   crabRewardSource = source;
   resetChestOpenUi();
-  crabRewardBundles = rollCrabBundles(tier);
-  crabRewardClaimed = false;
+  const noChest = !tier;
+  crabRewardBundles = noChest ? [] : rollCrabBundles(tier);
+  crabRewardClaimed = noChest;
   if (crabRewardHeadline) crabRewardHeadline.textContent = title;
   if (crabRewardSummary) crabRewardSummary.innerHTML = summaryHtml;
   if (crabRewardTier) {
     crabRewardTier.hidden = false;
-    crabRewardTier.textContent =
-      tier === "legendary"
+    crabRewardTier.textContent = noChest
+      ? "Too small a haul — no chest this time. Try again for a better score!"
+      : tier === "legendary"
         ? "Legendary chest — top haul!"
         : tier === "rare"
           ? "Rare chest — solid haul."
           : "Common chest — keep grinding for bigger rewards.";
   }
-  if (crabRewardPrompt) crabRewardPrompt.textContent = "Choose one chest — better hauls mean richer loot.";
+  if (crabRewardPrompt) {
+    crabRewardPrompt.textContent = noChest
+      ? "Score higher next run to unlock a chest."
+      : "Choose one chest — better hauls mean richer loot.";
+  }
   if (crabRewardResult) {
     crabRewardResult.hidden = true;
     crabRewardResult.textContent = "";
   }
   if (btnCrabPlayAgain) btnCrabPlayAgain.hidden = true;
   setCrabRewardBackLabel("Back to Events");
-  renderCrabRewardChests(tier);
+  if (noChest) {
+    if (crabRewardChests) crabRewardChests.innerHTML = "";
+    revealCrabRewardActions();
+  } else {
+    renderCrabRewardChests(tier);
+  }
   if (panelCrabReward) panelCrabReward.hidden = false;
   syncCoopHud(false);
   if (adventureGoalLine) adventureGoalLine.hidden = true;
@@ -14772,6 +14789,8 @@ async function endEventMinigameRoundAsync() {
    Self-contained minigame with its own canvas + animation loop.
    ========================================================================= */
 const CRAB_TRAP_DURATION_MS = 60_000;
+/** Below this crab count — no chest reward. */
+const CRAB_TRAP_CHEST_MIN = 8;
 /** A low score (~20 crabs) yields common chests. */
 const CRAB_TRAP_LOW_SCORE = 20;
 /** Score >= this counts as a medium haul (better chests). */
@@ -15585,12 +15604,16 @@ function drawCrabTrap() {
 
 /* --- Crab Trap rewards --- */
 function crabTierForScore(scorePts) {
+  if (scorePts < CRAB_TRAP_CHEST_MIN) return null;
   if (scorePts >= CRAB_TRAP_GREAT_MIN) return "legendary";
   if (scorePts >= CRAB_TRAP_MEDIUM_MIN) return "rare";
   return "common";
 }
 
 function crabTierMessage(tier) {
+  if (!tier) {
+    return `Need at least ${CRAB_TRAP_CHEST_MIN} crabs for a chest — keep trapping!`;
+  }
   tier = normalizeChestTier(tier);
   if (tier === "legendary") {
     return `Incredible haul (${CRAB_TRAP_GREAT_MIN}+)! Legendary chests can hold special rods, gems, and rich loot.`;
@@ -16172,32 +16195,36 @@ function onCrabChestPick(idx) {
     crabRewardResult.hidden = true;
     crabRewardResult.textContent = "";
   }
+  revealCrabRewardActions();
+}
+
+function revealCrabRewardActions() {
   const tickets = getDuelTicketCount();
-  if (btnCrabPlayAgain) {
-    if (crabRewardSource === "dailyCatch" || crabRewardSource === "shop") {
-      btnCrabPlayAgain.hidden = true;
-    } else {
-      btnCrabPlayAgain.hidden = false;
-      btnCrabPlayAgain.disabled = tickets <= 0;
-      const againLabel =
-        crabRewardSource === "roulette"
-          ? "Spin again (1 ticket)"
-          : crabRewardSource === "coop"
-            ? "Haul again (1 ticket)"
-            : crabRewardSource === "survivor"
-              ? "Survive again (1 ticket)"
-              : "Play again (1 ticket)";
-      btnCrabPlayAgain.textContent = tickets > 0 ? againLabel : "No tickets left";
-    }
+  if (!btnCrabPlayAgain) return;
+  if (crabRewardSource === "dailyCatch" || crabRewardSource === "shop") {
+    btnCrabPlayAgain.hidden = true;
+    return;
   }
+  btnCrabPlayAgain.hidden = false;
+  btnCrabPlayAgain.disabled = tickets <= 0;
+  const againLabel =
+    crabRewardSource === "roulette"
+      ? "Spin again (1 ticket)"
+      : crabRewardSource === "coop"
+        ? "Haul again (1 ticket)"
+        : crabRewardSource === "survivor"
+          ? "Survive again (1 ticket)"
+          : "Play again (1 ticket)";
+  btnCrabPlayAgain.textContent = tickets > 0 ? againLabel : "No tickets left";
 }
 
 function showCrabReward(finalScore) {
   crabRewardSource = "crab";
   resetChestOpenUi();
   const tier = crabTierForScore(finalScore);
-  crabRewardBundles = rollCrabBundles(tier);
-  crabRewardClaimed = false;
+  const noChest = !tier;
+  crabRewardBundles = noChest ? [] : rollCrabBundles(tier);
+  crabRewardClaimed = noChest;
   if (crabRewardHeadline) crabRewardHeadline.textContent = "Crab Trap!";
   if (crabRewardSummary) {
     crabRewardSummary.innerHTML = `You trapped <strong>${finalScore}</strong> treasure crab${finalScore === 1 ? "" : "s"}`;
@@ -16206,14 +16233,23 @@ function showCrabReward(finalScore) {
     crabRewardTier.hidden = false;
     crabRewardTier.textContent = crabTierMessage(tier);
   }
-  if (crabRewardPrompt) crabRewardPrompt.textContent = "Choose one chest to claim your reward.";
+  if (crabRewardPrompt) {
+    crabRewardPrompt.textContent = noChest
+      ? "Trap more crabs next time to unlock a chest."
+      : "Choose one chest to claim your reward.";
+  }
   if (crabRewardResult) {
     crabRewardResult.hidden = true;
     crabRewardResult.textContent = "";
   }
   if (btnCrabPlayAgain) btnCrabPlayAgain.hidden = true;
   setCrabRewardBackLabel("Back to Events");
-  renderCrabRewardChests(tier);
+  if (noChest) {
+    if (crabRewardChests) crabRewardChests.innerHTML = "";
+    revealCrabRewardActions();
+  } else {
+    renderCrabRewardChests(tier);
+  }
   if (panelCrabReward) panelCrabReward.hidden = false;
 }
 
