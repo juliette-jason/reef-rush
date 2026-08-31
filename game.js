@@ -7286,6 +7286,7 @@ const LEADERBOARD_MAX = 10;
 /** Pull extra rows so exact duplicates can be collapsed and we still fill the top 10. */
 const LEADERBOARD_FETCH_LIMIT = 80;
 const SUPABASE_REST_URL = "https://htnpfzjhicyzkqfgyhuu.supabase.co/rest/v1";
+const SUPABASE_URL = "https://htnpfzjhicyzkqfgyhuu.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_SARvsULPYyIUImdhXMjQUQ_T6RtwvZM";
 const LEADERBOARD_TABLE_URL = `${SUPABASE_REST_URL}/leaderboard`;
 let leaderboardRows = [];
@@ -7359,9 +7360,10 @@ function normalizeLeaderboardRows(rows) {
 }
 
 function leaderboardHeaders(extra = {}) {
+  const bearer = authSession?.access_token || SUPABASE_PUBLISHABLE_KEY;
   return {
     apikey: SUPABASE_PUBLISHABLE_KEY,
-    Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+    Authorization: `Bearer ${bearer}`,
     Accept: "application/json",
     "Cache-Control": "no-cache",
     Pragma: "no-cache",
@@ -7971,6 +7973,10 @@ function startDailyEventCountdown() {
 function refreshSharedBoardsFromServer() {
   void fetchSharedLeaderboard();
   void fetchTodayDailyLeaderboard();
+  if (authUser?.id) {
+    void touchPlayerPresence();
+    void refreshFriendsList();
+  }
 }
 
 async function processDailyPrizePayouts() {
@@ -8249,6 +8255,395 @@ async function refreshEventsPanel() {
 const DUEL_WIN_COINS = 800;
 const DUEL_DAILY_TICKETS = 5;
 const DUEL_TICKET_PRICE = 700;
+/** Sign-in, friends, and online presence for friend duels / co-op. */
+const PLAYER_PROFILES_URL = `${SUPABASE_REST_URL}/player_profiles`;
+const PLAYER_FRIENDS_URL = `${SUPABASE_REST_URL}/player_friends`;
+const ONLINE_FRIEND_MS = 90_000;
+const PRESENCE_HEARTBEAT_MS = 45_000;
+let supabaseAuthClient = null;
+let authSession = null;
+let authUser = null;
+let socialFriends = [];
+let onlineFriendIds = new Set();
+let presenceHeartbeatTimer = null;
+let pendingEventFriendUserId = null;
+
+function initSupabaseAuth() {
+  if (!window.supabase?.createClient) return null;
+  if (!supabaseAuthClient) {
+    supabaseAuthClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    });
+  }
+  return supabaseAuthClient;
+}
+
+function friendCodeFromUserId(userId) {
+  return String(userId || "")
+    .replace(/-/g, "")
+    .slice(0, 8)
+    .toUpperCase();
+}
+
+function isFriendOnline(lastSeenAt) {
+  if (!lastSeenAt) return false;
+  const ts = new Date(lastSeenAt).getTime();
+  return Number.isFinite(ts) && Date.now() - ts <= ONLINE_FRIEND_MS;
+}
+
+function normalizeFriendProfile(row) {
+  if (!row) return null;
+  return {
+    userId: row.user_id || row.userId,
+    displayName: parsePlayerName(row.display_name || row.displayName) || "Fisher",
+    initials: formatDuelInitials(row.initials) || "FRI",
+    companionId: normalizeCompanionId(row.companion_id ?? row.companionId),
+    friendCode: String(row.friend_code || row.friendCode || "").toUpperCase(),
+    lastSeenAt: row.last_seen_at || row.lastSeenAt || "",
+    online: isFriendOnline(row.last_seen_at || row.lastSeenAt),
+  };
+}
+
+async function upsertPlayerProfile() {
+  if (!authUser?.id) return;
+  const payload = {
+    user_id: authUser.id,
+    display_name: parsePlayerName(gameMeta.playerName) || authUser.email?.split("@")[0] || "Fisher",
+    initials: getDuelPlayerInitials(),
+    companion_id: equippedCompanionId(),
+    client_id: getDuelClientId(),
+    friend_code: friendCodeFromUserId(authUser.id),
+    last_seen_at: new Date().toISOString(),
+  };
+  try {
+    const res = await fetch(`${PLAYER_PROFILES_URL}?on_conflict=user_id`, {
+      method: "POST",
+      headers: leaderboardHeaders({
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates,return=minimal",
+      }),
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      if (errText.includes("player_profiles") || errText.includes("PGRST205")) {
+        console.warn("Player profiles table missing — run supabase/player_social.sql");
+      }
+    }
+  } catch (err) {
+    console.warn(err);
+  }
+}
+
+async function touchPlayerPresence() {
+  if (!authUser?.id) return;
+  try {
+    await fetch(`${PLAYER_PROFILES_URL}?user_id=eq.${encodeURIComponent(authUser.id)}`, {
+      method: "PATCH",
+      headers: leaderboardHeaders({
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      }),
+      body: JSON.stringify({
+        display_name: parsePlayerName(gameMeta.playerName) || authUser.email?.split("@")[0] || "Fisher",
+        initials: getDuelPlayerInitials(),
+        companion_id: equippedCompanionId(),
+        client_id: getDuelClientId(),
+        last_seen_at: new Date().toISOString(),
+      }),
+    });
+  } catch (err) {
+    console.warn(err);
+  }
+}
+
+function startPresenceHeartbeat() {
+  stopPresenceHeartbeat();
+  if (!authUser?.id) return;
+  void touchPlayerPresence();
+  presenceHeartbeatTimer = window.setInterval(() => {
+    void touchPlayerPresence();
+    void refreshFriendsList();
+  }, PRESENCE_HEARTBEAT_MS);
+}
+
+function stopPresenceHeartbeat() {
+  if (presenceHeartbeatTimer) {
+    clearInterval(presenceHeartbeatTimer);
+    presenceHeartbeatTimer = null;
+  }
+}
+
+async function fetchPlayerProfileByCode(code) {
+  const normalized = String(code || "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
+  if (!normalized) return null;
+  const res = await fetch(
+    `${PLAYER_PROFILES_URL}?friend_code=eq.${encodeURIComponent(normalized)}&select=*&limit=1`,
+    { headers: leaderboardHeaders() },
+  );
+  if (!res.ok) throw new Error(`Friend lookup failed: ${res.status}`);
+  const rows = await res.json();
+  return normalizeFriendProfile(Array.isArray(rows) ? rows[0] : null);
+}
+
+async function fetchPlayerProfilesByIds(ids) {
+  const unique = [...new Set(ids.filter(Boolean))];
+  if (!unique.length) return [];
+  const filter = unique.map((id) => encodeURIComponent(id)).join(",");
+  const res = await fetch(
+    `${PLAYER_PROFILES_URL}?user_id=in.(${filter})&select=*`,
+    { headers: leaderboardHeaders() },
+  );
+  if (!res.ok) throw new Error(`Friend profiles failed: ${res.status}`);
+  const rows = await res.json();
+  return (Array.isArray(rows) ? rows : []).map(normalizeFriendProfile).filter(Boolean);
+}
+
+async function refreshFriendsList() {
+  if (!authUser?.id) {
+    socialFriends = [];
+    onlineFriendIds = new Set();
+    refreshAccountUI();
+    refreshEventPrepFriendsUI();
+    return;
+  }
+  try {
+    const res = await fetch(
+      `${PLAYER_FRIENDS_URL}?or=(user_id.eq.${encodeURIComponent(authUser.id)},friend_id.eq.${encodeURIComponent(authUser.id)})&select=user_id,friend_id`,
+      { headers: leaderboardHeaders() },
+    );
+    if (!res.ok) throw new Error(`Friends fetch failed: ${res.status}`);
+    const rows = Array.isArray(await res.json()) ? await res.json() : [];
+    const friendIds = rows
+      .map((row) => (row.user_id === authUser.id ? row.friend_id : row.user_id))
+      .filter((id) => id && id !== authUser.id);
+    const profiles = await fetchPlayerProfilesByIds(friendIds);
+    socialFriends = profiles.sort((a, b) => {
+      if (a.online !== b.online) return a.online ? -1 : 1;
+      return a.displayName.localeCompare(b.displayName);
+    });
+    onlineFriendIds = new Set(socialFriends.filter((f) => f.online).map((f) => f.userId));
+  } catch (err) {
+    console.warn(err);
+    socialFriends = [];
+    onlineFriendIds = new Set();
+  }
+  refreshAccountUI();
+  refreshEventPrepFriendsUI();
+}
+
+async function addFriendByCode(code) {
+  if (!authUser?.id) {
+    showToast("Sign in to add friends.", 2400);
+    return;
+  }
+  const profile = await fetchPlayerProfileByCode(code);
+  if (!profile?.userId) {
+    showToast("No fisher found with that code.", 2600);
+    return;
+  }
+  if (profile.userId === authUser.id) {
+    showToast("That's your own friend code.", 2200);
+    return;
+  }
+  if (socialFriends.some((f) => f.userId === profile.userId)) {
+    showToast(`${profile.displayName} is already on your friends list.`, 2400);
+    return;
+  }
+  const res = await fetch(PLAYER_FRIENDS_URL, {
+    method: "POST",
+    headers: leaderboardHeaders({
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    }),
+    body: JSON.stringify({
+      user_id: authUser.id,
+      friend_id: profile.userId,
+    }),
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    if (errText.includes("duplicate") || errText.includes("23505")) {
+      showToast(`${profile.displayName} is already on your friends list.`, 2400);
+      return;
+    }
+    showToast("Couldn't add friend — try again.", 2600);
+    return;
+  }
+  showToast(`${profile.displayName} added to friends!`, 2200);
+  await refreshFriendsList();
+}
+
+async function signInWithProvider(provider) {
+  const client = initSupabaseAuth();
+  if (!client) {
+    showToast("Sign-in isn't available right now.", 2800);
+    return;
+  }
+  const redirectTo = `${window.location.origin}${window.location.pathname}`;
+  const { error } = await client.auth.signInWithOAuth({
+    provider,
+    options: { redirectTo },
+  });
+  if (error) showToast(error.message, 3200);
+}
+
+async function signOutAccount() {
+  const client = initSupabaseAuth();
+  stopPresenceHeartbeat();
+  pendingEventFriendUserId = null;
+  socialFriends = [];
+  onlineFriendIds = new Set();
+  if (client) await client.auth.signOut();
+  authSession = null;
+  authUser = null;
+  refreshAccountUI();
+  refreshEventPrepFriendsUI();
+}
+
+async function bootstrapAuth() {
+  const client = initSupabaseAuth();
+  if (!client) return;
+  const { data } = await client.auth.getSession();
+  authSession = data.session;
+  authUser = data.session?.user ?? null;
+  if (authUser) {
+    await upsertPlayerProfile();
+    startPresenceHeartbeat();
+    await refreshFriendsList();
+  }
+  refreshAccountUI();
+  client.auth.onAuthStateChange(async (_event, session) => {
+    authSession = session;
+    authUser = session?.user ?? null;
+    if (authUser) {
+      await upsertPlayerProfile();
+      startPresenceHeartbeat();
+      await refreshFriendsList();
+    } else {
+      stopPresenceHeartbeat();
+      socialFriends = [];
+      onlineFriendIds = new Set();
+    }
+    refreshAccountUI();
+    refreshEventPrepFriendsUI();
+  });
+}
+
+function refreshAccountUI() {
+  const signedIn = Boolean(authUser?.id);
+  if (profileSignedOut) profileSignedOut.hidden = signedIn;
+  if (profileSignedIn) profileSignedIn.hidden = !signedIn;
+  if (profileFriendsSection) profileFriendsSection.hidden = !signedIn;
+  if (!signedIn) return;
+  const label =
+    parsePlayerName(gameMeta.playerName) ||
+    authUser.user_metadata?.full_name ||
+    authUser.user_metadata?.name ||
+    authUser.email ||
+    "Signed in";
+  if (profileAccountLabel) profileAccountLabel.textContent = label;
+  if (profileFriendCode) {
+    profileFriendCode.textContent = `Friend code: ${friendCodeFromUserId(authUser.id)}`;
+  }
+  if (profileFriendsOnlineCount) {
+    const onlineCount = socialFriends.filter((f) => f.online).length;
+    profileFriendsOnlineCount.textContent = `${onlineCount} online`;
+  }
+  renderProfileFriendsList();
+}
+
+function renderProfileFriendsList() {
+  if (!profileFriendsList) return;
+  profileFriendsList.innerHTML = "";
+  if (!socialFriends.length) {
+    const empty = document.createElement("p");
+    empty.className = "profile-friends-empty";
+    empty.textContent = "No friends yet — add one with their friend code.";
+    profileFriendsList.appendChild(empty);
+    return;
+  }
+  for (const friend of socialFriends) {
+    const row = document.createElement("div");
+    row.className = "profile-friend-row";
+    row.setAttribute("role", "listitem");
+    const status = document.createElement("span");
+    status.className = `friend-status ${friend.online ? "friend-status--online" : "friend-status--offline"}`;
+    status.setAttribute("aria-hidden", "true");
+    const copy = document.createElement("div");
+    const name = document.createElement("p");
+    name.className = "profile-friend-row__name";
+    name.textContent = friend.displayName;
+    const tag = document.createElement("p");
+    tag.className = "profile-friend-row__tag";
+    tag.textContent = `${friend.initials} · ${friend.online ? "Online now" : "Offline"}`;
+    copy.append(name, tag);
+    const code = document.createElement("span");
+    code.className = "profile-friend-row__tag";
+    code.textContent = friend.friendCode;
+    row.append(status, copy, code);
+    profileFriendsList.appendChild(row);
+  }
+}
+
+function refreshEventPrepFriendsUI() {
+  const kind = pendingEventPrepKind;
+  const show = Boolean(authUser?.id && (kind === "duel" || kind === "coop"));
+  if (eventPrepFriends) eventPrepFriends.hidden = !show;
+  if (!show || !eventPrepFriendsList) return;
+  const onlineFriends = socialFriends.filter((f) => f.online);
+  eventPrepFriendsList.innerHTML = "";
+  if (!onlineFriends.length) {
+    const empty = document.createElement("p");
+    empty.className = "profile-friends-empty";
+    empty.textContent = "No friends online right now — we'll match anyone in the lobby.";
+    eventPrepFriendsList.appendChild(empty);
+    pendingEventFriendUserId = null;
+    if (btnEventPrepAnyone) btnEventPrepAnyone.setAttribute("aria-pressed", "true");
+    return;
+  }
+  for (const friend of onlineFriends) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "friend-picker__option";
+    btn.setAttribute("role", "option");
+    btn.dataset.friendId = friend.userId;
+    btn.setAttribute("aria-selected", pendingEventFriendUserId === friend.userId ? "true" : "false");
+    const status = document.createElement("span");
+    status.className = "friend-status friend-status--online";
+    status.setAttribute("aria-hidden", "true");
+    const copy = document.createElement("div");
+    const name = document.createElement("p");
+    name.className = "friend-picker__name";
+    name.textContent = friend.displayName;
+    const tag = document.createElement("p");
+    tag.className = "friend-picker__tag";
+    tag.textContent = friend.initials;
+    copy.append(name, tag);
+    btn.append(status, copy);
+    btn.addEventListener("click", () => {
+      pendingEventFriendUserId = friend.userId;
+      refreshEventPrepFriendsUI();
+    });
+    eventPrepFriendsList.appendChild(btn);
+  }
+  if (btnEventPrepAnyone) {
+    btnEventPrepAnyone.setAttribute("aria-pressed", pendingEventFriendUserId ? "false" : "true");
+  }
+}
+
+function getPendingFriendUserId() {
+  if (!pendingEventFriendUserId) return null;
+  return onlineFriendIds.has(pendingEventFriendUserId) ? pendingEventFriendUserId : null;
+}
+
+/** Every duel round is exactly one minute, regardless of reef. */
 /** Every duel round is exactly one minute, regardless of reef. */
 const DUEL_ROUND_MS = 60_000;
 /** Easiest rival difficulty — AI target score floor. */
@@ -8398,6 +8793,9 @@ function normalizeDuelMatchRow(row) {
     reefId: row.reef_id || row.reefId,
     hostClientId: row.host_client_id || row.hostClientId,
     guestClientId: row.guest_client_id || row.guestClientId,
+    hostUserId: row.host_user_id || row.hostUserId || null,
+    guestUserId: row.guest_user_id || row.guestUserId || null,
+    inviteUserId: row.invite_user_id || row.inviteUserId || null,
     hostInitials: formatDuelInitials(row.host_initials || row.hostInitials) || "AAA",
     guestInitials: Boolean(row.is_com_guest ?? row.isComGuest)
       ? "COM"
@@ -8459,15 +8857,20 @@ async function fetchDuelMatchById(matchId) {
   return normalizeDuelMatchRow(rows[0]);
 }
 
-async function fetchOldestOpenDuelLobby(matchKind = MATCH_KIND_DUEL) {
+async function fetchOldestOpenDuelLobby(matchKind = MATCH_KIND_DUEL, options = {}) {
   const since = new Date(Date.now() - DUEL_LOBBY_MAX_AGE_MS).toISOString();
   const mine = encodeURIComponent(getDuelClientId());
-  const url =
+  let url =
     `${DUEL_MATCH_TABLE_URL}?select=*` +
     `&status=eq.lobby&guest_client_id=is.null&host_client_id=neq.${mine}` +
     `&match_kind=eq.${encodeURIComponent(matchKind)}` +
-    `&created_at=gte.${encodeURIComponent(since)}` +
-    `&order=created_at.asc&limit=1`;
+    `&created_at=gte.${encodeURIComponent(since)}`;
+  if (options.inviteUserId) {
+    url += `&invite_user_id=eq.${encodeURIComponent(options.inviteUserId)}`;
+  } else {
+    url += "&invite_user_id=is.null";
+  }
+  url += "&order=created_at.asc&limit=1";
   const res = await fetch(url, { headers: leaderboardHeaders() });
   const { body } = await readDuelResponse(res);
   if (!res.ok) throw new Error(`Duel lobby fetch failed: ${res.status}`);
@@ -8475,25 +8878,45 @@ async function fetchOldestOpenDuelLobby(matchKind = MATCH_KIND_DUEL) {
   return normalizeDuelMatchRow(rows[0]);
 }
 
-async function createDuelLobby(reefId, roundMs, matchKind = MATCH_KIND_DUEL) {
+async function fetchIncomingFriendInviteLobby(matchKind, myUserId) {
+  if (!myUserId) return null;
+  const since = new Date(Date.now() - DUEL_LOBBY_MAX_AGE_MS).toISOString();
+  const url =
+    `${DUEL_MATCH_TABLE_URL}?select=*` +
+    `&status=eq.lobby&guest_client_id=is.null` +
+    `&invite_user_id=eq.${encodeURIComponent(myUserId)}` +
+    `&match_kind=eq.${encodeURIComponent(matchKind)}` +
+    `&created_at=gte.${encodeURIComponent(since)}` +
+    `&order=created_at.asc&limit=1`;
+  const res = await fetch(url, { headers: leaderboardHeaders() });
+  const { body } = await readDuelResponse(res);
+  if (!res.ok) return null;
+  const rows = Array.isArray(body) ? body : [];
+  return normalizeDuelMatchRow(rows[0]);
+}
+
+async function createDuelLobby(reefId, roundMs, matchKind = MATCH_KIND_DUEL, options = {}) {
+  const payload = {
+    reef_id: reefId,
+    host_client_id: getDuelClientId(),
+    host_initials: getDuelPlayerInitials(),
+    host_companion_id: equippedCompanionId(),
+    guest_client_id: null,
+    guest_initials: "",
+    status: "lobby",
+    round_ms: roundMs,
+    match_kind: matchKind,
+    is_com_guest: false,
+  };
+  if (authUser?.id) payload.host_user_id = authUser.id;
+  if (options.inviteUserId) payload.invite_user_id = options.inviteUserId;
   const res = await fetch(DUEL_MATCH_TABLE_URL, {
     method: "POST",
     headers: leaderboardHeaders({
       "Content-Type": "application/json",
       Prefer: "return=representation",
     }),
-    body: JSON.stringify({
-      reef_id: reefId,
-      host_client_id: getDuelClientId(),
-      host_initials: getDuelPlayerInitials(),
-      host_companion_id: equippedCompanionId(),
-      guest_client_id: null,
-      guest_initials: "",
-      status: "lobby",
-      round_ms: roundMs,
-      match_kind: matchKind,
-      is_com_guest: false,
-    }),
+    body: JSON.stringify(payload),
   });
   const { body } = await readDuelResponse(res);
   if (!res.ok) throw new Error(`Duel lobby create failed: ${res.status}`);
@@ -8502,6 +8925,15 @@ async function createDuelLobby(reefId, roundMs, matchKind = MATCH_KIND_DUEL) {
 }
 
 async function tryJoinDuelLobby(lobbyId) {
+  const payload = {
+    guest_client_id: getDuelClientId(),
+    guest_initials: getDuelPlayerInitials(),
+    guest_companion_id: equippedCompanionId(),
+    status: "active",
+    round_start_ms: Date.now() + DUEL_MATCH_START_DELAY_MS,
+    is_com_guest: false,
+  };
+  if (authUser?.id) payload.guest_user_id = authUser.id;
   const res = await fetch(
     `${DUEL_MATCH_TABLE_URL}?id=eq.${encodeURIComponent(lobbyId)}&status=eq.lobby&guest_client_id=is.null`,
     {
@@ -8510,14 +8942,7 @@ async function tryJoinDuelLobby(lobbyId) {
         "Content-Type": "application/json",
         Prefer: "return=representation",
       }),
-      body: JSON.stringify({
-        guest_client_id: getDuelClientId(),
-        guest_initials: getDuelPlayerInitials(),
-        guest_companion_id: equippedCompanionId(),
-        status: "active",
-        round_start_ms: Date.now() + DUEL_MATCH_START_DELAY_MS,
-        is_com_guest: false,
-      }),
+      body: JSON.stringify(payload),
     },
   );
   const { body } = await readDuelResponse(res);
@@ -8728,7 +9153,7 @@ function setDuelMatchmakingUi(active, message = "") {
   }
 }
 
-async function findOnlineMatch(matchKind, roundMs, deadlineMs) {
+async function findOnlineMatch(matchKind, roundMs, deadlineMs, friendUserId = null) {
   const isCoop = matchKind === MATCH_KIND_COOP;
   const setUi = isCoop ? setCoopMatchmakingUi : setDuelMatchmakingUi;
   const partnerWord = isCoop ? "partner" : "rival";
@@ -8738,8 +9163,13 @@ async function findOnlineMatch(matchKind, roundMs, deadlineMs) {
   const buildLocalComPlan = isCoop ? buildLocalComCoopPlan : buildLocalComDuelPlan;
   const cancelLobbyIfHost = isCoop ? cancelCoopLobbyIfHost : cancelDuelLobbyIfHost;
   let hostedMatchId = isCoop ? coopLobbyMatchId : duelLobbyMatchId;
+  const friendProfile = friendUserId ? socialFriends.find((f) => f.userId === friendUserId) : null;
+  const friendLabel = friendProfile?.displayName || "friend";
 
-  setUi(true, `Trying to find a ${partnerWord}…`);
+  setUi(
+    true,
+    friendUserId ? `Waiting for ${friendLabel}…` : `Trying to find a ${partnerWord}…`,
+  );
   await probeDuelBackendReady();
 
   const startedAt = Date.now();
@@ -8748,8 +9178,46 @@ async function findOnlineMatch(matchKind, roundMs, deadlineMs) {
     const active = isCoop ? coopMatchmakingActive : duelMatchmakingActive;
     if (!active) throw new Error(isCoop ? "Co-op matchmaking cancelled" : "Duel matchmaking cancelled");
 
-    const lobby = await fetchOldestOpenDuelLobby(matchKind);
-    if (lobby?.matchId) {
+    if (friendUserId) {
+      const incoming = await fetchIncomingFriendInviteLobby(matchKind, authUser?.id);
+      if (incoming?.matchId && incoming.hostUserId === friendUserId) {
+        const joined = await tryJoinDuelLobby(incoming.matchId);
+        if (joined) {
+          const role = duelRoleFromMatch(joined);
+          if (role) {
+            if (hostedMatchId && hostedMatchId !== joined.matchId) {
+              await cancelLobbyIfHost(hostedMatchId);
+            }
+            if (isCoop) coopLobbyMatchId = null;
+            else duelLobbyMatchId = null;
+            duelPendingReefId = joined.reefId;
+            hideCountdown();
+            return planFromMatch(joined, role);
+          }
+        }
+      }
+    } else if (authUser?.id) {
+      const incoming = await fetchIncomingFriendInviteLobby(matchKind, authUser.id);
+      if (incoming?.matchId) {
+        const joined = await tryJoinDuelLobby(incoming.matchId);
+        if (joined) {
+          const role = duelRoleFromMatch(joined);
+          if (role) {
+            if (hostedMatchId && hostedMatchId !== joined.matchId) {
+              await cancelLobbyIfHost(hostedMatchId);
+            }
+            if (isCoop) coopLobbyMatchId = null;
+            else duelLobbyMatchId = null;
+            duelPendingReefId = joined.reefId;
+            hideCountdown();
+            return planFromMatch(joined, role);
+          }
+        }
+      }
+    }
+
+    const lobby = await fetchOldestOpenDuelLobby(matchKind, friendUserId ? { inviteUserId: authUser?.id } : {});
+    if (lobby?.matchId && (!friendUserId || lobby.hostUserId === friendUserId)) {
       const joined = await tryJoinDuelLobby(lobby.matchId);
       if (joined) {
         const role = duelRoleFromMatch(joined);
@@ -8769,7 +9237,9 @@ async function findOnlineMatch(matchKind, roundMs, deadlineMs) {
     if (!hostedMatchId && Date.now() - startedAt >= DUEL_LOBBY_CREATE_GRACE_MS) {
       const reefId = isCoop ? pickMinigameReef("coop").id : pickRandomDuelReefId(duelLastReefId);
       duelPendingReefId = reefId;
-      const created = await createDuelLobby(reefId, roundMs, matchKind);
+      const created = await createDuelLobby(reefId, roundMs, matchKind, {
+        inviteUserId: friendUserId || null,
+      });
       if (!created?.matchId) throw new Error(isCoop ? "Co-op lobby missing id" : "Duel lobby missing id");
       hostedMatchId = created.matchId;
       if (isCoop) coopLobbyMatchId = hostedMatchId;
@@ -8790,7 +9260,11 @@ async function findOnlineMatch(matchKind, roundMs, deadlineMs) {
 
   if (hostedMatchId) {
     hideCountdown();
-    setUi(true, comLine);
+    if (friendUserId) {
+      setUi(true, `${friendLabel} didn't join — ${isCoop ? "hauling" : "facing"} COM…`);
+    } else {
+      setUi(true, comLine);
+    }
     const comRow = await activateComDuelGuest(hostedMatchId);
     if (isCoop) coopLobbyMatchId = null;
     else duelLobbyMatchId = null;
@@ -8804,12 +9278,12 @@ async function findOnlineMatch(matchKind, roundMs, deadlineMs) {
   return buildLocalComPlan(reefId);
 }
 
-async function findDuelMatchOnline(roundMs, deadlineMs) {
-  return findOnlineMatch(MATCH_KIND_DUEL, roundMs, deadlineMs);
+async function findDuelMatchOnline(roundMs, deadlineMs, friendUserId = null) {
+  return findOnlineMatch(MATCH_KIND_DUEL, roundMs, deadlineMs, friendUserId);
 }
 
-async function findCoopMatchOnline(roundMs, deadlineMs) {
-  return findOnlineMatch(MATCH_KIND_COOP, roundMs, deadlineMs);
+async function findCoopMatchOnline(roundMs, deadlineMs, friendUserId = null) {
+  return findOnlineMatch(MATCH_KIND_COOP, roundMs, deadlineMs, friendUserId);
 }
 
 async function waitForDuelRoundStart(plan) {
@@ -8874,7 +9348,7 @@ async function cancelCoopLobbyIfHost(matchId) {
 
 async function resolveDuelMatchPlan(deadlineMs) {
   try {
-    return await findDuelMatchOnline(DUEL_ROUND_MS, deadlineMs);
+    return await findDuelMatchOnline(DUEL_ROUND_MS, deadlineMs, getPendingFriendUserId());
   } catch (err) {
     console.warn(err);
     if (duelLobbyMatchId) {
@@ -8891,7 +9365,7 @@ async function resolveDuelMatchPlan(deadlineMs) {
 
 async function resolveCoopMatchPlan(deadlineMs) {
   try {
-    return await findCoopMatchOnline(MINIGAME_COOP_MS, deadlineMs);
+    return await findCoopMatchOnline(MINIGAME_COOP_MS, deadlineMs, getPendingFriendUserId());
   } catch (err) {
     console.warn(err);
     if (coopLobbyMatchId) {
@@ -10256,6 +10730,21 @@ const panelCollectables = document.getElementById("panelCollectables");
 const panelProfile = document.getElementById("panelProfile");
 const profileNameInput = document.getElementById("profileNameInput");
 const profileNameHint = document.getElementById("profileNameHint");
+const profileSignedOut = document.getElementById("profileSignedOut");
+const profileSignedIn = document.getElementById("profileSignedIn");
+const profileAccountLabel = document.getElementById("profileAccountLabel");
+const profileFriendCode = document.getElementById("profileFriendCode");
+const profileFriendsSection = document.getElementById("profileFriendsSection");
+const profileFriendsList = document.getElementById("profileFriendsList");
+const profileFriendsOnlineCount = document.getElementById("profileFriendsOnlineCount");
+const profileAddFriendForm = document.getElementById("profileAddFriendForm");
+const profileAddFriendInput = document.getElementById("profileAddFriendInput");
+const btnSignInGoogle = document.getElementById("btnSignInGoogle");
+const btnSignInApple = document.getElementById("btnSignInApple");
+const btnSignOut = document.getElementById("btnSignOut");
+const eventPrepFriends = document.getElementById("eventPrepFriends");
+const eventPrepFriendsList = document.getElementById("eventPrepFriendsList");
+const btnEventPrepAnyone = document.getElementById("btnEventPrepAnyone");
 const collectablesArmed = document.getElementById("collectablesArmed");
 const collectablesItems = document.getElementById("collectablesItems");
 const collectablesStamps = document.getElementById("collectablesStamps");
@@ -14078,6 +14567,8 @@ function refreshProfileUI() {
   updateProfileNameHint();
   refreshCollectablesUI();
   syncSeagullOutfit();
+  refreshAccountUI();
+  if (authUser?.id) void refreshFriendsList();
 }
 
 function updateProfileNameHint() {
@@ -14558,14 +15049,14 @@ function eventPrepCopy(kind) {
     return {
       eyebrow: "Duel Fishing",
       title: "Ready your gear",
-      detail: "Pick bait and a rod before you enter the lobby.",
+      detail: "Pick bait and a rod, then choose a friend or enter the lobby.",
     };
   }
   if (kind === "coop") {
     return {
       eyebrow: "Co-op Haul",
       title: "Ready your gear",
-      detail: "Pick bait and a rod before you find a partner.",
+      detail: "Pick bait and a rod, then choose a friend or find a partner.",
     };
   }
   if (kind === "roulette") {
@@ -14588,6 +15079,7 @@ function openEventPrep(kind) {
     return;
   }
   pendingEventPrepKind = kind;
+  if (kind !== "duel" && kind !== "coop") pendingEventFriendUserId = null;
   const copy = eventPrepCopy(kind);
   if (eventPrepEyebrow) eventPrepEyebrow.textContent = copy.eyebrow;
   if (eventPrepTitle) eventPrepTitle.textContent = copy.title;
@@ -14597,6 +15089,8 @@ function openEventPrep(kind) {
   appRoot?.classList.add("app--events-mode");
   buildBaitUI();
   buildRodUI();
+  void refreshFriendsList();
+  refreshEventPrepFriendsUI();
   stopEventsMusic();
   if (musicEnabled) startHomeMusic();
 }
@@ -21858,6 +22352,27 @@ document.getElementById("seagullAvatarStart")?.addEventListener("click", () => {
 profileNameInput?.addEventListener("change", saveProfileNameFromInput);
 profileNameInput?.addEventListener("blur", saveProfileNameFromInput);
 profileNameInput?.addEventListener("input", updateProfileNameHint);
+
+btnSignInGoogle?.addEventListener("click", () => {
+  void signInWithProvider("google");
+});
+btnSignInApple?.addEventListener("click", () => {
+  void signInWithProvider("apple");
+});
+btnSignOut?.addEventListener("click", () => {
+  void signOutAccount();
+});
+profileAddFriendForm?.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const code = profileAddFriendInput?.value || "";
+  void addFriendByCode(code).finally(() => {
+    if (profileAddFriendInput) profileAddFriendInput.value = "";
+  });
+});
+btnEventPrepAnyone?.addEventListener("click", () => {
+  pendingEventFriendUserId = null;
+  refreshEventPrepFriendsUI();
+});
 collectablesItems?.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-arm-item]");
   if (!btn) return;
@@ -22272,6 +22787,7 @@ function deferStartupWork() {
 updateMusicButton();
 startMusicWatchdog();
 purgeLegacyLeaderboardCaches();
+void bootstrapAuth();
 resize();
 initBubbles();
 (function migrateSeagullShopHintForVeterans() {
