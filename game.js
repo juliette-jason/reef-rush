@@ -10968,6 +10968,7 @@ function hideAllPanels() {
   if (panelProfile) panelProfile.hidden = true;
   deferDailyPrizeCelebration();
   appRoot?.classList.remove("app--events-mode", "app--splash", "app--playing", "app--duel", "app--matchup");
+  clearAdventurePlayThemeClasses();
   stopDailyEventCountdown();
   stopEventsMusic();
 }
@@ -10976,6 +10977,7 @@ function hideAllPanels() {
 function showExclusiveMenu(which) {
   hideAllPanels();
   appRoot?.classList.remove("app--playing", "app--duel", "app--matchup");
+  clearAdventurePlayThemeClasses();
   if (which === "start") {
     if (panelStart) panelStart.hidden = false;
     window.setTimeout(tryStartDailyPrizeCelebration, 200);
@@ -21476,6 +21478,14 @@ function gameLoop(now) {
   }
 
   updateCelebration(dt);
+
+  const menusCoverPlay =
+    !playing &&
+    !(appRoot && appRoot.classList.contains("app--matchup"));
+  if (menusCoverPlay) {
+    requestAnimationFrame(gameLoop);
+    return;
+  }
 
   ctx.clearRect(0, 0, w, h);
   drawCachedBackground();

@@ -475,13 +475,30 @@ body {
   z-index: 41;
   padding-top: max(18px, env(safe-area-inset-top, 0px));
   padding-bottom: max(28px, env(safe-area-inset-bottom, 0px) + 18px);
-  background:
+  /* Solid base first so the play reef never shows through Safari/WebKit blur. */
+  background-color: var(--ocean-deep);
+  background-image:
     radial-gradient(ellipse at 50% 0%, rgba(255, 213, 74, 0.18), transparent 46%),
     radial-gradient(ellipse at 18% 85%, rgba(77, 255, 243, 0.1), transparent 42%),
     linear-gradient(180deg, #0c5a78 0%, var(--ocean-mid) 48%, var(--ocean-deep) 100%);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  isolation: isolate;
   overflow-x: hidden;
+}
+
+.panel--shop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, #0c5a78 0%, var(--ocean-mid) 48%, var(--ocean-deep) 100%);
+}
+
+.panel--shop > * {
+  position: relative;
+  z-index: 1;
 }
 
 .shop-decor {
@@ -2867,9 +2884,9 @@ button.seagull-avatar:active {
   pointer-events: auto;
 }
 
-/* Keep the play reef off-screen under menus (shop, home, events, etc.). */
+/* Keep the play reef fully off-screen under menus (shop, home, events, etc.). */
 #app:not(.app--playing):not(.app--matchup) .canvas-wrap {
-  visibility: hidden;
+  display: none !important;
 }
 
 .online-matchup {
