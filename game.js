@@ -8535,10 +8535,6 @@ function beginTournamentCompetition() {
     return;
   }
   const eventKind = winningTourneyEventKind();
-  if (eventKind === "duel" && !isDuelAvailableOnThisDevice()) {
-    showToast("Today's tourney is Duel Fishing — needs a tablet or computer.", 3600);
-    return;
-  }
   tournamentRun = { dayKey: getTourneyDayKey(), slotKey: slot.slotKey, eventKind };
   showToast(`Tournament heat: ${tourneyEventLabel(eventKind)}!`, 2600);
   if (eventKind === "duel") {
@@ -9903,7 +9899,7 @@ function setDuelMatchmakingUi(active, message = "") {
     duelEventStatus.textContent = message;
   }
   if (btnStartDuel) {
-    btnStartDuel.disabled = active || !isDuelAvailableOnThisDevice() || getDuelTicketCount() <= 0;
+    btnStartDuel.disabled = active || getDuelTicketCount() <= 0;
     if (active) btnStartDuel.textContent = "Searching…";
     else refreshDuelEventCard();
   }
@@ -10432,7 +10428,9 @@ function updateDuelHudLabels() {
 }
 
 function formatDuelEventMatchupLine() {
-  return "Enter the lobby — match a real player, or face a random rival if nobody's waiting.";
+  return isPhoneDevice()
+    ? "Match a real player, or face a random rival — on phones you only see your side."
+    : "Enter the lobby — match a real player, or face a random rival if nobody's waiting.";
 }
 
 function refreshDuelTicketsForToday() {
@@ -10470,7 +10468,15 @@ function isPhoneDevice() {
 }
 
 function isDuelAvailableOnThisDevice() {
-  return !isPhoneDevice();
+  return true;
+}
+
+function isDuelSoloView() {
+  return isDuelActive() && !isDuelSpectatorSession() && isPhoneDevice();
+}
+
+function duelPlayerMaxX() {
+  return isDuelSoloView() ? w : duelHalfW();
 }
 
 function isDuelActive() {
@@ -10482,7 +10488,8 @@ function duelHalfW() {
 }
 
 function duelSideCenter(side) {
-  return side === "player" ? duelHalfW() * 0.5 : duelHalfW() * 1.5;
+  if (side === "player") return duelPlayerMaxX() * 0.5;
+  return duelHalfW() * 1.5;
 }
 
 function pickRandomDuelReefId(avoidId = null) {
@@ -10565,16 +10572,17 @@ function refreshDuelEventCard() {
   if (!duelEventMatchup || !duelEventReef) return;
   if (duelMatchmakingActive) return;
   refreshDuelTicketsForToday();
-  const available = isDuelAvailableOnThisDevice();
   const tickets = getDuelTicketCount();
+  const phone = isPhoneDevice();
 
-  if (eventCardDuel) eventCardDuel.classList.toggle("event-card--duel-unavailable", !available);
-  if (duelEventUnavailable) duelEventUnavailable.hidden = available;
+  if (eventCardDuel) eventCardDuel.classList.remove("event-card--duel-unavailable");
+  if (duelEventUnavailable) {
+    duelEventUnavailable.hidden = !phone;
+    if (phone) duelEventUnavailable.textContent = "On phones you see only your side — rival score stays in the HUD.";
+  }
   if (eventsTicketCount) eventsTicketCount.textContent = String(tickets);
   if (duelEventTickets) {
-    duelEventTickets.textContent = available
-      ? `${DUEL_DAILY_TICKETS} free daily · extra in shop (700 coins)`
-      : "Tickets can't be used on phones";
+    duelEventTickets.textContent = `${DUEL_DAILY_TICKETS} free daily · extra in shop (700 coins)`;
   }
 
   duelPendingTargetScore = rollDuelRivalTargetScore();
@@ -10583,9 +10591,8 @@ function refreshDuelEventCard() {
   duelEventReef.textContent = `Random reef each duel (e.g. ${previewReef.name}) · 1:00 round · solo fallback ${duelPendingTargetScore.toLocaleString()} pts`;
 
   if (btnStartDuel) {
-    btnStartDuel.disabled = !available || tickets <= 0;
-    if (!available) btnStartDuel.textContent = "Desktop or tablet only";
-    else if (tickets <= 0) btnStartDuel.textContent = "No tickets — visit shop";
+    btnStartDuel.disabled = tickets <= 0;
+    if (tickets <= 0) btnStartDuel.textContent = "No tickets — visit shop";
     else btnStartDuel.textContent = "Find duel rival";
   }
   void refreshDuelSpectatorList();
@@ -10627,8 +10634,9 @@ function spawnFishInDuelHalf(side) {
     (spec.morph === "manta" ? 1.55 : spec.morph === "seal" ? 1.78 : big ? 1.4 : 1);
   const reef = getReef();
   const half = duelHalfW();
+  const playerMax = duelPlayerMaxX();
   const xMin = side === "player" ? 0 : half;
-  const xMax = side === "player" ? half : w;
+  const xMax = side === "player" ? playerMax : w;
   const fromLeft = Math.random() < 0.5;
   const trench = reef.id === "mariana_trench";
   const minY = trench ? waterTop + waterH * 0.32 : waterTop + len;
@@ -10808,6 +10816,19 @@ function lerpRemoteOpponentHook(dt) {
   oh.castState = duelHookCastFromCode(duelSession.remoteHook.cast);
 }
 
+function updateDuelOpponentSolo(dt) {
+  if (!duelSession) return;
+  if (isDuelPvpSession()) {
+    const t = performance.now();
+    if (t - (duelSession.lastOpponentPoll || 0) >= DUEL_OPPONENT_POLL_MS) {
+      duelSession.lastOpponentPoll = t;
+      void pollDuelOpponentFromMatch();
+    }
+    return;
+  }
+  boostOpponentIfBehind(performance.now());
+}
+
 function updateDuelOpponentVisuals(dt) {
   if (!duelSession) return;
   const reef = getReef();
@@ -10844,7 +10865,19 @@ function updateDuelOpponentVisuals(dt) {
 }
 
 function updateDuelOpponent(dt, now) {
+  if (isDuelSoloView()) {
+    updateDuelOpponentSolo(dt);
+    return;
+  }
   updateDuelOpponentVisuals(dt);
+}
+
+function drawDuelSoloPlayfield() {
+  for (const f of fishList) drawFish(f);
+  drawBoatHullAndCatchNet();
+  drawHookLine();
+  drawReleasedFishJumpFx();
+  drawTrenchRodLight();
 }
 
 function drawDuelDivider() {
@@ -10918,6 +10951,10 @@ function drawHookLineForState(hookState, anchorX) {
 }
 
 function drawDuelPlayfield() {
+  if (isDuelSoloView()) {
+    drawDuelSoloPlayfield();
+    return;
+  }
   const half = duelHalfW();
   const spectator = isDuelSpectatorSession();
   const leftHook = spectator ? duelSession.hostHook : hook;
@@ -11016,6 +11053,7 @@ function beginDuelSession(plan) {
   hideAllPanels();
   if (panelDuelOver) panelDuelOver.hidden = true;
   appRoot.classList.add("app--playing", "app--duel");
+  if (isPhoneDevice()) appRoot.classList.add("app--duel-solo");
   showDuelHud();
   lastPearlAt = -999999;
   scoreDisplay.textContent = "0";
@@ -11035,10 +11073,13 @@ function beginDuelSession(plan) {
   catchFlash = 0;
   hook.krakenBiteLocked = false;
   duelSession.opponentHook.tipY = surfaceTipY();
-  for (let i = 0; i < 3; i++) spawnFishInDuelHalf("opponent");
+  if (!isDuelSoloView()) {
+    for (let i = 0; i < 3; i++) spawnFishInDuelHalf("opponent");
+  }
   const rivalName = getDuelOpponentDisplayName();
-  controlHint.textContent =
-    duelSession.mode === "pvp"
+  controlHint.textContent = isDuelSoloView()
+    ? `Duel ${rivalName} — your screen only · beat their score in the HUD!`
+    : duelSession.mode === "pvp"
       ? isTouchControlsPreferred()
         ? `Duel ${rivalName} — your side only · drag & tap to fish!`
         : `Duel ${rivalName} — your side only · beat them before time runs out!`
@@ -11056,11 +11097,6 @@ function beginDuelSession(plan) {
 
 async function startDuelFromEvents(fromPrep = false) {
   if (playing || duelMatchmakingActive || coopMatchmakingActive) return;
-  if (!isDuelAvailableOnThisDevice()) {
-    showToast("Duel Fishing needs a tablet or computer — not available on phones.", 3200);
-    refreshDuelEventCard();
-    return;
-  }
   refreshDuelTicketsForToday();
   if (!tournamentRun && getDuelTicketCount() <= 0) {
     showToast("No duel tickets left — buy more in the shop or come back tomorrow.", 2800);
@@ -11138,7 +11174,7 @@ async function endDuelRoundAsync() {
   stopClimaxMusic();
   syncUrgentTimerUi(99999);
   stopReefMusic();
-  appRoot.classList.remove("app--playing", "app--duel");
+  appRoot.classList.remove("app--playing", "app--duel", "app--duel-solo");
   hideDuelHud();
   hook.castState = "idle";
   touchAim = null;
@@ -12271,7 +12307,7 @@ function hideAllPanels() {
   if (panelCollectables) panelCollectables.hidden = true;
   if (panelProfile) panelProfile.hidden = true;
   deferDailyPrizeCelebration();
-  appRoot?.classList.remove("app--events-mode", "app--splash", "app--playing", "app--duel", "app--matchup", "app--adventure-play");
+  appRoot?.classList.remove("app--events-mode", "app--splash", "app--playing", "app--duel", "app--duel-solo", "app--matchup", "app--adventure-play");
   clearAdventurePlayThemeClasses();
   clearPlayfieldCanvas();
   stopDailyEventCountdown();
@@ -12284,7 +12320,7 @@ function showExclusiveMenu(which) {
   if (!duelSession && !eventMinigameSession && !crabTrapSession && !adventureSession) {
     playing = false;
   }
-  appRoot?.classList.remove("app--playing", "app--duel", "app--matchup", "app--adventure-play");
+  appRoot?.classList.remove("app--playing", "app--duel", "app--duel-solo", "app--matchup", "app--adventure-play");
   clearAdventurePlayThemeClasses();
   clearPlayfieldCanvas();
   if (which === "start") {
@@ -17813,7 +17849,11 @@ function effectiveCastUpMs() {
 function seedStarterFish(reef) {
   if (isDuelActive()) {
     const n = Math.min(3, Math.max(2, Math.floor(reef.maxFish * 0.28)));
-    for (let i = 0; i < n; i++) spawnFishInDuelHalf("player");
+    if (isDuelSoloView()) {
+      for (let i = 0; i < n; i++) spawnFish();
+    } else {
+      for (let i = 0; i < n; i++) spawnFishInDuelHalf("player");
+    }
     return;
   }
   if (!PERF_CHROMEBOOK || !adventureSession) return;
@@ -17840,7 +17880,7 @@ function resize() {
 }
 
 function spawnFish() {
-  if (isDuelActive()) {
+  if (isDuelActive() && !isDuelSoloView()) {
     spawnFishInDuelHalf("player");
     return;
   }
@@ -18592,7 +18632,7 @@ function catchNetLayout(boatCx = w * 0.5) {
   const sackHx = 58 * dpr;
   const sackVy = 78 * dpr;
   let rimCx;
-  if (isDuelActive()) {
+  if (isDuelActive() && !isDuelSoloView()) {
     rimCx = duelHalfW() - 62 * dpr;
   } else {
     rimCx = w - 62 * dpr;
@@ -22771,7 +22811,7 @@ function updateFish(dt) {
   fishList = fishList.filter((f) => {
     if (f.caught && f.removeAt && t >= f.removeAt) return false;
     if (f.caught) return true;
-    const maxX = isDuelActive() ? duelHalfW() + f.len * 2 : w + f.len * 2;
+    const maxX = isDuelActive() ? duelPlayerMaxX() + f.len * 2 : w + f.len * 2;
     const minX = isDuelActive() ? -f.len * 2 : -f.len * 2;
     if (f.x < minX || f.x > maxX) return false;
     return true;
@@ -22822,7 +22862,7 @@ function updateHook(dt) {
     hook.x = hook.targetX;
   }
   const margin = dpr * 16;
-  const maxX = isDuelActive() ? duelHalfW() - margin : w - margin;
+  const maxX = isDuelActive() ? duelPlayerMaxX() - margin : w - margin;
   hook.x = Math.max(margin, Math.min(maxX, hook.x));
 
   hook.y = hook.tipY;
@@ -23004,13 +23044,14 @@ function clientToCanvas(clientX, clientY) {
 function setHookTargetX(clientX) {
   const margin = dpr * 16;
   const x = clientToCanvas(clientX, 0);
-  const maxX = isDuelActive() ? duelHalfW() - margin : w - margin;
+  const maxX = isDuelActive() ? duelPlayerMaxX() - margin : w - margin;
   hook.targetX = Math.max(margin, Math.min(maxX, x));
 }
 
 function isClientInPlayerDuelHalf(clientX) {
   if (!isDuelActive()) return true;
   if (isDuelSpectatorSession()) return false;
+  if (isDuelSoloView()) return true;
   const rect = canvas.getBoundingClientRect();
   return clientX - rect.left <= rect.width * 0.5;
 }
@@ -23211,7 +23252,7 @@ window.addEventListener("keydown", (e) => {
   if (e.key === "ArrowRight") {
     e.preventDefault();
     hook.targetX += w * 0.11;
-    const maxX = isDuelActive() ? duelHalfW() - margin : w - margin;
+    const maxX = isDuelActive() ? duelPlayerMaxX() - margin : w - margin;
     hook.targetX = Math.min(maxX, hook.targetX);
     return;
   }
