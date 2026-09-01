@@ -9080,7 +9080,8 @@ const DUEL_ROUND_MS = 60_000;
 const DUEL_RIVAL_MIN_TARGET = 4000;
 const DUEL_MATCH_TABLE_URL = `${SUPABASE_REST_URL}/duel_matches`;
 const DUEL_CLIENT_ID_KEY = "reefRushDuelClientId_v1";
-const DUEL_LOBBY_TIMEOUT_MS = 30_000;
+const DUEL_LOBBY_TIMEOUT_MS = 25_000;
+const DUEL_LOBBY_TIMEOUT_SEC = DUEL_LOBBY_TIMEOUT_MS / 1000;
 const DUEL_LOBBY_POLL_MS = 600;
 const DUEL_LOBBY_CREATE_GRACE_MS = 800;
 const DUEL_LOBBY_CREATE_JITTER_MS = 2_400;
@@ -11188,8 +11189,8 @@ async function startDuelFromEvents(fromPrep = false) {
   if (eventsOcean) eventsOcean.hidden = true;
   appRoot?.classList.add("app--events-mode");
   const matchmakingDeadline = Date.now() + DUEL_LOBBY_TIMEOUT_MS;
-  setDuelMatchmakingUi(true, "Trying to find a rival…");
-  startDuelLobbyCountdown(matchmakingDeadline, "Trying to find a rival");
+  setDuelMatchmakingUi(true, `Searching up to ${DUEL_LOBBY_TIMEOUT_SEC}s for a real rival…`);
+  startDuelLobbyCountdown(matchmakingDeadline, `Finding a real rival (${DUEL_LOBBY_TIMEOUT_SEC}s)`);
 
   try {
     const plan = await resolveDuelMatchPlan(matchmakingDeadline);
