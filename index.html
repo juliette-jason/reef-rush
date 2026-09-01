@@ -22,7 +22,7 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Lilita+One&family=Nunito:wght@600;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=2026-09-01-tourney-1" />
+    <link rel="stylesheet" href="styles.css?v=2026-09-01-spectator-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -1838,6 +1838,13 @@
           </div>
           <p id="duelEventStatus" class="event-card__status" hidden></p>
           <button type="button" id="btnStartDuel" class="btn event-card__play">Find duel rival</button>
+          <div id="duelSpectatorSection" class="duel-spectator">
+            <h4 class="duel-spectator__title">Watch live duels</h4>
+            <p id="duelSpectatorLoading" class="duel-spectator__loading" hidden>Loading live matches…</p>
+            <p id="duelSpectatorEmpty" class="duel-spectator__empty" hidden>No live duels right now — check back soon.</p>
+            <ul id="duelSpectatorList" class="duel-spectator__list" aria-label="Live duel matches"></ul>
+            <button type="button" id="btnRefreshDuelSpectator" class="btn btn--secondary btn--small duel-spectator__refresh">Refresh list</button>
+          </div>
         </article>
         <article class="event-card event-card--daily-catch" id="eventCardDailyCatch">
           <div class="event-card__art event-card__art--daily-catch" aria-hidden="true">
@@ -2838,6 +2845,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-09-01-tourney-1" defer></script>
+    <script src="game.js?v=2026-09-01-spectator-1" defer></script>
   </body>
 </html>

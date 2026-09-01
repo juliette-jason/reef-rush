@@ -9191,6 +9191,312 @@ function isDuelPvpSession() {
   return Boolean(duelSession?.mode === "pvp");
 }
 
+function isDuelSpectatorSession() {
+  return Boolean(duelSession?.mode === "spectator");
+}
+
+function isDuelMatchWatchable(row) {
+  if (!row || row.status !== "active" || row.isComGuest) return false;
+  if (!row.roundStartMs) return false;
+  const elapsed = Date.now() - row.roundStartMs;
+  return elapsed < (row.roundMs || DUEL_ROUND_MS) + 8000;
+}
+
+async function fetchActiveDuelMatchesForSpectator(limit = 8) {
+  const since = new Date(Date.now() - DUEL_ROUND_MS - 180_000).toISOString();
+  const url =
+    `${DUEL_MATCH_TABLE_URL}?select=*` +
+    `&status=eq.active` +
+    `&match_kind=eq.${encodeURIComponent(MATCH_KIND_DUEL)}` +
+    `&is_com_guest=eq.false` +
+    `&round_start_ms=not.is.null` +
+    `&created_at=gte.${encodeURIComponent(since)}` +
+    `&order=round_start_ms.desc&limit=${limit}`;
+  const res = await fetch(url, { headers: leaderboardHeaders() });
+  const { body } = await readDuelResponse(res);
+  if (!res.ok) throw new Error(`Duel spectator fetch failed: ${res.status}`);
+  const rows = Array.isArray(body) ? body : [];
+  return rows.map(normalizeDuelMatchRow).filter(isDuelMatchWatchable);
+}
+
+function formatDuelSpectatorMatchLabel(row) {
+  const host = row.hostInitials || "AAA";
+  const guest = row.guestInitials || "???";
+  const elapsed = Math.max(0, Date.now() - row.roundStartMs);
+  const left = Math.max(0, Math.ceil(((row.roundMs || DUEL_ROUND_MS) - elapsed) / 1000));
+  return `${host} vs ${guest} · ${left}s left`;
+}
+
+async function refreshDuelSpectatorList() {
+  if (!duelSpectatorList) return;
+  if (duelSpectatorLoading) duelSpectatorLoading.hidden = false;
+  if (duelSpectatorEmpty) duelSpectatorEmpty.hidden = true;
+  duelSpectatorList.innerHTML = "";
+  try {
+    const matches = await fetchActiveDuelMatchesForSpectator();
+    if (duelSpectatorLoading) duelSpectatorLoading.hidden = true;
+    if (!matches.length) {
+      if (duelSpectatorEmpty) duelSpectatorEmpty.hidden = false;
+      return;
+    }
+    for (const row of matches) {
+      const li = document.createElement("li");
+      li.className = "duel-spectator__item";
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn btn--secondary btn--small duel-spectator__watch";
+      btn.textContent = formatDuelSpectatorMatchLabel(row);
+      btn.dataset.matchId = row.matchId;
+      btn.addEventListener("click", () => {
+        void startDuelSpectator(row.matchId);
+      });
+      li.appendChild(btn);
+      duelSpectatorList.appendChild(li);
+    }
+  } catch (err) {
+    console.warn(err);
+    if (duelSpectatorLoading) duelSpectatorLoading.hidden = true;
+    if (duelSpectatorEmpty) {
+      duelSpectatorEmpty.hidden = false;
+      duelSpectatorEmpty.textContent = "Couldn't load live duels — try again.";
+    }
+  }
+}
+
+function lerpRemoteHookState(remote, hookState, dt) {
+  if (!remote || !hookState) return;
+  const half = duelHalfW();
+  const tx = remote.xPct * half;
+  const ty = duelHookYFromPct(remote.yPct);
+  const k = Math.min(1, dt / 110);
+  hookState.x += (tx - hookState.x) * k;
+  hookState.targetX = tx;
+  hookState.tipY += (ty - hookState.tipY) * k;
+  hookState.castState = duelHookCastFromCode(remote.cast);
+}
+
+async function pollDuelSpectatorFromMatch() {
+  if (!isDuelSpectatorSession() || !duelSession.matchId) return;
+  try {
+    const row = await fetchDuelMatchById(duelSession.matchId);
+    if (!row) return;
+    duelSession.lastRow = row;
+    let hudDirty = false;
+    if (row.hostScore !== duelSession.hostScore) {
+      if (row.hostScore > duelSession.hostScore) duelSession.hostHook.snagPulse = Math.max(duelSession.hostHook.snagPulse, 300);
+      duelSession.hostScore = row.hostScore;
+      hudDirty = true;
+    }
+    if (row.guestScore !== duelSession.guestScore) {
+      if (row.guestScore > duelSession.guestScore) duelSession.guestHook.snagPulse = Math.max(duelSession.guestHook.snagPulse, 300);
+      duelSession.guestScore = row.guestScore;
+      hudDirty = true;
+    }
+    if (row.hostInitials && row.hostInitials !== duelSession.hostInitials) {
+      duelSession.hostInitials = row.hostInitials;
+      hudDirty = true;
+    }
+    if (row.guestInitials && row.guestInitials !== duelSession.guestInitials) {
+      duelSession.guestInitials = row.guestInitials;
+      hudDirty = true;
+    }
+    duelSession.remoteHostHook = { xPct: row.hostHookX, yPct: row.hostHookY, cast: row.hostHookCast };
+    duelSession.remoteGuestHook = { xPct: row.guestHookX, yPct: row.guestHookY, cast: row.guestHookCast };
+    if (hudDirty) updateDuelSpectatorHudScores();
+    if (row.status === "finished" || !isDuelMatchWatchable(row)) {
+      endDuelSpectatorRound(row);
+    }
+  } catch (err) {
+    console.warn(err);
+  }
+}
+
+function updateDuelSpectatorHudScores() {
+  if (!duelHud || !duelSession) return;
+  if (duelHudPlayerScore) duelHudPlayerScore.textContent = String(duelSession.hostScore || 0);
+  if (duelHudOpponentScore) duelHudOpponentScore.textContent = String(duelSession.guestScore || 0);
+  updateDuelHudLabels();
+}
+
+function updateDuelSpectatorVisuals(dt) {
+  if (!isDuelSpectatorSession()) return;
+  const reef = getReef();
+  const maxFish = Math.max(5, Math.floor(reef.maxFish * 0.55));
+  const t = performance.now();
+  if (t - (duelSession.lastOpponentPoll || 0) >= DUEL_OPPONENT_POLL_MS) {
+    duelSession.lastOpponentPoll = t;
+    void pollDuelSpectatorFromMatch();
+  }
+  duelSession.hostSpawnAcc = (duelSession.hostSpawnAcc || 0) + dt;
+  if (duelSession.hostSpawnAcc >= duelSession.hostNextSpawn && countUncaughtFish() < maxFish) {
+    spawnFishInDuelHalf("player");
+    duelSession.hostSpawnAcc = 0;
+    duelSession.hostNextSpawn = rollNextSpawnDelay(reef);
+  }
+  duelSession.opponentSpawnAcc += dt;
+  if (duelSession.opponentSpawnAcc >= duelSession.opponentNextSpawn && countUncaughtOpponentFish() < maxFish) {
+    spawnFishInDuelHalf("opponent");
+    duelSession.opponentSpawnAcc = 0;
+    duelSession.opponentNextSpawn = rollNextSpawnDelay(reef);
+  }
+  updateFish(dt);
+  updateOpponentFish(dt);
+  lerpRemoteHookState(duelSession.remoteHostHook, duelSession.hostHook, dt);
+  lerpRemoteHookState(duelSession.remoteGuestHook, duelSession.guestHook, dt);
+  if (duelSession.hostHook.snagPulse > 0) duelSession.hostHook.snagPulse -= dt;
+  if (duelSession.guestHook.snagPulse > 0) duelSession.guestHook.snagPulse -= dt;
+}
+
+function beginDuelSpectatorSession(row) {
+  if (playing) return;
+  if (!isDuelMatchWatchable(row)) {
+    showToast("That duel just ended.", 2400);
+    void refreshDuelSpectatorList();
+    return;
+  }
+  const reef = REEFS.find((r) => r.id === row.reefId) || REEFS[0];
+  const elapsed = Math.max(0, Date.now() - row.roundStartMs);
+  const remaining = Math.max(0, (row.roundMs || DUEL_ROUND_MS) - elapsed);
+  const hostHook = createOpponentHook();
+  const guestHook = createOpponentHook();
+  duelSession = {
+    mode: "spectator",
+    matchId: row.matchId,
+    reefId: reef.id,
+    hostInitials: row.hostInitials || "AAA",
+    guestInitials: row.guestInitials || "???",
+    hostScore: row.hostScore || 0,
+    guestScore: row.guestScore || 0,
+    hostHook,
+    guestHook,
+    opponentHook: guestHook,
+    opponentFish: [],
+    hostSpawnAcc: 0,
+    hostNextSpawn: rollNextSpawnDelay(reef, true),
+    opponentSpawnAcc: 0,
+    opponentNextSpawn: rollNextSpawnDelay(reef, true),
+    roundStart: performance.now() - elapsed,
+    remoteHostHook: { xPct: row.hostHookX, yPct: row.hostHookY, cast: row.hostHookCast },
+    remoteGuestHook: { xPct: row.guestHookX, yPct: row.guestHookY, cast: row.guestHookCast },
+    lastOpponentPoll: 0,
+    lastRow: row,
+  };
+
+  playing = true;
+  normalizeSelectedRod();
+  stopHomeMusic();
+  stopEventsMusic();
+  syncMusicMasterGain();
+  startHomeWaves();
+  roundBait = { catchRadiusMult: 1, rareAssistAdd: 0, lightRadiusMult: 1 };
+  score = 0;
+  fishList = [];
+  catchLog = [];
+  spawnAcc = 0;
+  nextSpawnIn = rollNextSpawnDelay(reef, true);
+  seedStarterFish(reef);
+  roundEndAt = performance.now() + remaining;
+  clearKrakens();
+  jackpotCrab = null;
+  hideAllPanels();
+  if (panelDuelOver) panelDuelOver.hidden = true;
+  appRoot.classList.add("app--playing", "app--duel", "app--duel-spectator");
+  showDuelHud();
+  lastPearlAt = -999999;
+  if (timeDisplay) timeDisplay.textContent = formatTime(remaining);
+  initBubbles();
+  resize();
+  hostHook.x = duelSideCenter("player");
+  hostHook.targetX = hostHook.x;
+  hostHook.tipY = surfaceTipY();
+  guestHook.x = duelHalfW() * 0.5;
+  guestHook.targetX = guestHook.x;
+  guestHook.tipY = surfaceTipY();
+  touchAim = null;
+  celebration.particles.length = 0;
+  celebration.rings.length = 0;
+  releasedFishFx.length = 0;
+  catchFlash = 0;
+  for (let i = 0; i < 3; i++) spawnFishInDuelHalf("opponent");
+  controlHint.textContent = `Watching ${duelSession.hostInitials} vs ${duelSession.guestInitials} — Esc to leave`;
+  updateDuelSpectatorHudScores();
+  startReefMusic();
+  void pollDuelSpectatorFromMatch();
+}
+
+async function startDuelSpectator(matchId) {
+  if (playing || duelMatchmakingActive || coopMatchmakingActive) return;
+  try {
+    const row = await fetchDuelMatchById(matchId);
+    if (!isDuelMatchWatchable(row)) {
+      showToast("That duel just ended.", 2400);
+      void refreshDuelSpectatorList();
+      return;
+    }
+    hideAllPanels();
+    beginDuelSpectatorSession(row);
+  } catch (err) {
+    console.warn(err);
+    showToast("Couldn't join that duel.", 2600);
+  }
+}
+
+function leaveDuelSpectator() {
+  if (!isDuelSpectatorSession()) return;
+  const host = duelSession.hostInitials || "Host";
+  const guest = duelSession.guestInitials || "Guest";
+  const hostScore = duelSession.hostScore || 0;
+  const guestScore = duelSession.guestScore || 0;
+  playing = false;
+  stopClimaxMusic();
+  syncUrgentTimerUi(99999);
+  stopReefMusic();
+  appRoot.classList.remove("app--playing", "app--duel", "app--duel-spectator");
+  hideDuelHud();
+  duelSession = null;
+  hook.castState = "idle";
+  touchAim = null;
+  openEvents();
+  showToast(`Left spectator — ${host} ${hostScore} · ${guest} ${guestScore}`, 2800);
+}
+
+function endDuelSpectatorRound(row = duelSession?.lastRow) {
+  if (!isDuelSpectatorSession() || duelResultSettling) return;
+  duelResultSettling = true;
+  const session = duelSession;
+  const host = session.hostInitials || "Host";
+  const guest = session.guestInitials || "Guest";
+  const hostScore = row?.hostScore ?? session.hostScore ?? 0;
+  const guestScore = row?.guestScore ?? session.guestScore ?? 0;
+  const reefName = getReef().name;
+  const wonHost = hostScore > guestScore;
+  const tie = hostScore === guestScore;
+
+  playing = false;
+  stopClimaxMusic();
+  syncUrgentTimerUi(99999);
+  stopReefMusic();
+  appRoot.classList.remove("app--playing", "app--duel", "app--duel-spectator");
+  hideDuelHud();
+  hook.castState = "idle";
+  touchAim = null;
+  duelSession = null;
+  duelResultSettling = false;
+
+  if (panelDuelOver) panelDuelOver.hidden = false;
+  if (btnDuelPlayAgain) btnDuelPlayAgain.hidden = true;
+  if (duelOverHeadline) {
+    duelOverHeadline.textContent = tie ? "Duel tied!" : wonHost ? `${host} wins!` : `${guest} wins!`;
+  }
+  if (duelOverScores) duelOverScores.textContent = `${host} ${hostScore} · ${guest} ${guestScore}`;
+  if (duelOverDetail) duelOverDetail.textContent = `${reefName} · spectator view`;
+  if (duelOverPrize) {
+    duelOverPrize.hidden = true;
+    duelOverPrize.textContent = "";
+  }
+  roundBait = { catchRadiusMult: 1, rareAssistAdd: 0, lightRadiusMult: 1 };
+}
+
 function normalizeDuelMatchRow(row) {
   if (!row) return null;
   return {
@@ -10067,6 +10373,11 @@ function scheduleDuelScoreSync() {
 }
 
 function updateDuelHudLabels() {
+  if (isDuelSpectatorSession() && duelSession) {
+    if (duelHudPlayerLabel) duelHudPlayerLabel.textContent = duelSession.hostInitials || "Host";
+    if (duelHudOpponentLabel) duelHudOpponentLabel.textContent = duelSession.guestInitials || "Guest";
+    return;
+  }
   if (duelHudPlayerLabel) {
     duelHudPlayerLabel.textContent = isDuelPvpSession() ? getDuelPlayerInitials() : "You";
   }
@@ -10232,6 +10543,7 @@ function refreshDuelEventCard() {
     else if (tickets <= 0) btnStartDuel.textContent = "No tickets — visit shop";
     else btnStartDuel.textContent = "Find duel rival";
   }
+  void refreshDuelSpectatorList();
 }
 
 function updateDuelHudScores(syncState = true) {
@@ -10492,6 +10804,9 @@ function updateDuelOpponent(dt, now) {
 
 function drawDuelDivider() {
   const mid = duelHalfW();
+  const spectator = isDuelSpectatorSession();
+  const leftLabel = spectator ? duelSession?.hostInitials || "HOST" : "YOU";
+  const rightLabel = spectator ? duelSession?.guestInitials || "GUEST" : "RIVAL";
   ctx.save();
   ctx.strokeStyle = "rgba(255, 255, 255, 0.45)";
   ctx.lineWidth = 3 * dpr;
@@ -10504,9 +10819,9 @@ function drawDuelDivider() {
   ctx.fillStyle = "rgba(255, 255, 255, 0.72)";
   ctx.font = `800 ${Math.max(10, 11 * dpr)}px Nunito, sans-serif`;
   ctx.textAlign = "center";
-  ctx.fillText("YOU", mid * 0.5, waterTop + dpr * 18);
+  ctx.fillText(leftLabel, mid * 0.5, waterTop + dpr * 18);
   ctx.fillStyle = "rgba(252, 165, 165, 0.88)";
-  ctx.fillText("RIVAL", mid + mid * 0.5, waterTop + dpr * 18);
+  ctx.fillText(rightLabel, mid + mid * 0.5, waterTop + dpr * 18);
   ctx.restore();
 }
 
@@ -10559,16 +10874,22 @@ function drawHookLineForState(hookState, anchorX) {
 
 function drawDuelPlayfield() {
   const half = duelHalfW();
+  const spectator = isDuelSpectatorSession();
+  const leftHook = spectator ? duelSession.hostHook : hook;
+  const rightHook = spectator ? duelSession.guestHook : duelSession.opponentHook;
 
   ctx.save();
   ctx.beginPath();
   ctx.rect(0, 0, half, h);
   ctx.clip();
   for (const f of fishList) drawFish(f);
-  drawBoatHullAndCatchNetAt(duelSideCenter("player"));
-  drawHookLineForState(hook, hook.x);
-  drawReleasedFishJumpFx();
-  drawTrenchRodLightForHook(hook.x);
+  if (spectator) drawBoatHullAt(duelSideCenter("player"));
+  else drawBoatHullAndCatchNetAt(duelSideCenter("player"));
+  drawHookLineForState(leftHook, leftHook.x);
+  if (!spectator) {
+    drawReleasedFishJumpFx();
+    drawTrenchRodLightForHook(hook.x);
+  }
   ctx.restore();
 
   ctx.save();
@@ -10577,7 +10898,7 @@ function drawDuelPlayfield() {
   ctx.clip();
   for (const f of duelSession.opponentFish) drawFish(f);
   drawBoatHullAt(duelSideCenter("opponent"));
-  drawHookLineForState(duelSession.opponentHook, duelHalfW() + duelSession.opponentHook.x);
+  drawHookLineForState(rightHook, duelHalfW() + rightHook.x);
   ctx.restore();
 
   drawDuelDivider();
@@ -10755,6 +11076,10 @@ function endDuelRound() {
 async function endDuelRoundAsync() {
   const session = duelSession;
   if (!session || duelResultSettling) return;
+  if (session.mode === "spectator") {
+    endDuelSpectatorRound(session.lastRow);
+    return;
+  }
   duelResultSettling = true;
 
   const localPlayerScore = score;
@@ -10773,6 +11098,7 @@ async function endDuelRoundAsync() {
   touchAim = null;
 
   if (panelDuelOver) panelDuelOver.hidden = false;
+  if (btnDuelPlayAgain) btnDuelPlayAgain.hidden = false;
   if (duelOverHeadline) duelOverHeadline.textContent = "Duel complete";
   if (duelOverScores) duelOverScores.textContent = isPvp ? "Tallying final scores…" : `You ${localPlayerScore} · Rival ${session.opponentScore || 0}`;
   if (duelOverDetail) {
@@ -10841,6 +11167,7 @@ async function endDuelRoundAsync() {
 
 function openDuelFromResult(replay) {
   if (panelDuelOver) panelDuelOver.hidden = true;
+  if (btnDuelPlayAgain) btnDuelPlayAgain.hidden = false;
   if (replay) {
     void startDuelFromEvents();
     return;
@@ -11213,6 +11540,11 @@ const duelOverDetail = document.getElementById("duelOverDetail");
 const duelOverPrize = document.getElementById("duelOverPrize");
 const btnDuelPlayAgain = document.getElementById("btnDuelPlayAgain");
 const btnDuelBackEvents = document.getElementById("btnDuelBackEvents");
+const duelSpectatorSection = document.getElementById("duelSpectatorSection");
+const duelSpectatorList = document.getElementById("duelSpectatorList");
+const duelSpectatorEmpty = document.getElementById("duelSpectatorEmpty");
+const duelSpectatorLoading = document.getElementById("duelSpectatorLoading");
+const btnRefreshDuelSpectator = document.getElementById("btnRefreshDuelSpectator");
 const eventCardCrab = document.getElementById("eventCardCrab");
 const crabEventTickets = document.getElementById("crabEventTickets");
 const btnStartCrab = document.getElementById("btnStartCrab");
@@ -22566,14 +22898,16 @@ function gameLoop(now) {
         const maxFish = PERF_CHROMEBOOK
           ? Math.max(6, Math.floor(reef.maxFish * (adventureSession ? 0.78 : 0.65)))
           : reef.maxFish;
-        if (spawnAcc >= nextSpawnIn && countUncaughtFish() < maxFish) {
+        if (!isDuelSpectatorSession() && spawnAcc >= nextSpawnIn && countUncaughtFish() < maxFish) {
           spawnFish();
           spawnAcc = 0;
           nextSpawnIn = rollNextSpawnDelay(reef);
         }
         updateFish(dt);
-        updateHook(dt);
-        if (isDuelActive()) {
+        if (!isDuelSpectatorSession()) updateHook(dt);
+        if (isDuelSpectatorSession()) {
+          updateDuelSpectatorVisuals(dt);
+        } else if (isDuelActive()) {
           updateDuelOpponent(dt, now);
           if (isDuelPvpSession()) scheduleDuelStateSync();
         }
@@ -22631,6 +22965,7 @@ function setHookTargetX(clientX) {
 
 function isClientInPlayerDuelHalf(clientX) {
   if (!isDuelActive()) return true;
+  if (isDuelSpectatorSession()) return false;
   const rect = canvas.getBoundingClientRect();
   return clientX - rect.left <= rect.width * 0.5;
 }
@@ -22905,6 +23240,9 @@ collectablesFrames?.addEventListener("click", (e) => {
 btnStartDuel?.addEventListener("click", () => {
   void startDuelFromEvents();
 });
+btnRefreshDuelSpectator?.addEventListener("click", () => {
+  void refreshDuelSpectatorList();
+});
 btnDuelPlayAgain?.addEventListener("click", () => openDuelFromResult(true));
 btnDuelBackEvents?.addEventListener("click", () => openDuelFromResult(false));
 btnEventPrepStart?.addEventListener("click", () => confirmEventPrepStart());
@@ -22990,6 +23328,10 @@ document.addEventListener("pointerdown", (e) => {
 
 window.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
+  if (isDuelSpectatorSession()) {
+    leaveDuelSpectator();
+    return;
+  }
   if (startSettingsMenu && !startSettingsMenu.hidden) setStartSettingsOpen(false);
 });
 

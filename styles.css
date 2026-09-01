@@ -4147,6 +4147,53 @@ button.seagull-avatar:active {
   text-shadow: 0 0 14px rgba(248, 113, 113, 0.3);
 }
 
+.duel-spectator {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(248, 113, 113, 0.22);
+  display: grid;
+  gap: 8px;
+}
+
+.duel-spectator__title {
+  margin: 0;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fecaca;
+}
+
+.duel-spectator__loading,
+.duel-spectator__empty {
+  margin: 0;
+  font-size: 0.82rem;
+  color: rgba(214, 236, 248, 0.78);
+  line-height: 1.4;
+}
+
+.duel-spectator__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.duel-spectator__watch {
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+}
+
+.duel-spectator__refresh {
+  width: 100%;
+}
+
+.app--duel-spectator .control-hint {
+  color: #fecaca;
+}
+
 .rods__legend {
   display: block;
   float: none;
