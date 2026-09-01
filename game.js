@@ -9170,20 +9170,65 @@ function formatDuelInitials(value) {
   return ini.length >= 1 ? ini : "";
 }
 
+const COM_PLAYER_NAME_PARTS = [
+  "joey",
+  "maya",
+  "kai",
+  "zoe",
+  "leo",
+  "nova",
+  "riley",
+  "finn",
+  "jade",
+  "cruz",
+  "abby",
+  "miles",
+  "lena",
+  "otto",
+  "rosa",
+  "theo",
+  "nina",
+  "evan",
+  "sage",
+  "arlo",
+  "mia",
+  "cole",
+  "ivy",
+  "dean",
+  "ruby",
+  "nate",
+  "sasha",
+  "owen",
+  "cleo",
+  "luke",
+];
+
+function rollComPlayerName() {
+  const part = COM_PLAYER_NAME_PARTS[Math.floor(Math.random() * COM_PLAYER_NAME_PARTS.length)];
+  const num = 100 + Math.floor(Math.random() * 900);
+  return `${part} ${num}`;
+}
+
+function comGuestDisplayName(stored) {
+  const name = parsePlayerName(stored);
+  if (name && name.toUpperCase() !== "COM") return name;
+  return rollComPlayerName();
+}
+
 function getDuelPlayerInitials() {
   return formatDuelInitials(gameMeta.playerInitials) || "AAA";
 }
 
 function duelOpponentInitialsFromRow(row, role) {
-  if (!row) return "COM";
-  if (row.isComGuest) return "COM";
+  if (!row) return rollComPlayerName();
+  if (row.isComGuest) return comGuestDisplayName(row.guestInitials);
   const raw = role === "host" ? row.guestInitials : row.hostInitials;
   return formatDuelInitials(raw) || "Rival";
 }
 
 function getDuelOpponentDisplayName() {
   if (!duelSession) return "Rival";
-  if (duelSession.mode === "com") return "COM";
+  if (duelSession.mode === "com") return comGuestDisplayName(duelSession.opponentInitials);
   return formatDuelInitials(duelSession.opponentInitials) || "Rival";
 }
 
@@ -9509,7 +9554,7 @@ function normalizeDuelMatchRow(row) {
     inviteUserId: row.invite_user_id || row.inviteUserId || null,
     hostInitials: formatDuelInitials(row.host_initials || row.hostInitials) || "AAA",
     guestInitials: Boolean(row.is_com_guest ?? row.isComGuest)
-      ? "COM"
+      ? comGuestDisplayName(row.guest_initials || row.guestInitials)
       : formatDuelInitials(row.guest_initials || row.guestInitials),
     hostCompanionId: normalizeCompanionId(row.host_companion_id ?? row.hostCompanionId),
     guestCompanionId: String(row.guest_companion_id ?? row.guestCompanionId ?? ""),
@@ -9671,7 +9716,7 @@ async function activateComDuelGuest(matchId) {
     }),
     body: JSON.stringify({
       guest_client_id: `com-${matchId}`,
-      guest_initials: "COM",
+      guest_initials: rollComPlayerName(),
       guest_companion_id: COM_COMPANION_ID,
       is_com_guest: true,
       status: "active",
@@ -9868,7 +9913,7 @@ async function findOnlineMatch(matchKind, roundMs, deadlineMs, friendUserId = nu
   const isCoop = matchKind === MATCH_KIND_COOP;
   const setUi = isCoop ? setCoopMatchmakingUi : setDuelMatchmakingUi;
   const partnerWord = isCoop ? "partner" : "rival";
-  const comLine = isCoop ? "No partner found — hauling with COM…" : "No rival found — facing COM…";
+  const comLine = isCoop ? "No partner found — matching a random angler…" : "No rival found — matching a random angler…";
   const hideCountdown = isCoop ? hideCoopLobbyCountdown : hideDuelLobbyCountdown;
   const planFromMatch = isCoop ? coopPlanFromMatch : duelPlanFromMatch;
   const buildLocalComPlan = isCoop ? buildLocalComCoopPlan : buildLocalComDuelPlan;
@@ -9972,7 +10017,7 @@ async function findOnlineMatch(matchKind, roundMs, deadlineMs, friendUserId = nu
   if (hostedMatchId) {
     hideCountdown();
     if (friendUserId) {
-      setUi(true, `${friendLabel} didn't join — ${isCoop ? "hauling" : "facing"} COM…`);
+      setUi(true, `${friendLabel} didn't join — matching a random angler…`);
     } else {
       setUi(true, comLine);
     }
@@ -10008,7 +10053,7 @@ function buildLocalComDuelPlan(reefId) {
     role: "host",
     mode: "com",
     reefId: reef.id,
-    opponentInitials: "COM",
+    opponentInitials: rollComPlayerName(),
     opponentCompanionId: COM_COMPANION_ID,
     opponentScore: 0,
     roundStartMs: Date.now() + DUEL_MATCH_START_DELAY_MS,
@@ -10043,7 +10088,7 @@ function buildLocalComCoopPlan(reefId) {
     role: "host",
     mode: "com",
     reefId: reef.id,
-    partnerInitials: "COM",
+    partnerInitials: rollComPlayerName(),
     partnerCompanionId: COM_COMPANION_ID,
     partnerScore: 0,
     roundStartMs: Date.now() + DUEL_MATCH_START_DELAY_MS,
@@ -10067,7 +10112,7 @@ async function resolveDuelMatchPlan(deadlineMs) {
       duelLobbyMatchId = null;
     }
     if (isDuelBackendMissingError(err)) throw err;
-    showToast("Lobby offline — duel vs COM instead.", 2600);
+    showToast("Lobby offline — duel vs a random rival instead.", 2600);
     const reefId = pickRandomDuelReefId(duelLastReefId);
     duelPendingReefId = reefId;
     return buildLocalComDuelPlan(reefId);
@@ -10084,7 +10129,7 @@ async function resolveCoopMatchPlan(deadlineMs) {
       coopLobbyMatchId = null;
     }
     if (isDuelBackendMissingError(err)) throw err;
-    showToast("Lobby offline — co-op with COM instead.", 2600);
+    showToast("Lobby offline — co-op with a random partner instead.", 2600);
     const reef = pickMinigameReef("coop");
     return buildLocalComCoopPlan(reef.id);
   }
@@ -10140,7 +10185,7 @@ function setCoopMatchmakingUi(active, message = "") {
 }
 
 function formatCoopEventMatchupLine() {
-  return "Enter the lobby — match a real partner, or haul with COM if nobody's waiting.";
+  return "Enter the lobby — match a real partner, or team with a random angler if nobody's waiting.";
 }
 
 function refreshCoopEventCard() {
@@ -10153,7 +10198,7 @@ function refreshCoopEventCard() {
   if (coopEventMatchup) coopEventMatchup.textContent = formatCoopEventMatchupLine();
   const previewReef = REEFS[Math.floor(Math.random() * REEFS.length)] || REEFS[0];
   if (coopEventReef) {
-    coopEventReef.textContent = `Random reef each haul (e.g. ${previewReef.name}) · 60 seconds · COM fallback ${coopPendingTargetScore.toLocaleString()} pts`;
+    coopEventReef.textContent = `Random reef each haul (e.g. ${previewReef.name}) · 60 seconds · solo fallback ${coopPendingTargetScore.toLocaleString()} pts`;
   }
   if (btn) {
     btn.disabled = tickets <= 0;
@@ -10168,7 +10213,7 @@ function isCoopPvpSession() {
 function getCoopPartnerDisplayName() {
   const s = eventMinigameSession;
   if (!s || s.kind !== "coop") return "Partner";
-  if (s.mode === "com") return "COM";
+  if (s.mode === "com") return comGuestDisplayName(s.partnerInitials);
   return formatDuelInitials(s.partnerInitials) || "Partner";
 }
 
@@ -10328,7 +10373,7 @@ async function waitForOnlineRoundStart(plan, { mode }) {
   const reef = REEFS.find((r) => r.id === plan.reefId);
   const rivalName =
     plan.mode === "com"
-      ? "COM"
+      ? comGuestDisplayName(isCoop ? plan.partnerInitials : plan.opponentInitials)
       : formatDuelInitials(isCoop ? plan.partnerInitials : plan.opponentInitials) ||
         (isCoop ? "Partner" : "Rival");
   const rivalCompanionId =
@@ -10387,7 +10432,7 @@ function updateDuelHudLabels() {
 }
 
 function formatDuelEventMatchupLine() {
-  return "Enter the lobby — match a real player, or face COM if nobody's waiting.";
+  return "Enter the lobby — match a real player, or face a random rival if nobody's waiting.";
 }
 
 function refreshDuelTicketsForToday() {
@@ -10493,9 +10538,9 @@ function coopTierForScore(pts) {
 function formatDuelRivalMatchupLine(targetScore) {
   const { easy, hard, best } = getDuelRivalTargetBounds();
   if (hard > easy) {
-    return `COM rival targets ${targetScore} pts (${easy.toLocaleString()} easy · up to ${hard.toLocaleString()} from your ${best.toLocaleString()} best).`;
+    return `Practice rival targets ${targetScore} pts (${easy.toLocaleString()} easy · up to ${hard.toLocaleString()} from your ${best.toLocaleString()} best).`;
   }
-  return `COM rival targets ${targetScore} pts (${easy.toLocaleString()} minimum difficulty).`;
+  return `Practice rival targets ${targetScore} pts (${easy.toLocaleString()} minimum difficulty).`;
 }
 
 function createOpponentHook() {
@@ -10535,7 +10580,7 @@ function refreshDuelEventCard() {
   duelPendingTargetScore = rollDuelRivalTargetScore();
   duelEventMatchup.textContent = formatDuelEventMatchupLine();
   const previewReef = REEFS[Math.floor(Math.random() * REEFS.length)] || REEFS[0];
-  duelEventReef.textContent = `Random reef each duel (e.g. ${previewReef.name}) · 1:00 round · COM fallback ${duelPendingTargetScore.toLocaleString()} pts`;
+  duelEventReef.textContent = `Random reef each duel (e.g. ${previewReef.name}) · 1:00 round · solo fallback ${duelPendingTargetScore.toLocaleString()} pts`;
 
   if (btnStartDuel) {
     btnStartDuel.disabled = !available || tickets <= 0;
@@ -10931,7 +10976,8 @@ function beginDuelSession(plan) {
     reefId: plan.reefId,
     targetScore: plan.targetScore || 0,
     opponentScore: plan.opponentScore || 0,
-    opponentInitials: plan.mode === "com" ? "COM" : formatDuelInitials(plan.opponentInitials) || "Rival",
+    opponentInitials:
+      plan.mode === "com" ? comGuestDisplayName(plan.opponentInitials) : formatDuelInitials(plan.opponentInitials) || "Rival",
     mode: plan.mode || "com",
     matchId: plan.matchId || null,
     role: plan.role || null,
@@ -15805,7 +15851,8 @@ function beginCoopSession(plan) {
     mode: plan.mode,
     matchId: plan.matchId,
     role: plan.role,
-    partnerInitials: plan.partnerInitials || "COM",
+    partnerInitials:
+      plan.mode === "com" ? comGuestDisplayName(plan.partnerInitials) : plan.partnerInitials || "",
     partnerTarget: plan.partnerTarget || 0,
     pacingBias: plan.pacingBias || 1,
     lastStatePush: 0,
@@ -16083,7 +16130,8 @@ async function endEventMinigameRoundAsync() {
   }
   if (session.kind === "coop") {
     let partner = Math.max(0, session.partnerScore || 0);
-    const partnerName = session.mode === "com" ? "COM" : formatDuelInitials(session.partnerInitials) || "Partner";
+    const partnerName =
+      session.mode === "com" ? comGuestDisplayName(session.partnerInitials) : formatDuelInitials(session.partnerInitials) || "Partner";
     if (session.mode === "pvp" && session.matchId) {
       partner = await resolveCoopFinalPartnerScore(session, fishScore);
     }
@@ -17989,10 +18037,7 @@ function startRound() {
     controlHint.textContent = `Reef Roulette · ${reef.name} · rack up pts for a better chest`;
   } else if (eventMinigameSession?.kind === "coop") {
     const partnerName = getCoopPartnerDisplayName();
-    controlHint.textContent =
-      eventMinigameSession.mode === "pvp"
-        ? `Co-op Haul · you + ${partnerName} combine scores for the chest`
-        : `Co-op Haul · you + COM partner combine scores for the chest`;
+    controlHint.textContent = `Co-op Haul · you + ${partnerName} combine scores for the chest`;
   } else {
     controlHint.textContent = isTouchControlsPreferred()
       ? `Drag left/right to aim · tap to cast the line${passHint}`

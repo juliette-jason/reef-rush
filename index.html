@@ -95,7 +95,7 @@
               </div>
               <div class="online-matchup__player online-matchup__player--rival">
                 <div id="onlineMatchupRivalAvatar" class="online-matchup__avatar" aria-hidden="true"></div>
-                <span id="onlineMatchupRivalName" class="online-matchup__name">COM</span>
+                <span id="onlineMatchupRivalName" class="online-matchup__name">Rival</span>
               </div>
             </div>
             <p id="onlineMatchupReef" class="online-matchup__reef"></p>
@@ -1822,8 +1822,8 @@
                   <span class="event-card__info-glyph" aria-hidden="true">i</span>
                 </summary>
                 <div class="event-card__blurb event-card__blurb--stack">
-                  <p id="duelEventMatchup" class="event-card__matchup">Enter the lobby — match a real player, or face COM if nobody's waiting.</p>
-                  <p id="duelEventReef" class="event-card__reef-pick">Random reef each duel · 1:00 round · COM fallback</p>
+                  <p id="duelEventMatchup" class="event-card__matchup">Enter the lobby — match a real player, or face a random rival if nobody's waiting.</p>
+                  <p id="duelEventReef" class="event-card__reef-pick">Random reef each duel · 1:00 round · solo fallback</p>
                 </div>
               </details>
             </div>
@@ -2188,8 +2188,8 @@
                   <span class="event-card__info-glyph" aria-hidden="true">i</span>
                 </summary>
                 <div class="event-card__blurb event-card__blurb--stack">
-                  <p id="coopEventMatchup" class="event-card__matchup">Enter the lobby — match a real partner, or haul with COM if nobody's waiting.</p>
-                  <p id="coopEventReef" class="event-card__reef-pick">Random reef each haul · 60 seconds · COM fallback</p>
+                  <p id="coopEventMatchup" class="event-card__matchup">Enter the lobby — match a real partner, or team with a random angler if nobody's waiting.</p>
+                  <p id="coopEventReef" class="event-card__reef-pick">Random reef each haul · 60 seconds · solo fallback</p>
                 </div>
               </details>
             </div>
@@ -2845,6 +2845,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-09-01-spectator-1" defer></script>
+    <script src="game.js?v=2026-09-01-com-names-1" defer></script>
   </body>
 </html>
