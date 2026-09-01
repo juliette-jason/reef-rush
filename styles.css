@@ -2858,6 +2858,23 @@ button.seagull-avatar:active {
   color: var(--neon-cyan);
 }
 
+.stat--time--urgent .stat__value,
+.stat__value--urgent {
+  color: #f87171 !important;
+  animation: urgentTimerPulse 0.55s ease-in-out infinite;
+  text-shadow: 0 0 12px rgba(248, 113, 113, 0.65);
+}
+
+@keyframes urgentTimerPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
 .app--playing .stat--score {
   min-width: 122px;
   padding: 8px 16px;
@@ -4065,6 +4082,56 @@ button.seagull-avatar:active {
 .event-card--daily .event-card__title {
   color: #fbbf24;
   text-shadow: 0 0 14px rgba(251, 191, 36, 0.3);
+}
+
+.event-card--tourney {
+  border-color: rgba(167, 139, 250, 0.5);
+  background:
+    linear-gradient(180deg, rgba(167, 139, 250, 0.16), transparent 28%),
+    linear-gradient(165deg, rgba(30, 27, 75, 0.96), rgba(12, 30, 54, 0.98));
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(167, 139, 250, 0.14);
+}
+
+.event-card--tourney .event-card__title {
+  color: #c4b5fd;
+  text-shadow: 0 0 14px rgba(167, 139, 250, 0.35);
+}
+
+.tourney-vote-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin: 10px 0 12px;
+}
+
+.tourney-vote-btn {
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(167, 139, 250, 0.45);
+  background: rgba(30, 27, 75, 0.72);
+  color: #ede9fe;
+  font-family: "Nunito", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tourney-vote-btn--lead {
+  border-color: rgba(251, 191, 36, 0.75);
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.25);
+}
+
+.tourney-vote-btn:disabled {
+  opacity: 0.72;
+  cursor: default;
+}
+
+.event-card__actions {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  margin-top: 8px;
 }
 
 .event-card--duel {

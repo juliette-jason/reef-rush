@@ -5780,6 +5780,9 @@ function defaultMeta() {
     ownedAvatarFrames: normalizeOwnedAvatarFrames([STARTER_AVATAR_FRAME_ID]),
     equippedAvatarFrame: STARTER_AVATAR_FRAME_ID,
     dailyAvatarFrameShop: null,
+    tourneyVoteDayKey: "",
+    tourneyVoteKind: "",
+    tourneySignedUpDayKey: "",
   };
 }
 
@@ -5866,6 +5869,9 @@ function loadMeta() {
         normalizeOwnedAvatarFrames(o.ownedAvatarFrames)
       ),
       dailyAvatarFrameShop: normalizeDailyAvatarFrameShop(o.dailyAvatarFrameShop),
+      tourneyVoteDayKey: typeof o.tourneyVoteDayKey === "string" ? o.tourneyVoteDayKey : "",
+      tourneyVoteKind: typeof o.tourneyVoteKind === "string" ? o.tourneyVoteKind : "",
+      tourneySignedUpDayKey: typeof o.tourneySignedUpDayKey === "string" ? o.tourneySignedUpDayKey : "",
     };
   } catch {
     return defaultMeta();
@@ -8236,6 +8242,404 @@ function tryStartDailyPrizeCelebration() {
   startDailyPrizeCelebration(prize);
 }
 
+/** Fishing Tournament — community vote, 35 daily signups, 11 AM & 4 PM windows. */
+const TOURNEY_MAX_PLAYERS = 35;
+const TOURNEY_MORNING_HOUR = 11;
+const TOURNEY_AFTERNOON_HOUR = 16;
+const TOURNEY_WINDOW_MS = 30 * 60_000;
+const TOURNEY_VOTES_URL = `${SUPABASE_REST_URL}/tourney_votes`;
+const TOURNEY_SIGNUPS_URL = `${SUPABASE_REST_URL}/tourney_signups`;
+const TOURNEY_SCORES_URL = `${SUPABASE_REST_URL}/tourney_scores`;
+const TOURNEY_EVENT_OPTIONS = [
+  { id: "roulette", label: "Reef Roulette" },
+  { id: "coop", label: "Co-op Haul" },
+  { id: "duel", label: "Duel Fishing" },
+  { id: "survivor", label: "Kraken Survivor" },
+  { id: "crab", label: "Crab Trap" },
+];
+const TOURNEY_PRIZES = [
+  { rank: 1, gems: 400, coins: 2000, chest: "legendary", label: "1st — Legendary chest + 400 gems" },
+  { rank: 2, gems: 200, coins: 1000, chest: "rare", label: "2nd — Rare chest + 200 gems" },
+  { rank: 3, gems: 100, coins: 500, chest: "common", label: "3rd — Common chest + 100 gems" },
+];
+let tourneyVoteCounts = {};
+let tourneySignupCount = 0;
+let tourneyLeaderboardRows = [];
+let tourneyRemoteReady = false;
+/** Active tournament run — score submits on finish. */
+let tournamentRun = null;
+
+function getTourneyDayKey(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function tourneySlotWindows(day = new Date()) {
+  const morningStart = new Date(day);
+  morningStart.setHours(TOURNEY_MORNING_HOUR, 0, 0, 0);
+  const afternoonStart = new Date(day);
+  afternoonStart.setHours(TOURNEY_AFTERNOON_HOUR, 0, 0, 0);
+  return {
+    morning: { key: "morning", start: morningStart.getTime(), end: morningStart.getTime() + TOURNEY_WINDOW_MS },
+    afternoon: { key: "afternoon", start: afternoonStart.getTime(), end: afternoonStart.getTime() + TOURNEY_WINDOW_MS },
+  };
+}
+
+function getTourneySlotState(now = Date.now()) {
+  const windows = tourneySlotWindows(new Date(now));
+  if (now >= windows.morning.start && now < windows.morning.end) {
+    return { slotKey: "morning", ...windows.morning, nextLabel: "Afternoon heat at 4:00 PM" };
+  }
+  if (now >= windows.afternoon.start && now < windows.afternoon.end) {
+    return { slotKey: "afternoon", ...windows.afternoon, nextLabel: "Tomorrow's vote opens at midnight" };
+  }
+  if (now < windows.morning.start) {
+    return {
+      slotKey: null,
+      start: windows.morning.start,
+      end: windows.morning.end,
+      nextLabel: `Morning heat at ${TOURNEY_MORNING_HOUR}:00 AM`,
+      upcoming: "morning",
+    };
+  }
+  if (now < windows.afternoon.start) {
+    return {
+      slotKey: null,
+      start: windows.afternoon.start,
+      end: windows.afternoon.end,
+      nextLabel: `Afternoon heat at ${TOURNEY_AFTERNOON_HOUR}:00 PM`,
+      upcoming: "afternoon",
+    };
+  }
+  return { slotKey: null, start: 0, end: 0, nextLabel: "Tomorrow's vote opens at midnight", upcoming: null };
+}
+
+function winningTourneyEventKind() {
+  let best = TOURNEY_EVENT_OPTIONS[0].id;
+  let bestCount = -1;
+  for (const opt of TOURNEY_EVENT_OPTIONS) {
+    const count = tourneyVoteCounts[opt.id] || 0;
+    if (count > bestCount) {
+      best = opt.id;
+      bestCount = count;
+    }
+  }
+  return best;
+}
+
+function tourneyEventLabel(kind) {
+  return TOURNEY_EVENT_OPTIONS.find((o) => o.id === kind)?.label || kind;
+}
+
+function isTourneySignedUpToday() {
+  return gameMeta.tourneySignedUpDayKey === getTourneyDayKey();
+}
+
+function hasTourneyVotedToday() {
+  return gameMeta.tourneyVoteDayKey === getTourneyDayKey() && Boolean(gameMeta.tourneyVoteKind);
+}
+
+async function fetchTourneyVoteCounts(dayKey = getTourneyDayKey()) {
+  try {
+    const res = await fetch(
+      `${TOURNEY_VOTES_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=event_kind`,
+      { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS },
+    );
+    if (!res.ok) throw new Error(`Tourney votes failed: ${res.status}`);
+    const rawVotes = await res.json();
+    const rows = Array.isArray(rawVotes) ? rawVotes : [];
+    const counts = {};
+    for (const row of rows) {
+      const kind = row.event_kind;
+      counts[kind] = (counts[kind] || 0) + 1;
+    }
+    tourneyVoteCounts = counts;
+    tourneyRemoteReady = true;
+    return counts;
+  } catch (err) {
+    console.warn(err);
+    if (hasTourneyVotedToday() && gameMeta.tourneyVoteKind) {
+      tourneyVoteCounts = { [gameMeta.tourneyVoteKind]: 1 };
+    }
+    return tourneyVoteCounts;
+  }
+}
+
+async function fetchTourneySignupCount(dayKey = getTourneyDayKey()) {
+  try {
+    const res = await fetch(
+      `${TOURNEY_SIGNUPS_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=id`,
+      { headers: leaderboardHeaders({ Prefer: "count=exact" }), ...LEADERBOARD_FETCH_OPTS },
+    );
+    if (!res.ok) throw new Error(`Tourney signups failed: ${res.status}`);
+    const countHeader = res.headers.get("content-range");
+    const m = countHeader && countHeader.match(/\/(\d+)$/);
+    tourneySignupCount = m ? Number(m[1]) : 0;
+    tourneyRemoteReady = true;
+    return tourneySignupCount;
+  } catch (err) {
+    console.warn(err);
+    tourneySignupCount = isTourneySignedUpToday() ? 1 : 0;
+    return tourneySignupCount;
+  }
+}
+
+async function fetchTourneyLeaderboard(dayKey = getTourneyDayKey()) {
+  try {
+    const res = await fetch(
+      `${TOURNEY_SCORES_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=initials,display_name,score,slot_key,client_id&order=score.desc,created_at.asc&limit=120`,
+      { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS },
+    );
+    if (!res.ok) throw new Error(`Tourney board failed: ${res.status}`);
+    const rawScores = await res.json();
+    const rows = Array.isArray(rawScores) ? rawScores : [];
+    const bestByClient = new Map();
+    for (const row of rows) {
+      const prev = bestByClient.get(row.client_id);
+      if (!prev || row.score > prev.score) bestByClient.set(row.client_id, row);
+    }
+    tourneyLeaderboardRows = [...bestByClient.values()]
+      .sort((a, b) => b.score - a.score || String(a.initials).localeCompare(String(b.initials)))
+      .slice(0, TOURNEY_MAX_PLAYERS);
+    return tourneyLeaderboardRows;
+  } catch (err) {
+    console.warn(err);
+    tourneyLeaderboardRows = [];
+    return [];
+  }
+}
+
+async function submitTourneyVote(eventKind) {
+  const dayKey = getTourneyDayKey();
+  if (!TOURNEY_EVENT_OPTIONS.some((o) => o.id === eventKind)) return;
+  if (hasTourneyVotedToday()) {
+    showToast("You already voted today.", 2200);
+    return;
+  }
+  const payload = {
+    day_key: dayKey,
+    voter_client_id: getDuelClientId(),
+    event_kind: eventKind,
+  };
+  try {
+    const res = await fetch(TOURNEY_VOTES_URL, {
+      method: "POST",
+      headers: leaderboardHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`Vote failed: ${res.status}`);
+    gameMeta.tourneyVoteDayKey = dayKey;
+    gameMeta.tourneyVoteKind = eventKind;
+    saveMeta();
+    showToast(`Voted for ${tourneyEventLabel(eventKind)}!`, 2200);
+    await fetchTourneyVoteCounts(dayKey);
+    refreshTournamentCard();
+  } catch (err) {
+    console.warn(err);
+    showToast("Couldn't save vote — try again.", 2600);
+  }
+}
+
+async function submitTourneySignup() {
+  const dayKey = getTourneyDayKey();
+  if (isTourneySignedUpToday()) {
+    showToast("You're already signed up for today's tourney.", 2400);
+    return;
+  }
+  await fetchTourneySignupCount(dayKey);
+  if (tourneySignupCount >= TOURNEY_MAX_PLAYERS) {
+    showToast("All 35 tourney spots are full today.", 2800);
+    return;
+  }
+  const identity = resolveScorePlayerIdentity(gameMeta.playerName || gameMeta.playerInitials);
+  try {
+    const res = await fetch(TOURNEY_SIGNUPS_URL, {
+      method: "POST",
+      headers: leaderboardHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
+      body: JSON.stringify({
+        day_key: dayKey,
+        client_id: getDuelClientId(),
+        initials: identity.initials,
+        display_name: identity.name || identity.initials,
+      }),
+    });
+    if (!res.ok) throw new Error(`Signup failed: ${res.status}`);
+    gameMeta.tourneySignedUpDayKey = dayKey;
+    saveMeta();
+    showToast(`Signed up! Spot ${tourneySignupCount + 1} of ${TOURNEY_MAX_PLAYERS}.`, 2800);
+    await fetchTourneySignupCount(dayKey);
+    refreshTournamentCard();
+  } catch (err) {
+    console.warn(err);
+    showToast("Couldn't sign up — check your connection.", 2800);
+  }
+}
+
+async function submitTourneyScore(scorePts, slotKey, eventKind) {
+  const pts = Math.max(0, Math.floor(Number(scorePts) || 0));
+  if (!pts || !slotKey || !eventKind) return;
+  const dayKey = getTourneyDayKey();
+  const identity = resolveScorePlayerIdentity(gameMeta.playerName || gameMeta.playerInitials);
+  try {
+    await fetch(TOURNEY_SCORES_URL, {
+      method: "POST",
+      headers: leaderboardHeaders({
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates,return=minimal",
+      }),
+      body: JSON.stringify({
+        day_key: dayKey,
+        slot_key: slotKey,
+        client_id: getDuelClientId(),
+        initials: identity.initials,
+        display_name: identity.name || identity.initials,
+        event_kind: eventKind,
+        score: pts,
+      }),
+    });
+  } catch (err) {
+    console.warn(err);
+  }
+}
+
+function tourneyBestScoreForRun(sessionKind, localScore, extra = {}) {
+  if (sessionKind === "coop") return Math.max(0, localScore + (extra.partnerScore || 0));
+  if (sessionKind === "crab") return Math.max(0, extra.crabCount || localScore);
+  return Math.max(0, localScore);
+}
+
+async function finishTournamentRun(scorePts) {
+  const run = tournamentRun;
+  tournamentRun = null;
+  if (!run) return;
+  await submitTourneyScore(scorePts, run.slotKey, run.eventKind);
+  await fetchTourneyLeaderboard(run.dayKey);
+  const rank = tourneyLeaderboardRows.findIndex((r) => r.client_id === getDuelClientId()) + 1;
+  if (rank > 0 && rank <= 3) {
+    showToast(`Tournament heat complete — you're #${rank}! Prize pending at day's end.`, 4200);
+  } else if (rank > 0) {
+    showToast(`Tournament heat complete — you're #${rank} of ${tourneyLeaderboardRows.length}.`, 3600);
+  } else {
+    showToast("Tournament score posted!", 2400);
+  }
+  refreshTournamentCard();
+}
+
+function beginTournamentCompetition() {
+  if (!isTourneySignedUpToday()) {
+    showToast("Sign up this morning to claim a tourney spot.", 2800);
+    return;
+  }
+  const slot = getTourneySlotState();
+  if (!slot.slotKey) {
+    showToast(`Next heat: ${slot.nextLabel}`, 3000);
+    return;
+  }
+  const eventKind = winningTourneyEventKind();
+  if (eventKind === "duel" && !isDuelAvailableOnThisDevice()) {
+    showToast("Today's tourney is Duel Fishing — needs a tablet or computer.", 3600);
+    return;
+  }
+  tournamentRun = { dayKey: getTourneyDayKey(), slotKey: slot.slotKey, eventKind };
+  showToast(`Tournament heat: ${tourneyEventLabel(eventKind)}!`, 2600);
+  if (eventKind === "duel") {
+    openEventPrep("duel");
+    return;
+  }
+  if (eventKind === "coop") {
+    openEventPrep("coop");
+    return;
+  }
+  if (eventKind === "crab") {
+    void startCrabTrap();
+    return;
+  }
+  openEventPrep(eventKind);
+}
+
+function renderTournamentLeaderboard() {
+  if (!tourneyLeaderboard) return;
+  tourneyLeaderboard.innerHTML = "";
+  if (!tourneyLeaderboardRows.length) {
+    const empty = document.createElement("li");
+    empty.className = "leaderboard__empty";
+    empty.textContent = "No tournament scores yet — compete at 11 AM or 4 PM.";
+    tourneyLeaderboard.appendChild(empty);
+    return;
+  }
+  tourneyLeaderboardRows.slice(0, 10).forEach((row, idx) => {
+    const li = document.createElement("li");
+    li.className = "leaderboard__row";
+    const rank = idx + 1;
+  const medal = rank <= 3 ? ["🥇", "🥈", "🥉"][rank - 1] : `${rank}.`;
+    li.innerHTML = `<span class="leaderboard__rank">${medal}</span><span class="leaderboard__name">${row.display_name || row.initials}</span><span class="leaderboard__score">${row.score.toLocaleString()}</span>`;
+    tourneyLeaderboard.appendChild(li);
+  });
+}
+
+function renderTournamentVoteButtons() {
+  if (!tourneyVoteOptions) return;
+  tourneyVoteOptions.innerHTML = "";
+  const voted = hasTourneyVotedToday();
+  const leading = winningTourneyEventKind();
+  for (const opt of TOURNEY_EVENT_OPTIONS) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "tourney-vote-btn";
+    const count = tourneyVoteCounts[opt.id] || 0;
+    btn.textContent = `${opt.label} (${count})`;
+    btn.disabled = voted;
+    btn.setAttribute("aria-pressed", gameMeta.tourneyVoteKind === opt.id ? "true" : "false");
+    if (opt.id === leading && Object.values(tourneyVoteCounts).some((n) => n > 0)) {
+      btn.classList.add("tourney-vote-btn--lead");
+    }
+    btn.addEventListener("click", () => void submitTourneyVote(opt.id));
+    tourneyVoteOptions.appendChild(btn);
+  }
+}
+
+async function refreshTournamentCard() {
+  if (!eventCardTourney) return;
+  const dayKey = getTourneyDayKey();
+  await Promise.all([fetchTourneyVoteCounts(dayKey), fetchTourneySignupCount(dayKey), fetchTourneyLeaderboard(dayKey)]);
+  const slot = getTourneySlotState();
+  const eventKind = winningTourneyEventKind();
+  if (tourneyEventTitle) {
+    tourneyEventTitle.textContent = Object.values(tourneyVoteCounts).some((n) => n > 0)
+      ? `Today's event: ${tourneyEventLabel(eventKind)}`
+      : "Vote for today's event";
+  }
+  if (tourneySignupLine) {
+    const signed = isTourneySignedUpToday();
+    tourneySignupLine.textContent = signed
+      ? `You're in — spot secured (${tourneySignupCount}/${TOURNEY_MAX_PLAYERS} filled).`
+      : `${tourneySignupCount}/${TOURNEY_MAX_PLAYERS} spots filled · sign up early!`;
+  }
+  if (tourneyScheduleLine) {
+    if (slot.slotKey) {
+      const mins = Math.max(0, Math.ceil((slot.end - Date.now()) / 60000));
+      tourneyScheduleLine.textContent = `${slot.slotKey === "morning" ? "Morning" : "Afternoon"} heat LIVE — ${mins} min left`;
+    } else {
+      tourneyScheduleLine.textContent = slot.nextLabel;
+    }
+  }
+  if (tourneyPrizeLine) {
+    tourneyPrizeLine.textContent = "Top 3 of 35 win chests + gems · 11:00 AM & 4:00 PM heats";
+  }
+  if (btnTourneySignup) {
+    btnTourneySignup.hidden = isTourneySignedUpToday();
+    btnTourneySignup.disabled = tourneySignupCount >= TOURNEY_MAX_PLAYERS;
+    btnTourneySignup.textContent =
+      tourneySignupCount >= TOURNEY_MAX_PLAYERS ? "Tourney full" : "Sign up for today's tourney";
+  }
+  if (btnTourneyCompete) {
+    btnTourneyCompete.hidden = !isTourneySignedUpToday();
+    btnTourneyCompete.disabled = !slot.slotKey;
+    btnTourneyCompete.textContent = slot.slotKey ? "Compete in live heat" : "Heat opens soon";
+  }
+  renderTournamentVoteButtons();
+  renderTournamentLeaderboard();
+}
+
 async function refreshEventsPanel() {
   if (!panelEvents || panelEvents.hidden) return;
   const dayKey = getDailyDayKey();
@@ -8250,6 +8654,7 @@ async function refreshEventsPanel() {
   refreshCrabTrapEventCard();
   refreshEventMinigameCards();
   refreshDailyCatchEventCard();
+  void refreshTournamentCard();
 }
 
 const DUEL_WIN_COINS = 800;
@@ -10290,7 +10695,7 @@ async function startDuelFromEvents(fromPrep = false) {
     return;
   }
   refreshDuelTicketsForToday();
-  if (getDuelTicketCount() <= 0) {
+  if (!tournamentRun && getDuelTicketCount() <= 0) {
     showToast("No duel tickets left — buy more in the shop or come back tomorrow.", 2800);
     refreshDuelEventCard();
     return;
@@ -10299,7 +10704,7 @@ async function startDuelFromEvents(fromPrep = false) {
     openEventPrep("duel");
     return;
   }
-  if (!spendDuelTicket()) {
+  if (!tournamentRun && !spendDuelTicket()) {
     refreshDuelEventCard();
     return;
   }
@@ -10359,6 +10764,8 @@ async function endDuelRoundAsync() {
   const isPvp = session.mode === "pvp";
 
   playing = false;
+  stopClimaxMusic();
+  syncUrgentTimerUi(99999);
   stopReefMusic();
   appRoot.classList.remove("app--playing", "app--duel");
   hideDuelHud();
@@ -10383,6 +10790,8 @@ async function endDuelRoundAsync() {
     playerScore = resolved.playerScore;
     opponentScore = resolved.opponentScore;
   }
+
+  if (tournamentRun) void finishTournamentRun(playerScore);
 
   duelSession = null;
   duelResultSettling = false;
@@ -10726,6 +11135,15 @@ const btnCollectables = document.getElementById("btnCollectables");
 const homeLaunchDock = document.getElementById("homeLaunchDock");
 const homeLaunchStack = document.getElementById("homeLaunchStack");
 const panelEvents = document.getElementById("panelEvents");
+const eventCardTourney = document.getElementById("eventCardTourney");
+const tourneyEventTitle = document.getElementById("tourneyEventTitle");
+const tourneySignupLine = document.getElementById("tourneySignupLine");
+const tourneyScheduleLine = document.getElementById("tourneyScheduleLine");
+const tourneyPrizeLine = document.getElementById("tourneyPrizeLine");
+const tourneyVoteOptions = document.getElementById("tourneyVoteOptions");
+const tourneyLeaderboard = document.getElementById("tourneyLeaderboard");
+const btnTourneySignup = document.getElementById("btnTourneySignup");
+const btnTourneyCompete = document.getElementById("btnTourneyCompete");
 const panelCollectables = document.getElementById("panelCollectables");
 const panelProfile = document.getElementById("panelProfile");
 const profileNameInput = document.getElementById("profileNameInput");
@@ -10991,6 +11409,11 @@ let adventureMusicTrackIndex = 0;
 let adventureMusicBarIndex = 0;
 let eventsMusicTimer = null;
 let eventsMusicStep = 0;
+let climaxMusicTimer = null;
+let climaxMusicActive = false;
+let climaxMusicBeat = 0;
+const CLIMAX_MUSIC_MS = 10_000;
+const CLIMAX_MUSIC_TEMPO_MS = 380;
 let homeAudioUnlocked = false;
 let musicUnlockEl = null;
 let musicStateHooked = false;
@@ -11429,6 +11852,9 @@ function loadMetaFromObject(o) {
         normalizeOwnedAvatarFrames(o.ownedAvatarFrames)
       ),
       dailyAvatarFrameShop: normalizeDailyAvatarFrameShop(o.dailyAvatarFrameShop),
+      tourneyVoteDayKey: typeof o.tourneyVoteDayKey === "string" ? o.tourneyVoteDayKey : "",
+      tourneyVoteKind: typeof o.tourneyVoteKind === "string" ? o.tourneyVoteKind : "",
+      tourneySignedUpDayKey: typeof o.tourneySignedUpDayKey === "string" ? o.tourneySignedUpDayKey : "",
     };
   } catch {
     return defaultMeta();
@@ -13638,6 +14064,67 @@ function stopReefMusic() {
   }
 }
 
+function stopClimaxMusic() {
+  climaxMusicActive = false;
+  climaxMusicBeat = 0;
+  if (climaxMusicTimer) {
+    clearInterval(climaxMusicTimer);
+    climaxMusicTimer = null;
+  }
+}
+
+function scheduleClimaxMusicBeat() {
+  if (!musicSchedulerReady() || !climaxMusicActive || !playing) return;
+  const now = musicCtx.currentTime + 0.02;
+  const beat = climaxMusicBeat % 8;
+  const root = [110.0, 123.47, 130.81, 146.83][Math.floor(climaxMusicBeat / 2) % 4];
+  const urgency = 1 + (climaxMusicBeat % 4) * 0.08;
+  playMusicNote(root, now, 0.34, 0.028 * urgency, "sine");
+  playMusicNote(root * 2, now + 0.05, 0.22, 0.022 * urgency, "triangle");
+  if (beat % 2 === 0) {
+    playMusicNote(root * 3, now + 0.1, 0.18, 0.02 * urgency, "triangle");
+    playMusicNote([329.63, 392.0, 440.0, 493.88][beat % 4], now + 0.14, 0.24, 0.034 * urgency, "sawtooth");
+  }
+  if (beat === 3 || beat === 7) {
+    playMusicNote(880, now + 0.08, 0.3, 0.038, "sawtooth");
+    playNoiseHit(now + 0.06, 0.14, 0.032 * urgency);
+  } else {
+    playNoiseHit(now + 0.12, 0.08, 0.018 * urgency);
+  }
+  climaxMusicBeat++;
+}
+
+function startClimaxMusic() {
+  if (climaxMusicActive || !musicEnabled || !playing) return;
+  climaxMusicActive = true;
+  climaxMusicBeat = 0;
+  stopReefMusic();
+  stopAdventureMusic();
+  scheduleClimaxMusicBeat();
+  climaxMusicTimer = setInterval(scheduleClimaxMusicBeat, CLIMAX_MUSIC_TEMPO_MS);
+}
+
+function tickClimaxMusic(now) {
+  if (!playing || treasureMapRevealPaused) return;
+  const isSurvivor = eventMinigameSession?.kind === "survivor";
+  if (isSurvivor || !roundEndAt) return;
+  const left = roundEndAt - now;
+  if (left > CLIMAX_MUSIC_MS) {
+    if (climaxMusicActive) {
+      stopClimaxMusic();
+      if (musicEnabled) startReefMusic(true);
+    }
+    return;
+  }
+  if (!climaxMusicActive && musicEnabled) startClimaxMusic();
+}
+
+function syncUrgentTimerUi(leftMs) {
+  const urgent = leftMs > 0 && leftMs <= CLIMAX_MUSIC_MS;
+  timeDisplay?.classList.toggle("stat__value--urgent", urgent);
+  timeDisplay?.closest(".stat--time")?.classList.toggle("stat--time--urgent", urgent);
+}
+
 function startHomeWaves() {
   unlockAudioFromGesture();
   void resumeMusicContext().then((ac) => {
@@ -13676,6 +14163,7 @@ function stopHomeAudio() {
   stopEventsMusic();
   stopReefMusic();
   stopAdventureMusic();
+  stopClimaxMusic();
 }
 
 function restartSceneMusic(forceRestart = true) {
@@ -14944,6 +15432,7 @@ function refreshEventMinigameCards() {
 }
 
 function spendTicketOrToast() {
+  if (tournamentRun) return true;
   if (getDuelTicketCount() <= 0) {
     showToast("No tickets — visit the shop", 2200);
     return false;
@@ -15004,7 +15493,7 @@ async function startCoopFromEvents(fromPrep = false) {
     return;
   }
   refreshDuelTicketsForToday();
-  if (getDuelTicketCount() <= 0) {
+  if (!tournamentRun && getDuelTicketCount() <= 0) {
     showToast("No tickets — visit the shop", 2200);
     refreshCoopEventCard();
     return;
@@ -15013,7 +15502,7 @@ async function startCoopFromEvents(fromPrep = false) {
     openEventPrep("coop");
     return;
   }
-  if (!spendDuelTicket()) {
+  if (!tournamentRun && !spendDuelTicket()) {
     refreshCoopEventCard();
     return;
   }
@@ -15250,6 +15739,7 @@ async function endEventMinigameRoundAsync() {
   playCrabRoundEndSound();
   if (session.kind === "roulette") {
     const tier = minigameFishTierForScore(fishScore);
+    if (tournamentRun) void finishTournamentRun(fishScore);
     showEventMinigameReward({
       source: "roulette",
       title: "Reef Roulette!",
@@ -15267,6 +15757,7 @@ async function endEventMinigameRoundAsync() {
     }
     const combined = fishScore + partner;
     const tier = coopTierForScore(combined);
+    if (tournamentRun) void finishTournamentRun(combined);
     showEventMinigameReward({
       source: "coop",
       title: "Co-op Haul!",
@@ -15279,6 +15770,7 @@ async function endEventMinigameRoundAsync() {
   // survivor
   const tier = survivorTierForScore(fishScore);
   const hooked = Boolean(session.caughtKraken);
+  if (tournamentRun) void finishTournamentRun(fishScore);
   showEventMinigameReward({
     source: "survivor",
     title: hooked ? "Kraken Survived!" : "Kraken Survivor",
@@ -15375,11 +15867,11 @@ function buildCrabTrapDecor() {
 
 function startCrabTrap() {
   if (!crabTrapCanvas || !crabTrapCtx) return;
-  if (getDuelTicketCount() <= 0) {
+  if (!tournamentRun && getDuelTicketCount() <= 0) {
     showToast("No tickets — visit the shop", 2200);
     return;
   }
-  if (!spendDuelTicket()) {
+  if (!tournamentRun && !spendDuelTicket()) {
     showToast("No tickets — visit the shop", 2200);
     return;
   }
@@ -15445,6 +15937,7 @@ function finishCrabTrap() {
     crabTrapStage.setAttribute("aria-hidden", "true");
   }
   playCrabRoundEndSound();
+  if (tournamentRun) void finishTournamentRun(finalScore);
   showCrabReward(finalScore);
 }
 
@@ -17187,6 +17680,8 @@ function endRound() {
     }
   }
   playing = false;
+  stopClimaxMusic();
+  syncUrgentTimerUi(99999);
   stopReefMusic();
   clearKrakens();
   jackpotCrab = null;
@@ -22059,6 +22554,8 @@ function gameLoop(now) {
       }
     } else {
       timeDisplay.textContent = formatTime(left);
+      syncUrgentTimerUi(left);
+      tickClimaxMusic(now);
     }
     if (!isSurvivorRound && left <= 0) {
       endRound();
@@ -22360,6 +22857,8 @@ btnWorldAdventures?.addEventListener("click", () => {
   if (homeAudioUnlocked) startHomeWaves();
 });
 btnEvents?.addEventListener("click", openEvents);
+btnTourneySignup?.addEventListener("click", () => void submitTourneySignup());
+btnTourneyCompete?.addEventListener("click", () => beginTournamentCompetition());
 btnCollectables?.addEventListener("click", openCollectables);
 document.getElementById("seagullAvatarStart")?.addEventListener("click", () => {
   openProfile();
