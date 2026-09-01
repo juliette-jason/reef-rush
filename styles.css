@@ -49,6 +49,15 @@ body {
   position: relative;
 }
 
+/* World Adventures blue behind tab menus — never the play reef canvas. */
+#app.app--show-tabs:not(.app--playing):not(.app--matchup) {
+  background-color: var(--ocean-deep);
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 213, 74, 0.18), transparent 46%),
+    radial-gradient(ellipse at 18% 85%, rgba(77, 255, 243, 0.1), transparent 42%),
+    linear-gradient(180deg, #0c5a78 0%, var(--ocean-mid) 48%, var(--ocean-deep) 100%);
+}
+
 .hud {
   display: flex;
   flex-wrap: wrap;
@@ -475,7 +484,8 @@ body {
   z-index: 41;
   padding-top: max(18px, env(safe-area-inset-top, 0px));
   padding-bottom: max(28px, env(safe-area-inset-bottom, 0px) + 18px);
-  /* Solid base first so the play reef never shows through Safari/WebKit blur. */
+  /* Match World Adventures — fully opaque, no play reef bleed. */
+  background: none;
   background-color: var(--ocean-deep);
   background-image:
     radial-gradient(ellipse at 50% 0%, rgba(255, 213, 74, 0.18), transparent 46%),
@@ -485,6 +495,11 @@ body {
   -webkit-backdrop-filter: none !important;
   isolation: isolate;
   overflow-x: hidden;
+}
+
+.panel.panel--shop {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .panel--shop::before {
@@ -2885,8 +2900,11 @@ button.seagull-avatar:active {
 }
 
 /* Keep the play reef fully off-screen under menus (shop, home, events, etc.). */
-#app:not(.app--playing):not(.app--matchup) .canvas-wrap {
+#app:not(.app--playing):not(.app--matchup) .canvas-wrap,
+#app.app--show-tabs:not(.app--playing):not(.app--matchup) .canvas-wrap {
   display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 .online-matchup {
@@ -3140,6 +3158,21 @@ button.seagull-avatar:active {
     linear-gradient(180deg, #0c5a78 0%, var(--ocean-mid) 48%, var(--ocean-deep) 100%);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+}
+
+.panel.panel--shop,
+.panel.panel--start,
+.panel.panel--events,
+.panel.panel--collectables,
+.panel.panel--profile,
+.panel.panel--adventure,
+.panel.panel--adventure-prep,
+.panel.panel--intro,
+.panel.panel--crab-reward,
+.panel.panel--over,
+.panel.panel--duel-over {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .panel[hidden],

@@ -11435,6 +11435,13 @@ function loadMetaFromObject(o) {
   }
 }
 
+function clearPlayfieldCanvas() {
+  if (!canvas) return;
+  const paint = ctx || canvas.getContext("2d");
+  if (!paint || w <= 0 || h <= 0) return;
+  paint.clearRect(0, 0, w, h);
+}
+
 function hideAllPanels() {
   if (panelProfile && !panelProfile.hidden) saveProfileNameFromInput();
   if (panelEvents && !panelEvents.hidden && duelMatchmakingActive) {
@@ -11460,8 +11467,9 @@ function hideAllPanels() {
   if (panelCollectables) panelCollectables.hidden = true;
   if (panelProfile) panelProfile.hidden = true;
   deferDailyPrizeCelebration();
-  appRoot?.classList.remove("app--events-mode", "app--splash", "app--playing", "app--duel", "app--matchup");
+  appRoot?.classList.remove("app--events-mode", "app--splash", "app--playing", "app--duel", "app--matchup", "app--adventure-play");
   clearAdventurePlayThemeClasses();
+  clearPlayfieldCanvas();
   stopDailyEventCountdown();
   stopEventsMusic();
 }
@@ -11469,8 +11477,12 @@ function hideAllPanels() {
 /** Show exactly one home menu surface; every other overlay stays hidden. */
 function showExclusiveMenu(which) {
   hideAllPanels();
-  appRoot?.classList.remove("app--playing", "app--duel", "app--matchup");
+  if (!duelSession && !eventMinigameSession && !crabTrapSession && !adventureSession) {
+    playing = false;
+  }
+  appRoot?.classList.remove("app--playing", "app--duel", "app--matchup", "app--adventure-play");
   clearAdventurePlayThemeClasses();
+  clearPlayfieldCanvas();
   if (which === "start") {
     if (panelStart) panelStart.hidden = false;
     window.setTimeout(tryStartDailyPrizeCelebration, 200);
@@ -22011,6 +22023,9 @@ function gameLoop(now) {
 
   const menusCoverPlay =
     !playing &&
+    !duelSession &&
+    !eventMinigameSession &&
+    !crabTrapSession &&
     !(appRoot && appRoot.classList.contains("app--matchup"));
   if (menusCoverPlay) {
     requestAnimationFrame(gameLoop);
