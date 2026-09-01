@@ -1,6 +1,6 @@
 -- Run in Supabase SQL editor for Reef Rush Fishing Tournament.
 -- Community votes on the event type; 35 players sign up daily; top 3 win prizes.
--- Two play windows per day: 11:00 AM and 4:00 PM (client uses local time).
+-- Three play windows per day: 11:00 AM, 4:00 PM, and 8:00 PM (client uses local time).
 
 create table if not exists public.tourney_votes (
   id bigserial primary key,

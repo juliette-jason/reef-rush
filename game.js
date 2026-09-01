@@ -8242,11 +8242,14 @@ function tryStartDailyPrizeCelebration() {
   startDailyPrizeCelebration(prize);
 }
 
-/** Fishing Tournament — community vote, 35 daily signups, 11 AM & 4 PM windows. */
+/** Fishing Tournament — community vote, 35 daily signups, 11 AM, 4 PM & 8 PM windows. */
 const TOURNEY_MAX_PLAYERS = 35;
-const TOURNEY_MORNING_HOUR = 11;
-const TOURNEY_AFTERNOON_HOUR = 16;
 const TOURNEY_WINDOW_MS = 30 * 60_000;
+const TOURNEY_SLOTS = [
+  { key: "morning", hour: 11, name: "Morning" },
+  { key: "afternoon", hour: 16, name: "Afternoon" },
+  { key: "evening", hour: 20, name: "Evening" },
+];
 const TOURNEY_VOTES_URL = `${SUPABASE_REST_URL}/tourney_votes`;
 const TOURNEY_SIGNUPS_URL = `${SUPABASE_REST_URL}/tourney_signups`;
 const TOURNEY_SCORES_URL = `${SUPABASE_REST_URL}/tourney_scores`;
@@ -8273,42 +8276,51 @@ function getTourneyDayKey(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
+function formatTourneyHeatTime(hour) {
+  const h = hour % 12 || 12;
+  const suffix = hour < 12 ? "AM" : "PM";
+  return `${h}:00 ${suffix}`;
+}
+
+function tourneySlotLabel(slotKey) {
+  return TOURNEY_SLOTS.find((s) => s.key === slotKey)?.name || "Heat";
+}
+
 function tourneySlotWindows(day = new Date()) {
-  const morningStart = new Date(day);
-  morningStart.setHours(TOURNEY_MORNING_HOUR, 0, 0, 0);
-  const afternoonStart = new Date(day);
-  afternoonStart.setHours(TOURNEY_AFTERNOON_HOUR, 0, 0, 0);
-  return {
-    morning: { key: "morning", start: morningStart.getTime(), end: morningStart.getTime() + TOURNEY_WINDOW_MS },
-    afternoon: { key: "afternoon", start: afternoonStart.getTime(), end: afternoonStart.getTime() + TOURNEY_WINDOW_MS },
-  };
+  const windows = {};
+  for (const slot of TOURNEY_SLOTS) {
+    const start = new Date(day);
+    start.setHours(slot.hour, 0, 0, 0);
+    windows[slot.key] = { key: slot.key, start: start.getTime(), end: start.getTime() + TOURNEY_WINDOW_MS };
+  }
+  return windows;
 }
 
 function getTourneySlotState(now = Date.now()) {
   const windows = tourneySlotWindows(new Date(now));
-  if (now >= windows.morning.start && now < windows.morning.end) {
-    return { slotKey: "morning", ...windows.morning, nextLabel: "Afternoon heat at 4:00 PM" };
+  for (let i = 0; i < TOURNEY_SLOTS.length; i++) {
+    const def = TOURNEY_SLOTS[i];
+    const win = windows[def.key];
+    if (now >= win.start && now < win.end) {
+      const next = TOURNEY_SLOTS[i + 1];
+      return {
+        slotKey: def.key,
+        ...win,
+        nextLabel: next ? `${next.name} heat at ${formatTourneyHeatTime(next.hour)}` : "Tomorrow's vote opens at midnight",
+      };
+    }
   }
-  if (now >= windows.afternoon.start && now < windows.afternoon.end) {
-    return { slotKey: "afternoon", ...windows.afternoon, nextLabel: "Tomorrow's vote opens at midnight" };
-  }
-  if (now < windows.morning.start) {
-    return {
-      slotKey: null,
-      start: windows.morning.start,
-      end: windows.morning.end,
-      nextLabel: `Morning heat at ${TOURNEY_MORNING_HOUR}:00 AM`,
-      upcoming: "morning",
-    };
-  }
-  if (now < windows.afternoon.start) {
-    return {
-      slotKey: null,
-      start: windows.afternoon.start,
-      end: windows.afternoon.end,
-      nextLabel: `Afternoon heat at ${TOURNEY_AFTERNOON_HOUR}:00 PM`,
-      upcoming: "afternoon",
-    };
+  for (const def of TOURNEY_SLOTS) {
+    const win = windows[def.key];
+    if (now < win.start) {
+      return {
+        slotKey: null,
+        start: win.start,
+        end: win.end,
+        nextLabel: `${def.name} heat at ${formatTourneyHeatTime(def.hour)}`,
+        upcoming: def.key,
+      };
+    }
   }
   return { slotKey: null, start: 0, end: 0, nextLabel: "Tomorrow's vote opens at midnight", upcoming: null };
 }
@@ -8558,7 +8570,7 @@ function renderTournamentLeaderboard() {
   if (!tourneyLeaderboardRows.length) {
     const empty = document.createElement("li");
     empty.className = "leaderboard__empty";
-    empty.textContent = "No tournament scores yet — compete at 11 AM or 4 PM.";
+    empty.textContent = "No tournament scores yet — compete at 11 AM, 4 PM, or 8 PM.";
     tourneyLeaderboard.appendChild(empty);
     return;
   }
@@ -8613,13 +8625,13 @@ async function refreshTournamentCard() {
   if (tourneyScheduleLine) {
     if (slot.slotKey) {
       const mins = Math.max(0, Math.ceil((slot.end - Date.now()) / 60000));
-      tourneyScheduleLine.textContent = `${slot.slotKey === "morning" ? "Morning" : "Afternoon"} heat LIVE — ${mins} min left`;
+      tourneyScheduleLine.textContent = `${tourneySlotLabel(slot.slotKey)} heat LIVE — ${mins} min left`;
     } else {
       tourneyScheduleLine.textContent = slot.nextLabel;
     }
   }
   if (tourneyPrizeLine) {
-    tourneyPrizeLine.textContent = "Top 3 of 35 win chests + gems · 11:00 AM & 4:00 PM heats";
+    tourneyPrizeLine.textContent = "Top 3 of 35 win chests + gems · 11:00 AM, 4:00 PM & 8:00 PM heats";
   }
   if (btnTourneySignup) {
     btnTourneySignup.hidden = isTourneySignedUpToday();
