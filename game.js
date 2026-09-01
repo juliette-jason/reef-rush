@@ -7420,6 +7420,23 @@ function isDuelBackendMissingError(err) {
   return Boolean(err?.duelBackendMissing || err?.message === DUEL_BACKEND_MISSING);
 }
 
+function isDuelSchemaColumnError(body) {
+  const msg = `${body?.message || ""} ${body?.hint || ""} ${body?.details || ""}`;
+  return /PGRST204|invite_user_id|host_user_id|guest_user_id/i.test(msg);
+}
+
+/** Optional duel_matches columns from player_social.sql — disabled when Supabase lacks them. */
+let duelLobbyInviteFilterReady = true;
+let duelLobbyUserColumnsReady = true;
+
+function stripDuelLobbyUserFields(payload) {
+  const next = { ...payload };
+  delete next.host_user_id;
+  delete next.guest_user_id;
+  delete next.invite_user_id;
+  return next;
+}
+
 function loadLocalLeaderboard() {
   try {
     const raw = localStorage.getItem(LEADERBOARD_KEY);
@@ -9015,7 +9032,7 @@ function refreshEventPrepFriendsUI() {
   if (!onlineFriends.length) {
     const empty = document.createElement("p");
     empty.className = "profile-friends-empty";
-    empty.textContent = "No friends online right now — we'll match anyone in the lobby.";
+    empty.textContent = "No friends online — tap Find duel rival at the same time to match anyone.";
     eventPrepFriendsList.appendChild(empty);
     pendingEventFriendUserId = null;
     if (btnEventPrepAnyone) btnEventPrepAnyone.setAttribute("aria-pressed", "true");
@@ -9063,9 +9080,10 @@ const DUEL_ROUND_MS = 60_000;
 const DUEL_RIVAL_MIN_TARGET = 4000;
 const DUEL_MATCH_TABLE_URL = `${SUPABASE_REST_URL}/duel_matches`;
 const DUEL_CLIENT_ID_KEY = "reefRushDuelClientId_v1";
-const DUEL_LOBBY_TIMEOUT_MS = 20_000;
-const DUEL_LOBBY_POLL_MS = 900;
-const DUEL_LOBBY_CREATE_GRACE_MS = 1_200;
+const DUEL_LOBBY_TIMEOUT_MS = 30_000;
+const DUEL_LOBBY_POLL_MS = 600;
+const DUEL_LOBBY_CREATE_GRACE_MS = 800;
+const DUEL_LOBBY_CREATE_JITTER_MS = 2_400;
 const DUEL_SCORE_SYNC_MS = 400;
 const DUEL_STATE_SYNC_MS = 220;
 const DUEL_OPPONENT_POLL_MS = 350;
@@ -9629,15 +9647,23 @@ async function fetchOldestOpenDuelLobby(matchKind = MATCH_KIND_DUEL, options = {
     `&status=eq.lobby&guest_client_id=is.null&host_client_id=neq.${mine}` +
     `&match_kind=eq.${encodeURIComponent(matchKind)}` +
     `&created_at=gte.${encodeURIComponent(since)}`;
-  if (options.inviteUserId) {
-    url += `&invite_user_id=eq.${encodeURIComponent(options.inviteUserId)}`;
-  } else {
-    url += "&invite_user_id=is.null";
+  if (duelLobbyInviteFilterReady) {
+    if (options.inviteUserId) {
+      url += `&invite_user_id=eq.${encodeURIComponent(options.inviteUserId)}`;
+    } else {
+      url += "&invite_user_id=is.null";
+    }
   }
   url += "&order=created_at.asc&limit=1";
   const res = await fetch(url, { headers: leaderboardHeaders() });
   const { body } = await readDuelResponse(res);
-  if (!res.ok) throw new Error(`Duel lobby fetch failed: ${res.status}`);
+  if (!res.ok) {
+    if (duelLobbyInviteFilterReady && isDuelSchemaColumnError(body)) {
+      duelLobbyInviteFilterReady = false;
+      return fetchOldestOpenDuelLobby(matchKind, options);
+    }
+    throw new Error(`Duel lobby fetch failed: ${res.status}`);
+  }
   const rows = Array.isArray(body) ? body : [];
   return normalizeDuelMatchRow(rows[0]);
 }
@@ -9672,9 +9698,9 @@ async function createDuelLobby(reefId, roundMs, matchKind = MATCH_KIND_DUEL, opt
     match_kind: matchKind,
     is_com_guest: false,
   };
-  if (authUser?.id) payload.host_user_id = authUser.id;
-  if (options.inviteUserId) payload.invite_user_id = options.inviteUserId;
-  const res = await fetch(DUEL_MATCH_TABLE_URL, {
+  if (duelLobbyUserColumnsReady && authUser?.id) payload.host_user_id = authUser.id;
+  if (duelLobbyUserColumnsReady && options.inviteUserId) payload.invite_user_id = options.inviteUserId;
+  let res = await fetch(DUEL_MATCH_TABLE_URL, {
     method: "POST",
     headers: leaderboardHeaders({
       "Content-Type": "application/json",
@@ -9682,7 +9708,19 @@ async function createDuelLobby(reefId, roundMs, matchKind = MATCH_KIND_DUEL, opt
     }),
     body: JSON.stringify(payload),
   });
-  const { body } = await readDuelResponse(res);
+  let { body } = await readDuelResponse(res);
+  if (!res.ok && duelLobbyUserColumnsReady && isDuelSchemaColumnError(body)) {
+    duelLobbyUserColumnsReady = false;
+    res = await fetch(DUEL_MATCH_TABLE_URL, {
+      method: "POST",
+      headers: leaderboardHeaders({
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      }),
+      body: JSON.stringify(stripDuelLobbyUserFields(payload)),
+    });
+    ({ body } = await readDuelResponse(res));
+  }
   if (!res.ok) throw new Error(`Duel lobby create failed: ${res.status}`);
   const rows = Array.isArray(body) ? body : [];
   return normalizeDuelMatchRow(rows[0]);
@@ -9697,19 +9735,29 @@ async function tryJoinDuelLobby(lobbyId) {
     round_start_ms: Date.now() + DUEL_MATCH_START_DELAY_MS,
     is_com_guest: false,
   };
-  if (authUser?.id) payload.guest_user_id = authUser.id;
-  const res = await fetch(
-    `${DUEL_MATCH_TABLE_URL}?id=eq.${encodeURIComponent(lobbyId)}&status=eq.lobby&guest_client_id=is.null`,
-    {
+  if (duelLobbyUserColumnsReady && authUser?.id) payload.guest_user_id = authUser.id;
+  const patchUrl = `${DUEL_MATCH_TABLE_URL}?id=eq.${encodeURIComponent(lobbyId)}&status=eq.lobby&guest_client_id=is.null`;
+  let res = await fetch(patchUrl, {
+    method: "PATCH",
+    headers: leaderboardHeaders({
+      "Content-Type": "application/json",
+      Prefer: "return=representation",
+    }),
+    body: JSON.stringify(payload),
+  });
+  let { body } = await readDuelResponse(res);
+  if (!res.ok && duelLobbyUserColumnsReady && isDuelSchemaColumnError(body)) {
+    duelLobbyUserColumnsReady = false;
+    res = await fetch(patchUrl, {
       method: "PATCH",
       headers: leaderboardHeaders({
         "Content-Type": "application/json",
         Prefer: "return=representation",
       }),
-      body: JSON.stringify(payload),
-    },
-  );
-  const { body } = await readDuelResponse(res);
+      body: JSON.stringify(stripDuelLobbyUserFields(payload)),
+    });
+    ({ body } = await readDuelResponse(res));
+  }
   if (!res.ok) return null;
   const rows = Array.isArray(body) ? body : [];
   return normalizeDuelMatchRow(rows[0]);
@@ -9937,6 +9985,7 @@ async function findOnlineMatch(matchKind, roundMs, deadlineMs, friendUserId = nu
   await probeDuelBackendReady();
 
   const startedAt = Date.now();
+  const createAfterMs = startedAt + DUEL_LOBBY_CREATE_GRACE_MS + Math.floor(Math.random() * DUEL_LOBBY_CREATE_JITTER_MS);
 
   while (Date.now() < deadlineMs) {
     const active = isCoop ? coopMatchmakingActive : duelMatchmakingActive;
@@ -9998,7 +10047,7 @@ async function findOnlineMatch(matchKind, roundMs, deadlineMs, friendUserId = nu
       }
     }
 
-    if (!hostedMatchId && Date.now() - startedAt >= DUEL_LOBBY_CREATE_GRACE_MS) {
+    if (!hostedMatchId && Date.now() >= createAfterMs) {
       const reefId = isCoop ? pickMinigameReef("coop").id : pickRandomDuelReefId(duelLastReefId);
       duelPendingReefId = reefId;
       const created = await createDuelLobby(reefId, roundMs, matchKind, {
@@ -10120,7 +10169,12 @@ async function resolveDuelMatchPlan(deadlineMs) {
       duelLobbyMatchId = null;
     }
     if (isDuelBackendMissingError(err)) throw err;
-    showToast("Lobby offline — duel vs a random rival instead.", 2600);
+    const msg = String(err?.message || "");
+    if (/lobby service|lobby fetch|lobby create|network|failed to fetch/i.test(msg)) {
+      showToast("Couldn't reach duel servers — playing vs a random rival instead.", 3000);
+    } else {
+      showToast("No live rival found in time — random angler instead.", 2800);
+    }
     const reefId = pickRandomDuelReefId(duelLastReefId);
     duelPendingReefId = reefId;
     return buildLocalComDuelPlan(reefId);
@@ -10137,7 +10191,12 @@ async function resolveCoopMatchPlan(deadlineMs) {
       coopLobbyMatchId = null;
     }
     if (isDuelBackendMissingError(err)) throw err;
-    showToast("Lobby offline — co-op with a random partner instead.", 2600);
+    const msg = String(err?.message || "");
+    if (/lobby service|lobby fetch|lobby create|network|failed to fetch/i.test(msg)) {
+      showToast("Couldn't reach co-op servers — random partner instead.", 3000);
+    } else {
+      showToast("No live partner found in time — random angler instead.", 2800);
+    }
     const reef = pickMinigameReef("coop");
     return buildLocalComCoopPlan(reef.id);
   }
