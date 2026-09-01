@@ -58,6 +58,11 @@ body {
     linear-gradient(180deg, #0c5a78 0%, var(--ocean-mid) 48%, var(--ocean-deep) 100%);
 }
 
+#app.app--show-tabs:not(.app--playing):not(.app--matchup) .hud,
+#app.app--show-tabs:not(.app--playing):not(.app--matchup) .hint {
+  display: none !important;
+}
+
 .hud {
   display: flex;
   flex-wrap: wrap;
@@ -478,37 +483,25 @@ body {
 }
 
 /* --- Fishing shop (mobile casual / Pocket Champs vibe) --- */
-.panel--shop {
+.panel.panel--shop {
   position: absolute;
   inset: 0;
   z-index: 41;
+  min-height: 100%;
   padding-top: max(18px, env(safe-area-inset-top, 0px));
   padding-bottom: max(28px, env(safe-area-inset-bottom, 0px) + 18px);
-  /* Match World Adventures — fully opaque, no play reef bleed. */
-  background: none;
-  background-color: var(--ocean-deep);
+  background-color: var(--ocean-deep) !important;
   background-image:
     radial-gradient(ellipse at 50% 0%, rgba(255, 213, 74, 0.18), transparent 46%),
     radial-gradient(ellipse at 18% 85%, rgba(77, 255, 243, 0.1), transparent 42%),
-    linear-gradient(180deg, #0c5a78 0%, var(--ocean-mid) 48%, var(--ocean-deep) 100%);
+    linear-gradient(180deg, #0c5a78 0%, var(--ocean-mid) 48%, var(--ocean-deep) 100%) !important;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: local;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   isolation: isolate;
   overflow-x: hidden;
-}
-
-.panel.panel--shop {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-.panel--shop::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: linear-gradient(180deg, #0c5a78 0%, var(--ocean-mid) 48%, var(--ocean-deep) 100%);
 }
 
 .panel--shop > * {
