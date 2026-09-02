@@ -7326,9 +7326,13 @@ function parseLeaderboardName(value) {
 }
 
 function leaderboardDisplayName(entry) {
-  const name = parseLeaderboardName(entry?.name);
+  const name = parseLeaderboardName(entry?.name || entry?.display_name || entry?.displayName);
   if (name) return name;
   return entry?.initials || "???";
+}
+
+function getLeaderboardPlayerLabel() {
+  return parseLeaderboardName(gameMeta.playerName) || gameMeta.playerInitials || "";
 }
 
 function resolveScorePlayerIdentity(rawValue = "") {
@@ -7340,7 +7344,7 @@ function resolveScorePlayerIdentity(rawValue = "") {
     .toUpperCase()
     .replace(/[^A-Z]/g, "")
     .slice(0, 3);
-  const initials = fromName || typedIni || gameMeta.playerInitials || "AAA";
+  const initials = fromName || typedIni || gameMeta.playerInitials || initialsFromPlayerName(name) || "AAA";
   return {
     initials: String(initials).toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3) || "AAA",
     name: name || "",
@@ -7379,6 +7383,44 @@ function normalizeLeaderboardRows(rows) {
     .sort((a, b) => b.score - a.score || String(a.at).localeCompare(String(b.at)))
     .slice(0, LEADERBOARD_MAX);
 }
+
+function isLeaderboardBackendMissingResponse(res, body) {
+  if (res.status !== 404) return false;
+  const code = body?.code || "";
+  const message = String(body?.message || "");
+  return code === "PGRST205" || /leaderboard/i.test(message);
+}
+
+async function readLeaderboardResponse(res) {
+  const text = await res.text();
+  let body = null;
+  if (text) {
+    try {
+      body = JSON.parse(text);
+    } catch {
+      body = { message: text };
+    }
+  }
+  if (isLeaderboardBackendMissingResponse(res, body)) {
+    const err = new Error("LEADERBOARD_BACKEND_MISSING");
+    err.leaderboardBackendMissing = true;
+    throw err;
+  }
+  return { res, body };
+}
+
+function isLeaderboardBackendMissingError(err) {
+  return Boolean(err?.leaderboardBackendMissing || err?.message === "LEADERBOARD_BACKEND_MISSING");
+}
+
+function leaderboardEmptyMessage() {
+  if (leaderboardBackendMissing) {
+    return "Top 10 not set up yet — run supabase/leaderboard.sql in Supabase.";
+  }
+  return leaderboardLoading ? "Loading global scores..." : "No global scores yet — be the first.";
+}
+
+let leaderboardBackendMissing = false;
 
 function leaderboardHeaders(extra = {}) {
   const bearer = authSession?.access_token || SUPABASE_PUBLISHABLE_KEY;
@@ -7564,27 +7606,34 @@ async function fetchSharedLeaderboard() {
   }
   try {
     const url = `${LEADERBOARD_TABLE_URL}?select=initials,display_name,score,reef_id,created_at&order=score.desc,created_at.asc&limit=${LEADERBOARD_FETCH_LIMIT}`;
-    const res = await fetch(url, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
+    let res = await fetch(url, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
+    let { body } = await readLeaderboardResponse(res);
     if (!res.ok) {
       /* Older schemas may not have display_name yet. */
       const fallbackUrl = `${LEADERBOARD_TABLE_URL}?select=initials,score,reef_id,created_at&order=score.desc,created_at.asc&limit=${LEADERBOARD_FETCH_LIMIT}`;
-      const fallbackRes = await fetch(fallbackUrl, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
-      if (!fallbackRes.ok) throw new Error(`Leaderboard fetch failed: ${fallbackRes.status}`);
-      const rows = normalizeLeaderboardRows(await fallbackRes.json());
+      res = await fetch(fallbackUrl, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
+      ({ body } = await readLeaderboardResponse(res));
+      if (!res.ok) throw new Error(`Leaderboard fetch failed: ${res.status}`);
+      const rows = normalizeLeaderboardRows(Array.isArray(body) ? body : []);
       if (loadId !== leaderboardLoadId) return;
       leaderboardRows = rows;
       leaderboardRemoteSynced = true;
+      leaderboardBackendMissing = false;
       saveLocalLeaderboard(rows);
       return;
     }
-    const rows = normalizeLeaderboardRows(await res.json());
+    const rows = normalizeLeaderboardRows(Array.isArray(body) ? body : []);
     if (loadId !== leaderboardLoadId) return;
     leaderboardRows = rows;
     leaderboardRemoteSynced = true;
+    leaderboardBackendMissing = false;
     saveLocalLeaderboard(rows);
   } catch (err) {
     console.warn(err);
-    if (loadId === leaderboardLoadId && !leaderboardRows.length) {
+    if (isLeaderboardBackendMissingError(err)) {
+      leaderboardBackendMissing = true;
+      leaderboardRows = [];
+    } else if (loadId === leaderboardLoadId && !leaderboardRows.length) {
       leaderboardRows = loadLocalLeaderboard();
     }
   } finally {
@@ -7602,11 +7651,9 @@ function qualifiesForLeaderboard(score, rows) {
 }
 
 async function addLeaderboardEntry(initials, score, reefId, displayName = "") {
-  const ini = String(initials || "")
-    .toUpperCase()
-    .replace(/[^A-Z]/g, "")
-    .slice(0, 3);
-  const name = parseLeaderboardName(displayName) || ini;
+  const identity = resolveScorePlayerIdentity(displayName || gameMeta.playerName || initials);
+  const ini = identity.initials;
+  const name = parseLeaderboardName(displayName) || identity.name || ini;
   const entry = {
     initials: ini,
     name,
@@ -7638,7 +7685,8 @@ async function addLeaderboardEntry(initials, score, reefId, displayName = "") {
       }),
       body: JSON.stringify(payloadWithName),
     });
-    if (!res.ok) {
+    let parsed = await readLeaderboardResponse(res);
+    if (!parsed.res.ok) {
       res = await fetch(LEADERBOARD_TABLE_URL, {
         method: "POST",
         headers: leaderboardHeaders({
@@ -7647,13 +7695,15 @@ async function addLeaderboardEntry(initials, score, reefId, displayName = "") {
         }),
         body: JSON.stringify(payloadBasic),
       });
+      parsed = await readLeaderboardResponse(res);
     }
-    if (!res.ok) throw new Error(`Leaderboard save failed: ${res.status}`);
-    /* Always re-read the shared board so every device shows the same Top 10. */
+    if (!parsed.res.ok) throw new Error(`Leaderboard save failed: ${parsed.res.status}`);
+    leaderboardBackendMissing = false;
     await fetchSharedLeaderboard();
     return true;
   } catch (err) {
     console.warn(err);
+    if (isLeaderboardBackendMissingError(err)) leaderboardBackendMissing = true;
     refreshLeaderboardViews(false);
     return false;
   }
@@ -7665,7 +7715,7 @@ function renderLeaderboardOl(el, rows = loadLeaderboard()) {
   if (rows.length === 0) {
     const li = document.createElement("li");
     li.className = "leaderboard__empty";
-    li.textContent = leaderboardLoading ? "Loading global scores..." : "No global scores yet — be the first.";
+    li.textContent = leaderboardEmptyMessage();
     el.appendChild(li);
     return;
   }
@@ -7675,10 +7725,10 @@ function renderLeaderboardOl(el, rows = loadLeaderboard()) {
     const rank = document.createElement("span");
     rank.className = "leaderboard__rank";
     rank.textContent = String(i + 1);
-    const ini = document.createElement("span");
-    ini.className = "leaderboard__ini";
-    ini.textContent = leaderboardDisplayName(r);
-    ini.title = leaderboardDisplayName(r);
+    const nameEl = document.createElement("span");
+    nameEl.className = "leaderboard__ini";
+    nameEl.textContent = leaderboardDisplayName(r);
+    nameEl.title = leaderboardDisplayName(r);
     const pts = document.createElement("span");
     pts.className = "leaderboard__pts";
     pts.textContent = String(r.score);
@@ -7686,7 +7736,7 @@ function renderLeaderboardOl(el, rows = loadLeaderboard()) {
     reef.className = "leaderboard__reef";
     const reefMeta = REEFS.find((x) => x.id === r.reefId);
     reef.textContent = reefMeta ? reefMeta.name : "";
-    li.append(rank, ini, pts, reef);
+    li.append(rank, nameEl, pts, reef);
     el.appendChild(li);
   });
 }
@@ -7987,14 +8037,14 @@ function renderDailyLeaderboardOl(el, rows = dailyLeaderboardRows) {
 
 function updateDailyEventPlayerHint(rows = dailyLeaderboardRows) {
   if (!dailyEventPlayerHint) return;
-  const ini = gameMeta.playerInitials;
-  const label = parseLeaderboardName(gameMeta.playerName) || ini;
-  if (!ini) {
+  const label = getLeaderboardPlayerLabel();
+  if (!label) {
     dailyEventPlayerHint.textContent =
-      "Play a reef run and post your score with your name — today's best only.";
+      "Set your profile name, then play a reef run — today's best posts automatically.";
     return;
   }
-  const rank = rows.findIndex((r) => r.initials === ini);
+  const identity = resolveScorePlayerIdentity(gameMeta.playerName);
+  const rank = rows.findIndex((r) => r.initials === identity.initials);
   if (rank === 0) {
     dailyEventPlayerHint.textContent = `${label}, you're in 1st! Hold for a legendary chest + Magnet Rod.`;
   } else if (rank === 1) {
@@ -8024,14 +8074,14 @@ function getPlayerDailyEntryToday(initials, rows = dailyLeaderboardRows) {
 
 function updateDailyGameOverStatus(score, submitted = null, rows = dailyLeaderboardRows) {
   if (!dailyScoreStatus) return;
-  const ini = gameMeta.playerInitials;
-  const label = parseLeaderboardName(gameMeta.playerName) || ini;
-  if (!ini || score <= 0) {
+  const identity = resolveScorePlayerIdentity(gameMeta.playerName);
+  const label = identity.name || identity.initials;
+  if (!label || score <= 0) {
     dailyScoreStatus.hidden = true;
     dailyScoreStatus.textContent = "";
     return;
   }
-  const existing = getPlayerDailyEntryToday(ini, rows);
+  const existing = getPlayerDailyEntryToday(identity.initials, rows);
   if (submitted === true) {
     dailyScoreStatus.hidden = false;
     dailyScoreStatus.textContent = `${label}, ${score} posted to today's board!`;
@@ -15790,10 +15840,10 @@ function refreshProfileUI() {
 
 function updateProfileNameHint() {
   if (!profileNameHint) return;
-  const ini = gameMeta.playerInitials || initialsFromPlayerName(profileNameInput?.value || gameMeta.playerName);
-  profileNameHint.textContent = ini
-    ? `Boards will show you as ${ini}.`
-    : "Used on boards as your 3-letter tag.";
+  const label = getLeaderboardPlayerLabel();
+  profileNameHint.textContent = label
+    ? `Leaderboards will show "${label}".`
+    : "Set your name — it appears on all leaderboards.";
 }
 
 function saveProfileNameFromInput() {
@@ -18465,20 +18515,23 @@ function endRound() {
   }
   const board = loadLeaderboard();
   const canSave = qualifiesForLeaderboard(score, board);
-  if (initialsPanel) initialsPanel.hidden = !canSave;
+  const profileLabel = getLeaderboardPlayerLabel();
+  if (initialsPanel) initialsPanel.hidden = !canSave || Boolean(profileLabel);
   if (initialsInput) {
-    initialsInput.value = canSave ? (gameMeta.playerName || gameMeta.playerInitials || "") : "";
+    initialsInput.value = canSave ? profileLabel || gameMeta.playerInitials || "" : "";
   }
-  if (dailyInitialsPanel) dailyInitialsPanel.hidden = score <= 0;
+  if (dailyInitialsPanel) dailyInitialsPanel.hidden = score <= 0 || Boolean(profileLabel);
   if (dailyInitialsInput) {
-    dailyInitialsInput.value = gameMeta.playerName || gameMeta.playerInitials || "";
+    dailyInitialsInput.value = profileLabel || gameMeta.playerInitials || "";
   }
   updateDailyGameOverStatus(score);
-  if (canSave && initialsInput) {
+  if (canSave && profileLabel) {
+    void saveCurrentScoreToBoard();
+  } else if (canSave && initialsInput) {
     requestAnimationFrame(() => {
       initialsInput.focus();
     });
-  } else if (score > 0 && dailyInitialsInput) {
+  } else if (score > 0 && dailyInitialsInput && !profileLabel) {
     requestAnimationFrame(() => {
       dailyInitialsInput.focus();
     });
@@ -18497,8 +18550,9 @@ function endRound() {
   }
   refreshLeaderboardViews();
   void fetchTodayDailyLeaderboard().then(() => {
-    if (gameMeta.playerInitials && score > 0) {
-      return submitDailyScore(gameMeta.playerInitials, score, selectedReefId, gameMeta.playerName).then((submitted) => {
+    const identity = resolveScorePlayerIdentity(gameMeta.playerName);
+    if (score > 0 && identity.name) {
+      return submitDailyScore(identity.initials, score, selectedReefId, identity.name).then((submitted) => {
         updateDailyGameOverStatus(score, submitted);
       });
     }
@@ -23792,7 +23846,14 @@ async function saveCurrentScoreToBoard() {
   if (name) gameMeta.playerName = name;
   saveMeta();
   refreshLeaderboardViews(false);
-  showToast(savedGlobally ? "Score saved to all-time top 10" : "Score saved on this device", 1700);
+  if (savedGlobally) {
+    showToast(`Score saved — ${name || ini} is on the all-time top 10`, 2000);
+  } else if (leaderboardBackendMissing) {
+    showToast("Top 10 isn't set up yet — run supabase/leaderboard.sql in Supabase.", 4200);
+  } else {
+    showToast("Couldn't save score — check your connection and try again.", 2600);
+    if (initialsPanel) initialsPanel.hidden = false;
+  }
 }
 
 async function saveDailyScoreFromGameOver() {
