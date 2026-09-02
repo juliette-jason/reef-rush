@@ -2,6 +2,10 @@
  * Reef Rush — responsive canvas fishing game
  */
 
+if (typeof location !== "undefined" && location.hostname === "julietta-jason.github.io") {
+  location.replace(`https://juliette-jason.github.io/reef-rush/${location.search}${location.hash}`);
+}
+
 // --- Sea creatures: rarity, size tier, palette (splash-screen realism) ---
 const RARITY = {
   common: { id: "common", label: "Common", weight: 52, mult: 1 },
@@ -9097,7 +9101,8 @@ const DUEL_CLIENT_ID_KEY = "reefRushDuelClientId_v1";
 const DUEL_LOBBY_TIMEOUT_MS = 25_000;
 const DUEL_LOBBY_TIMEOUT_SEC = DUEL_LOBBY_TIMEOUT_MS / 1000;
 const DUEL_LOBBY_POLL_MS = 400;
-const DUEL_LOBBY_CREATE_GRACE_MS = 200;
+const DUEL_LOBBY_CREATE_GRACE_MS = 0;
+const DUEL_LOBBY_FETCH_LIMIT = 6;
 const DUEL_SCORE_SYNC_MS = 400;
 const DUEL_STATE_SYNC_MS = 220;
 const DUEL_OPPONENT_POLL_MS = 350;
@@ -9653,7 +9658,7 @@ async function fetchDuelMatchById(matchId) {
   return normalizeDuelMatchRow(rows[0]);
 }
 
-async function fetchOldestOpenDuelLobby(matchKind = MATCH_KIND_DUEL, options = {}) {
+async function fetchOpenDuelLobbies(matchKind = MATCH_KIND_DUEL, options = {}, limit = DUEL_LOBBY_FETCH_LIMIT) {
   const since = new Date(Date.now() - DUEL_LOBBY_MAX_AGE_MS).toISOString();
   const mine = encodeURIComponent(getDuelClientId());
   let url =
@@ -9670,31 +9675,41 @@ async function fetchOldestOpenDuelLobby(matchKind = MATCH_KIND_DUEL, options = {
       url += "&invite_user_id=is.null";
     }
   }
-  url += "&order=created_at.asc&limit=1";
+  url += `&order=created_at.asc&limit=${Math.max(1, Math.min(limit, 12))}`;
   const res = await fetch(url, { headers: leaderboardHeaders() });
   const { body } = await readDuelResponse(res);
   if (!res.ok) {
     if (duelLobbyMatchKindFilterReady && isDuelSchemaColumnError(body)) {
       duelLobbyMatchKindFilterReady = false;
-      return fetchOldestOpenDuelLobby(matchKind, options);
+      return fetchOpenDuelLobbies(matchKind, options, limit);
     }
     if (duelLobbyInviteFilterReady && isDuelSchemaColumnError(body)) {
       duelLobbyInviteFilterReady = false;
-      return fetchOldestOpenDuelLobby(matchKind, options);
+      return fetchOpenDuelLobbies(matchKind, options, limit);
     }
     throw new Error(`Duel lobby fetch failed: ${res.status}`);
   }
   const rows = Array.isArray(body) ? body : [];
-  return normalizeDuelMatchRow(rows[0]);
+  return rows.map((row) => normalizeDuelMatchRow(row)).filter(Boolean);
+}
+
+async function fetchOldestOpenDuelLobby(matchKind = MATCH_KIND_DUEL, options = {}) {
+  const rows = await fetchOpenDuelLobbies(matchKind, options, 1);
+  return rows[0] || null;
+}
+
+async function safeFetchOpenDuelLobbies(matchKind, options = {}) {
+  try {
+    return await fetchOpenDuelLobbies(matchKind, options);
+  } catch (err) {
+    console.warn(err);
+    return [];
+  }
 }
 
 async function safeFetchOldestOpenDuelLobby(matchKind, options = {}) {
-  try {
-    return await fetchOldestOpenDuelLobby(matchKind, options);
-  } catch (err) {
-    console.warn(err);
-    return null;
-  }
+  const rows = await safeFetchOpenDuelLobbies(matchKind, options);
+  return rows[0] || null;
 }
 
 async function safeFetchDuelMatchById(matchId) {
@@ -10110,8 +10125,10 @@ async function findOnlineMatch(matchKind, roundMs, deadlineMs, friendUserId = nu
         }
       }
 
-      const lobby = await safeFetchOldestOpenDuelLobby(matchKind, lobbyFetchOptions);
-      if (lobby?.matchId && (!friendUserId || lobby.hostUserId === friendUserId)) {
+      const lobbies = await safeFetchOpenDuelLobbies(matchKind, lobbyFetchOptions);
+      for (const lobby of lobbies) {
+        if (!lobby?.matchId) continue;
+        if (friendUserId && lobby.hostUserId !== friendUserId) continue;
         const joined = await tryJoinDuelLobby(lobby.matchId);
         if (joined) {
           const role = duelRoleFromMatch(joined);
@@ -10553,7 +10570,7 @@ async function waitForOnlineRoundStart(plan, { mode }) {
       ? COM_COMPANION_ID
       : normalizeCompanionId(isCoop ? plan.partnerCompanionId : plan.opponentCompanionId);
 
-  hideAllPanels();
+  hideMenuPanelsOnly();
   if (eventsOcean) eventsOcean.hidden = true;
   appRoot?.classList.remove("app--events-mode");
   appRoot?.classList.add("app--matchup");
@@ -11181,7 +11198,13 @@ function drawTrenchRodLightForHook(hx) {
 }
 
 function beginDuelSession(plan) {
-  if (playing) return;
+  if (playing && duelSession) return;
+  if (duelSession || playing) {
+    hideDuelHud();
+    duelSession = null;
+    playing = false;
+    appRoot?.classList.remove("app--playing", "app--duel", "app--duel-solo", "app--matchup");
+  }
   const reef = REEFS.find((r) => r.id === plan.reefId) || REEFS[0];
   duelLastReefId = reef.id;
   duelPendingReefId = reef.id;
@@ -11226,7 +11249,7 @@ function beginDuelSession(plan) {
   roundEndAt = roundStart + DUEL_ROUND_MS;
   clearKrakens();
   jackpotCrab = null;
-  hideAllPanels();
+  hideMenuPanelsOnly();
   if (panelDuelOver) panelDuelOver.hidden = true;
   appRoot.classList.add("app--playing", "app--duel");
   if (isPhoneDevice()) appRoot.classList.add("app--duel-solo");
@@ -11269,6 +11292,7 @@ function beginDuelSession(plan) {
     void pollDuelOpponentFromMatch();
     void pushDuelMatchState();
   }
+  syncHomeLaunchButtons();
 }
 
 async function startDuelFromEvents(fromPrep = false) {
@@ -11295,6 +11319,7 @@ async function startDuelFromEvents(fromPrep = false) {
     return;
   }
 
+  hideDuelHud();
   hideAllPanels();
   if (panelEvents) panelEvents.hidden = false;
   if (eventsOcean) eventsOcean.hidden = true;
@@ -11305,9 +11330,9 @@ async function startDuelFromEvents(fromPrep = false) {
 
   try {
     const plan = await resolveDuelMatchPlan(matchmakingDeadline);
+    setDuelMatchmakingUi(false);
     hideDuelLobbyCountdown();
     await waitForDuelRoundStart(plan);
-    setDuelMatchmakingUi(false);
     beginDuelSession(plan);
   } catch (err) {
     console.warn(err);
@@ -12465,14 +12490,8 @@ function clearPlayfieldCanvas() {
   paint.clearRect(0, 0, w, h);
 }
 
-function hideAllPanels() {
+function hideMenuPanelsOnly() {
   if (panelProfile && !panelProfile.hidden) saveProfileNameFromInput();
-  if (panelEvents && !panelEvents.hidden && duelMatchmakingActive) {
-    duelMatchmakingActive = false;
-    void cancelDuelLobbyIfHost(duelLobbyMatchId);
-    duelLobbyMatchId = null;
-    setDuelMatchmakingUi(false);
-  }
   if (panelSplash) panelSplash.hidden = true;
   if (panelStart) panelStart.hidden = true;
   if (panelOver) panelOver.hidden = true;
@@ -12490,11 +12509,22 @@ function hideAllPanels() {
   if (panelCollectables) panelCollectables.hidden = true;
   if (panelProfile) panelProfile.hidden = true;
   deferDailyPrizeCelebration();
-  appRoot?.classList.remove("app--events-mode", "app--splash", "app--playing", "app--duel", "app--duel-solo", "app--matchup", "app--adventure-play");
+  appRoot?.classList.remove("app--events-mode", "app--splash", "app--matchup");
   clearAdventurePlayThemeClasses();
-  clearPlayfieldCanvas();
   stopDailyEventCountdown();
   stopEventsMusic();
+}
+
+function hideAllPanels() {
+  if (panelEvents && !panelEvents.hidden && duelMatchmakingActive) {
+    duelMatchmakingActive = false;
+    void cancelDuelLobbyIfHost(duelLobbyMatchId);
+    duelLobbyMatchId = null;
+    setDuelMatchmakingUi(false);
+  }
+  hideMenuPanelsOnly();
+  appRoot?.classList.remove("app--playing", "app--duel", "app--duel-solo", "app--adventure-play");
+  clearPlayfieldCanvas();
 }
 
 /** Show exactly one home menu surface; every other overlay stays hidden. */
@@ -15848,6 +15878,10 @@ function useAdventureSkipRope() {
 
 function openEvents() {
   if (!panelEvents) return;
+  if (playing && duelSession) {
+    showToast("Finish your duel first!", 2200);
+    return;
+  }
   setStartMoreOptionsOpen(false);
   showExclusiveMenu("events");
   refreshDuelTicketsForToday();
