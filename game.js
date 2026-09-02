@@ -6,6 +6,17 @@ if (typeof location !== "undefined" && location.hostname === "julietta-jason.git
   location.replace(`https://juliette-jason.github.io/reef-rush/${location.search}${location.hash}`);
 }
 
+const REEF_RUSH_LIVE_ORIGIN = "https://juliette-jason.github.io";
+const REEF_RUSH_LIVE_URL = `${REEF_RUSH_LIVE_ORIGIN}/reef-rush/`;
+
+if (
+  typeof location !== "undefined" &&
+  location.hostname === "juliette-jason.github.io" &&
+  !location.pathname.startsWith("/reef-rush")
+) {
+  location.replace(`${REEF_RUSH_LIVE_URL}${location.search}${location.hash}`);
+}
+
 // --- Sea creatures: rarity, size tier, palette (splash-screen realism) ---
 const RARITY = {
   common: { id: "common", label: "Common", weight: 52, mult: 1 },
@@ -7456,6 +7467,58 @@ function isDuelOpenedFromLocalFile() {
   return typeof location !== "undefined" && location.protocol === "file:";
 }
 
+function isLocalDevHost() {
+  if (typeof location === "undefined") return false;
+  const host = location.hostname;
+  return host === "localhost" || host === "127.0.0.1" || host === "[::1]";
+}
+
+function isReefRushLiveSite() {
+  if (typeof location === "undefined") return false;
+  if (isLocalDevHost()) return true;
+  return location.hostname === "juliette-jason.github.io" && location.pathname.startsWith("/reef-rush");
+}
+
+function onlineDuelEnvironmentIssue() {
+  if (isDuelOpenedFromLocalFile()) {
+    return {
+      code: "local-file",
+      message: `Live duels only work on the website — open ${REEF_RUSH_LIVE_URL} on both devices.`,
+    };
+  }
+  if (!isReefRushLiveSite() && !isLocalDevHost()) {
+    return {
+      code: "wrong-site",
+      message: `Use the live game link for duels: ${REEF_RUSH_LIVE_URL}`,
+    };
+  }
+  return null;
+}
+
+function isActiveDuelPlay() {
+  return Boolean(playing && duelSession && !isDuelSpectatorSession());
+}
+
+function ensureActiveDuelPlayUi() {
+  if (!isActiveDuelPlay() || !appRoot) return;
+  if (!appRoot.classList.contains("app--playing")) {
+    appRoot.classList.add("app--playing", "app--duel");
+    if (isPhoneDevice()) appRoot.classList.add("app--duel-solo");
+    else appRoot.classList.remove("app--duel-solo");
+  }
+  appRoot.classList.remove("app--events-mode", "app--matchup");
+  if (panelEvents && !panelEvents.hidden) panelEvents.hidden = true;
+  if (eventsOcean) eventsOcean.hidden = true;
+  if (duelHud?.hidden) showDuelHud();
+  if (w <= 0 || h <= 0) resize();
+}
+
+function guardActiveDuelNavigation() {
+  if (!isActiveDuelPlay()) return false;
+  showToast("Finish your duel first!", 2200);
+  return true;
+}
+
 function loadLocalLeaderboard() {
   try {
     const raw = localStorage.getItem(LEADERBOARD_KEY);
@@ -10287,11 +10350,9 @@ async function resolveDuelMatchPlan(deadlineMs) {
     if (isDuelBackendMissingError(err)) throw err;
     if (/cancelled/i.test(String(err?.message || ""))) throw err;
     const msg = String(err?.message || "");
-    if (isDuelOpenedFromLocalFile()) {
-      showToast(
-        "Duel matchmaking needs the live site — open juliette-jason.github.io/reef-rush (not a local file).",
-        5200,
-      );
+    const envIssue = onlineDuelEnvironmentIssue();
+    if (envIssue) {
+      showToast(envIssue.message, 5200);
     } else if (/lobby service|lobby fetch|lobby create|network|failed to fetch/i.test(msg)) {
       showToast("Couldn't reach duel servers — playing vs a random rival instead.", 3000);
     } else {
@@ -10769,9 +10830,16 @@ function refreshDuelEventCard() {
   const phone = isPhoneDevice();
 
   if (eventCardDuel) eventCardDuel.classList.remove("event-card--duel-unavailable");
+  const envIssue = onlineDuelEnvironmentIssue();
   if (duelEventUnavailable) {
-    duelEventUnavailable.hidden = !phone;
-    if (phone) duelEventUnavailable.textContent = "On phones you see only your side — rival score stays in the HUD.";
+    if (envIssue) {
+      eventCardDuel?.classList.add("event-card--duel-unavailable");
+      duelEventUnavailable.hidden = false;
+      duelEventUnavailable.textContent = envIssue.message;
+    } else {
+      duelEventUnavailable.hidden = !phone;
+      if (phone) duelEventUnavailable.textContent = "On phones you see only your side — rival score stays in the HUD.";
+    }
   }
   if (eventsTicketCount) eventsTicketCount.textContent = String(tickets);
   if (duelEventTickets) {
@@ -10784,8 +10852,9 @@ function refreshDuelEventCard() {
   duelEventReef.textContent = `Random reef each duel (e.g. ${previewReef.name}) · 1:00 round · solo fallback ${duelPendingTargetScore.toLocaleString()} pts`;
 
   if (btnStartDuel) {
-    btnStartDuel.disabled = tickets <= 0;
-    if (tickets <= 0) btnStartDuel.textContent = "No tickets — visit shop";
+    btnStartDuel.disabled = tickets <= 0 || Boolean(envIssue);
+    if (envIssue) btnStartDuel.textContent = "Use live site link";
+    else if (tickets <= 0) btnStartDuel.textContent = "No tickets — visit shop";
     else btnStartDuel.textContent = "Find duel rival";
   }
   void refreshDuelSpectatorList();
@@ -11293,15 +11362,14 @@ function beginDuelSession(plan) {
     void pushDuelMatchState();
   }
   syncHomeLaunchButtons();
+  ensureActiveDuelPlayUi();
 }
 
 async function startDuelFromEvents(fromPrep = false) {
   if (playing || duelMatchmakingActive || coopMatchmakingActive) return;
-  if (isDuelOpenedFromLocalFile()) {
-    showToast(
-      "Live duels only work on the website — open https://juliette-jason.github.io/reef-rush/ on both phones.",
-      6200,
-    );
+  const envIssue = onlineDuelEnvironmentIssue();
+  if (envIssue) {
+    showToast(envIssue.message, 6200);
     return;
   }
   refreshDuelTicketsForToday();
@@ -11312,6 +11380,20 @@ async function startDuelFromEvents(fromPrep = false) {
   }
   if (!fromPrep) {
     openEventPrep("duel");
+    return;
+  }
+  try {
+    await probeDuelBackendReady();
+  } catch (err) {
+    console.warn(err);
+    if (isDuelBackendMissingError(err)) {
+      showToast(
+        "Duel matchmaking isn't set up yet — run supabase/duel_matches.sql in your Supabase SQL editor, then try again.",
+        5200,
+      );
+    } else {
+      showToast("Can't reach duel servers right now — check your connection and try again.", 4000);
+    }
     return;
   }
   if (!tournamentRun && !spendDuelTicket()) {
@@ -11334,6 +11416,9 @@ async function startDuelFromEvents(fromPrep = false) {
     hideDuelLobbyCountdown();
     await waitForDuelRoundStart(plan);
     beginDuelSession(plan);
+    if (!isActiveDuelPlay()) {
+      throw new Error("Duel failed to start");
+    }
   } catch (err) {
     console.warn(err);
     hideOnlineMatchup();
@@ -11347,6 +11432,8 @@ async function startDuelFromEvents(fromPrep = false) {
         "Duel matchmaking isn't set up yet — run supabase/duel_matches.sql in your Supabase SQL editor, then try again.",
         5200,
       );
+    } else if (/failed to start/i.test(String(err?.message || ""))) {
+      showToast("Duel couldn't start — try again from Events.", 3600);
     } else {
       showToast("Duel matchmaking cancelled.", 2400);
     }
@@ -12523,12 +12610,15 @@ function hideAllPanels() {
     setDuelMatchmakingUi(false);
   }
   hideMenuPanelsOnly();
-  appRoot?.classList.remove("app--playing", "app--duel", "app--duel-solo", "app--adventure-play");
-  clearPlayfieldCanvas();
+  if (!isActiveDuelPlay()) {
+    appRoot?.classList.remove("app--playing", "app--duel", "app--duel-solo", "app--adventure-play");
+    clearPlayfieldCanvas();
+  }
 }
 
 /** Show exactly one home menu surface; every other overlay stays hidden. */
 function showExclusiveMenu(which) {
+  if (guardActiveDuelNavigation()) return;
   hideAllPanels();
   if (!duelSession && !eventMinigameSession && !crabTrapSession && !adventureSession) {
     playing = false;
@@ -15878,10 +15968,7 @@ function useAdventureSkipRope() {
 
 function openEvents() {
   if (!panelEvents) return;
-  if (playing && duelSession) {
-    showToast("Finish your duel first!", 2200);
-    return;
-  }
+  if (guardActiveDuelNavigation()) return;
   setStartMoreOptionsOpen(false);
   showExclusiveMenu("events");
   refreshDuelTicketsForToday();
@@ -23149,6 +23236,7 @@ function gameLoop(now) {
   }
 
   updateCelebration(dt);
+  ensureActiveDuelPlayUi();
 
   const menusCoverPlay =
     !playing &&
