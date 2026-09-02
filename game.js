@@ -8418,6 +8418,7 @@ let tourneyVoteCounts = {};
 let tourneySignupCount = 0;
 let tourneyLeaderboardRows = [];
 let tourneyRemoteReady = false;
+let tourneySignupInFlight = false;
 /** Active tournament run — score submits on finish. */
 let tournamentRun = null;
 
@@ -8569,30 +8570,53 @@ async function fetchTourneyLeaderboard(dayKey = getTourneyDayKey()) {
   }
 }
 
-async function submitTourneyVote(eventKind) {
-  const dayKey = getTourneyDayKey();
-  if (!TOURNEY_EVENT_OPTIONS.some((o) => o.id === eventKind)) return;
-  if (hasTourneyVotedToday()) {
-    showToast("You already voted today.", 2200);
-    return;
+function tourneyPlayerIdentity() {
+  let identity = resolveScorePlayerIdentity(gameMeta.playerName);
+  if (!identity.name) {
+    const fallback = parseLeaderboardName(gameMeta.playerInitials) || "Angler";
+    identity = resolveScorePlayerIdentity(fallback);
+    gameMeta.playerName = identity.name;
+    gameMeta.playerInitials = identity.initials;
+    saveMeta();
   }
+  return identity;
+}
+
+function defaultTourneyVoteKind() {
+  if (Object.values(tourneyVoteCounts).some((n) => n > 0)) return winningTourneyEventKind();
+  return TOURNEY_EVENT_OPTIONS[0].id;
+}
+
+async function postTourneyVote(eventKind, { silent = false } = {}) {
+  const dayKey = getTourneyDayKey();
+  if (!TOURNEY_EVENT_OPTIONS.some((o) => o.id === eventKind)) return false;
+  if (hasTourneyVotedToday()) return true;
   const payload = {
     day_key: dayKey,
     voter_client_id: getDuelClientId(),
     event_kind: eventKind,
   };
+  const res = await fetch(TOURNEY_VOTES_URL, {
+    method: "POST",
+    headers: leaderboardHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Vote failed: ${res.status}`);
+  gameMeta.tourneyVoteDayKey = dayKey;
+  gameMeta.tourneyVoteKind = eventKind;
+  saveMeta();
+  if (!silent) showToast(`Voted for ${tourneyEventLabel(eventKind)}!`, 2200);
+  await fetchTourneyVoteCounts(dayKey);
+  return true;
+}
+
+async function submitTourneyVote(eventKind) {
+  if (hasTourneyVotedToday()) {
+    showToast("You already voted today.", 2200);
+    return;
+  }
   try {
-    const res = await fetch(TOURNEY_VOTES_URL, {
-      method: "POST",
-      headers: leaderboardHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) throw new Error(`Vote failed: ${res.status}`);
-    gameMeta.tourneyVoteDayKey = dayKey;
-    gameMeta.tourneyVoteKind = eventKind;
-    saveMeta();
-    showToast(`Voted for ${tourneyEventLabel(eventKind)}!`, 2200);
-    await fetchTourneyVoteCounts(dayKey);
+    await postTourneyVote(eventKind);
     refreshTournamentCard();
   } catch (err) {
     console.warn(err);
@@ -8601,18 +8625,21 @@ async function submitTourneyVote(eventKind) {
 }
 
 async function submitTourneySignup() {
+  if (tourneySignupInFlight) return;
   const dayKey = getTourneyDayKey();
   if (isTourneySignedUpToday()) {
-    showToast("You're already signed up for today's tourney.", 2400);
+    showToast("You're already in today's tourney!", 2400);
     return;
   }
-  await fetchTourneySignupCount(dayKey);
-  if (tourneySignupCount >= TOURNEY_MAX_PLAYERS) {
-    showToast("All 35 tourney spots are full today.", 2800);
-    return;
-  }
-  const identity = resolveScorePlayerIdentity(gameMeta.playerName || gameMeta.playerInitials);
+  tourneySignupInFlight = true;
+  setTourneySignupButtonsBusy(true);
   try {
+    await fetchTourneySignupCount(dayKey);
+    if (tourneySignupCount >= TOURNEY_MAX_PLAYERS) {
+      showToast("All 35 tourney spots are full today.", 2800);
+      return;
+    }
+    const identity = tourneyPlayerIdentity();
     const res = await fetch(TOURNEY_SIGNUPS_URL, {
       method: "POST",
       headers: leaderboardHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
@@ -8626,12 +8653,50 @@ async function submitTourneySignup() {
     if (!res.ok) throw new Error(`Signup failed: ${res.status}`);
     gameMeta.tourneySignedUpDayKey = dayKey;
     saveMeta();
-    showToast(`Signed up! Spot ${tourneySignupCount + 1} of ${TOURNEY_MAX_PLAYERS}.`, 2800);
+    if (!hasTourneyVotedToday()) {
+      try {
+        await postTourneyVote(defaultTourneyVoteKind(), { silent: true });
+      } catch (err) {
+        console.warn(err);
+      }
+    }
     await fetchTourneySignupCount(dayKey);
+    showToast(`You're in! Spot ${tourneySignupCount} of ${TOURNEY_MAX_PLAYERS}.`, 3000);
     refreshTournamentCard();
   } catch (err) {
     console.warn(err);
-    showToast("Couldn't sign up — check your connection.", 2800);
+    showToast("Couldn't sign up — check your connection and try again.", 3200);
+  } finally {
+    tourneySignupInFlight = false;
+    setTourneySignupButtonsBusy(false);
+    refreshTourneyQuickJoin();
+  }
+}
+
+function setTourneySignupButtonsBusy(busy) {
+  for (const btn of [btnTourneySignup, btnTourneyQuickJoin]) {
+    if (!btn) continue;
+    btn.disabled = busy || tourneySignupCount >= TOURNEY_MAX_PLAYERS;
+    if (busy) btn.textContent = "Joining…";
+  }
+  if (!busy) refreshTournamentCard();
+}
+
+function refreshTourneyQuickJoin() {
+  const signed = isTourneySignedUpToday();
+  const full = tourneySignupCount >= TOURNEY_MAX_PLAYERS;
+  if (tourneyQuickJoin) tourneyQuickJoin.hidden = signed;
+  if (tourneyQuickJoinLine) {
+    if (full && !signed) {
+      tourneyQuickJoinLine.textContent = "All 35 spots filled — try again tomorrow.";
+    } else {
+      tourneyQuickJoinLine.textContent = `${tourneySignupCount}/${TOURNEY_MAX_PLAYERS} spots · heats at 11 AM, 4 PM & 8 PM`;
+    }
+  }
+  if (btnTourneyQuickJoin) {
+    btnTourneyQuickJoin.hidden = signed;
+    btnTourneyQuickJoin.disabled = full || tourneySignupInFlight;
+    btnTourneyQuickJoin.textContent = full ? "Tourney full" : tourneySignupInFlight ? "Joining…" : "Join in 1 tap";
   }
 }
 
@@ -8784,9 +8849,12 @@ async function refreshTournamentCard() {
   }
   if (btnTourneySignup) {
     btnTourneySignup.hidden = isTourneySignedUpToday();
-    btnTourneySignup.disabled = tourneySignupCount >= TOURNEY_MAX_PLAYERS;
-    btnTourneySignup.textContent =
-      tourneySignupCount >= TOURNEY_MAX_PLAYERS ? "Tourney full" : "Sign up for today's tourney";
+    btnTourneySignup.disabled = tourneySignupCount >= TOURNEY_MAX_PLAYERS || tourneySignupInFlight;
+    btnTourneySignup.textContent = tourneySignupInFlight
+      ? "Joining…"
+      : tourneySignupCount >= TOURNEY_MAX_PLAYERS
+        ? "Tourney full"
+        : "Join today's tourney";
   }
   if (btnTourneyCompete) {
     btnTourneyCompete.hidden = !isTourneySignedUpToday();
@@ -8795,6 +8863,7 @@ async function refreshTournamentCard() {
   }
   renderTournamentVoteButtons();
   renderTournamentLeaderboard();
+  refreshTourneyQuickJoin();
 }
 
 async function refreshEventsPanel() {
@@ -11890,6 +11959,9 @@ const homeLaunchDock = document.getElementById("homeLaunchDock");
 const homeLaunchStack = document.getElementById("homeLaunchStack");
 const panelEvents = document.getElementById("panelEvents");
 const eventCardTourney = document.getElementById("eventCardTourney");
+const tourneyQuickJoin = document.getElementById("tourneyQuickJoin");
+const tourneyQuickJoinLine = document.getElementById("tourneyQuickJoinLine");
+const btnTourneyQuickJoin = document.getElementById("btnTourneyQuickJoin");
 const tourneyEventTitle = document.getElementById("tourneyEventTitle");
 const tourneySignupLine = document.getElementById("tourneySignupLine");
 const tourneyScheduleLine = document.getElementById("tourneyScheduleLine");
@@ -23638,6 +23710,7 @@ btnWorldAdventures?.addEventListener("click", () => {
 });
 btnEvents?.addEventListener("click", openEvents);
 btnTourneySignup?.addEventListener("click", () => void submitTourneySignup());
+btnTourneyQuickJoin?.addEventListener("click", () => void submitTourneySignup());
 btnTourneyCompete?.addEventListener("click", () => beginTournamentCompetition());
 btnCollectables?.addEventListener("click", openCollectables);
 document.getElementById("seagullAvatarStart")?.addEventListener("click", () => {

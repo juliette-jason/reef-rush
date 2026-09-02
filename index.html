@@ -23,7 +23,7 @@
       rel="stylesheet"
     />
     <link rel="canonical" href="https://juliette-jason.github.io/reef-rush/" />
-    <link rel="stylesheet" href="styles.css?v=2026-09-02-duel-guard-1" />
+    <link rel="stylesheet" href="styles.css?v=2026-09-02-tourney-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -1581,6 +1581,13 @@
         <div class="panel--events__inner">
         <h2 class="panel__headline">Events</h2>
         <p class="panel__lede">Daily boards, catch challenges, duels &amp; crab hauls.</p>
+        <div id="tourneyQuickJoin" class="tourney-quick-join" hidden>
+          <div class="tourney-quick-join__copy">
+            <strong class="tourney-quick-join__title">Fishing Tourney today</strong>
+            <p id="tourneyQuickJoinLine" class="tourney-quick-join__line">35 free spots · heats at 11 AM, 4 PM &amp; 8 PM</p>
+          </div>
+          <button type="button" id="btnTourneyQuickJoin" class="btn btn--primary tourney-quick-join__btn">Join in 1 tap</button>
+        </div>
         <article class="event-card event-card--global">
           <div class="event-card__art event-card__art--global" aria-hidden="true">
             <svg class="event-card__art-svg" viewBox="0 0 320 128" xmlns="http://www.w3.org/2000/svg">
@@ -1753,17 +1760,20 @@
             </div>
             <p id="tourneyEventTitle" class="event-card__reset">Vote for today's event</p>
           </header>
-          <p id="tourneySignupLine" class="event-card__hint">0/35 spots filled · sign up early!</p>
+          <p id="tourneySignupLine" class="event-card__hint">0/35 spots filled · tap Join below</p>
           <p id="tourneyScheduleLine" class="event-card__hint">Morning heat at 11:00 AM · Afternoon 4:00 PM · Evening 8:00 PM</p>
           <p id="tourneyPrizeLine" class="event-card__hint">Top 3 of 35 win chests + gems</p>
-          <div id="tourneyVoteOptions" class="tourney-vote-options" role="group" aria-label="Vote for today's tournament event"></div>
+          <div class="event-card__actions event-card__actions--tourney">
+            <button type="button" id="btnTourneySignup" class="btn event-card__play tourney-join-btn">Join today's tourney</button>
+            <button type="button" id="btnTourneyCompete" class="btn btn--secondary event-card__play" hidden>Compete in live heat</button>
+          </div>
+          <details class="tourney-vote-details">
+            <summary class="tourney-vote-details__summary">Vote for today's event (optional)</summary>
+            <div id="tourneyVoteOptions" class="tourney-vote-options" role="group" aria-label="Vote for today's tournament event"></div>
+          </details>
           <div class="leaderboard-block leaderboard-block--compact">
             <h4 class="leaderboard-block__title">Today's tourney board</h4>
             <ol id="tourneyLeaderboard" class="leaderboard leaderboard--daily" aria-label="Fishing Tourney standings"></ol>
-          </div>
-          <div class="event-card__actions">
-            <button type="button" id="btnTourneySignup" class="btn event-card__play">Sign up for today's tourney</button>
-            <button type="button" id="btnTourneyCompete" class="btn btn--secondary event-card__play" hidden>Compete in live heat</button>
           </div>
         </article>
         <article class="event-card event-card--duel" id="eventCardDuel">
@@ -2846,6 +2856,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-09-02-leaderboard-1" defer></script>
+    <script src="game.js?v=2026-09-02-tourney-1" defer></script>
   </body>
 </html>

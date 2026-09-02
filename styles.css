@@ -4097,6 +4097,76 @@ button.seagull-avatar:active {
   text-shadow: 0 0 14px rgba(167, 139, 250, 0.35);
 }
 
+.tourney-quick-join {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(167, 139, 250, 0.55);
+  background:
+    linear-gradient(135deg, rgba(167, 139, 250, 0.22), rgba(12, 74, 110, 0.35)),
+    rgba(15, 23, 42, 0.88);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+}
+
+.tourney-quick-join__title {
+  display: block;
+  font-family: "Nunito", sans-serif;
+  font-size: 0.95rem;
+  color: #ede9fe;
+}
+
+.tourney-quick-join__line {
+  margin: 4px 0 0;
+  font-size: 0.78rem;
+  color: rgba(237, 233, 254, 0.78);
+}
+
+.tourney-quick-join__btn {
+  flex-shrink: 0;
+  min-width: 7.5rem;
+  font-weight: 800;
+}
+
+.event-card__actions--tourney {
+  margin-top: 4px;
+  margin-bottom: 10px;
+}
+
+.tourney-join-btn {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.tourney-vote-details {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(167, 139, 250, 0.22);
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.tourney-vote-details__summary {
+  cursor: pointer;
+  font-family: "Nunito", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: rgba(237, 233, 254, 0.88);
+  list-style: none;
+}
+
+.tourney-vote-details__summary::-webkit-details-marker {
+  display: none;
+}
+
+.tourney-vote-details[open] .tourney-vote-details__summary {
+  margin-bottom: 8px;
+}
+
 .tourney-vote-options {
   display: flex;
   flex-wrap: wrap;
