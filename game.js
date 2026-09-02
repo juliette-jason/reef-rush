@@ -2,12 +2,20 @@
  * Reef Rush — responsive canvas fishing game
  */
 
-if (typeof location !== "undefined" && location.hostname === "julietta-jason.github.io") {
-  location.replace(`https://juliette-jason.github.io/reef-rush/${location.search}${location.hash}`);
-}
-
 const REEF_RUSH_LIVE_ORIGIN = "https://juliette-jason.github.io";
 const REEF_RUSH_LIVE_URL = `${REEF_RUSH_LIVE_ORIGIN}/reef-rush/`;
+
+if (typeof location !== "undefined" && location.hostname === "julietta-jason.github.io") {
+  location.replace(`${REEF_RUSH_LIVE_URL}${location.search}${location.hash}`);
+}
+
+if (
+  typeof location !== "undefined" &&
+  location.hostname === "juliette-jason.github.io" &&
+  location.pathname === "/"
+) {
+  location.replace(`${REEF_RUSH_LIVE_URL}${location.search}${location.hash}`);
+}
 
 if (
   typeof location !== "undefined" &&
@@ -10734,6 +10742,54 @@ function hideOnlineMatchup() {
   onlineMatchup.setAttribute("aria-hidden", "true");
 }
 
+function showDuelSearchOverlay(deadlineMs) {
+  hideAllPanels();
+  if (eventsOcean) eventsOcean.hidden = true;
+  appRoot?.classList.remove("app--events-mode");
+  appRoot?.classList.add("app--matchup");
+  syncHomeLaunchButtons();
+  showOnlineMatchup({
+    mode: "duel",
+    relation: "Finding a real rival",
+    playerName: getLeaderboardPlayerLabel() || "You",
+    rivalName: "…",
+    playerCompanionId: equippedCompanionId(),
+    rivalCompanionId: COM_COMPANION_ID,
+    reefName: `Up to ${DUEL_LOBBY_TIMEOUT_SEC}s to match a player`,
+    deadlineMs,
+  });
+}
+
+function hideDuelSearchOverlay() {
+  hideOnlineMatchup();
+  appRoot?.classList.remove("app--matchup");
+}
+
+function restoreEventsAfterDuelAbort() {
+  hideDuelLobbyCountdown();
+  hideDuelSearchOverlay();
+  hideOnlineMatchup();
+  appRoot?.classList.remove("app--matchup", "app--events-mode");
+  duelMatchmakingActive = false;
+  void cancelDuelLobbyIfHost(duelLobbyMatchId);
+  duelLobbyMatchId = null;
+  setDuelMatchmakingUi(false);
+  syncHomeLaunchButtons();
+  openEvents();
+}
+
+function restoreEventsAfterCoopAbort() {
+  hideCoopLobbyCountdown();
+  hideOnlineMatchup();
+  appRoot?.classList.remove("app--matchup", "app--events-mode");
+  coopMatchmakingActive = false;
+  void cancelCoopLobbyIfHost(coopLobbyMatchId);
+  coopLobbyMatchId = null;
+  setCoopMatchmakingUi(false);
+  syncHomeLaunchButtons();
+  openEvents();
+}
+
 async function waitForOnlineRoundStart(plan, { mode }) {
   const isCoop = mode === "coop";
   const now = Date.now();
@@ -10758,7 +10814,7 @@ async function waitForOnlineRoundStart(plan, { mode }) {
   showOnlineMatchup({
     mode,
     relation: isCoop ? "Fishing with" : "Fishing against",
-    playerName: getDuelPlayerInitials(),
+    playerName: getLeaderboardPlayerLabel() || getDuelPlayerInitials(),
     rivalName,
     playerCompanionId: equippedCompanionId(),
     rivalCompanionId,
@@ -11513,24 +11569,23 @@ async function startDuelFromEvents(fromPrep = false) {
     } else {
       showToast("Can't reach duel servers right now — check your connection and try again.", 4000);
     }
+    openEvents();
     return;
   }
   if (!tournamentRun && !spendDuelTicket()) {
     refreshDuelEventCard();
+    openEvents();
     return;
   }
 
   hideDuelHud();
-  hideAllPanels();
-  if (panelEvents) panelEvents.hidden = false;
-  if (eventsOcean) eventsOcean.hidden = true;
-  appRoot?.classList.add("app--events-mode");
   const matchmakingDeadline = Date.now() + DUEL_LOBBY_TIMEOUT_MS;
   setDuelMatchmakingUi(true, `Searching up to ${DUEL_LOBBY_TIMEOUT_SEC}s for a real rival…`);
-  startDuelLobbyCountdown(matchmakingDeadline, `Finding a real rival (${DUEL_LOBBY_TIMEOUT_SEC}s)`);
+  showDuelSearchOverlay(matchmakingDeadline);
 
   try {
     const plan = await resolveDuelMatchPlan(matchmakingDeadline);
+    hideDuelSearchOverlay();
     setDuelMatchmakingUi(false);
     hideDuelLobbyCountdown();
     await waitForDuelRoundStart(plan);
@@ -11540,12 +11595,8 @@ async function startDuelFromEvents(fromPrep = false) {
     }
   } catch (err) {
     console.warn(err);
-    hideOnlineMatchup();
-    appRoot?.classList.remove("app--matchup");
-    setDuelMatchmakingUi(false);
     gameMeta.duelTickets += 1;
     saveMeta();
-    refreshDuelEventCard();
     if (isDuelBackendMissingError(err)) {
       showToast(
         "Duel matchmaking isn't set up yet — run supabase/duel_matches.sql in your Supabase SQL editor, then try again.",
@@ -11556,6 +11607,7 @@ async function startDuelFromEvents(fromPrep = false) {
     } else {
       showToast("Duel matchmaking cancelled.", 2400);
     }
+    restoreEventsAfterDuelAbort();
   }
 }
 
@@ -16345,16 +16397,26 @@ async function startCoopFromEvents(fromPrep = false) {
   }
   if (!tournamentRun && !spendDuelTicket()) {
     refreshCoopEventCard();
+    openEvents();
     return;
   }
 
   hideAllPanels();
-  if (panelEvents) panelEvents.hidden = false;
-  if (eventsOcean) eventsOcean.hidden = true;
-  appRoot?.classList.add("app--events-mode");
   const matchmakingDeadline = Date.now() + COOP_LOBBY_TIMEOUT_MS;
   setCoopMatchmakingUi(true, "Trying to find a partner…");
-  startCoopLobbyCountdown(matchmakingDeadline, "Trying to find a partner");
+  showOnlineMatchup({
+    mode: "coop",
+    relation: "Finding a co-op partner",
+    playerName: getLeaderboardPlayerLabel() || "You",
+    rivalName: "…",
+    playerCompanionId: equippedCompanionId(),
+    rivalCompanionId: COM_COMPANION_ID,
+    reefName: `Up to ${DUEL_LOBBY_TIMEOUT_SEC}s to match`,
+    deadlineMs: matchmakingDeadline,
+  });
+  appRoot?.classList.remove("app--events-mode");
+  appRoot?.classList.add("app--matchup");
+  syncHomeLaunchButtons();
 
   try {
     const plan = await resolveCoopMatchPlan(matchmakingDeadline);
@@ -16364,14 +16426,8 @@ async function startCoopFromEvents(fromPrep = false) {
     beginCoopSession(plan);
   } catch (err) {
     console.warn(err);
-    hideOnlineMatchup();
-    appRoot?.classList.remove("app--matchup");
-    setCoopMatchmakingUi(false);
     gameMeta.duelTickets += 1;
     saveMeta();
-    refreshCoopEventCard();
-    refreshCrabTrapEventCard();
-    refreshDuelEventCard();
     if (isDuelBackendMissingError(err)) {
       showToast(
         "Co-op matchmaking isn't set up yet — run supabase/duel_matches_coop_kind.sql in your Supabase SQL editor, then try again.",
@@ -16380,7 +16436,7 @@ async function startCoopFromEvents(fromPrep = false) {
     } else {
       showToast("Co-op matchmaking cancelled.", 2400);
     }
-    openEvents();
+    restoreEventsAfterCoopAbort();
   }
 }
 
