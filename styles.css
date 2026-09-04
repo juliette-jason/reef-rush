@@ -3065,6 +3065,113 @@ button.seagull-avatar:active {
   color: rgba(186, 230, 253, 0.88);
 }
 
+.online-matchup__party {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  background: rgba(8, 47, 73, 0.55);
+}
+
+.online-matchup__party[hidden] {
+  display: none !important;
+}
+
+.online-matchup__party-label {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(165, 243, 252, 0.9);
+}
+
+.online-matchup__party-code {
+  margin: 8px 0 6px;
+  font-family: "Bebas Neue", "Arial Narrow", sans-serif;
+  font-size: clamp(2.4rem, 10vw, 3.4rem);
+  letter-spacing: 0.18em;
+  line-height: 1;
+  color: #fef9c3;
+  text-shadow: 0 2px 0 rgba(15, 23, 42, 0.45);
+}
+
+.online-matchup__party-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: rgba(186, 230, 253, 0.78);
+}
+
+.online-matchup__cancel {
+  margin-top: 14px;
+}
+
+.party-join-form {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.party-join-form__label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(186, 230, 253, 0.85);
+}
+
+.party-join-form__row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.party-join-form__input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  background: rgba(8, 47, 73, 0.65);
+  color: #f8fafc;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.party-join-form__input::placeholder {
+  letter-spacing: 0.04em;
+  text-transform: none;
+  font-weight: 600;
+  color: rgba(148, 163, 184, 0.85);
+}
+
+.party-join-form__btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.friend-picker--party {
+  display: grid;
+  gap: 8px;
+}
+
+.friend-picker__mode {
+  width: 100%;
+}
+
+.friend-picker__mode[aria-pressed="true"] {
+  border-color: rgba(125, 211, 252, 0.65);
+  background: rgba(14, 116, 144, 0.45);
+  color: #ecfeff;
+}
+
+.event-card--party-join {
+  border-color: rgba(125, 211, 252, 0.28);
+}
+
 .online-matchup--coop .online-matchup__reef {
   color: rgba(187, 247, 208, 0.9);
 }

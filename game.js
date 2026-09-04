@@ -7487,13 +7487,15 @@ function isDuelBackendMissingError(err) {
 
 function isDuelSchemaColumnError(body) {
   const msg = `${body?.message || ""} ${body?.hint || ""} ${body?.details || ""}`;
-  return /PGRST204|invite_user_id|host_user_id|guest_user_id|match_kind/i.test(msg);
+  return /PGRST204|invite_user_id|host_user_id|guest_user_id|match_kind|party_code/i.test(msg);
 }
 
 /** Optional duel_matches columns from player_social.sql — disabled when Supabase lacks them. */
 let duelLobbyInviteFilterReady = true;
 let duelLobbyUserColumnsReady = true;
 let duelLobbyMatchKindFilterReady = true;
+/** Optional party_code column from duel_matches_party_code.sql */
+let duelLobbyPartyCodeReady = true;
 
 function stripDuelLobbyUserFields(payload) {
   const next = { ...payload };
@@ -7506,6 +7508,7 @@ function stripDuelLobbyUserFields(payload) {
 function stripDuelLobbyOptionalFields(payload) {
   const next = stripDuelLobbyUserFields(payload);
   delete next.match_kind;
+  delete next.party_code;
   return next;
 }
 
@@ -9097,6 +9100,10 @@ let socialFriends = [];
 let onlineFriendIds = new Set();
 let presenceHeartbeatTimer = null;
 let pendingEventFriendUserId = null;
+/** Prep match intent: anyone | friend. Join uses pendingJoinPartyCode. */
+let pendingPartyIntent = "anyone";
+let pendingJoinPartyCode = null;
+let partyWaitCancelRequested = false;
 
 function initSupabaseAuth() {
   if (!window.supabase?.createClient) return null;
@@ -9424,53 +9431,50 @@ function renderProfileFriendsList() {
 
 function refreshEventPrepFriendsUI() {
   const kind = pendingEventPrepKind;
-  const show = Boolean(authUser?.id && (kind === "duel" || kind === "coop"));
+  const show = kind === "duel" || kind === "coop";
   if (eventPrepFriends) eventPrepFriends.hidden = !show;
-  if (!show || !eventPrepFriendsList) return;
-  const onlineFriends = socialFriends.filter((f) => f.online);
-  eventPrepFriendsList.innerHTML = "";
-  if (!onlineFriends.length) {
-    const empty = document.createElement("p");
-    empty.className = "profile-friends-empty";
-    empty.textContent = "No friends online — tap Find duel rival at the same time to match anyone.";
-    eventPrepFriendsList.appendChild(empty);
-    pendingEventFriendUserId = null;
-    if (btnEventPrepAnyone) btnEventPrepAnyone.setAttribute("aria-pressed", "true");
+  if (!show) return;
+  const joining = Boolean(pendingJoinPartyCode);
+  if (joining) {
+    pendingPartyIntent = "anyone";
+    if (btnEventPrepFriend) {
+      btnEventPrepFriend.disabled = true;
+      btnEventPrepFriend.setAttribute("aria-pressed", "false");
+    }
+    if (btnEventPrepAnyone) {
+      btnEventPrepAnyone.disabled = true;
+      btnEventPrepAnyone.setAttribute("aria-pressed", "false");
+    }
+    if (eventPrepPartyHint) {
+      eventPrepPartyHint.textContent = `Joining code ${pendingJoinPartyCode} — pick bait & rod, then Cast off.`;
+    }
     return;
   }
-  for (const friend of onlineFriends) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "friend-picker__option";
-    btn.setAttribute("role", "option");
-    btn.dataset.friendId = friend.userId;
-    btn.setAttribute("aria-selected", pendingEventFriendUserId === friend.userId ? "true" : "false");
-    const status = document.createElement("span");
-    status.className = "friend-status friend-status--online";
-    status.setAttribute("aria-hidden", "true");
-    const copy = document.createElement("div");
-    const name = document.createElement("p");
-    name.className = "friend-picker__name";
-    name.textContent = friend.displayName;
-    const tag = document.createElement("p");
-    tag.className = "friend-picker__tag";
-    tag.textContent = friend.initials;
-    copy.append(name, tag);
-    btn.append(status, copy);
-    btn.addEventListener("click", () => {
-      pendingEventFriendUserId = friend.userId;
-      refreshEventPrepFriendsUI();
-    });
-    eventPrepFriendsList.appendChild(btn);
+  if (btnEventPrepFriend) {
+    btnEventPrepFriend.disabled = false;
+    btnEventPrepFriend.setAttribute("aria-pressed", pendingPartyIntent === "friend" ? "true" : "false");
   }
   if (btnEventPrepAnyone) {
-    btnEventPrepAnyone.setAttribute("aria-pressed", pendingEventFriendUserId ? "false" : "true");
+    btnEventPrepAnyone.disabled = false;
+    btnEventPrepAnyone.setAttribute("aria-pressed", pendingPartyIntent === "anyone" ? "true" : "false");
+  }
+  if (eventPrepPartyHint) {
+    eventPrepPartyHint.textContent =
+      pendingPartyIntent === "friend"
+        ? "After Cast off you’ll get a short code to tell your friend."
+        : "Match anyone searching at the same time — or a random angler if nobody’s free.";
   }
 }
 
 function getPendingFriendUserId() {
-  if (!pendingEventFriendUserId) return null;
-  return onlineFriendIds.has(pendingEventFriendUserId) ? pendingEventFriendUserId : null;
+  /* Account friend invites replaced by party codes — keep stub for older call sites. */
+  return null;
+}
+
+function setPendingPartyIntent(intent) {
+  pendingPartyIntent = intent === "friend" ? "friend" : "anyone";
+  pendingEventFriendUserId = null;
+  refreshEventPrepFriendsUI();
 }
 
 /** Every duel round is exactly one minute, regardless of reef. */
@@ -9496,6 +9500,10 @@ const MATCH_KIND_COOP = "coop";
 const COOP_LOBBY_TIMEOUT_MS = DUEL_LOBBY_TIMEOUT_MS;
 const COOP_STATE_SYNC_MS = DUEL_STATE_SYNC_MS;
 const COOP_PARTNER_POLL_MS = DUEL_OPPONENT_POLL_MS;
+/** Friend party wait — longer than public matchmaking so they can share the code. */
+const PARTY_HOST_WAIT_MS = 5 * 60_000;
+const PARTY_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const PARTY_CODE_LENGTH = 5;
 /** null during classic/adventure play; set for split-screen duel fishing. */
 let duelSession = null;
 /** Event mini-games on the main canvas: roulette | coop | survivor. */
@@ -9978,6 +9986,7 @@ function normalizeDuelMatchRow(row) {
     hostUserId: row.host_user_id || row.hostUserId || null,
     guestUserId: row.guest_user_id || row.guestUserId || null,
     inviteUserId: row.invite_user_id || row.inviteUserId || null,
+    partyCode: String(row.party_code || row.partyCode || "").toUpperCase() || null,
     hostInitials: formatDuelInitials(row.host_initials || row.hostInitials) || "AAA",
     guestInitials: Boolean(row.is_com_guest ?? row.isComGuest)
       ? comGuestDisplayName(row.guest_initials || row.guestInitials)
@@ -10056,6 +10065,10 @@ async function fetchOpenDuelLobbies(matchKind = MATCH_KIND_DUEL, options = {}, l
       url += "&invite_user_id=is.null";
     }
   }
+  /* Friend party lobbies are join-by-code only — hide them from open matchmaking. */
+  if (duelLobbyPartyCodeReady) {
+    url += "&party_code=is.null";
+  }
   url += `&order=created_at.asc&limit=${Math.max(1, Math.min(limit, 12))}`;
   const res = await fetch(url, { headers: leaderboardHeaders() });
   const { body } = await readDuelResponse(res);
@@ -10066,6 +10079,10 @@ async function fetchOpenDuelLobbies(matchKind = MATCH_KIND_DUEL, options = {}, l
     }
     if (duelLobbyInviteFilterReady && isDuelSchemaColumnError(body)) {
       duelLobbyInviteFilterReady = false;
+      return fetchOpenDuelLobbies(matchKind, options, limit);
+    }
+    if (duelLobbyPartyCodeReady && isDuelSchemaColumnError(body)) {
+      duelLobbyPartyCodeReady = false;
       return fetchOpenDuelLobbies(matchKind, options, limit);
     }
     throw new Error(`Duel lobby fetch failed: ${res.status}`);
@@ -10157,6 +10174,7 @@ async function createDuelLobby(reefId, roundMs, matchKind = MATCH_KIND_DUEL, opt
   };
   if (duelLobbyUserColumnsReady && authUser?.id) payload.host_user_id = authUser.id;
   if (duelLobbyUserColumnsReady && options.inviteUserId) payload.invite_user_id = options.inviteUserId;
+  if (duelLobbyPartyCodeReady && options.partyCode) payload.party_code = options.partyCode;
   let res = await fetch(DUEL_MATCH_TABLE_URL, {
     method: "POST",
     headers: leaderboardHeaders({
@@ -10175,6 +10193,20 @@ async function createDuelLobby(reefId, roundMs, matchKind = MATCH_KIND_DUEL, opt
         Prefer: "return=representation",
       }),
       body: JSON.stringify(stripDuelLobbyUserFields(payload)),
+    });
+    ({ body } = await readDuelResponse(res));
+  }
+  if (!res.ok && duelLobbyPartyCodeReady && isDuelSchemaColumnError(body)) {
+    duelLobbyPartyCodeReady = false;
+    const withoutCode = { ...payload };
+    delete withoutCode.party_code;
+    res = await fetch(DUEL_MATCH_TABLE_URL, {
+      method: "POST",
+      headers: leaderboardHeaders({
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      }),
+      body: JSON.stringify(withoutCode),
     });
     ({ body } = await readDuelResponse(res));
   }
@@ -10270,6 +10302,186 @@ async function cancelDuelLobbyIfHost(matchId) {
   } catch (err) {
     console.warn(err);
   }
+}
+
+function normalizePartyCode(raw) {
+  return String(raw || "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, 8);
+}
+
+function generatePartyCode(length = PARTY_CODE_LENGTH) {
+  let code = "";
+  for (let i = 0; i < length; i++) {
+    code += PARTY_CODE_ALPHABET[Math.floor(Math.random() * PARTY_CODE_ALPHABET.length)];
+  }
+  return code;
+}
+
+async function fetchLobbyByPartyCode(rawCode, matchKind = null) {
+  const code = normalizePartyCode(rawCode);
+  if (code.length < 4) return null;
+  if (!duelLobbyPartyCodeReady) {
+    const err = new Error("PARTY_CODE_SCHEMA_MISSING");
+    err.partyCodeMissing = true;
+    throw err;
+  }
+  const since = new Date(Date.now() - Math.max(DUEL_LOBBY_MAX_AGE_MS, PARTY_HOST_WAIT_MS)).toISOString();
+  let url =
+    `${DUEL_MATCH_TABLE_URL}?select=*` +
+    `&party_code=eq.${encodeURIComponent(code)}` +
+    `&status=eq.lobby&guest_client_id=is.null` +
+    `&created_at=gte.${encodeURIComponent(since)}`;
+  if (matchKind && duelLobbyMatchKindFilterReady) {
+    url += `&match_kind=eq.${encodeURIComponent(matchKind)}`;
+  }
+  url += "&order=created_at.desc&limit=1";
+  const res = await fetch(url, { headers: leaderboardHeaders() });
+  const { body } = await readDuelResponse(res);
+  if (!res.ok) {
+    if (duelLobbyPartyCodeReady && isDuelSchemaColumnError(body)) {
+      duelLobbyPartyCodeReady = false;
+      const err = new Error("PARTY_CODE_SCHEMA_MISSING");
+      err.partyCodeMissing = true;
+      throw err;
+    }
+    if (duelLobbyMatchKindFilterReady && isDuelSchemaColumnError(body)) {
+      duelLobbyMatchKindFilterReady = false;
+      return fetchLobbyByPartyCode(rawCode, matchKind);
+    }
+    return null;
+  }
+  const rows = Array.isArray(body) ? body : [];
+  return normalizeDuelMatchRow(rows[0]);
+}
+
+function showPartyCodeSetupToast() {
+  showToast(
+    "Friend codes need a one-time setup — run supabase/duel_matches_party_code.sql in Supabase, then try again.",
+    5600,
+  );
+}
+
+async function hostPartyCodeMatch(matchKind, roundMs, deadlineMs) {
+  const isCoop = matchKind === MATCH_KIND_COOP;
+  partyWaitCancelRequested = false;
+  if (!duelLobbyPartyCodeReady) {
+    showPartyCodeSetupToast();
+    throw new Error("PARTY_CODE_SCHEMA_MISSING");
+  }
+
+  let code = generatePartyCode();
+  let created = null;
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const reefId = isCoop ? pickMinigameReef("coop").id : pickRandomDuelReefId(duelLastReefId);
+    duelPendingReefId = reefId;
+    created = await safeCreateDuelLobby(reefId, roundMs, matchKind, { partyCode: code });
+    if (created?.matchId && created.partyCode) break;
+    if (!duelLobbyPartyCodeReady) {
+      showPartyCodeSetupToast();
+      throw new Error("PARTY_CODE_SCHEMA_MISSING");
+    }
+    /* Collision or create failure — try a fresh code. */
+    code = generatePartyCode();
+    created = null;
+  }
+  if (!created?.matchId) {
+    throw new Error("Couldn't create a friend party — check your connection.");
+  }
+  if (!created.partyCode) {
+    /* Column missing mid-create: cancel and abort. */
+    await cancelDuelLobbyIfHost(created.matchId);
+    duelLobbyPartyCodeReady = false;
+    showPartyCodeSetupToast();
+    throw new Error("PARTY_CODE_SCHEMA_MISSING");
+  }
+
+  if (isCoop) coopLobbyMatchId = created.matchId;
+  else duelLobbyMatchId = created.matchId;
+
+  const setUi = isCoop ? setCoopMatchmakingUi : setDuelMatchmakingUi;
+  setUi(true, `Code ${created.partyCode} — waiting for friend…`);
+  showPartyHostOverlay({
+    mode: isCoop ? "coop" : "duel",
+    partyCode: created.partyCode,
+    deadlineMs,
+  });
+
+  while (Date.now() < deadlineMs) {
+    if (partyWaitCancelRequested || isDuelMatchmakingCancelled(isCoop)) {
+      await cancelDuelLobbyIfHost(created.matchId);
+      if (isCoop) coopLobbyMatchId = null;
+      else duelLobbyMatchId = null;
+      throw new Error(isCoop ? "Co-op matchmaking cancelled" : "Duel matchmaking cancelled");
+    }
+    const row = await safeFetchDuelMatchById(created.matchId);
+    if (!row || row.status === "cancelled") {
+      if (isCoop) coopLobbyMatchId = null;
+      else duelLobbyMatchId = null;
+      throw new Error("Friend party expired — try again.");
+    }
+    if (row.guestClientId && !row.isComGuest) {
+      if (isCoop) coopLobbyMatchId = null;
+      else duelLobbyMatchId = null;
+      hidePartyHostExtras();
+      return (isCoop ? coopPlanFromMatch : duelPlanFromMatch)(row, "host");
+    }
+    await duelSleep(DUEL_LOBBY_POLL_MS);
+  }
+
+  await cancelDuelLobbyIfHost(created.matchId);
+  if (isCoop) coopLobbyMatchId = null;
+  else duelLobbyMatchId = null;
+  throw new Error("Friend didn't join in time.");
+}
+
+async function joinPartyCodeMatch(rawCode, expectedKind = null) {
+  const lobby = await fetchLobbyByPartyCode(rawCode, expectedKind);
+  if (!lobby?.matchId) {
+    throw new Error("No open party found for that code — ask your friend to host again.");
+  }
+  if (lobby.hostClientId === getDuelClientId()) {
+    throw new Error("That's your own code — enter it on your friend's device.");
+  }
+  const joined = await tryJoinDuelLobby(lobby.matchId);
+  if (!joined) {
+    throw new Error("Couldn't join — the party may already be full.");
+  }
+  const role = duelRoleFromMatch(joined) || "guest";
+  const isCoop = (joined.matchKind || lobby.matchKind) === MATCH_KIND_COOP;
+  return {
+    plan: (isCoop ? coopPlanFromMatch : duelPlanFromMatch)(joined, role),
+    matchKind: isCoop ? MATCH_KIND_COOP : MATCH_KIND_DUEL,
+  };
+}
+
+function hidePartyHostExtras() {
+  if (onlineMatchupPartyBlock) onlineMatchupPartyBlock.hidden = true;
+  if (btnCancelPartyWait) btnCancelPartyWait.hidden = true;
+  if (onlineMatchupCountdownLabel) onlineMatchupCountdownLabel.textContent = "starting";
+}
+
+function showPartyHostOverlay({ mode, partyCode, deadlineMs }) {
+  hideMenuPanelsOnly({ clearMatchup: false });
+  if (eventsOcean) eventsOcean.hidden = true;
+  appRoot?.classList.remove("app--events-mode", "app--show-tabs");
+  appRoot?.classList.add("app--matchup");
+  if (homeLaunchDock) homeLaunchDock.hidden = true;
+  if (homeLaunchStack) homeLaunchStack.hidden = true;
+  showOnlineMatchup({
+    mode,
+    relation: mode === "coop" ? "Waiting for your partner" : "Waiting for your rival",
+    playerName: getLeaderboardPlayerLabel() || "You",
+    rivalName: "Friend",
+    playerCompanionId: equippedCompanionId(),
+    rivalCompanionId: COM_COMPANION_ID,
+    reefName: "Share this code — they tap Enter friend code on Events",
+    deadlineMs,
+    partyCode,
+    showCancel: true,
+    countdownLabel: "waiting",
+  });
 }
 
 async function pushDuelMatchState() {
@@ -10664,15 +10876,27 @@ async function cancelCoopLobbyIfHost(matchId) {
 
 async function resolveDuelMatchPlan(deadlineMs) {
   try {
-    return await findDuelMatchOnline(DUEL_ROUND_MS, deadlineMs, getPendingFriendUserId());
+    if (pendingJoinPartyCode) {
+      const joined = await joinPartyCodeMatch(pendingJoinPartyCode, MATCH_KIND_DUEL);
+      pendingJoinPartyCode = null;
+      return joined.plan;
+    }
+    if (pendingPartyIntent === "friend") {
+      return await hostPartyCodeMatch(MATCH_KIND_DUEL, DUEL_ROUND_MS, deadlineMs);
+    }
+    return await findDuelMatchOnline(DUEL_ROUND_MS, deadlineMs, null);
   } catch (err) {
     console.warn(err);
     if (duelLobbyMatchId) {
       await cancelDuelLobbyIfHost(duelLobbyMatchId);
       duelLobbyMatchId = null;
     }
-    if (/cancelled/i.test(String(err?.message || ""))) throw err;
     const msg = String(err?.message || "");
+    if (/cancelled/i.test(msg) || err?.partyCodeMissing || msg === "PARTY_CODE_SCHEMA_MISSING") throw err;
+    if (pendingPartyIntent === "friend" || pendingJoinPartyCode) {
+      /* Friend parties never silently fall back to COM. */
+      throw err;
+    }
     const envIssue = onlineDuelEnvironmentIssue();
     if (envIssue) {
       showToast(envIssue.message, 5200);
@@ -10691,15 +10915,26 @@ async function resolveDuelMatchPlan(deadlineMs) {
 
 async function resolveCoopMatchPlan(deadlineMs) {
   try {
-    return await findCoopMatchOnline(MINIGAME_COOP_MS, deadlineMs, getPendingFriendUserId());
+    if (pendingJoinPartyCode) {
+      const joined = await joinPartyCodeMatch(pendingJoinPartyCode, MATCH_KIND_COOP);
+      pendingJoinPartyCode = null;
+      return joined.plan;
+    }
+    if (pendingPartyIntent === "friend") {
+      return await hostPartyCodeMatch(MATCH_KIND_COOP, MINIGAME_COOP_MS, deadlineMs);
+    }
+    return await findCoopMatchOnline(MINIGAME_COOP_MS, deadlineMs, null);
   } catch (err) {
     console.warn(err);
     if (coopLobbyMatchId) {
       await cancelCoopLobbyIfHost(coopLobbyMatchId);
       coopLobbyMatchId = null;
     }
-    if (/cancelled/i.test(String(err?.message || ""))) throw err;
     const msg = String(err?.message || "");
+    if (/cancelled/i.test(msg) || err?.partyCodeMissing || msg === "PARTY_CODE_SCHEMA_MISSING") throw err;
+    if (pendingPartyIntent === "friend" || pendingJoinPartyCode) {
+      throw err;
+    }
     if (isDuelBackendMissingError(err) || /lobby service|lobby fetch|lobby create|network|failed to fetch/i.test(msg)) {
       showToast("Couldn't reach co-op servers — random partner instead.", 3000);
     } else {
@@ -10898,6 +11133,9 @@ function showOnlineMatchup({
   rivalCompanionId,
   reefName,
   deadlineMs,
+  partyCode = null,
+  showCancel = false,
+  countdownLabel = "starting",
 }) {
   hideOnlineMatchup();
   if (!onlineMatchup) return;
@@ -10920,6 +11158,18 @@ function showOnlineMatchup({
     });
   }
   if (onlineMatchupReef) onlineMatchupReef.textContent = reefName || "";
+  if (onlineMatchupPartyBlock) {
+    onlineMatchupPartyBlock.hidden = !partyCode;
+  }
+  if (onlineMatchupPartyCode) {
+    onlineMatchupPartyCode.textContent = partyCode || "————";
+  }
+  if (onlineMatchupCountdownLabel) {
+    onlineMatchupCountdownLabel.textContent = countdownLabel || "starting";
+  }
+  if (btnCancelPartyWait) {
+    btnCancelPartyWait.hidden = !showCancel;
+  }
   const tick = () => {
     const secsLeft = Math.max(0, (deadlineMs - Date.now()) / 1000);
     if (onlineMatchupCountdown) {
@@ -10935,6 +11185,7 @@ function hideOnlineMatchup() {
     clearInterval(onlineMatchupTimer);
     onlineMatchupTimer = null;
   }
+  hidePartyHostExtras();
   if (!onlineMatchup) return;
   onlineMatchup.hidden = true;
   onlineMatchup.setAttribute("aria-hidden", "true");
@@ -11807,14 +12058,29 @@ async function startDuelFromEvents(fromPrep = false) {
   /* Don't probe-and-bounce here — Cast off must enter matchmaking (or COM). */
   hideDuelHud();
   appRoot?.classList.remove("app--events-mode");
-  const matchmakingDeadline = Date.now() + DUEL_LOBBY_TIMEOUT_MS;
-  setDuelMatchmakingUi(true, `Searching up to ${DUEL_LOBBY_TIMEOUT_SEC}s for a real rival…`);
-  showDuelSearchOverlay(matchmakingDeadline);
+  const isFriendHost = pendingPartyIntent === "friend" && !pendingJoinPartyCode;
+  const isPartyJoin = Boolean(pendingJoinPartyCode);
+  const matchmakingDeadline =
+    Date.now() + (isFriendHost || isPartyJoin ? PARTY_HOST_WAIT_MS : DUEL_LOBBY_TIMEOUT_MS);
+  setDuelMatchmakingUi(
+    true,
+    isFriendHost
+      ? "Creating your friend code…"
+      : isPartyJoin
+        ? `Joining ${pendingJoinPartyCode}…`
+        : `Searching up to ${DUEL_LOBBY_TIMEOUT_SEC}s for a real rival…`,
+  );
+  if (!isFriendHost) {
+    showDuelSearchOverlay(matchmakingDeadline);
+  }
 
   try {
     const plan = await resolveDuelMatchPlan(matchmakingDeadline);
+    pendingPartyIntent = "anyone";
+    pendingJoinPartyCode = null;
     setDuelMatchmakingUi(false);
     hideDuelLobbyCountdown();
+    hidePartyHostExtras();
     await waitForDuelRoundStart(plan);
     beginDuelSession(plan);
     if (!isActiveDuelPlay() || w <= 0 || h <= 0) {
@@ -11825,11 +12091,16 @@ async function startDuelFromEvents(fromPrep = false) {
     console.warn(err);
     gameMeta.duelTickets += 1;
     saveMeta();
-    if (/cancelled/i.test(String(err?.message || ""))) {
-      showToast("Duel matchmaking cancelled.", 2400);
-    } else if (/failed to start/i.test(String(err?.message || ""))) {
+    const msg = String(err?.message || "");
+    if (err?.partyCodeMissing || msg === "PARTY_CODE_SCHEMA_MISSING") {
+      showPartyCodeSetupToast();
+    } else if (/cancelled/i.test(msg)) {
+      showToast("Duel party cancelled.", 2400);
+    } else if (/didn't join|No open party|Couldn't join|own code|expired|Couldn't create/i.test(msg)) {
+      showToast(msg, 3600);
+    } else if (/failed to start/i.test(msg)) {
       showToast("Duel couldn't start — try again from Events.", 3600);
-    } else if (isDuelBackendMissingError(err)) {
+    } else if (isDuelBackendMissingError(err) && !isFriendHost && !isPartyJoin) {
       showToast(
         "Online lobbies aren't set up — playing a random rival. Run supabase/duel_matches.sql for live PvP.",
         4800,
@@ -11844,8 +12115,10 @@ async function startDuelFromEvents(fromPrep = false) {
         console.warn(startErr);
       }
     } else {
-      showToast("Duel matchmaking cancelled.", 2400);
+      showToast(msg || "Duel matchmaking cancelled.", 3200);
     }
+    pendingPartyIntent = "anyone";
+    pendingJoinPartyCode = null;
     restoreEventsAfterDuelAbort();
   }
 }
@@ -12280,6 +12553,15 @@ const btnSignOut = document.getElementById("btnSignOut");
 const eventPrepFriends = document.getElementById("eventPrepFriends");
 const eventPrepFriendsList = document.getElementById("eventPrepFriendsList");
 const btnEventPrepAnyone = document.getElementById("btnEventPrepAnyone");
+const btnEventPrepFriend = document.getElementById("btnEventPrepFriend");
+const eventPrepPartyHint = document.getElementById("eventPrepPartyHint");
+const onlineMatchupPartyBlock = document.getElementById("onlineMatchupPartyBlock");
+const onlineMatchupPartyCode = document.getElementById("onlineMatchupPartyCode");
+const onlineMatchupCountdownLabel = document.getElementById("onlineMatchupCountdownLabel");
+const btnCancelPartyWait = document.getElementById("btnCancelPartyWait");
+const partyJoinForm = document.getElementById("partyJoinForm");
+const partyJoinCodeInput = document.getElementById("partyJoinCodeInput");
+const partyJoinStatus = document.getElementById("partyJoinStatus");
 const collectablesArmed = document.getElementById("collectablesArmed");
 const collectablesItems = document.getElementById("collectablesItems");
 const collectablesStamps = document.getElementById("collectablesStamps");
@@ -16693,13 +16975,28 @@ async function startCoopFromEvents(fromPrep = false) {
   }
 
   appRoot?.classList.remove("app--events-mode");
-  const matchmakingDeadline = Date.now() + COOP_LOBBY_TIMEOUT_MS;
-  setCoopMatchmakingUi(true, "Trying to find a partner…");
-  showCoopSearchOverlay(matchmakingDeadline);
+  const isFriendHost = pendingPartyIntent === "friend" && !pendingJoinPartyCode;
+  const isPartyJoin = Boolean(pendingJoinPartyCode);
+  const matchmakingDeadline =
+    Date.now() + (isFriendHost || isPartyJoin ? PARTY_HOST_WAIT_MS : COOP_LOBBY_TIMEOUT_MS);
+  setCoopMatchmakingUi(
+    true,
+    isFriendHost
+      ? "Creating your friend code…"
+      : isPartyJoin
+        ? `Joining ${pendingJoinPartyCode}…`
+        : "Trying to find a partner…",
+  );
+  if (!isFriendHost) {
+    showCoopSearchOverlay(matchmakingDeadline);
+  }
 
   try {
     const plan = await resolveCoopMatchPlan(matchmakingDeadline);
+    pendingPartyIntent = "anyone";
+    pendingJoinPartyCode = null;
     hideCoopLobbyCountdown();
+    hidePartyHostExtras();
     await waitForCoopRoundStart(plan);
     setCoopMatchmakingUi(false);
     beginCoopSession(plan);
@@ -16711,11 +17008,16 @@ async function startCoopFromEvents(fromPrep = false) {
     console.warn(err);
     gameMeta.duelTickets += 1;
     saveMeta();
-    if (/cancelled/i.test(String(err?.message || ""))) {
-      showToast("Co-op matchmaking cancelled.", 2400);
-    } else if (/failed to start/i.test(String(err?.message || ""))) {
+    const msg = String(err?.message || "");
+    if (err?.partyCodeMissing || msg === "PARTY_CODE_SCHEMA_MISSING") {
+      showPartyCodeSetupToast();
+    } else if (/cancelled/i.test(msg)) {
+      showToast("Co-op party cancelled.", 2400);
+    } else if (/didn't join|No open party|Couldn't join|own code|expired|Couldn't create/i.test(msg)) {
+      showToast(msg, 3600);
+    } else if (/failed to start/i.test(msg)) {
       showToast("Co-op couldn't start — try again from Events.", 3600);
-    } else if (isDuelBackendMissingError(err)) {
+    } else if (isDuelBackendMissingError(err) && !isFriendHost && !isPartyJoin) {
       showToast("Online co-op unavailable — teaming with a random partner.", 3600);
       try {
         const reef = pickMinigameReef("coop");
@@ -16725,8 +17027,10 @@ async function startCoopFromEvents(fromPrep = false) {
         console.warn(startErr);
       }
     } else {
-      showToast("Co-op matchmaking cancelled.", 2400);
+      showToast(msg || "Co-op matchmaking cancelled.", 3200);
     }
+    pendingPartyIntent = "anyone";
+    pendingJoinPartyCode = null;
     restoreEventsAfterCoopAbort();
   }
 }
@@ -16768,17 +17072,30 @@ function openEventPrep(kind) {
     return;
   }
   pendingEventPrepKind = kind;
-  if (kind !== "duel" && kind !== "coop") pendingEventFriendUserId = null;
+  if (kind !== "duel" && kind !== "coop") {
+    pendingEventFriendUserId = null;
+    pendingJoinPartyCode = null;
+    pendingPartyIntent = "anyone";
+  } else if (!pendingJoinPartyCode) {
+    pendingPartyIntent = pendingPartyIntent === "friend" ? "friend" : "anyone";
+  }
   const copy = eventPrepCopy(kind);
-  if (eventPrepEyebrow) eventPrepEyebrow.textContent = copy.eyebrow;
-  if (eventPrepTitle) eventPrepTitle.textContent = copy.title;
-  if (eventPrepDetail) eventPrepDetail.textContent = copy.detail;
+  if (pendingJoinPartyCode) {
+    if (eventPrepEyebrow) eventPrepEyebrow.textContent = copy.eyebrow;
+    if (eventPrepTitle) eventPrepTitle.textContent = "Join your friend";
+    if (eventPrepDetail) {
+      eventPrepDetail.textContent = `Code ${pendingJoinPartyCode} — pick bait and a rod, then Cast off.`;
+    }
+  } else {
+    if (eventPrepEyebrow) eventPrepEyebrow.textContent = copy.eyebrow;
+    if (eventPrepTitle) eventPrepTitle.textContent = copy.title;
+    if (eventPrepDetail) eventPrepDetail.textContent = copy.detail;
+  }
   hideAllPanels();
   if (panelEventPrep) panelEventPrep.hidden = false;
   appRoot?.classList.add("app--events-mode");
   buildBaitUI();
   buildRodUI();
-  void refreshFriendsList();
   refreshEventPrepFriendsUI();
   stopEventsMusic();
   if (musicEnabled) startHomeMusic();
@@ -16786,8 +17103,47 @@ function openEventPrep(kind) {
 
 function closeEventPrep() {
   pendingEventPrepKind = null;
+  pendingJoinPartyCode = null;
+  pendingPartyIntent = "anyone";
   if (panelEventPrep) panelEventPrep.hidden = true;
   openEvents();
+}
+
+async function submitPartyJoinFromEvents() {
+  if (playing || duelMatchmakingActive || coopMatchmakingActive || duelSession || eventMinigameSession) {
+    showToast("Finish your current run first", 2200);
+    return;
+  }
+  const code = normalizePartyCode(partyJoinCodeInput?.value);
+  if (code.length < 4) {
+    showToast("Enter the full friend code.", 2200);
+    return;
+  }
+  if (partyJoinStatus) {
+    partyJoinStatus.hidden = false;
+    partyJoinStatus.textContent = "Looking up party…";
+  }
+  try {
+    const lobby = await fetchLobbyByPartyCode(code);
+    if (!lobby?.matchId) {
+      showToast("No open party for that code — ask them to host again.", 3600);
+      if (partyJoinStatus) partyJoinStatus.hidden = true;
+      return;
+    }
+    pendingJoinPartyCode = code;
+    pendingPartyIntent = "anyone";
+    if (partyJoinCodeInput) partyJoinCodeInput.value = "";
+    if (partyJoinStatus) partyJoinStatus.hidden = true;
+    openEventPrep(lobby.matchKind === MATCH_KIND_COOP ? "coop" : "duel");
+  } catch (err) {
+    console.warn(err);
+    if (err?.partyCodeMissing || err?.message === "PARTY_CODE_SCHEMA_MISSING") {
+      showPartyCodeSetupToast();
+    } else {
+      showToast(String(err?.message || "Couldn't look up that code."), 3200);
+    }
+    if (partyJoinStatus) partyJoinStatus.hidden = true;
+  }
 }
 
 function confirmEventPrepStart() {
@@ -24088,8 +24444,27 @@ profileAddFriendForm?.addEventListener("submit", (e) => {
   });
 });
 btnEventPrepAnyone?.addEventListener("click", () => {
-  pendingEventFriendUserId = null;
-  refreshEventPrepFriendsUI();
+  setPendingPartyIntent("anyone");
+});
+btnEventPrepFriend?.addEventListener("click", () => {
+  setPendingPartyIntent("friend");
+});
+btnCancelPartyWait?.addEventListener("click", () => {
+  partyWaitCancelRequested = true;
+  duelMatchmakingActive = false;
+  coopMatchmakingActive = false;
+});
+partyJoinForm?.addEventListener("submit", (e) => {
+  e.preventDefault();
+  void submitPartyJoinFromEvents();
+});
+partyJoinCodeInput?.addEventListener("input", () => {
+  if (!partyJoinCodeInput) return;
+  const start = partyJoinCodeInput.selectionStart;
+  partyJoinCodeInput.value = normalizePartyCode(partyJoinCodeInput.value);
+  if (typeof start === "number") {
+    partyJoinCodeInput.setSelectionRange(start, start);
+  }
 });
 collectablesItems?.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-arm-item]");

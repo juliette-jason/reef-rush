@@ -1,5 +1,17 @@
 # reef-rush
 
+## Friend party codes (no sign-in)
+
+Play Duel or Co-op with a friend using an auto-generated code — no accounts.
+
+1. Open [Supabase](https://supabase.com/dashboard) → **SQL Editor**
+2. Run [`supabase/duel_matches.sql`](supabase/duel_matches.sql) if you haven’t already
+3. Run [`supabase/duel_matches_party_code.sql`](supabase/duel_matches_party_code.sql)
+4. Hard-refresh the live game
+
+**Host:** Events → Duel/Co-op → Cast off → **Play with a friend** → share the on-screen code  
+**Friend:** Events → **Enter friend code** → Join → pick gear → Cast off
+
 ## Fishing Tourney (shared votes + 35 daily spots)
 
 Events → **Fishing Tourney** needs three Supabase tables. Without them, join/vote still work on your device, but spots won't sync across phones/tablets.

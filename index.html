@@ -23,7 +23,7 @@
       rel="stylesheet"
     />
     <link rel="canonical" href="https://juliette-jason.github.io/reef-rush/" />
-    <link rel="stylesheet" href="styles.css?v=2026-09-04-cast-off-1" />
+    <link rel="stylesheet" href="styles.css?v=2026-09-04-party-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -85,6 +85,11 @@
         <div id="onlineMatchup" class="online-matchup" hidden aria-hidden="true">
           <div class="online-matchup__card">
             <p id="onlineMatchupHeadline" class="online-matchup__headline">Fishing against</p>
+            <div id="onlineMatchupPartyBlock" class="online-matchup__party" hidden>
+              <p class="online-matchup__party-label">Tell your friend this code</p>
+              <p id="onlineMatchupPartyCode" class="online-matchup__party-code" aria-live="polite">————</p>
+              <p class="online-matchup__party-hint">They open Events → Enter friend code</p>
+            </div>
             <div class="online-matchup__row">
               <div class="online-matchup__player">
                 <div id="onlineMatchupPlayerAvatar" class="online-matchup__avatar" aria-hidden="true"></div>
@@ -92,7 +97,7 @@
               </div>
               <div class="online-matchup__center">
                 <span id="onlineMatchupCountdown" class="online-matchup__countdown" aria-live="polite">3</span>
-                <span class="online-matchup__countdown-label">starting</span>
+                <span id="onlineMatchupCountdownLabel" class="online-matchup__countdown-label">starting</span>
               </div>
               <div class="online-matchup__player online-matchup__player--rival">
                 <div id="onlineMatchupRivalAvatar" class="online-matchup__avatar" aria-hidden="true"></div>
@@ -100,6 +105,9 @@
               </div>
             </div>
             <p id="onlineMatchupReef" class="online-matchup__reef"></p>
+            <button type="button" id="btnCancelPartyWait" class="btn btn--secondary btn--small online-matchup__cancel" hidden>
+              Cancel
+            </button>
           </div>
         </div>
         <div id="eventsOcean" class="events-ocean" hidden aria-hidden="true">
@@ -1857,6 +1865,36 @@
             <button type="button" id="btnRefreshDuelSpectator" class="btn btn--secondary btn--small duel-spectator__refresh">Refresh list</button>
           </div>
         </article>
+
+        <article class="event-card event-card--party-join" id="eventCardPartyJoin">
+          <header class="event-card__head">
+            <div class="event-card__title-row">
+              <h3 class="event-card__title">Enter friend code</h3>
+            </div>
+            <p class="event-card__reset">No sign-in</p>
+          </header>
+          <p class="event-card__hint">
+            Your friend hosts a Duel or Co-op and reads you their code. Type it here to join them.
+          </p>
+          <form id="partyJoinForm" class="party-join-form">
+            <label class="party-join-form__label" for="partyJoinCodeInput">Friend code</label>
+            <div class="party-join-form__row">
+              <input
+                id="partyJoinCodeInput"
+                class="party-join-form__input"
+                type="text"
+                maxlength="8"
+                autocomplete="off"
+                spellcheck="false"
+                autocapitalize="characters"
+                placeholder="e.g. BLUE7"
+                aria-label="Friend party code"
+              />
+              <button type="submit" id="btnPartyJoin" class="btn btn--primary party-join-form__btn">Join</button>
+            </div>
+          </form>
+          <p id="partyJoinStatus" class="event-card__status" hidden></p>
+        </article>
         <article class="event-card event-card--daily-catch" id="eventCardDailyCatch">
           <div class="event-card__art event-card__art--daily-catch" aria-hidden="true">
             <svg class="event-card__art-svg" viewBox="0 0 320 128" xmlns="http://www.w3.org/2000/svg">
@@ -2361,12 +2399,21 @@
         </div>
         <div id="eventPrepFriends" class="event-prep-friends" hidden>
           <fieldset class="rods rods--card adventure-prep__card">
-            <legend class="rods__legend">Play with a friend</legend>
-            <p class="event-prep-friends__hint">Pick a friend who is online right now, or match anyone.</p>
-            <div id="eventPrepFriendsList" class="friend-picker" role="listbox" aria-label="Online friends"></div>
-            <button type="button" id="btnEventPrepAnyone" class="btn btn--secondary btn--small friend-picker__anyone">
-              Match anyone online
-            </button>
+            <legend class="rods__legend">Who are you playing with?</legend>
+            <p class="event-prep-friends__hint">
+              Play with a friend gives you a code to share — no sign-in needed.
+            </p>
+            <div class="friend-picker friend-picker--party" role="group" aria-label="Match type">
+              <button type="button" id="btnEventPrepFriend" class="btn btn--secondary friend-picker__mode" aria-pressed="false">
+                Play with a friend
+              </button>
+              <button type="button" id="btnEventPrepAnyone" class="btn btn--secondary friend-picker__mode" aria-pressed="true">
+                Match anyone online
+              </button>
+            </div>
+            <p id="eventPrepPartyHint" class="event-prep-friends__hint">
+              After Cast off you’ll get a short code to tell your friend.
+            </p>
           </fieldset>
         </div>
         <div class="adventure-prep__actions">
@@ -2856,6 +2903,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-09-04-cast-off-1" defer></script>
+    <script src="game.js?v=2026-09-04-party-1" defer></script>
   </body>
 </html>
