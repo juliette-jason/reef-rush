@@ -10083,55 +10083,27 @@ async function signOutAccount() {
 }
 
 async function bootstrapAuth() {
+  /* Profile account / OAuth removed for COPPA. Friends use party codes on Events. */
   const client = initSupabaseAuth();
-  if (!client) return;
-  const { data } = await client.auth.getSession();
-  authSession = data.session;
-  authUser = data.session?.user ?? null;
-  if (authUser) {
-    await upsertPlayerProfile();
-    startPresenceHeartbeat();
-    await refreshFriendsList();
-  }
-  refreshAccountUI();
-  client.auth.onAuthStateChange(async (_event, session) => {
-    authSession = session;
-    authUser = session?.user ?? null;
-    if (authUser) {
-      await upsertPlayerProfile();
-      startPresenceHeartbeat();
-      await refreshFriendsList();
-    } else {
-      stopPresenceHeartbeat();
-      socialFriends = [];
-      onlineFriendIds = new Set();
+  if (client) {
+    try {
+      await client.auth.signOut();
+    } catch (_) {
+      /* ignore */
     }
-    refreshAccountUI();
-    refreshEventPrepFriendsUI();
-  });
+  }
+  stopPresenceHeartbeat();
+  pendingEventFriendUserId = null;
+  socialFriends = [];
+  onlineFriendIds = new Set();
+  authSession = null;
+  authUser = null;
+  refreshAccountUI();
+  refreshEventPrepFriendsUI();
 }
 
 function refreshAccountUI() {
-  const signedIn = Boolean(authUser?.id);
-  if (profileSignedOut) profileSignedOut.hidden = signedIn;
-  if (profileSignedIn) profileSignedIn.hidden = !signedIn;
-  if (profileFriendsSection) profileFriendsSection.hidden = !signedIn;
-  if (!signedIn) return;
-  const label =
-    parsePlayerName(gameMeta.playerName) ||
-    authUser.user_metadata?.full_name ||
-    authUser.user_metadata?.name ||
-    authUser.email ||
-    "Signed in";
-  if (profileAccountLabel) profileAccountLabel.textContent = label;
-  if (profileFriendCode) {
-    profileFriendCode.textContent = `Friend code: ${friendCodeFromUserId(authUser.id)}`;
-  }
-  if (profileFriendsOnlineCount) {
-    const onlineCount = socialFriends.filter((f) => f.online).length;
-    profileFriendsOnlineCount.textContent = `${onlineCount} online`;
-  }
-  renderProfileFriendsList();
+  /* Account + friends sections removed from profile. */
 }
 
 function renderProfileFriendsList() {

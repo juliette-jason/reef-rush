@@ -23,7 +23,7 @@
       rel="stylesheet"
     />
     <link rel="canonical" href="https://juliette-jason.github.io/reef-rush/" />
-    <link rel="stylesheet" href="styles.css?v=2026-09-04-party-phone-1" />
+    <link rel="stylesheet" href="styles.css?v=2026-09-04-no-account-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -2538,7 +2538,7 @@
         <header class="profile-hero">
           <p class="profile-hero__eyebrow">Captain card</p>
           <h2 class="panel__headline profile-hero__title">My Profile</h2>
-          <p class="panel__lede profile-hero__lede">Name your fisher, pick a sea pal &amp; ring.</p>
+          <p class="panel__lede profile-hero__lede">Name your fisher, pick a sea pal &amp; ring. No account needed.</p>
         </header>
         <div class="collectables-seagull-preview">
           <div
@@ -2560,53 +2560,7 @@
             spellcheck="false"
           />
         </label>
-        <p id="profileNameHint" class="profile-name__hint">Shown on all leaderboards.</p>
-
-        <section class="profile-account" id="profileAccountSection" aria-label="Account sign-in">
-          <div class="profile-account__head">
-            <h3 class="collectables-section__title">Account</h3>
-          </div>
-          <div id="profileSignedOut" class="profile-account__signed-out">
-            <p class="profile-account__lede">Sign in to add friends and play duels or co-op hauls together.</p>
-            <div class="profile-account__buttons">
-              <button type="button" id="btnSignInGoogle" class="btn btn--auth btn--auth-google">
-                Sign in with Google
-              </button>
-              <button type="button" id="btnSignInApple" class="btn btn--auth btn--auth-apple">
-                Sign in with Apple
-              </button>
-            </div>
-          </div>
-          <div id="profileSignedIn" class="profile-account__signed-in" hidden>
-            <p id="profileAccountLabel" class="profile-account__email">Signed in</p>
-            <p id="profileFriendCode" class="profile-account__code">Friend code: —</p>
-            <button type="button" id="btnSignOut" class="btn btn--secondary btn--small">Sign out</button>
-          </div>
-        </section>
-
-        <section class="profile-friends" id="profileFriendsSection" hidden aria-label="Friends">
-          <div class="wardrobe-stage__head">
-            <h3 class="collectables-section__title">Friends</h3>
-            <p id="profileFriendsOnlineCount" class="collectables-count-pill">0 online</p>
-          </div>
-          <p class="wardrobe-hint">Share your friend code or add a friend to play together when you're both online.</p>
-          <form id="profileAddFriendForm" class="profile-add-friend">
-            <label class="profile-add-friend__label" for="profileAddFriendInput">Friend code</label>
-            <div class="profile-add-friend__row">
-              <input
-                id="profileAddFriendInput"
-                class="profile-add-friend__input"
-                type="text"
-                maxlength="12"
-                autocomplete="off"
-                placeholder="Enter code"
-                spellcheck="false"
-              />
-              <button type="submit" id="btnAddFriend" class="btn btn--secondary btn--small">Add</button>
-            </div>
-          </form>
-          <div id="profileFriendsList" class="profile-friends-list" role="list" aria-label="My friends"></div>
-        </section>
+        <p id="profileNameHint" class="profile-name__hint">Shown on all leaderboards. Play with friends using a party code on Events — no sign-in.</p>
 
         <section class="wardrobe-stage profile-wardrobe" aria-label="Sea pal collection">
           <div class="wardrobe-stage__head">
