@@ -10995,7 +10995,7 @@ function setCoopMatchmakingUi(active, message = "") {
 }
 
 function formatCoopEventMatchupLine() {
-  return "Enter the lobby — match a real partner, or team with a random angler if nobody's waiting.";
+  return "Play with a friend (get a code), match anyone online, or enter a friend’s code on Events.";
 }
 
 function refreshCoopEventCard() {
