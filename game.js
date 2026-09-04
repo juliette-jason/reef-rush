@@ -18793,145 +18793,14 @@ function paintTreasureCrabBody(drawCtx, sc, leg) {
   eyeStalk(8 * sc);
 }
 
-// Matches the "treasure crab" from the main fishing game: a red crab with
-// jointed legs and eye stalks, hoisting a gold treasure chest overhead.
+// Crab Trap crab — sand crab only (no treasure chest).
 function drawCrabTrapCrab(ctx, x, y, sc, legT, facing) {
   const face = facing >= 0 ? 1 : -1;
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(face, 1);
   paintTreasureCrabBody(ctx, sc, legT);
-  drawCrabTrapChest(ctx, sc);
-  drawCrabTrapCrabArms(ctx, sc);
   ctx.restore();
-}
-
-// Closed treasure chest carried on the crab's back (ported from the main game).
-function drawCrabTrapChest(ctx, sc) {
-  const chestCx = 0;
-  const chestTop = -56 * sc;
-  const cw = 40 * sc;
-  const ch = 26 * sc;
-  const x0 = chestCx - cw * 0.5;
-  const y0 = chestTop;
-  const rr = Math.min(3 * sc, cw * 0.18, ch * 0.22);
-  const goldTop = ctx.createLinearGradient(x0, y0, x0 + cw, y0 + ch);
-  goldTop.addColorStop(0, "#fde68a");
-  goldTop.addColorStop(0.25, "#fbbf24");
-  goldTop.addColorStop(0.5, "#f59e0b");
-  goldTop.addColorStop(0.78, "#d97706");
-  goldTop.addColorStop(1, "#b45309");
-  ctx.fillStyle = goldTop;
-  ctx.strokeStyle = "#78350f";
-  ctx.lineWidth = 1.5 * sc;
-  ctx.beginPath();
-  ctx.moveTo(x0 + rr, y0);
-  ctx.lineTo(x0 + cw - rr, y0);
-  ctx.quadraticCurveTo(x0 + cw, y0, x0 + cw, y0 + rr);
-  ctx.lineTo(x0 + cw, y0 + ch - rr);
-  ctx.quadraticCurveTo(x0 + cw, y0 + ch, x0 + cw - rr, y0 + ch);
-  ctx.lineTo(x0 + rr, y0 + ch);
-  ctx.quadraticCurveTo(x0, y0 + ch, x0, y0 + ch - rr);
-  ctx.lineTo(x0, y0 + rr);
-  ctx.quadraticCurveTo(x0, y0, x0 + rr, y0);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
-  const lidH = 9 * sc;
-  ctx.fillStyle = "#451a03";
-  ctx.beginPath();
-  ctx.arc(chestCx, y0 + ch * 0.42, 3.2 * sc, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "rgba(255, 250, 220, 0.9)";
-  ctx.beginPath();
-  ctx.arc(chestCx - 0.9 * sc, y0 + ch * 0.4, 1 * sc, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = "#fcd34d";
-  ctx.beginPath();
-  ctx.moveTo(x0 - 1.5 * sc, y0 + lidH);
-  ctx.lineTo(chestCx - cw * 0.42, y0 - 2 * sc);
-  ctx.quadraticCurveTo(chestCx, y0 - 5 * sc, chestCx + cw * 0.42, y0 - 2 * sc);
-  ctx.lineTo(x0 + cw + 1.5 * sc, y0 + lidH);
-  ctx.closePath();
-  ctx.fill();
-  ctx.strokeStyle = "#92400e";
-  ctx.lineWidth = 1.2 * sc;
-  ctx.stroke();
-
-  ctx.strokeStyle = "rgba(120, 53, 15, 0.55)";
-  ctx.lineWidth = 1.1 * sc;
-  ctx.beginPath();
-  ctx.moveTo(x0 + 4 * sc, y0 + lidH + 2 * sc);
-  ctx.lineTo(x0 + cw - 4 * sc, y0 + lidH + 2 * sc);
-  ctx.stroke();
-
-  ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
-  ctx.beginPath();
-  ctx.ellipse(chestCx - 8 * sc, y0 + ch * 0.35, 8 * sc, 4 * sc, -0.25, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.strokeStyle = "rgba(185, 120, 20, 0.65)";
-  ctx.lineWidth = 1 * sc;
-  ctx.beginPath();
-  ctx.moveTo(x0 + 3 * sc, y0 + ch * 0.55);
-  ctx.lineTo(x0 + cw - 3 * sc, y0 + ch * 0.55);
-  ctx.stroke();
-}
-
-// Raised claw-arms hoisting the chest (ported from the main game).
-function drawCrabTrapCrabArms(ctx, sc) {
-  const chestTop = -56 * sc;
-  const ch = 26 * sc;
-  const cw = 40 * sc;
-  const gripY = chestTop + ch * 0.72;
-  const gripLX = -cw * 0.5;
-  const gripRX = cw * 0.5;
-
-  const drawRaisedArm = (side) => {
-    const sx = side;
-    const shx = sx * 18 * sc;
-    const shy = -6 * sc;
-    const midX = sx * 36 * sc;
-    const midY = -40 * sc;
-    const gx = sx > 0 ? gripRX : gripLX;
-    const gy = gripY;
-    ctx.strokeStyle = "#c2410c";
-    ctx.lineWidth = 5.2 * sc;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.beginPath();
-    ctx.moveTo(shx, shy);
-    ctx.quadraticCurveTo(midX, midY, gx, gy);
-    ctx.stroke();
-    ctx.strokeStyle = "#7c2d12";
-    ctx.lineWidth = 2.8 * sc;
-    ctx.beginPath();
-    ctx.moveTo(shx, shy);
-    ctx.quadraticCurveTo(midX, midY, gx, gy);
-    ctx.stroke();
-
-    const ang = Math.atan2(gy - midY, gx - midX);
-    const cx = gx + Math.cos(ang + sx * 0.5) * 5 * sc;
-    const cy = gy + Math.sin(ang + sx * 0.5) * 5 * sc;
-    ctx.fillStyle = "#ea580c";
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, 9 * sc, 6.5 * sc, ang, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#fb923c";
-    ctx.beginPath();
-    ctx.ellipse(cx + Math.cos(ang + sx * 0.9) * 4 * sc, cy + Math.sin(ang + sx * 0.9) * 4 * sc, 5 * sc, 3.8 * sc, ang + sx * 0.25, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "#7c2d12";
-    ctx.lineWidth = 0.95 * sc;
-    ctx.beginPath();
-    ctx.ellipse(cx, cy, 9 * sc, 6.5 * sc, ang, 0, Math.PI * 2);
-    ctx.stroke();
-  };
-
-  drawRaisedArm(-1);
-  drawRaisedArm(1);
 }
 
 function drawCrabTrapCage(ctx, cage) {
