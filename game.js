@@ -5704,72 +5704,186 @@ function drawAdventureMermaidCoastEffect(now, themeId) {
 
 /**
  * Guaranteed mermaid glimpse each Mermaid Coast voyage:
- * faint ambient silhouette always, plus one clearer swim-by early in the round.
+ * soft ambient silhouette always, plus one bright classic-animation swim-by.
+ * Look: auburn hair, purple shell top, emerald scaled tail (fairy-tale cartoon style).
  */
 function drawVagueMermaidSilhouette(now) {
   if (!adventureSession) return;
   const startedAt = adventureSession.mermaidRoundStartedAt || now;
   const elapsed = Math.max(0, now - startedAt);
-  const glimpseStart = 3200;
-  const glimpseDur = 4200;
+  const glimpseStart = 2800;
+  const glimpseDur = 5200;
   const inGlimpse = elapsed >= glimpseStart && elapsed <= glimpseStart + glimpseDur;
   if (inGlimpse) adventureSession.mermaidGlimpseSeen = true;
 
-  const t = now * 0.0004;
+  const t = now * 0.001;
   const wy = waterTop;
   const wh = h - waterTop;
   const progress = inGlimpse
     ? Math.min(1, Math.max(0, (elapsed - glimpseStart) / glimpseDur))
-    : (elapsed % 14000) / 14000;
+    : (elapsed % 16000) / 16000;
   const dir = adventureSession.levelIndex % 2 === 0 ? 1 : -1;
   const cx = dir > 0
-    ? w * (-0.12 + progress * 1.24)
-    : w * (1.12 - progress * 1.24);
-  const cy = wy + wh * (0.42 + Math.sin(t * 1.2 + progress * 4) * 0.06);
-  const alpha = inGlimpse ? 0.16 + Math.sin(progress * Math.PI) * 0.14 : 0.055;
+    ? w * (-0.18 + progress * 1.36)
+    : w * (1.18 - progress * 1.36);
+  const cy = wy + wh * (0.38 + Math.sin(t * 1.1 + progress * 5) * 0.05);
+  const s = dpr * (inGlimpse ? 1.55 : 1.05);
+  const pulse = inGlimpse ? Math.sin(progress * Math.PI) : 0.35;
+  const alpha = inGlimpse ? 0.55 + pulse * 0.4 : 0.18;
 
   ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(dir, 1);
   ctx.globalAlpha = alpha;
-  ctx.fillStyle = "rgba(20, 70, 85, 0.92)";
-  // torso
-  ctx.beginPath();
-  ctx.ellipse(cx, cy, dpr * 11, dpr * 16, dir * 0.15, 0, Math.PI * 2);
-  ctx.fill();
-  // head
-  ctx.beginPath();
-  ctx.ellipse(cx + dir * dpr * 2, cy - dpr * 18, dpr * 7, dpr * 8, 0, 0, Math.PI * 2);
-  ctx.fill();
-  // hair
-  ctx.globalAlpha = alpha * 0.85;
-  ctx.fillStyle = "rgba(180, 90, 140, 0.75)";
-  ctx.beginPath();
-  ctx.ellipse(cx - dir * dpr * 2, cy - dpr * 20, dpr * 10, dpr * 12, dir * -0.4, 0, Math.PI * 2);
-  ctx.fill();
-  // tail
-  ctx.globalAlpha = alpha;
-  ctx.fillStyle = "rgba(40, 160, 150, 0.85)";
-  ctx.beginPath();
-  ctx.moveTo(cx - dir * dpr * 4, cy + dpr * 10);
-  ctx.quadraticCurveTo(
-    cx - dir * dpr * 28,
-    cy + dpr * 22 + Math.sin(t * 3) * dpr * 4,
-    cx - dir * dpr * 36,
-    cy + dpr * 8,
-  );
-  ctx.quadraticCurveTo(cx - dir * dpr * 24, cy + dpr * 30, cx - dir * dpr * 2, cy + dpr * 16);
-  ctx.closePath();
-  ctx.fill();
-  // fluke
-  ctx.beginPath();
-  ctx.ellipse(cx - dir * dpr * 38, cy + dpr * 6, dpr * 10, dpr * 5, dir * 0.6, 0, Math.PI * 2);
-  ctx.fill();
+
   if (inGlimpse) {
-    ctx.globalAlpha = alpha * 0.7;
-    ctx.fillStyle = "rgba(255, 230, 180, 0.8)";
+    const glow = ctx.createRadialGradient(0, 0, s * 4, 0, 0, s * 48);
+    glow.addColorStop(0, "rgba(255, 220, 160, 0.55)");
+    glow.addColorStop(0.45, "rgba(120, 220, 255, 0.22)");
+    glow.addColorStop(1, "rgba(120, 220, 255, 0)");
+    ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(cx + dir * dpr * 3, cy - dpr * 6, dpr * 1.6, 0, Math.PI * 2);
+    ctx.arc(0, 0, s * 48, 0, Math.PI * 2);
     ctx.fill();
   }
+
+  const tailWave = Math.sin(t * 4.2 + progress * 8) * s * 5;
+  /* Emerald scaled tail */
+  const tailGrad = ctx.createLinearGradient(s * 2, s * 4, -s * 42, s * 10);
+  tailGrad.addColorStop(0, "#34d399");
+  tailGrad.addColorStop(0.45, "#059669");
+  tailGrad.addColorStop(1, "#065f46");
+  ctx.fillStyle = tailGrad;
+  ctx.beginPath();
+  ctx.moveTo(s * 4, s * 6);
+  ctx.quadraticCurveTo(-s * 10, s * 14 + tailWave * 0.4, -s * 28, s * 10 + tailWave);
+  ctx.quadraticCurveTo(-s * 38, s * 4 + tailWave, -s * 46, s * 2 + tailWave * 1.2);
+  ctx.quadraticCurveTo(-s * 34, s * 18 + tailWave, -s * 18, s * 20);
+  ctx.quadraticCurveTo(-s * 4, s * 18, s * 6, s * 12);
+  ctx.closePath();
+  ctx.fill();
+  /* Fluke */
+  ctx.beginPath();
+  ctx.moveTo(-s * 44, s * 2 + tailWave);
+  ctx.quadraticCurveTo(-s * 58, -s * 8 + tailWave, -s * 52, s * 2 + tailWave);
+  ctx.quadraticCurveTo(-s * 60, s * 14 + tailWave, -s * 44, s * 8 + tailWave);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = "rgba(167, 243, 208, 0.55)";
+  ctx.lineWidth = s * 0.7;
+  for (let i = 0; i < 4; i++) {
+    const lx = -s * (8 + i * 7);
+    ctx.beginPath();
+    ctx.moveTo(lx, s * (8 + i * 1.5));
+    ctx.quadraticCurveTo(lx - s * 4, s * (12 + i * 2) + tailWave * 0.3, lx - s * 8, s * (9 + i));
+    ctx.stroke();
+  }
+
+  /* Fair torso */
+  const skin = "#f6d5b8";
+  const skinShade = "#e8b896";
+  const bodyGrad = ctx.createLinearGradient(0, -s * 8, 0, s * 10);
+  bodyGrad.addColorStop(0, skin);
+  bodyGrad.addColorStop(1, skinShade);
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.ellipse(s * 2, s * 2, s * 9, s * 14, 0.12, 0, Math.PI * 2);
+  ctx.fill();
+
+  /* Purple seashell top */
+  ctx.fillStyle = "#a78bfa";
+  ctx.beginPath();
+  ctx.ellipse(-s * 2.5, -s * 2, s * 4.2, s * 3.2, -0.35, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(s * 5.5, -s * 1.5, s * 4.2, s * 3.2, 0.35, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#c4b5fd";
+  ctx.beginPath();
+  ctx.ellipse(-s * 2.5, -s * 2.6, s * 1.6, s * 1.2, -0.35, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(s * 5.5, -s * 2.1, s * 1.6, s * 1.2, 0.35, 0, Math.PI * 2);
+  ctx.fill();
+
+  /* Arms */
+  ctx.strokeStyle = skin;
+  ctx.lineWidth = s * 3.2;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(s * 6, -s * 4);
+  ctx.quadraticCurveTo(s * 16, -s * 2 + Math.sin(t * 3) * s * 2, s * 18, s * 6);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-s * 2, -s * 2);
+  ctx.quadraticCurveTo(-s * 12, s * 2, -s * 10, s * 8);
+  ctx.stroke();
+
+  /* Head */
+  ctx.fillStyle = skin;
+  ctx.beginPath();
+  ctx.ellipse(s * 3, -s * 18, s * 8.5, s * 9.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  /* Flowing auburn hair */
+  const hairGrad = ctx.createLinearGradient(s * 8, -s * 30, -s * 16, -s * 4);
+  hairGrad.addColorStop(0, "#fb923c");
+  hairGrad.addColorStop(0.35, "#ea580c");
+  hairGrad.addColorStop(0.7, "#c2410c");
+  hairGrad.addColorStop(1, "#9a3412");
+  ctx.fillStyle = hairGrad;
+  ctx.beginPath();
+  ctx.moveTo(s * 2, -s * 26);
+  ctx.quadraticCurveTo(s * 18, -s * 28, s * 16, -s * 12);
+  ctx.quadraticCurveTo(s * 14, -s * 2, s * 8, s * 2);
+  ctx.quadraticCurveTo(s * 4, -s * 6, s * 2, -s * 10);
+  ctx.quadraticCurveTo(-s * 2, -s * 4, -s * 8, s * 4);
+  ctx.quadraticCurveTo(-s * 16, -s * 6, -s * 12, -s * 18);
+  ctx.quadraticCurveTo(-s * 10, -s * 30, s * 2, -s * 26);
+  ctx.closePath();
+  ctx.fill();
+  /* Hair highlight */
+  ctx.globalAlpha = alpha * 0.55;
+  ctx.fillStyle = "#fdba74";
+  ctx.beginPath();
+  ctx.ellipse(s * 8, -s * 22, s * 3.5, s * 7, 0.4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = alpha;
+
+  /* Face */
+  ctx.fillStyle = "#1e293b";
+  ctx.beginPath();
+  ctx.ellipse(s * 5.5, -s * 19, s * 1.35, s * 1.7, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(s * 1.2, -s * 19.2, s * 1.25, s * 1.6, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#fff";
+  ctx.beginPath();
+  ctx.arc(s * 5.9, -s * 19.6, s * 0.45, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(s * 1.6, -s * 19.8, s * 0.4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "#db2777";
+  ctx.lineWidth = s * 0.7;
+  ctx.beginPath();
+  ctx.arc(s * 3.2, -s * 14.5, s * 2.2, 0.15, Math.PI - 0.15);
+  ctx.stroke();
+
+  if (inGlimpse) {
+    ctx.globalAlpha = alpha * 0.9;
+    for (let i = 0; i < 7; i++) {
+      const ang = t * 2 + i * 0.9;
+      const sparkX = Math.cos(ang) * s * (18 + (i % 3) * 6);
+      const sparkY = Math.sin(ang * 1.3) * s * (14 + (i % 2) * 8) - s * 6;
+      ctx.fillStyle = i % 2 === 0 ? "#fde68a" : "#a5f3fc";
+      ctx.beginPath();
+      ctx.arc(sparkX, sparkY, s * (1.1 + (i % 3) * 0.4), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
   ctx.restore();
 }
 
@@ -6221,7 +6335,8 @@ function adventurePassScoreForIndex(i) {
     return 10500 + Math.round((lostI * (11800 - 10500)) / Math.max(1, ADVENTURE_LOST_CITY_LEVEL_COUNT - 1));
   }
   const merI = i - ADVENTURE_MERMAID_START_INDEX;
-  return 11200 + Math.round((merI * (12600 - 11200)) / Math.max(1, ADVENTURE_MERMAID_LEVEL_COUNT - 1));
+  /* Harder than Lost City — kraken hauls should not breeze the chart. */
+  return 14200 + Math.round((merI * (16800 - 14200)) / Math.max(1, ADVENTURE_MERMAID_LEVEL_COUNT - 1));
 }
 
 function drawAdventureThemeOverlayInner(now) {
@@ -7682,29 +7797,29 @@ function buildAdventureLevels() {
       passScore: adventurePassScoreForIndex(i),
       roundMs:
         Math.max(
-          isMermaid ? 45_000 : isLostCity ? 46_000 : isIce ? 47_000 : isBonus ? 44_000 : 46_000,
+          isMermaid ? 42_000 : isLostCity ? 46_000 : isIce ? 47_000 : isBonus ? 44_000 : 46_000,
           reef.roundMs - tier * 2200 - i * 420,
         ) + adventureLevelTimeBonusMs(i),
       spawnMin: Math.max(
-        isMermaid ? 135 : isLostCity ? 140 : isIce ? 150 : isBonus ? 165 : 185,
+        isMermaid ? 115 : isLostCity ? 140 : isIce ? 150 : isBonus ? 165 : 185,
         Math.min(400, reef.spawnMin - i * 12),
       ),
       spawnMax: Math.max(
-        isMermaid ? 330 : isLostCity ? 340 : isIce ? 360 : isBonus ? 390 : 430,
+        isMermaid ? 280 : isLostCity ? 340 : isIce ? 360 : isBonus ? 390 : 430,
         Math.min(1500, reef.spawnMax - i * 30),
       ),
       maxFish: Math.min(
-        isMermaid ? 22 : isLostCity ? 21 : isIce ? 20 : isBonus ? 19 : 18,
+        isMermaid ? 24 : isLostCity ? 21 : isIce ? 20 : isBonus ? 19 : 18,
         reef.maxFish + Math.floor(i / 2.4),
       ),
       fishSpeed: Math.max(
         0.96,
         reef.fishSpeed *
           (1.12 + i * 0.02) *
-          (isMermaid ? 0.8 : isLostCity ? 0.82 : isIce ? 0.84 : isBonus ? 0.94 : 1),
+          (isMermaid ? 0.92 : isLostCity ? 0.82 : isIce ? 0.84 : isBonus ? 0.94 : 1),
       ),
       rareRollMult: Math.max(
-        isMermaid || isLostCity || isIce ? 0.66 : 0.55,
+        isMermaid ? 0.58 : isLostCity || isIce ? 0.66 : 0.55,
         reef.rareRollMult * (0.97 - i * 0.009),
       ),
     });
