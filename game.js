@@ -14177,44 +14177,8 @@ let adventureLockUnlockListener = null;
 let adventureHomeReturnInProgress = false;
 
 function returnAdventureButtonFromCenter(done) {
-  if (!btnAdventureMode) {
-    done();
-    return;
-  }
-  const prefersReducedMotion =
-    typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (prefersReducedMotion || !btnAdventureMode.classList.contains("adventure-launch--centered")) {
-    done();
-    return;
-  }
-
-  appRoot?.classList.remove("app--adventure-unlock-celebrate");
-  if (adventureUnlockBanner) {
-    adventureUnlockBanner.hidden = true;
-    adventureUnlockBanner.setAttribute("aria-hidden", "true");
-    adventureUnlockBanner.classList.remove("adventure-unlock-banner--active");
-  }
-
-  btnAdventureMode.classList.remove("adventure-launch--flash", "adventure-launch--unlock-ready");
-  adventureUnlockHint?.classList.remove("adventure-launch__hint--centered");
-  btnAdventureMode.classList.add("adventure-launch--return");
-
-  let finished = false;
-  const finish = () => {
-    if (finished) return;
-    finished = true;
-    btnAdventureMode.removeEventListener("animationend", onReturnDone);
-    btnAdventureMode.classList.remove("adventure-launch--return");
-    done();
-  };
-
-  const onReturnDone = (e) => {
-    if (e.target !== btnAdventureMode || e.animationName !== "adventureLaunchReturnFromCenter") return;
-    finish();
-  };
-
-  btnAdventureMode.addEventListener("animationend", onReturnDone);
-  window.setTimeout(finish, 1100);
+  /* Adventure stays in the dock middle slot — no fly-out return animation. */
+  done();
 }
 
 function clearAdventureHomeCelebration() {
@@ -14236,6 +14200,7 @@ function clearAdventureHomeCelebration() {
     "adventure-launch--unlock-ready",
     "adventure-launch--rise",
     "adventure-launch--centered",
+    "adventure-launch--return",
   );
   if (adventureUnlockBanner) {
     adventureUnlockBanner.hidden = true;
@@ -14304,44 +14269,19 @@ function startAdventureHomeUnlockAnimation() {
   showAdventureHomeUnlockBanner();
   appRoot?.classList.add("app--adventure-unlock-celebrate");
   setStartMoreOptionsOpen(true);
-  btnAdventureMode.classList.add("adventure-launch--celebrate");
+  /* Stay in the dock middle slot — glow / unlock in place (no fixed fly-out). */
+  btnAdventureMode.classList.remove("adventure-launch--rise", "adventure-launch--centered", "adventure-launch--return");
+  btnAdventureMode.classList.add("adventure-launch--celebrate", "adventure-launch--flash", "adventure-launch--unlock-ready");
   adventureUnlockHint?.classList.add("adventure-launch__hint--celebrate");
+  adventureUnlockHint?.classList.remove("adventure-launch__hint--centered");
   adventureLock.hidden = false;
   adventureLock.classList.remove("adventure-launch__lock--unlocking", "adventure-launch__lock--unlocked");
   playAdventureHomeUnlockSound();
   updateAdventureLaunchUI();
 
-  const finishRise = () => {
-    if (!isAdventureHomeCelebrationActive()) return;
-    btnAdventureMode.classList.remove("adventure-launch--rise");
-    btnAdventureMode.classList.add("adventure-launch--centered", "adventure-launch--flash", "adventure-launch--unlock-ready");
-    adventureUnlockHint?.classList.add("adventure-launch__hint--centered");
-    window.setTimeout(beginAdventureLockUnlockSequence, 500);
-    updateAdventureLaunchUI();
-  };
-
   const prefersReducedMotion =
     typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  if (prefersReducedMotion) {
-    btnAdventureMode.classList.add("adventure-launch--centered", "adventure-launch--flash", "adventure-launch--unlock-ready");
-    adventureUnlockHint?.classList.add("adventure-launch__hint--centered");
-    window.setTimeout(beginAdventureLockUnlockSequence, 300);
-    return;
-  }
-
-  btnAdventureMode.classList.add("adventure-launch--rise");
-  const onRiseDone = (e) => {
-    if (e.target !== btnAdventureMode || e.animationName !== "adventureLaunchRiseToCenter") return;
-    btnAdventureMode.removeEventListener("animationend", onRiseDone);
-    finishRise();
-  };
-  btnAdventureMode.addEventListener("animationend", onRiseDone);
-  window.setTimeout(() => {
-    if (!btnAdventureMode.classList.contains("adventure-launch--rise")) return;
-    btnAdventureMode.removeEventListener("animationend", onRiseDone);
-    finishRise();
-  }, 1900);
+  window.setTimeout(beginAdventureLockUnlockSequence, prefersReducedMotion ? 300 : 700);
 }
 
 function showHomePanel() {
@@ -14444,10 +14384,9 @@ function updateAdventureLaunchUI() {
   const celebrating = isAdventureHomeCelebrationActive();
   const total = gameMeta.totalTreasureChests || 0;
   const lockUnlocking = adventureLock?.classList.contains("adventure-launch__lock--unlocking");
-  const rising = btnAdventureMode?.classList.contains("adventure-launch--rise");
   if (adventureLock) {
     if (!unlocked) adventureLock.hidden = false;
-    else if (celebrating && (rising || lockUnlocking)) adventureLock.hidden = false;
+    else if (celebrating && lockUnlocking) adventureLock.hidden = false;
     else if (!celebrating) adventureLock.hidden = true;
   }
   if (btnAdventureMode) {
@@ -15574,6 +15513,7 @@ function startTreasureMapReveal(crabX, crabY, facing) {
   const now = performance.now();
   treasureChestCinematic = {
     phase: "anticipate",
+    tier: "rare",
     startX: crabX,
     startY: crabY,
     x: crabX,
@@ -15584,6 +15524,8 @@ function startTreasureMapReveal(crabX, crabY, facing) {
     scale: 1,
     facing: facing >= 0 ? 1 : -1,
     lidOpen: 0,
+    shakeX: 0,
+    shakeY: 0,
     startedAt: now,
     anticipateStartedAt: now,
     flyStartedAt: 0,
@@ -15642,9 +15584,22 @@ function updateTreasureChestCinematic(now) {
     }
   } else if (c.phase === "open") {
     const openT = Math.min(1, (now - c.openStartedAt) / TREASURE_CINEMATIC_OPEN_MS);
-    c.lidOpen = openT ** 0.75;
-    c.glowPulse = 0.7 + Math.sin(openT * Math.PI * 4) * 0.3;
-    if (openT > 0.18 && now - c.lastSparkleAt > 110) {
+    /* Match shop rare chest: brief shake, then hinged lid opens (~15–22°). */
+    const shakeEnd = 0.22;
+    if (openT < shakeEnd) {
+      const shakeAmt = (1 - openT / shakeEnd) * 5.5 * dpr;
+      c.shakeX = Math.sin(openT * Math.PI * 28) * shakeAmt;
+      c.shakeY = Math.cos(openT * Math.PI * 22) * shakeAmt * 0.45;
+      c.lidOpen = 0;
+      c.glowPulse = 0.45 + openT * 0.4;
+    } else {
+      c.shakeX = 0;
+      c.shakeY = 0;
+      const lidT = Math.min(1, (openT - shakeEnd) / (1 - shakeEnd));
+      c.lidOpen = lidT ** 0.7;
+      c.glowPulse = 0.7 + Math.sin(lidT * Math.PI * 4) * 0.3;
+    }
+    if (openT > shakeEnd + 0.08 && now - c.lastSparkleAt > 110) {
       spawnTreasureCinematicBurst(c.x, c.y - 28 * dpr * c.scale, 14, 52);
       spawnTreasureCinematicBurst(c.x + (Math.random() - 0.5) * 40 * dpr, c.y - 8 * dpr * c.scale, 8, 44);
       c.lastSparkleAt = now;
@@ -15656,6 +15611,8 @@ function updateTreasureChestCinematic(now) {
       c.phase = "hold";
       c.holdStartedAt = now;
       c.lidOpen = 1;
+      c.shakeX = 0;
+      c.shakeY = 0;
       spawnTreasureCinematicBurst(c.x, c.y, 64, 46);
     }
   } else if (c.phase === "hold") {
@@ -24256,103 +24213,253 @@ function drawClam() {
   ctx.restore();
 }
 
-/** Treasure chest on the jackpot crab (local space: origin = crab center). */
+/** Rare pirate trunk (shop rare chest palette) on the jackpot crab / unlock cinematic. */
 function drawTreasureChestInCrabSpace(sc, lidOpen = 0) {
   const chestCx = 0;
   const chestTop = -56 * sc;
-  const cw = 40 * sc;
-  const ch = 26 * sc;
+  const cw = 42 * sc;
+  const ch = 28 * sc;
   const x0 = chestCx - cw * 0.5;
   const y0 = chestTop;
-  const rr = Math.min(3 * sc, cw * 0.18, ch * 0.22);
-  const goldTop = ctx.createLinearGradient(x0, y0, x0 + cw, y0 + ch);
-  goldTop.addColorStop(0, "#fde68a");
-  goldTop.addColorStop(0.25, "#fbbf24");
-  goldTop.addColorStop(0.5, "#f59e0b");
-  goldTop.addColorStop(0.78, "#d97706");
-  goldTop.addColorStop(1, "#b45309");
-  ctx.fillStyle = goldTop;
-  ctx.strokeStyle = "#78350f";
-  ctx.lineWidth = 1.5 * sc;
-  ctx.beginPath();
-  ctx.moveTo(x0 + rr, y0);
-  ctx.lineTo(x0 + cw - rr, y0);
-  ctx.quadraticCurveTo(x0 + cw, y0, x0 + cw, y0 + rr);
-  ctx.lineTo(x0 + cw, y0 + ch - rr);
-  ctx.quadraticCurveTo(x0 + cw, y0 + ch, x0 + cw - rr, y0 + ch);
-  ctx.lineTo(x0 + rr, y0 + ch);
-  ctx.quadraticCurveTo(x0, y0 + ch, x0, y0 + ch - rr);
-  ctx.lineTo(x0, y0 + rr);
-  ctx.quadraticCurveTo(x0, y0, x0 + rr, y0);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
+  const woodHi = "#9a3412";
+  const plank = "#7c2d12";
+  const woodLo = "#431407";
+  const metalHi = "#f1f5f9";
+  const metalLo = "#64748b";
+  const stud = "#334155";
+  const rim = "#cbd5e1";
+  const cyan = "#67e8f9";
+  const cyanInk = "#0e7490";
 
-  const lidH = 9 * sc;
-  const hingeY = y0 + lidH;
+  const bodyGrad = ctx.createLinearGradient(x0, y0, x0, y0 + ch);
+  bodyGrad.addColorStop(0, woodHi);
+  bodyGrad.addColorStop(0.55, plank);
+  bodyGrad.addColorStop(1, woodLo);
 
-  if (lidOpen < 1) {
-    ctx.save();
-    ctx.globalAlpha = Math.max(0, 1 - lidOpen * 1.35);
-    ctx.fillStyle = "#451a03";
+  const metalGrad = (x, y, hgt) => {
+    const g = ctx.createLinearGradient(x, y, x, y + hgt);
+    g.addColorStop(0, metalHi);
+    g.addColorStop(1, metalLo);
+    return g;
+  };
+
+  const drawStrap = (sx, yA, yB, halfW = 2.6 * sc) => {
+    ctx.fillStyle = metalGrad(sx - halfW, yA, yB - yA);
+    ctx.strokeStyle = stud;
+    ctx.lineWidth = 0.55 * sc;
     ctx.beginPath();
-    ctx.arc(chestCx, y0 + ch * 0.42, 3.2 * sc, 0, Math.PI * 2);
+    ctx.roundRect(sx - halfW, yA, halfW * 2, yB - yA, 1.2 * sc);
     ctx.fill();
-    ctx.fillStyle = "rgba(255, 250, 220, 0.9)";
-    ctx.beginPath();
-    ctx.arc(chestCx - 0.9 * sc, y0 + ch * 0.4, 1 * sc, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  }
-
-  ctx.save();
-  ctx.translate(chestCx, hingeY);
-  ctx.rotate(-lidOpen * 2.05);
-  ctx.translate(-chestCx, -hingeY);
-  ctx.fillStyle = "#fcd34d";
-  ctx.beginPath();
-  ctx.moveTo(x0 - 1.5 * sc, y0 + lidH);
-  ctx.lineTo(chestCx - cw * 0.42, y0 - 2 * sc);
-  ctx.quadraticCurveTo(chestCx, y0 - 5 * sc, chestCx + cw * 0.42, y0 - 2 * sc);
-  ctx.lineTo(x0 + cw + 1.5 * sc, y0 + lidH);
-  ctx.closePath();
-  ctx.fill();
-  ctx.strokeStyle = "#92400e";
-  ctx.lineWidth = 1.2 * sc;
-  ctx.stroke();
-  ctx.restore();
-
-  if (lidOpen < 0.92) {
-    ctx.strokeStyle = "rgba(120, 53, 15, 0.55)";
-    ctx.lineWidth = 1.1 * sc;
-    ctx.beginPath();
-    ctx.moveTo(x0 + 4 * sc, y0 + lidH + 2 * sc);
-    ctx.lineTo(x0 + cw - 4 * sc, y0 + lidH + 2 * sc);
     ctx.stroke();
-  }
+    ctx.fillStyle = stud;
+    for (const cy of [yA + 2.2 * sc, (yA + yB) / 2, yB - 2.2 * sc]) {
+      ctx.beginPath();
+      ctx.arc(sx, cy, 0.85 * sc, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  };
 
-  ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
+  const drawCorner = (cx, cy, flipX, flipY) => {
+    ctx.fillStyle = metalGrad(cx, cy, 7 * sc);
+    ctx.strokeStyle = stud;
+    ctx.lineWidth = 0.45 * sc;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + 7 * sc * flipX, cy);
+    ctx.lineTo(cx + 7 * sc * flipX, cy + 2 * sc * flipY);
+    ctx.lineTo(cx + 2.2 * sc * flipX, cy + 2 * sc * flipY);
+    ctx.lineTo(cx + 2.2 * sc * flipX, cy + 7 * sc * flipY);
+    ctx.lineTo(cx, cy + 7 * sc * flipY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  };
+
+  /* Body */
+  ctx.fillStyle = bodyGrad;
+  ctx.strokeStyle = woodLo;
+  ctx.lineWidth = 1.15 * sc;
   ctx.beginPath();
-  ctx.ellipse(chestCx - 8 * sc, y0 + ch * 0.35, 8 * sc, 4 * sc, -0.25, 0, Math.PI * 2);
+  ctx.moveTo(x0 + 1.5 * sc, y0 + 4 * sc);
+  ctx.lineTo(x0 + cw - 1.5 * sc, y0 + 4 * sc);
+  ctx.lineTo(x0 + cw - 1.5 * sc, y0 + ch - 3 * sc);
+  ctx.quadraticCurveTo(x0 + cw - 1.5 * sc, y0 + ch, x0 + cw - 6 * sc, y0 + ch);
+  ctx.lineTo(x0 + 6 * sc, y0 + ch);
+  ctx.quadraticCurveTo(x0 + 1.5 * sc, y0 + ch, x0 + 1.5 * sc, y0 + ch - 3 * sc);
+  ctx.closePath();
   ctx.fill();
+  ctx.stroke();
 
-  ctx.strokeStyle = "rgba(185, 120, 20, 0.65)";
+  ctx.strokeStyle = plank;
+  ctx.globalAlpha = 0.42;
   ctx.lineWidth = 1 * sc;
   ctx.beginPath();
-  ctx.moveTo(x0 + 3 * sc, y0 + ch * 0.55);
-  ctx.lineTo(x0 + cw - 3 * sc, y0 + ch * 0.55);
+  ctx.moveTo(x0 + 3 * sc, y0 + ch * 0.48);
+  ctx.lineTo(x0 + cw - 3 * sc, y0 + ch * 0.48);
+  ctx.stroke();
+  ctx.globalAlpha = 0.32;
+  ctx.beginPath();
+  ctx.moveTo(x0 + 3 * sc, y0 + ch * 0.72);
+  ctx.lineTo(x0 + cw - 3 * sc, y0 + ch * 0.72);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  /* Rim band */
+  const rimY = y0 + 3.2 * sc;
+  ctx.fillStyle = metalGrad(x0, rimY, 4.2 * sc);
+  ctx.strokeStyle = stud;
+  ctx.lineWidth = 0.5 * sc;
+  ctx.beginPath();
+  ctx.roundRect(x0 + 0.5 * sc, rimY, cw - sc, 4.2 * sc, 1 * sc);
+  ctx.fill();
   ctx.stroke();
 
-  if (lidOpen > 0.35) {
-    const glow = (lidOpen - 0.35) / 0.65;
-    ctx.save();
-    ctx.globalAlpha = glow * 0.55;
-    ctx.fillStyle = "rgba(255, 230, 140, 0.85)";
+  if (lidOpen < 0.85) {
+    drawStrap(chestCx - cw * 0.28, y0 - 10 * sc, y0 + ch - 1 * sc);
+    drawStrap(chestCx + cw * 0.28, y0 - 10 * sc, y0 + ch - 1 * sc);
+  } else {
+    drawStrap(chestCx - cw * 0.28, y0 + 5 * sc, y0 + ch - 1 * sc);
+    drawStrap(chestCx + cw * 0.28, y0 + 5 * sc, y0 + ch - 1 * sc);
+  }
+  drawCorner(x0 + 2.5 * sc, y0 + 6 * sc, 1, 1);
+  drawCorner(x0 + cw - 2.5 * sc, y0 + 6 * sc, -1, 1);
+
+  /* Lock plate + cyan gem (closed) */
+  if (lidOpen < 0.55) {
+    const lx = chestCx - 5.5 * sc;
+    const ly = y0 + 8 * sc;
+    const brass = ctx.createLinearGradient(lx, ly, lx, ly + 12 * sc);
+    brass.addColorStop(0, "#fde68a");
+    brass.addColorStop(1, "#b45309");
+    ctx.fillStyle = brass;
+    ctx.strokeStyle = "#78350f";
+    ctx.lineWidth = 0.65 * sc;
     ctx.beginPath();
-    ctx.ellipse(chestCx, y0 + ch * 0.2, cw * 0.38, ch * 0.45, 0, 0, Math.PI * 2);
+    ctx.roundRect(lx, ly, 11 * sc, 12.5 * sc, 1.6 * sc);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = cyan;
+    ctx.strokeStyle = cyanInk;
+    ctx.lineWidth = 0.5 * sc;
+    ctx.beginPath();
+    ctx.arc(chestCx, ly + 5 * sc, 2.1 * sc, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,0.8)";
+    ctx.beginPath();
+    ctx.arc(chestCx - 0.7 * sc, ly + 4.3 * sc, 0.65 * sc, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#78350f";
+    ctx.fillRect(chestCx - 0.7 * sc, ly + 6.6 * sc, 1.4 * sc, 3.8 * sc);
+  }
+
+  /* Interior glow + coins when opening (shop rare open look) */
+  if (lidOpen > 0.2) {
+    const glow = (lidOpen - 0.2) / 0.8;
+    ctx.save();
+    ctx.globalAlpha = glow * 0.7;
+    const lootGlow = ctx.createRadialGradient(chestCx, y0 + 6 * sc, 0, chestCx, y0 + 6 * sc, cw * 0.42);
+    lootGlow.addColorStop(0, "rgba(255, 246, 200, 0.95)");
+    lootGlow.addColorStop(0.45, "rgba(255, 211, 77, 0.75)");
+    lootGlow.addColorStop(1, "rgba(255, 211, 77, 0)");
+    ctx.fillStyle = lootGlow;
+    ctx.beginPath();
+    ctx.ellipse(chestCx, y0 + 6 * sc, cw * 0.4, ch * 0.38, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
+
+    const coins = [
+      [-10, 2, 3.2],
+      [-2, -1, 3.8],
+      [7, -0.5, 3.6],
+      [14, 3, 3.1],
+      [-6, 7, 2.9],
+      [4, 7.5, 3],
+    ];
+    for (const [ox, oy, r] of coins) {
+      ctx.globalAlpha = Math.min(1, glow * 1.2);
+      ctx.fillStyle = "#ffd94d";
+      ctx.strokeStyle = "#c8901f";
+      ctx.lineWidth = 0.55 * sc;
+      ctx.beginPath();
+      ctx.arc(chestCx + ox * sc, y0 + 8 * sc + oy * sc, r * sc, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#fff2b0";
+      ctx.beginPath();
+      ctx.arc(chestCx + ox * sc - r * 0.3 * sc, y0 + 8 * sc + oy * sc - r * 0.3 * sc, r * 0.32 * sc, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    if (lidOpen > 0.7) {
+      ctx.fillStyle = cyan;
+      ctx.strokeStyle = cyanInk;
+      ctx.lineWidth = 0.5 * sc;
+      ctx.beginPath();
+      ctx.arc(chestCx, y0 + 4 * sc, 2.8 * sc, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      ctx.beginPath();
+      ctx.arc(chestCx - 0.8 * sc, y0 + 3.2 * sc, 0.8 * sc, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
+
+  /* Domed lid — hinged open like shop rare (~15° + lift) */
+  const lidHingeY = y0 + 4 * sc;
+  const lidAngle = -lidOpen * 0.38;
+  const lidLift = lidOpen * 11 * sc;
+  ctx.save();
+  ctx.translate(chestCx, lidHingeY);
+  ctx.rotate(lidAngle);
+  ctx.translate(-chestCx, -lidHingeY - lidLift);
+
+  const lidGrad = ctx.createLinearGradient(x0, y0 - 14 * sc, x0, y0 + 5 * sc);
+  lidGrad.addColorStop(0, woodHi);
+  lidGrad.addColorStop(0.5, plank);
+  lidGrad.addColorStop(1, woodLo);
+  ctx.fillStyle = lidGrad;
+  ctx.strokeStyle = woodLo;
+  ctx.lineWidth = 1.1 * sc;
+  ctx.beginPath();
+  ctx.moveTo(x0 + 1.5 * sc, y0 + 4 * sc);
+  ctx.bezierCurveTo(x0 + 1.5 * sc, y0 - 12 * sc, x0 + cw * 0.28, y0 - 16 * sc, chestCx, y0 - 16 * sc);
+  ctx.bezierCurveTo(x0 + cw * 0.72, y0 - 16 * sc, x0 + cw - 1.5 * sc, y0 - 12 * sc, x0 + cw - 1.5 * sc, y0 + 4 * sc);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.strokeStyle = rim;
+  ctx.globalAlpha = 0.72;
+  ctx.lineWidth = 1.05 * sc;
+  ctx.beginPath();
+  ctx.moveTo(x0 + 5 * sc, y0 - 4 * sc);
+  ctx.bezierCurveTo(x0 + cw * 0.28, y0 - 9 * sc, x0 + cw * 0.72, y0 - 9 * sc, x0 + cw - 5 * sc, y0 - 4 * sc);
+  ctx.stroke();
+  ctx.globalAlpha = 0.45;
+  ctx.strokeStyle = plank;
+  ctx.lineWidth = 0.7 * sc;
+  ctx.beginPath();
+  ctx.moveTo(x0 + 7 * sc, y0 - 8 * sc);
+  ctx.bezierCurveTo(x0 + cw * 0.32, y0 - 12 * sc, x0 + cw * 0.68, y0 - 12 * sc, x0 + cw - 7 * sc, y0 - 8 * sc);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  ctx.fillStyle = metalGrad(x0, y0 + 0.5 * sc, 4 * sc);
+  ctx.strokeStyle = stud;
+  ctx.lineWidth = 0.45 * sc;
+  ctx.beginPath();
+  ctx.roundRect(x0 + 0.8 * sc, y0 + 0.8 * sc, cw - 1.6 * sc, 4 * sc, 1 * sc);
+  ctx.fill();
+  ctx.stroke();
+
+  if (lidOpen > 0.15) {
+    drawStrap(chestCx - cw * 0.28, y0 - 12 * sc, y0 + 4 * sc);
+    drawStrap(chestCx + cw * 0.28, y0 - 12 * sc, y0 + 4 * sc);
+  }
+
+  ctx.restore();
 }
 
 function drawJackpotCrabChestArms(sc) {
@@ -24420,8 +24527,9 @@ function drawTreasureChestCinematic() {
   const glow = c.glowPulse || 0;
   const spotR = Math.max(w, h) * (0.28 + glow * 0.12);
   const spot = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, spotR);
-  spot.addColorStop(0, `rgba(255, 213, 74, ${0.22 + glow * 0.28})`);
-  spot.addColorStop(0.45, `rgba(255, 180, 50, ${0.08 + glow * 0.12})`);
+  spot.addColorStop(0, `rgba(103, 232, 249, ${0.18 + glow * 0.22})`);
+  spot.addColorStop(0.35, `rgba(255, 213, 74, ${0.16 + glow * 0.22})`);
+  spot.addColorStop(0.55, `rgba(255, 180, 50, ${0.06 + glow * 0.1})`);
   spot.addColorStop(1, "rgba(2, 8, 18, 0)");
   ctx.fillStyle = spot;
   ctx.fillRect(0, 0, w, h);
@@ -24429,7 +24537,7 @@ function drawTreasureChestCinematic() {
   for (let i = 0; i < 3; i++) {
     const ringT = ((elapsed / 900) + i * 0.33) % 1;
     const ringR = (40 + ringT * 120) * dpr * c.scale;
-    ctx.strokeStyle = `rgba(255, 213, 74, ${(1 - ringT) * 0.55 * glow})`;
+    ctx.strokeStyle = `rgba(103, 232, 249, ${(1 - ringT) * 0.45 * glow})`;
     ctx.lineWidth = (3 - ringT * 1.5) * dpr;
     ctx.beginPath();
     ctx.arc(c.x, c.y, ringR, 0, Math.PI * 2);
@@ -24469,7 +24577,7 @@ function drawTreasureChestCinematic() {
   }
 
   ctx.save();
-  ctx.translate(c.x, c.y);
+  ctx.translate(c.x + (c.shakeX || 0), c.y + (c.shakeY || 0));
   ctx.scale(c.scale * c.facing, c.scale);
   drawTreasureChestInCrabSpace(c.sc, c.lidOpen);
   ctx.restore();
@@ -25676,15 +25784,6 @@ btnAdventureMode?.addEventListener("click", () => {
     return;
   }
   if (adventureHomeReturnInProgress) return;
-  if (isAdventureHomeCelebrationActive() && btnAdventureMode?.classList.contains("adventure-launch--centered")) {
-    adventureHomeReturnInProgress = true;
-    returnAdventureButtonFromCenter(() => {
-      adventureHomeReturnInProgress = false;
-      clearAdventureHomeCelebration();
-      openAdventureHub();
-    });
-    return;
-  }
   clearAdventureHomeCelebration();
   openAdventureHub();
 });
