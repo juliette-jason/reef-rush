@@ -5716,12 +5716,12 @@ function drawMermaidCoastBed(themeId) {
     const sitS = dpr * 0.9;
     ctx.save();
     ctx.globalAlpha = sitAlpha;
-    ctx.translate(w * 0.28, base - dpr * 28);
+    ctx.translate(w * 0.28, base - dpr * 28 + Math.sin(t * 1.4 + 0.6) * dpr * 1.5);
     drawSittingMermaidFigure(sitS, lookL, 1, t, sitAlpha, 0.6);
     ctx.restore();
     ctx.save();
     ctx.globalAlpha = sitAlpha;
-    ctx.translate(w * 0.68, base - dpr * 26);
+    ctx.translate(w * 0.68, base - dpr * 26 + Math.sin(t * 1.25 + 2.1) * dpr * 1.5);
     drawSittingMermaidFigure(sitS * 0.92, lookR, -1, t, sitAlpha, 2.1);
     ctx.restore();
   }
@@ -6196,66 +6196,91 @@ function drawSwimmingMermaidFigure(s, look, kick, t, alpha) {
 }
 
 /**
- * Upright mermaid lounging on a rock — pretty face, flowy hair, soft hair-twirl idle.
+ * Upright mermaid lounging on a rock — face clear, hair flowing behind, soft idle sway.
  */
 function drawSittingMermaidFigure(s, look, faceDir, t, alpha, swayPhase) {
   const skin = look.skin;
   const skinShade = look.skinShade;
-  const sway = Math.sin(t * 1.15 + swayPhase) * 0.035;
-  const breath = Math.sin(t * 1.6 + swayPhase) * s * 0.35;
-  /* Hair twirl cycle — hand lifts a curl and slowly spins it */
-  const twirl = t * 1.35 + swayPhase;
-  const twirlLift = 0.55 + 0.45 * Math.sin(twirl * 0.7);
-  const curlSpin = twirl * 2.2;
-  const lockWave = Math.sin(t * 2.1 + swayPhase) * s * 2.4;
-  const lockWave2 = Math.sin(t * 1.7 + swayPhase + 1.3) * s * 2;
+  /* Whole-body idle motion */
+  const sway = Math.sin(t * 1.25 + swayPhase) * 0.055;
+  const bob = Math.sin(t * 1.55 + swayPhase * 0.7) * s * 1.1;
+  const lean = Math.sin(t * 0.85 + swayPhase + 0.4) * 0.03;
+  const breath = Math.sin(t * 1.9 + swayPhase) * s * 0.4;
+  /* Hair flow — strong enough to read as moving locks in current */
+  const flowA = Math.sin(t * 2.6 + swayPhase) * s * 4.5;
+  const flowB = Math.sin(t * 2.1 + swayPhase + 1.1) * s * 3.8;
+  const flowC = Math.cos(t * 2.9 + swayPhase + 0.5) * s * 3.2;
+  const flowD = Math.sin(t * 3.3 + swayPhase + 2.2) * s * 2.6;
 
   ctx.save();
+  ctx.translate(0, bob);
   ctx.scale(faceDir, 1);
-  ctx.rotate(sway);
+  ctx.rotate(sway + lean);
 
-  const hairGrad = ctx.createLinearGradient(s * 6, -s * 30, -s * 20, s * 10);
+  const hairGrad = ctx.createLinearGradient(s * 4, -s * 30, -s * 18, s * 14);
   hairGrad.addColorStop(0, look.hair[0]);
   hairGrad.addColorStop(0.3, look.hair[1]);
   hairGrad.addColorStop(0.65, look.hair[2]);
   hairGrad.addColorStop(1, look.hair[3]);
 
-  /* Back hair cascade (behind body) — long flowing sheets */
+  /* ===== Back hair (behind everything) — wide flowing sheets ===== */
   ctx.fillStyle = hairGrad;
   ctx.beginPath();
-  ctx.moveTo(-s * 2, -s * 18);
-  ctx.quadraticCurveTo(-s * 18 + lockWave * 0.4, -s * 8, -s * 16 + lockWave, s * 10);
-  ctx.quadraticCurveTo(-s * 10, s * 16, -s * 2, s * 8);
-  ctx.quadraticCurveTo(-s * 6, -s * 2, -s * 4, -s * 14);
+  ctx.moveTo(-s * 4, -s * 20);
+  ctx.quadraticCurveTo(-s * 16 + flowA * 0.5, -s * 6, -s * 20 + flowA, s * 8);
+  ctx.quadraticCurveTo(-s * 14 + flowB * 0.3, s * 16, -s * 4, s * 6);
+  ctx.quadraticCurveTo(-s * 8, -s * 4, -s * 5, -s * 16);
   ctx.closePath();
   ctx.fill();
   ctx.beginPath();
-  ctx.moveTo(s * 6, -s * 20);
-  ctx.quadraticCurveTo(s * 20 + lockWave2 * 0.5, -s * 6, s * 18 + lockWave2, s * 12);
-  ctx.quadraticCurveTo(s * 12, s * 18, s * 4, s * 6);
-  ctx.quadraticCurveTo(s * 10, -s * 4, s * 6, -s * 16);
+  ctx.moveTo(s * 8, -s * 20);
+  ctx.quadraticCurveTo(s * 20 + flowB * 0.5, -s * 4, s * 22 + flowB, s * 10);
+  ctx.quadraticCurveTo(s * 14 + flowA * 0.25, s * 18, s * 5, s * 6);
+  ctx.quadraticCurveTo(s * 12, -s * 2, s * 8, -s * 16);
   ctx.closePath();
   ctx.fill();
 
-  /* Draped scaled tail */
+  /* Animated strand ribbons behind shoulders */
+  ctx.strokeStyle = look.hair[1];
+  ctx.lineCap = "round";
+  const backStrands = [
+    { x: -s * 6, w: 1.5, ph: 0, amp: flowA },
+    { x: -s * 10, w: 1.15, ph: 0.8, amp: flowC },
+    { x: s * 9, w: 1.5, ph: 1.4, amp: flowB },
+    { x: s * 13, w: 1.1, ph: 2.1, amp: flowD },
+  ];
+  for (const st of backStrands) {
+    ctx.lineWidth = s * st.w;
+    ctx.globalAlpha = alpha * 0.85;
+    ctx.beginPath();
+    ctx.moveTo(st.x, -s * 18);
+    const midX = st.x + st.amp * 0.55 + Math.sin(t * 2.4 + st.ph) * s * 2;
+    const tipX = st.x + st.amp + Math.sin(t * 2.8 + st.ph + 0.6) * s * 3;
+    ctx.quadraticCurveTo(midX, -s * 2, tipX, s * 12 + Math.sin(t * 2 + st.ph) * s * 2);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = alpha;
+
+  /* ===== Tail ===== */
   const tailGrad = ctx.createLinearGradient(0, s * 4, s * 28, s * 22);
   tailGrad.addColorStop(0, look.tail[0]);
   tailGrad.addColorStop(0.4, look.tail[1]);
   tailGrad.addColorStop(0.75, look.tail[2]);
   tailGrad.addColorStop(1, look.tail[3]);
+  const tailWag = Math.sin(t * 1.8 + swayPhase) * s * 2.2;
   ctx.fillStyle = tailGrad;
   ctx.beginPath();
   ctx.moveTo(-s * 2, s * 6);
-  ctx.quadraticCurveTo(s * 8, s * 10, s * 18, s * 14 + lockWave * 0.12);
-  ctx.quadraticCurveTo(s * 28, s * 12, s * 34, s * 18);
-  ctx.quadraticCurveTo(s * 30, s * 26, s * 20, s * 22);
+  ctx.quadraticCurveTo(s * 8, s * 10, s * 18, s * 14 + tailWag * 0.3);
+  ctx.quadraticCurveTo(s * 28, s * 12 + tailWag * 0.2, s * 34, s * 18 + tailWag);
+  ctx.quadraticCurveTo(s * 30, s * 26 + tailWag * 0.5, s * 20, s * 22);
   ctx.quadraticCurveTo(s * 8, s * 18, -s * 4, s * 12);
   ctx.closePath();
   ctx.fill();
   ctx.beginPath();
-  ctx.moveTo(s * 32, s * 18);
-  ctx.quadraticCurveTo(s * 44, s * 10 + Math.sin(t * 1.5 + swayPhase) * s * 1.5, s * 40, s * 20);
-  ctx.quadraticCurveTo(s * 46, s * 28, s * 34, s * 24);
+  ctx.moveTo(s * 32, s * 18 + tailWag);
+  ctx.quadraticCurveTo(s * 44, s * 10 + tailWag * 1.2, s * 40, s * 20 + tailWag);
+  ctx.quadraticCurveTo(s * 46, s * 28 + tailWag * 0.6, s * 34, s * 24 + tailWag * 0.4);
   ctx.closePath();
   ctx.fill();
   ctx.strokeStyle = look.scaleStroke;
@@ -6264,20 +6289,19 @@ function drawSittingMermaidFigure(s, look, faceDir, t, alpha, swayPhase) {
     const lx = s * (6 + i * 7);
     ctx.beginPath();
     ctx.moveTo(lx, s * (10 + i * 2));
-    ctx.quadraticCurveTo(lx + s * 4, s * (14 + i * 2), lx + s * 8, s * (12 + i));
+    ctx.quadraticCurveTo(lx + s * 4, s * (14 + i * 2) + tailWag * 0.15, lx + s * 8, s * (12 + i));
     ctx.stroke();
   }
 
-  /* Torso */
+  /* ===== Torso + shells ===== */
   const bodyGrad = ctx.createLinearGradient(0, -s * 10, 0, s * 8);
   bodyGrad.addColorStop(0, skin);
   bodyGrad.addColorStop(1, skinShade);
   ctx.fillStyle = bodyGrad;
   ctx.beginPath();
-  ctx.ellipse(s * 0.5, s * 1 + breath * 0.15, s * 8, s * 12, 0.05, 0, Math.PI * 2);
+  ctx.ellipse(s * 0.5, s * 1 + breath * 0.2, s * 8, s * 12, 0.05 + lean * 0.3, 0, Math.PI * 2);
   ctx.fill();
 
-  /* Clamshell top */
   const drawClam = (ox, oy, tilt, flip) => {
     ctx.save();
     ctx.translate(ox, oy);
@@ -6297,14 +6321,6 @@ function drawSittingMermaidFigure(s, look, faceDir, t, alpha, swayPhase) {
     ctx.quadraticCurveTo(s * 4.8, s * 0.8, 0, s * 2.4);
     ctx.closePath();
     ctx.fill();
-    ctx.strokeStyle = "rgba(255, 250, 255, 0.4)";
-    ctx.lineWidth = s * 0.3;
-    for (let r = -2; r <= 2; r++) {
-      ctx.beginPath();
-      ctx.moveTo(0, s * 2);
-      ctx.quadraticCurveTo(r * s * 1.2, 0, r * s * 1.8, -s * 2.4);
-      ctx.stroke();
-    }
     ctx.fillStyle = look.shellHi;
     ctx.beginPath();
     ctx.ellipse(0, -s * 1.6, s * 1.4, s * 1, 0, 0, Math.PI * 2);
@@ -6322,83 +6338,139 @@ function drawSittingMermaidFigure(s, look, faceDir, t, alpha, swayPhase) {
   ctx.arc(s * 0.8, -s * 0.8, s * 0.4, 0, Math.PI * 2);
   ctx.fill();
 
-  /* Far arm resting on rock */
+  /* Arms — gentle idle, resting on rock (no hair twirl) */
+  const armBob = Math.sin(t * 1.7 + swayPhase) * s * 1.2;
   ctx.strokeStyle = skin;
   ctx.lineWidth = s * 2.3;
   ctx.lineCap = "round";
   ctx.beginPath();
   ctx.moveTo(-s * 3, -s * 2);
-  ctx.quadraticCurveTo(-s * 10, s * 2, -s * 8, s * 8);
+  ctx.quadraticCurveTo(-s * 10, s * 2 + armBob * 0.3, -s * 8, s * 8 + armBob * 0.2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(s * 5, -s * 3);
+  ctx.quadraticCurveTo(s * 12, -s * 1 + armBob, s * 13, s * 5 + armBob * 0.5);
   ctx.stroke();
 
-  /* Head */
+  /* ===== Head (face stays clear of hair) ===== */
+  const headY = -s * 16.2 + breath * 0.12;
   ctx.fillStyle = skin;
   ctx.beginPath();
-  ctx.ellipse(s * 1.5, -s * 16.2 + breath * 0.1, s * 7.8, s * 8.8, 0, 0, Math.PI * 2);
+  ctx.ellipse(s * 1.5, headY, s * 7.8, s * 8.8, 0, 0, Math.PI * 2);
   ctx.fill();
-  /* Soft cheek blush */
-  ctx.globalAlpha = alpha * 0.35;
-  ctx.fillStyle = "#fda4af";
-  ctx.beginPath();
-  ctx.ellipse(s * 5.2, -s * 14.2, s * 2.2, s * 1.3, 0.2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(-s * 1.8, -s * 14.4, s * 2, s * 1.2, -0.2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.globalAlpha = alpha;
 
-  /* Flowy hair crown + long locks (drawn over scalp) */
+  /* Scalp crown only — sits ABOVE the forehead, does not drape over eyes */
   ctx.fillStyle = hairGrad;
   ctx.beginPath();
-  ctx.ellipse(s * 1.5, -s * 20.5, s * 10, s * 9, -0.08, 0, Math.PI * 2);
+  ctx.ellipse(s * 1.5, headY - s * 5.2, s * 9.2, s * 6.2, -0.06, Math.PI * 1.02, Math.PI * 1.98);
   ctx.fill();
-  /* Soft bangs */
+  /* Volume on top */
   ctx.beginPath();
-  ctx.moveTo(-s * 5, -s * 18);
-  ctx.quadraticCurveTo(-s * 1, -s * 12.5 + lockWave * 0.15, s * 1.5, -s * 13.5);
-  ctx.quadraticCurveTo(s * 5, -s * 12.5 - lockWave * 0.1, s * 9, -s * 18);
-  ctx.quadraticCurveTo(s * 7, -s * 24, s * 1.5, -s * 25.5);
-  ctx.quadraticCurveTo(-s * 3, -s * 24, -s * 5, -s * 18);
+  ctx.ellipse(s * 1.5, headY - s * 6.5, s * 8.5, s * 5.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  /* Soft fringe stopped well above eyes */
+  ctx.beginPath();
+  ctx.moveTo(-s * 5, headY - s * 5);
+  ctx.quadraticCurveTo(s * 0, headY - s * 3.2, s * 1.5, headY - s * 3.5);
+  ctx.quadraticCurveTo(s * 4, headY - s * 3.2, s * 8.5, headY - s * 5);
+  ctx.quadraticCurveTo(s * 6, headY - s * 9, s * 1.5, headY - s * 10);
+  ctx.quadraticCurveTo(-s * 2, headY - s * 9, -s * 5, headY - s * 5);
   ctx.closePath();
   ctx.fill();
-  /* Side cascade locks */
-  for (let i = 0; i < 4; i++) {
-    const side = i < 2 ? -1 : 1;
-    const idx = i % 2;
-    const ox = side * s * (6 + idx * 3);
-    const wave = (side > 0 ? lockWave : lockWave2) * (0.7 + idx * 0.25);
+
+  /* Side locks flowing off temples — stay OUTSIDE the face oval */
+  const sideLocks = [
+    { side: -1, ox: -s * 7.5, ph: 0.2, amp: flowA },
+    { side: -1, ox: -s * 10, ph: 1.0, amp: flowC },
+    { side: 1, ox: s * 10, ph: 1.6, amp: flowB },
+    { side: 1, ox: s * 12.5, ph: 2.4, amp: flowD },
+  ];
+  for (const lk of sideLocks) {
+    const tipX = lk.ox + lk.side * (s * 5 + Math.abs(lk.amp) * 0.35) + lk.amp * 0.4;
+    const tipY = s * 8 + Math.sin(t * 2.5 + lk.ph) * s * 2.5;
+    ctx.fillStyle = hairGrad;
     ctx.beginPath();
-    ctx.moveTo(ox, -s * 18);
-    ctx.quadraticCurveTo(ox + side * s * 8 + wave * 0.4, -s * 4, ox + side * s * 6 + wave, s * 8 + idx * s * 2);
-    ctx.quadraticCurveTo(ox + side * s * 2, s * 2, ox + side * s, -s * 10);
+    ctx.moveTo(lk.ox, headY - s * 4);
+    ctx.quadraticCurveTo(
+      lk.ox + lk.side * s * 6 + lk.amp * 0.35,
+      headY + s * 4,
+      tipX,
+      tipY
+    );
+    ctx.quadraticCurveTo(
+      lk.ox + lk.side * s * 2,
+      headY + s * 2,
+      lk.ox + lk.side * s * 0.5,
+      headY - s * 2
+    );
     ctx.closePath();
     ctx.fill();
   }
-  /* Highlight ribbon */
-  ctx.globalAlpha = alpha * 0.45;
+
+  /* Fine flowing stroke strands (clear motion) */
+  ctx.lineCap = "round";
+  for (let i = 0; i < 6; i++) {
+    const side = i < 3 ? -1 : 1;
+    const idx = i % 3;
+    const sx0 = side * s * (7.5 + idx * 2.2);
+    const wave = Math.sin(t * 2.7 + swayPhase + i * 0.9) * s * (3.5 + idx);
+    const wave2 = Math.cos(t * 3.1 + swayPhase + i * 0.7) * s * (2 + idx * 0.8);
+    ctx.strokeStyle = i % 2 === 0 ? look.hair[1] : look.hair[0];
+    ctx.lineWidth = s * (0.85 + idx * 0.2);
+    ctx.globalAlpha = alpha * (0.7 + idx * 0.08);
+    ctx.beginPath();
+    ctx.moveTo(sx0, headY - s * 5);
+    ctx.bezierCurveTo(
+      sx0 + side * s * 4 + wave * 0.4,
+      headY + s * 2,
+      sx0 + side * s * 7 + wave,
+      s * 4 + wave2 * 0.4,
+      sx0 + side * s * 5 + wave * 1.1,
+      s * 14 + wave2
+    );
+    ctx.stroke();
+  }
+  ctx.globalAlpha = alpha;
+
+  /* Highlight on crown only */
+  ctx.globalAlpha = alpha * 0.4;
   ctx.fillStyle = look.hairHi;
   ctx.beginPath();
-  ctx.ellipse(s * 5.5, -s * 22, s * 2.6, s * 6, 0.4, 0, Math.PI * 2);
+  ctx.ellipse(s * 4.5, headY - s * 7.5, s * 2.4, s * 4.5, 0.35, 0, Math.PI * 2);
   ctx.fill();
   ctx.globalAlpha = alpha;
 
-  /* Face features */
-  const eyeY = -s * 17.2;
-  const eyeL = -s * 0.4;
-  const eyeR = s * 4.2;
-  /* Brows */
+  /* ===== Face drawn LAST so hair never covers it ===== */
+  ctx.fillStyle = skin;
+  ctx.beginPath();
+  ctx.ellipse(s * 1.5, headY + s * 0.8, s * 6.6, s * 7.2, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.globalAlpha = alpha * 0.32;
+  ctx.fillStyle = "#fda4af";
+  ctx.beginPath();
+  ctx.ellipse(s * 5, headY + s * 2, s * 2, s * 1.2, 0.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(-s * 1.6, headY + s * 1.8, s * 1.9, s * 1.15, -0.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = alpha;
+
+  const eyeY = headY - s * 0.9;
+  const eyeL = -s * 0.3;
+  const eyeR = s * 4.1;
   ctx.strokeStyle = look.hair[2];
   ctx.lineWidth = s * 0.55;
   ctx.lineCap = "round";
   ctx.beginPath();
-  ctx.moveTo(eyeL - s * 1.6, eyeY - s * 2.4);
-  ctx.quadraticCurveTo(eyeL, eyeY - s * 3.1, eyeL + s * 1.6, eyeY - s * 2.2);
+  ctx.moveTo(eyeL - s * 1.6, eyeY - s * 2.3);
+  ctx.quadraticCurveTo(eyeL, eyeY - s * 3, eyeL + s * 1.6, eyeY - s * 2.1);
   ctx.stroke();
   ctx.beginPath();
-  ctx.moveTo(eyeR - s * 1.6, eyeY - s * 2.2);
-  ctx.quadraticCurveTo(eyeR, eyeY - s * 3.15, eyeR + s * 1.6, eyeY - s * 2.4);
+  ctx.moveTo(eyeR - s * 1.6, eyeY - s * 2.1);
+  ctx.quadraticCurveTo(eyeR, eyeY - s * 3.05, eyeR + s * 1.6, eyeY - s * 2.3);
   ctx.stroke();
-  /* Eye whites */
+
   ctx.fillStyle = "#fffaf5";
   ctx.beginPath();
   ctx.ellipse(eyeL, eyeY, s * 1.55, s * 1.85, 0, 0, Math.PI * 2);
@@ -6406,105 +6478,42 @@ function drawSittingMermaidFigure(s, look, faceDir, t, alpha, swayPhase) {
   ctx.beginPath();
   ctx.ellipse(eyeR, eyeY, s * 1.55, s * 1.85, 0, 0, Math.PI * 2);
   ctx.fill();
-  /* Iris + pupil + shine */
+
   const iris = look.shell[2] || "#7c3aed";
+  const glance = Math.sin(t * 0.7 + swayPhase) * s * 0.12;
   for (const ex of [eyeL, eyeR]) {
     ctx.fillStyle = iris;
     ctx.beginPath();
-    ctx.ellipse(ex + s * 0.15, eyeY + s * 0.15, s * 0.95, s * 1.15, 0, 0, Math.PI * 2);
+    ctx.ellipse(ex + s * 0.15 + glance, eyeY + s * 0.15, s * 0.95, s * 1.15, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = "#0f172a";
     ctx.beginPath();
-    ctx.arc(ex + s * 0.2, eyeY + s * 0.2, s * 0.48, 0, Math.PI * 2);
+    ctx.arc(ex + s * 0.2 + glance, eyeY + s * 0.2, s * 0.48, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = "#fff";
     ctx.beginPath();
-    ctx.arc(ex + s * 0.45, eyeY - s * 0.25, s * 0.28, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(ex - s * 0.15, eyeY + s * 0.45, s * 0.12, 0, Math.PI * 2);
+    ctx.arc(ex + s * 0.45 + glance, eyeY - s * 0.25, s * 0.28, 0, Math.PI * 2);
     ctx.fill();
   }
-  /* Soft lids */
-  ctx.strokeStyle = "rgba(120, 80, 70, 0.35)";
-  ctx.lineWidth = s * 0.35;
-  ctx.beginPath();
-  ctx.ellipse(eyeL, eyeY - s * 0.15, s * 1.55, s * 1.85, 0, Math.PI * 1.05, Math.PI * 1.95);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.ellipse(eyeR, eyeY - s * 0.15, s * 1.55, s * 1.85, 0, Math.PI * 1.05, Math.PI * 1.95);
-  ctx.stroke();
-  /* Tiny nose */
+
   ctx.strokeStyle = "rgba(180, 120, 100, 0.55)";
   ctx.lineWidth = s * 0.4;
   ctx.beginPath();
-  ctx.moveTo(s * 1.7, -s * 15.2);
-  ctx.quadraticCurveTo(s * 2.4, -s * 14.2, s * 1.9, -s * 13.6);
-  ctx.stroke();
-  /* Lips */
-  ctx.fillStyle = look.lips;
-  ctx.beginPath();
-  ctx.moveTo(s * 0.2, -s * 12.4);
-  ctx.quadraticCurveTo(s * 1.9, -s * 11.2, s * 3.6, -s * 12.4);
-  ctx.quadraticCurveTo(s * 1.9, -s * 11.8, s * 0.2, -s * 12.4);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(s * 0.35, -s * 12.35);
-  ctx.quadraticCurveTo(s * 1.9, -s * 13.05, s * 3.45, -s * 12.35);
-  ctx.quadraticCurveTo(s * 1.9, -s * 12.55, s * 0.35, -s * 12.35);
-  ctx.fill();
-  ctx.strokeStyle = "rgba(255, 220, 230, 0.55)";
-  ctx.lineWidth = s * 0.25;
-  ctx.beginPath();
-  ctx.moveTo(s * 0.8, -s * 12.5);
-  ctx.quadraticCurveTo(s * 1.9, -s * 12.85, s * 3, -s * 12.5);
+  ctx.moveTo(s * 1.7, headY + s * 1);
+  ctx.quadraticCurveTo(s * 2.4, headY + s * 2, s * 1.9, headY + s * 2.6);
   ctx.stroke();
 
-  /* Near arm raised — twirling a lock of hair */
-  const handX = s * 10 + Math.cos(curlSpin) * s * 1.2;
-  const handY = -s * (10 + twirlLift * 8) + Math.sin(curlSpin * 0.5) * s * 1.4;
-  ctx.strokeStyle = skin;
-  ctx.lineWidth = s * 2.2;
-  ctx.lineCap = "round";
+  ctx.fillStyle = look.lips;
   ctx.beginPath();
-  ctx.moveTo(s * 5, -s * 3);
-  ctx.quadraticCurveTo(s * 12, -s * 8 * twirlLift, handX, handY);
-  ctx.stroke();
-  /* Hand */
-  ctx.fillStyle = skin;
-  ctx.beginPath();
-  ctx.ellipse(handX, handY, s * 1.6, s * 1.35, 0.3, 0, Math.PI * 2);
+  ctx.moveTo(s * 0.25, headY + s * 3.8);
+  ctx.quadraticCurveTo(s * 1.9, headY + s * 5, s * 3.55, headY + s * 3.8);
+  ctx.quadraticCurveTo(s * 1.9, headY + s * 4.4, s * 0.25, headY + s * 3.8);
   ctx.fill();
-  /* Twirled hair curl in her fingers */
-  ctx.strokeStyle = look.hair[1];
-  ctx.lineWidth = s * 1.35;
-  ctx.lineCap = "round";
   ctx.beginPath();
-  const curlR = s * (2.8 + twirlLift);
-  for (let a = 0; a <= Math.PI * 2.4; a += 0.35) {
-    const px = handX + Math.cos(a + curlSpin) * curlR * (0.55 + a * 0.08);
-    const py = handY + Math.sin(a + curlSpin) * curlR * (0.55 + a * 0.06) - s * 1;
-    if (a === 0) ctx.moveTo(px, py);
-    else ctx.lineTo(px, py);
-  }
-  ctx.stroke();
-  ctx.strokeStyle = look.hairHi;
-  ctx.lineWidth = s * 0.55;
-  ctx.beginPath();
-  for (let a = 0.2; a <= Math.PI * 2; a += 0.4) {
-    const px = handX + Math.cos(a + curlSpin + 0.4) * curlR * (0.4 + a * 0.07);
-    const py = handY + Math.sin(a + curlSpin + 0.4) * curlR * (0.4 + a * 0.05) - s * 1.2;
-    if (a < 0.5) ctx.moveTo(px, py);
-    else ctx.lineTo(px, py);
-  }
-  ctx.stroke();
-  /* Strand from crown into the twirl */
-  ctx.strokeStyle = look.hair[1];
-  ctx.lineWidth = s * 1.1;
-  ctx.beginPath();
-  ctx.moveTo(s * 8, -s * 20);
-  ctx.quadraticCurveTo(s * 14 + lockWave * 0.3, -s * 16, handX - s, handY - s);
-  ctx.stroke();
+  ctx.moveTo(s * 0.4, headY + s * 3.85);
+  ctx.quadraticCurveTo(s * 1.9, headY + s * 3.15, s * 3.4, headY + s * 3.85);
+  ctx.quadraticCurveTo(s * 1.9, headY + s * 3.65, s * 0.4, headY + s * 3.85);
+  ctx.fill();
 
   ctx.restore();
 }
