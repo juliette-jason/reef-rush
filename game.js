@@ -14036,10 +14036,7 @@ function stopActiveSessionsForProgressTest() {
     crabTrapSession.running = false;
     if (crabTrapSession.rafId) cancelAnimationFrame(crabTrapSession.rafId);
     crabTrapSession = null;
-    if (crabTrapStage) {
-      crabTrapStage.hidden = true;
-      crabTrapStage.setAttribute("aria-hidden", "true");
-    }
+    endCrabTrapStageUi();
   }
   duelSession = null;
   eventMinigameSession = null;
@@ -18350,11 +18347,15 @@ function startCrabTrap() {
   hideAllPanels();
   if (panelCrabReward) panelCrabReward.hidden = true;
   stopEventsMusic();
+  /* Crab Trap mounts inside .canvas-wrap — keep that layer visible (not app--playing). */
+  appRoot?.classList.add("app--crab-trap");
+  appRoot?.classList.remove("app--events-mode", "app--show-tabs", "app--matchup");
+  if (homeLaunchDock) homeLaunchDock.hidden = true;
+  if (homeLaunchStack) homeLaunchStack.hidden = true;
   if (crabTrapStage) {
     crabTrapStage.hidden = false;
     crabTrapStage.setAttribute("aria-hidden", "false");
   }
-  resizeCrabTrapCanvas();
   const now = performance.now();
   crabTrapSession = {
     score: 0,
@@ -18374,7 +18375,18 @@ function startCrabTrap() {
     running: true,
   };
   updateCrabTrapHud();
-  crabTrapSession.rafId = requestAnimationFrame(crabTrapLoop);
+  /* Resize after the wrap is shown so the canvas isn't 0×0. */
+  const kick = () => {
+    if (!crabTrapSession?.running) return;
+    resizeCrabTrapCanvas();
+    if (crabTrapW <= 1 || crabTrapH <= 1) {
+      window.requestAnimationFrame(kick);
+      return;
+    }
+    drawCrabTrap();
+    crabTrapSession.rafId = requestAnimationFrame(crabTrapLoop);
+  };
+  window.requestAnimationFrame(kick);
 }
 
 function stopCrabTrapLoop() {
@@ -18384,16 +18396,21 @@ function stopCrabTrapLoop() {
   }
 }
 
+function endCrabTrapStageUi() {
+  appRoot?.classList.remove("app--crab-trap");
+  if (crabTrapStage) {
+    crabTrapStage.hidden = true;
+    crabTrapStage.setAttribute("aria-hidden", "true");
+  }
+}
+
 function quitCrabTrap() {
   if (!crabTrapSession) return;
   const ok = window.confirm("Quit Crab Trap? Your ticket won't be refunded.");
   if (!ok || !crabTrapSession) return;
   stopCrabTrapLoop();
   crabTrapSession = null;
-  if (crabTrapStage) {
-    crabTrapStage.hidden = true;
-    crabTrapStage.setAttribute("aria-hidden", "true");
-  }
+  endCrabTrapStageUi();
   returnToEventsFromCrab();
 }
 
@@ -18403,10 +18420,7 @@ function finishCrabTrap() {
   stopCrabTrapLoop();
   crabTrapSession = null;
   const finalScore = session.score;
-  if (crabTrapStage) {
-    crabTrapStage.hidden = true;
-    crabTrapStage.setAttribute("aria-hidden", "true");
-  }
+  endCrabTrapStageUi();
   playCrabRoundEndSound();
   if (tournamentRun) void finishTournamentRun(finalScore);
   showCrabReward(finalScore);

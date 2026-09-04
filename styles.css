@@ -2912,11 +2912,22 @@ button.seagull-avatar:active {
 }
 
 /* Keep the play reef fully off-screen under menus (shop, home, events, etc.). */
-#app:not(.app--playing):not(.app--matchup) .canvas-wrap,
-#app.app--show-tabs:not(.app--playing):not(.app--matchup) .canvas-wrap {
+#app:not(.app--playing):not(.app--matchup):not(.app--crab-trap) .canvas-wrap,
+#app.app--show-tabs:not(.app--playing):not(.app--matchup):not(.app--crab-trap) .canvas-wrap {
   display: none !important;
   visibility: hidden !important;
   pointer-events: none !important;
+}
+
+.app--crab-trap .canvas-wrap {
+  display: block !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+.app--crab-trap #gameCanvas {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .online-matchup {
