@@ -18793,14 +18793,74 @@ function paintTreasureCrabBody(drawCtx, sc, leg) {
   eyeStalk(8 * sc);
 }
 
-// Crab Trap crab — sand crab only (no treasure chest).
+// Crab Trap crab — raised claws, no treasure chest.
 function drawCrabTrapCrab(ctx, x, y, sc, legT, facing) {
   const face = facing >= 0 ? 1 : -1;
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(face, 1);
   paintTreasureCrabBody(ctx, sc, legT);
+  drawCrabTrapRaisedClaws(ctx, sc);
   ctx.restore();
+}
+
+/** Claws raised overhead (same pose as the jackpot crab, without a chest). */
+function drawCrabTrapRaisedClaws(ctx, sc) {
+  const gripY = -38 * sc;
+  const gripLX = -18 * sc;
+  const gripRX = 18 * sc;
+
+  const drawRaisedArm = (side) => {
+    const sx = side;
+    const shx = sx * 18 * sc;
+    const shy = -6 * sc;
+    const midX = sx * 34 * sc;
+    const midY = -36 * sc;
+    const gx = sx > 0 ? gripRX : gripLX;
+    const gy = gripY;
+    ctx.strokeStyle = "#c2410c";
+    ctx.lineWidth = 5.2 * sc;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(shx, shy);
+    ctx.quadraticCurveTo(midX, midY, gx, gy);
+    ctx.stroke();
+    ctx.strokeStyle = "#7c2d12";
+    ctx.lineWidth = 2.8 * sc;
+    ctx.beginPath();
+    ctx.moveTo(shx, shy);
+    ctx.quadraticCurveTo(midX, midY, gx, gy);
+    ctx.stroke();
+
+    const ang = Math.atan2(gy - midY, gx - midX);
+    const cx = gx + Math.cos(ang + sx * 0.5) * 5 * sc;
+    const cy = gy + Math.sin(ang + sx * 0.5) * 5 * sc;
+    ctx.fillStyle = "#ea580c";
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, 9 * sc, 6.5 * sc, ang, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#fb923c";
+    ctx.beginPath();
+    ctx.ellipse(
+      cx + Math.cos(ang + sx * 0.9) * 4 * sc,
+      cy + Math.sin(ang + sx * 0.9) * 4 * sc,
+      5 * sc,
+      3.8 * sc,
+      ang + sx * 0.25,
+      0,
+      Math.PI * 2,
+    );
+    ctx.fill();
+    ctx.strokeStyle = "#7c2d12";
+    ctx.lineWidth = 0.95 * sc;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, 9 * sc, 6.5 * sc, ang, 0, Math.PI * 2);
+    ctx.stroke();
+  };
+
+  drawRaisedArm(-1);
+  drawRaisedArm(1);
 }
 
 function drawCrabTrapCage(ctx, cage) {
