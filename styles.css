@@ -3179,6 +3179,9 @@ button.seagull-avatar:active {
 .friend-picker--party {
   display: grid;
   gap: 8px;
+  width: 100%;
+  margin: 0 auto;
+  justify-items: stretch;
 }
 
 .friend-picker__mode {
@@ -5838,7 +5841,13 @@ button.seagull-avatar:active {
 }
 
 .event-prep-friends {
-  margin-top: 4px;
+  margin: 4px auto 0;
+  width: min(520px, 100%);
+  box-sizing: border-box;
+}
+
+.event-prep-friends .adventure-prep__card {
+  width: 100%;
 }
 
 .profile-friends-empty {
