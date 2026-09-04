@@ -13277,7 +13277,6 @@ const dailyPrizeChestTitle = document.getElementById("dailyPrizeChestTitle");
 const dailyPrizeChestHint = document.getElementById("dailyPrizeChestHint");
 const btnDailyPrizeChest = document.getElementById("btnDailyPrizeChest");
 const dailyPrizeChestArt = document.getElementById("dailyPrizeChestArt");
-const adventureUnlockBanner = document.getElementById("adventureUnlockBanner");
 const controlHint = document.getElementById("controlHint");
 const baitChoices = document.getElementById("baitChoices");
 const coinDisplay = document.getElementById("coinDisplay");
@@ -14202,11 +14201,6 @@ function clearAdventureHomeCelebration() {
     "adventure-launch--centered",
     "adventure-launch--return",
   );
-  if (adventureUnlockBanner) {
-    adventureUnlockBanner.hidden = true;
-    adventureUnlockBanner.setAttribute("aria-hidden", "true");
-    adventureUnlockBanner.classList.remove("adventure-unlock-banner--active");
-  }
   if (adventureUnlockHint) {
     adventureUnlockHint.classList.remove("adventure-launch__hint--celebrate", "adventure-launch__hint--centered");
   }
@@ -14227,15 +14221,6 @@ function playAdventureHomeUnlockSound() {
   playNoiseHit(now + 0.06, 0.16, 0.035);
   playNoiseHit(now + 0.42, 0.2, 0.032);
   playNoiseHit(now + 0.88, 0.24, 0.028);
-}
-
-function showAdventureHomeUnlockBanner() {
-  if (!adventureUnlockBanner) return;
-  adventureUnlockBanner.hidden = false;
-  adventureUnlockBanner.setAttribute("aria-hidden", "false");
-  adventureUnlockBanner.classList.remove("adventure-unlock-banner--active");
-  void adventureUnlockBanner.offsetWidth;
-  adventureUnlockBanner.classList.add("adventure-unlock-banner--active");
 }
 
 function beginAdventureLockUnlockSequence() {
@@ -14266,7 +14251,6 @@ function startAdventureHomeUnlockAnimation() {
   if (!isAdventureHomeCelebrationActive() || !adventureLock || !btnAdventureMode) return;
   if (btnAdventureMode.classList.contains("adventure-launch--celebrate")) return;
 
-  showAdventureHomeUnlockBanner();
   appRoot?.classList.add("app--adventure-unlock-celebrate");
   setStartMoreOptionsOpen(true);
   /* Stay in the dock middle slot — glow / unlock in place (no fixed fly-out). */
