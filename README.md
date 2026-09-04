@@ -12,6 +12,16 @@ Play Duel or Co-op with a friend using an auto-generated code — no accounts.
 **Host:** Events → Duel/Co-op → Cast off → **Play with a friend** → share the on-screen code  
 **Friend:** Events → **Enter friend code** → Join → pick gear → Cast off
 
+### Duel black-screen guards
+
+After changing duel/UI code, run:
+
+```bash
+node scripts/check-duel-guards.mjs
+```
+
+This checks the invariants that previously caused a black playfield after COM matchup (timer order, canvas sizing, repair helpers).
+
 ## Fishing Tourney (shared votes + 35 daily spots)
 
 Events → **Fishing Tourney** needs three Supabase tables. Without them, join/vote still work on your device, but spots won't sync across phones/tablets.

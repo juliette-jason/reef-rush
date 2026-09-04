@@ -7552,24 +7552,99 @@ function isActiveDuelPlay() {
   return Boolean(playing && duelSession && !isDuelSpectatorSession());
 }
 
+/**
+ * Duel playfield invariants (do not regress):
+ * 1) roundEndAt must be set before playing=true (stale timer → instant endRound → black screen)
+ * 2) app--playing (or app--matchup) must be on before resize (else canvas-wrap is display:none → 0×0)
+ * 3) canvas must fill .canvas-wrap (absolute inset) so flex layout still measures a size
+ * 4) after COM/PvP matchup, force ensurePlayfieldReady + paintPlayfieldNow
+ */
+function duelTimerNeedsRepair() {
+  if (!Number.isFinite(roundEndAt) || roundEndAt <= 0) return true;
+  const remaining = roundEndAt - performance.now();
+  if (remaining > DUEL_ROUND_MS + 2000) return true;
+  /* Instant-end race right after session start. */
+  if (
+    remaining <= 0 &&
+    duelSession?.roundStart &&
+    performance.now() - duelSession.roundStart < 2500
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function duelPlayfieldIsHealthy() {
+  if (!isActiveDuelPlay() || !appRoot || !canvas) return false;
+  if (!appRoot.classList.contains("app--playing")) return false;
+  if (appRoot.classList.contains("app--events-mode")) return false;
+  if (panelEvents && !panelEvents.hidden) return false;
+  if (onlineMatchup && !onlineMatchup.hidden) return false;
+  if (w <= 1 || h <= 1) return false;
+  if (canvas.width <= 1 || canvas.height <= 1) return false;
+  if (duelTimerNeedsRepair()) return false;
+  return true;
+}
+
+function repairActiveDuelPlayfield() {
+  if (!isActiveDuelPlay() || !appRoot) return false;
+  appRoot.classList.add("app--playing", "app--duel");
+  if (isPhoneDevice()) appRoot.classList.add("app--duel-solo");
+  else appRoot.classList.remove("app--duel-solo");
+  appRoot.classList.remove("app--events-mode", "app--show-tabs", "app--matchup");
+  if (panelEvents) panelEvents.hidden = true;
+  if (eventsOcean) eventsOcean.hidden = true;
+  if (panelEventPrep) panelEventPrep.hidden = true;
+  if (homeLaunchDock) homeLaunchDock.hidden = true;
+  if (homeLaunchStack) homeLaunchStack.hidden = true;
+  hideOnlineMatchup();
+  if (duelHud?.hidden) showDuelHud();
+  ensurePlayfieldReady();
+  appRoot.classList.remove("app--matchup");
+  if (duelTimerNeedsRepair()) {
+    const now = performance.now();
+    if (duelSession) duelSession.roundStart = now;
+    roundEndAt = now + DUEL_ROUND_MS;
+  }
+  if (w > 1 && fishList.length === 0) seedStarterFish(getReef());
+  if (!isDuelSoloView() && duelSession && (duelSession.opponentFish?.length || 0) === 0) {
+    for (let i = 0; i < 3; i++) spawnFishInDuelHalf("opponent");
+  }
+  paintPlayfieldNow();
+  syncHomeLaunchButtons();
+  return duelPlayfieldIsHealthy();
+}
+
 function ensureActiveDuelPlayUi() {
   if (!isActiveDuelPlay() || !appRoot) return;
-  if (!appRoot.classList.contains("app--playing")) {
-    appRoot.classList.add("app--playing", "app--duel");
-    if (isPhoneDevice()) appRoot.classList.add("app--duel-solo");
-    else appRoot.classList.remove("app--duel-solo");
-  }
-  appRoot.classList.remove("app--events-mode");
-  if (panelEvents && !panelEvents.hidden) panelEvents.hidden = true;
-  if (eventsOcean) eventsOcean.hidden = true;
-  if (duelHud?.hidden) showDuelHud();
-  if (w <= 1 || h <= 1) ensurePlayfieldReady();
+  if (!duelPlayfieldIsHealthy()) repairActiveDuelPlayfield();
 }
 
 function guardActiveDuelNavigation() {
   if (!isActiveDuelPlay()) return false;
   showToast("Finish your duel first!", 2200);
   return true;
+}
+
+function finalizeDuelPlayStart() {
+  if (!isActiveDuelPlay()) return;
+  repairActiveDuelPlayfield();
+  let paintTries = 0;
+  const finishDuelPaint = () => {
+    if (!isActiveDuelPlay()) return;
+    repairActiveDuelPlayfield();
+    if (timeDisplay) {
+      timeDisplay.textContent = formatTime(Math.max(0, roundEndAt - performance.now()));
+    }
+    paintTries += 1;
+    if (!duelPlayfieldIsHealthy() && paintTries < 10) {
+      window.requestAnimationFrame(finishDuelPaint);
+    }
+  };
+  window.requestAnimationFrame(finishDuelPaint);
+  window.setTimeout(finishDuelPaint, 50);
+  window.setTimeout(finishDuelPaint, 200);
+  window.setTimeout(finishDuelPaint, 500);
 }
 
 function loadLocalLeaderboard() {
@@ -12009,32 +12084,7 @@ function beginDuelSession(plan) {
     void pollDuelOpponentFromMatch();
     void pushDuelMatchState();
   }
-  appRoot.classList.remove("app--matchup");
-  syncHomeLaunchButtons();
-  ensureActiveDuelPlayUi();
-  paintPlayfieldNow();
-  let paintTries = 0;
-  const finishDuelPaint = () => {
-    if (!isActiveDuelPlay()) return;
-    ensurePlayfieldReady();
-    appRoot?.classList.remove("app--matchup");
-    const now = performance.now();
-    if (duelSession) duelSession.roundStart = now;
-    roundEndAt = now + DUEL_ROUND_MS;
-    if (w > 1 && fishList.length === 0) seedStarterFish(getReef());
-    if (!isDuelSoloView() && duelSession && (duelSession.opponentFish?.length || 0) === 0) {
-      for (let i = 0; i < 3; i++) spawnFishInDuelHalf("opponent");
-    }
-    if (timeDisplay) timeDisplay.textContent = formatTime(DUEL_ROUND_MS);
-    paintPlayfieldNow();
-    paintTries += 1;
-    if ((w <= 1 || h <= 1) && paintTries < 8) {
-      window.requestAnimationFrame(finishDuelPaint);
-    }
-  };
-  window.requestAnimationFrame(finishDuelPaint);
-  window.setTimeout(finishDuelPaint, 50);
-  window.setTimeout(finishDuelPaint, 200);
+  finalizeDuelPlayStart();
 }
 
 async function startDuelFromEvents(fromPrep = false) {
@@ -13318,10 +13368,16 @@ function hideMenuPanelsOnly({ clearMatchup = true } = {}) {
 }
 
 function hideAllPanels() {
+  /* Never tear down an active duel playfield from menu helpers — that caused black screens. */
+  if (isActiveDuelPlay()) {
+    hideMenuPanelsOnly({ clearMatchup: false });
+    repairActiveDuelPlayfield();
+    return;
+  }
   /* Do not auto-cancel duel matchmaking here — that caused instant blank screens
      when search overlays called hideAllPanels while Events was still open. */
   hideMenuPanelsOnly();
-  if (!isActiveDuelPlay() && !eventMinigameSession) {
+  if (!eventMinigameSession) {
     appRoot?.classList.remove("app--playing", "app--duel", "app--duel-solo", "app--adventure-play");
     clearPlayfieldCanvas();
   }
