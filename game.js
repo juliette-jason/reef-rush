@@ -5706,6 +5706,26 @@ function drawMermaidCoastBed(themeId) {
   ctx.ellipse(w * 0.48, base - dpr * 22, dpr * 28, dpr * 6, 0, 0, Math.PI * 2);
   ctx.fill();
 
+  /* Two mermaids lounging on perch rocks */
+  if (typeof drawSittingMermaidFigure === "function" && MERMAID_LOOKS?.length) {
+    const levelSeed = adventureSession ? adventureSession.levelIndex | 0 : 0;
+    const t = performance.now() * 0.001;
+    const lookL = MERMAID_LOOKS[(levelSeed + 1) % MERMAID_LOOKS.length];
+    const lookR = MERMAID_LOOKS[(levelSeed + 3) % MERMAID_LOOKS.length];
+    const sitAlpha = 0.82;
+    const sitS = dpr * 0.82;
+    ctx.save();
+    ctx.globalAlpha = sitAlpha;
+    ctx.translate(w * 0.28, base - dpr * 28);
+    drawSittingMermaidFigure(sitS, lookL, 1, t, sitAlpha, 0.6);
+    ctx.restore();
+    ctx.save();
+    ctx.globalAlpha = sitAlpha;
+    ctx.translate(w * 0.68, base - dpr * 26);
+    drawSittingMermaidFigure(sitS * 0.92, lookR, -1, t, sitAlpha, 2.1);
+    ctx.restore();
+  }
+
   /* Coral fans & sea blossoms */
   const coralN = PERF_CHROMEBOOK ? 5 : 8;
   for (let i = 0; i < coralN; i++) {
@@ -6176,7 +6196,177 @@ function drawSwimmingMermaidFigure(s, look, kick, t, alpha) {
 }
 
 /**
- * Mermaid Coast background presence — several different mermaids, dolphin-kick swim.
+ * Upright mermaid lounging on a rock — torso up, tail draped beside the stone.
+ */
+function drawSittingMermaidFigure(s, look, faceDir, t, alpha, swayPhase) {
+  const skin = look.skin;
+  const skinShade = look.skinShade;
+  const sway = Math.sin(t * 1.4 + swayPhase) * 0.04;
+  const hairSway = Math.sin(t * 1.8 + swayPhase) * s * 1.6;
+
+  ctx.save();
+  ctx.scale(faceDir, 1);
+  ctx.rotate(sway);
+
+  const hairGrad = ctx.createLinearGradient(s * 4, -s * 28, -s * 18, s * 8);
+  hairGrad.addColorStop(0, look.hair[0]);
+  hairGrad.addColorStop(0.35, look.hair[1]);
+  hairGrad.addColorStop(0.7, look.hair[2]);
+  hairGrad.addColorStop(1, look.hair[3]);
+
+  /* Draped scaled tail over the rock edge */
+  const tailGrad = ctx.createLinearGradient(0, s * 4, s * 28, s * 22);
+  tailGrad.addColorStop(0, look.tail[0]);
+  tailGrad.addColorStop(0.4, look.tail[1]);
+  tailGrad.addColorStop(0.75, look.tail[2]);
+  tailGrad.addColorStop(1, look.tail[3]);
+  ctx.fillStyle = tailGrad;
+  ctx.beginPath();
+  ctx.moveTo(-s * 2, s * 6);
+  ctx.quadraticCurveTo(s * 8, s * 10, s * 18, s * 14 + hairSway * 0.2);
+  ctx.quadraticCurveTo(s * 28, s * 12, s * 34, s * 18);
+  ctx.quadraticCurveTo(s * 30, s * 26, s * 20, s * 22);
+  ctx.quadraticCurveTo(s * 8, s * 18, -s * 4, s * 12);
+  ctx.closePath();
+  ctx.fill();
+  /* Fluke hanging off the rock */
+  ctx.beginPath();
+  ctx.moveTo(s * 32, s * 18);
+  ctx.quadraticCurveTo(s * 44, s * 10 + hairSway * 0.3, s * 40, s * 20);
+  ctx.quadraticCurveTo(s * 46, s * 28, s * 34, s * 24);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = look.scaleStroke;
+  ctx.lineWidth = s * 0.45;
+  for (let i = 0; i < 3; i++) {
+    const lx = s * (6 + i * 7);
+    ctx.beginPath();
+    ctx.moveTo(lx, s * (10 + i * 2));
+    ctx.quadraticCurveTo(lx + s * 4, s * (14 + i * 2), lx + s * 8, s * (12 + i));
+    ctx.stroke();
+  }
+
+  /* Torso */
+  const bodyGrad = ctx.createLinearGradient(0, -s * 10, 0, s * 8);
+  bodyGrad.addColorStop(0, skin);
+  bodyGrad.addColorStop(1, skinShade);
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.ellipse(s * 0.5, s * 1, s * 8, s * 12, 0.05, 0, Math.PI * 2);
+  ctx.fill();
+
+  /* Clamshell top */
+  const drawClam = (ox, oy, tilt, flip) => {
+    ctx.save();
+    ctx.translate(ox, oy);
+    ctx.rotate(tilt);
+    ctx.scale(flip, 1);
+    const shell = ctx.createLinearGradient(-s * 4, -s * 3, s * 4, s * 3);
+    shell.addColorStop(0, look.shell[0]);
+    shell.addColorStop(0.4, look.shell[1]);
+    shell.addColorStop(0.75, look.shell[2]);
+    shell.addColorStop(1, look.shell[3]);
+    ctx.fillStyle = shell;
+    ctx.beginPath();
+    ctx.moveTo(0, s * 2.4);
+    ctx.quadraticCurveTo(-s * 4.8, s * 0.8, -s * 4.2, -s * 1.8);
+    ctx.quadraticCurveTo(-s * 2.2, -s * 4, 0, -s * 3.2);
+    ctx.quadraticCurveTo(s * 2.2, -s * 4, s * 4.2, -s * 1.8);
+    ctx.quadraticCurveTo(s * 4.8, s * 0.8, 0, s * 2.4);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = look.shellHi;
+    ctx.beginPath();
+    ctx.ellipse(0, -s * 1.6, s * 1.4, s * 1, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  };
+  drawClam(-s * 3, -s * 2, -0.3, 1);
+  drawClam(s * 4.5, -s * 1.6, 0.3, -1);
+  ctx.fillStyle = look.shellHi;
+  ctx.beginPath();
+  ctx.arc(s * 0.8, -s * 0.8, s * 0.9, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = look.clasp;
+  ctx.beginPath();
+  ctx.arc(s * 0.8, -s * 0.8, s * 0.4, 0, Math.PI * 2);
+  ctx.fill();
+
+  /* Arms — one resting back, one on the rock */
+  ctx.strokeStyle = skin;
+  ctx.lineWidth = s * 2.3;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(s * 5, -s * 3);
+  ctx.quadraticCurveTo(s * 12, -s * 1 + hairSway * 0.2, s * 14, s * 5);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-s * 3, -s * 2);
+  ctx.quadraticCurveTo(-s * 10, s * 2, -s * 8, s * 8);
+  ctx.stroke();
+
+  /* Head */
+  ctx.fillStyle = skin;
+  ctx.beginPath();
+  ctx.ellipse(s * 1.5, -s * 16, s * 7.5, s * 8.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  /* Full hair crown + cascade */
+  ctx.fillStyle = hairGrad;
+  ctx.beginPath();
+  ctx.moveTo(s * 0, -s * 26);
+  ctx.quadraticCurveTo(s * 16 + hairSway, -s * 28, s * 14, -s * 8);
+  ctx.quadraticCurveTo(s * 12, s * 4, s * 6, s * 6);
+  ctx.quadraticCurveTo(s * 2, -s * 4, 0, -s * 8);
+  ctx.quadraticCurveTo(-s * 6, s * 2, -s * 12 + hairSway * 0.5, s * 6);
+  ctx.quadraticCurveTo(-s * 16, -s * 6, -s * 10, -s * 18);
+  ctx.quadraticCurveTo(-s * 8, -s * 28, s * 0, -s * 26);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(s * 1.5, -s * 20, s * 9.5, s * 8.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(-s * 4, -s * 18);
+  ctx.quadraticCurveTo(s * 0, -s * 13, s * 1.5, -s * 14);
+  ctx.quadraticCurveTo(s * 5, -s * 13, s * 8, -s * 18);
+  ctx.quadraticCurveTo(s * 6, -s * 23, s * 1.5, -s * 24);
+  ctx.quadraticCurveTo(-s * 2, -s * 23, -s * 4, -s * 18);
+  ctx.closePath();
+  ctx.fill();
+  ctx.globalAlpha = alpha * 0.5;
+  ctx.fillStyle = look.hairHi;
+  ctx.beginPath();
+  ctx.ellipse(s * 6, -s * 22, s * 2.8, s * 5.5, 0.35, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = alpha;
+
+  /* Face */
+  ctx.fillStyle = "#1e293b";
+  ctx.beginPath();
+  ctx.ellipse(s * 4, -s * 17, s * 1.05, s * 1.3, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(s * 0.2, -s * 17.2, s * 1, s * 1.25, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#fff";
+  ctx.beginPath();
+  ctx.arc(s * 4.3, -s * 17.4, s * 0.3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(s * 0.5, -s * 17.6, s * 0.28, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = look.lips;
+  ctx.lineWidth = s * 0.5;
+  ctx.beginPath();
+  ctx.arc(s * 2, -s * 13, s * 1.6, 0.2, Math.PI - 0.2);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+/**
+ * Mermaid Coast background presence — swimmers plus rock-perched lagoon mermaids.
  */
 function drawVagueMermaidSilhouette(now) {
   if (!adventureSession) return;
@@ -6193,7 +6383,6 @@ function drawVagueMermaidSilhouette(now) {
   const levelSeed = adventureSession.levelIndex | 0;
   const lookA = MERMAID_LOOKS[levelSeed % MERMAID_LOOKS.length];
   const lookB = MERMAID_LOOKS[(levelSeed + 2) % MERMAID_LOOKS.length];
-  const lookC = MERMAID_LOOKS[(levelSeed + 4) % MERMAID_LOOKS.length];
 
   function swimX(progress, dir) {
     return dir > 0
@@ -6216,16 +6405,12 @@ function drawVagueMermaidSilhouette(now) {
     ctx.restore();
   }
 
-  /* Far ambient pair — always drifting */
+  /* One far ambient swimmer (not a crowd) */
   const ambProg = (elapsed % 26000) / 26000;
   const ambDir = levelSeed % 2 === 0 ? 1 : -1;
   drawPasser(lookB, ambProg, ambDir, 0.7, 0.68, 0.18, 1.2);
-  if (!PERF_CHROMEBOOK) {
-    const amb2 = ((elapsed + 11000) % 28000) / 28000;
-    drawPasser(lookC, amb2, -ambDir, 0.58, 0.6, 0.15, 3.7);
-  }
 
-  /* Softer closer pass (or the guaranteed glimpse) */
+  /* Closer swim-by / glimpse */
   const mainProg = inGlimpse
     ? Math.min(1, Math.max(0, (elapsed - glimpseStart) / glimpseDur))
     : (elapsed % 20000) / 20000;
