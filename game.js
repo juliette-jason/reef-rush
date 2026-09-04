@@ -11327,8 +11327,8 @@ function updateDuelHudLabels() {
 
 function formatDuelEventMatchupLine() {
   return isPhoneDevice()
-    ? "Match a real player, or face a random rival — on phones you only see your side."
-    : "Enter the lobby — match a real player, or face a random rival if nobody's waiting.";
+    ? "Play with a friend (get a code) or match anyone — on phones you only see your side."
+    : "Play with a friend (get a code), match anyone online, or enter a friend’s code below.";
 }
 
 function refreshDuelTicketsForToday() {
