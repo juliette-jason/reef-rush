@@ -5903,15 +5903,285 @@ function drawAdventureMermaidCoastEffect(now, themeId) {
   }
 }
 
+/** Neverland lagoon mermaid looks — hair, shells, tails, skin. */
+const MERMAID_LOOKS = [
+  {
+    id: "ariel",
+    skin: "#f8dcc4",
+    skinShade: "#e8b896",
+    hair: ["#fb923c", "#ea580c", "#c2410c", "#7c2d12"],
+    hairHi: "#fdba74",
+    shell: ["#f0abfc", "#c084fc", "#a855f7", "#7e22ce"],
+    shellHi: "#fce7f3",
+    clasp: "#e879f9",
+    tail: ["#6ee7b7", "#34d399", "#059669", "#064e3b"],
+    scaleStroke: "rgba(167, 243, 208, 0.5)",
+    lips: "#db2777",
+  },
+  {
+    id: "pearl",
+    skin: "#f5e0d0",
+    skinShade: "#e0b8a0",
+    hair: ["#fef3c7", "#fcd34d", "#f59e0b", "#b45309"],
+    hairHi: "#fef9c3",
+    shell: ["#fda4af", "#fb7185", "#e11d48", "#9f1239"],
+    shellHi: "#ffe4e6",
+    clasp: "#fb7185",
+    tail: ["#7dd3fc", "#38bdf8", "#0284c7", "#0c4a6e"],
+    scaleStroke: "rgba(186, 230, 253, 0.5)",
+    lips: "#e11d48",
+  },
+  {
+    id: "laguna",
+    skin: "#e8c4a8",
+    skinShade: "#c99572",
+    hair: ["#1e1b4b", "#312e81", "#4338ca", "#1e1b4b"],
+    hairHi: "#818cf8",
+    shell: ["#fde68a", "#fbbf24", "#d97706", "#92400e"],
+    shellHi: "#fef3c7",
+    clasp: "#f59e0b",
+    tail: ["#c4b5fd", "#a78bfa", "#7c3aed", "#4c1d95"],
+    scaleStroke: "rgba(221, 214, 254, 0.5)",
+    lips: "#be185d",
+  },
+  {
+    id: "coral",
+    skin: "#f3d5b5",
+    skinShade: "#d4a574",
+    hair: ["#7f1d1d", "#991b1b", "#b91c1c", "#450a0a"],
+    hairHi: "#fca5a5",
+    shell: ["#99f6e4", "#2dd4bf", "#0d9488", "#115e59"],
+    shellHi: "#ccfbf1",
+    clasp: "#14b8a6",
+    tail: ["#f9a8d4", "#ec4899", "#be185d", "#831843"],
+    scaleStroke: "rgba(251, 207, 232, 0.5)",
+    lips: "#9d174d",
+  },
+  {
+    id: "tide",
+    skin: "#f6e7d8",
+    skinShade: "#e2c4a8",
+    hair: ["#0f766e", "#115e59", "#134e4a", "#042f2e"],
+    hairHi: "#5eead4",
+    shell: ["#e9d5ff", "#d8b4fe", "#a855f7", "#6b21a8"],
+    shellHi: "#f3e8ff",
+    clasp: "#c084fc",
+    tail: ["#fde047", "#eab308", "#ca8a04", "#713f12"],
+    scaleStroke: "rgba(254, 240, 138, 0.45)",
+    lips: "#c026d3",
+  },
+  {
+    id: "moonfin",
+    skin: "#ead7c4",
+    skinShade: "#c9a88a",
+    hair: ["#e2e8f0", "#cbd5e1", "#94a3b8", "#475569"],
+    hairHi: "#f8fafc",
+    shell: ["#bfdbfe", "#60a5fa", "#2563eb", "#1e3a8a"],
+    shellHi: "#dbeafe",
+    clasp: "#93c5fd",
+    tail: ["#86efac", "#4ade80", "#16a34a", "#14532d"],
+    scaleStroke: "rgba(187, 247, 208, 0.5)",
+    lips: "#db2777",
+  },
+];
+
 /**
- * Mermaid Coast background-only presence (behind fish / tint).
- * Fairytale look: full auburn hair (no bald scalp), purple clamshell top, emerald tail.
+ * Draw one mermaid in a horizontal dolphin-kick swim (head +X, fluke −X).
+ * `kick` drives the undulating tail; caller sets translate / facing / alpha.
+ */
+function drawSwimmingMermaidFigure(s, look, kick, t, alpha) {
+  const skin = look.skin;
+  const skinShade = look.skinShade;
+  /* Body pitch follows the kick — whole torso dips and rises like a dolphin. */
+  const bodyPitch = kick * 0.09;
+  const hipY = kick * s * 2.2;
+  const midY = kick * s * 5.5;
+  const tipY = kick * s * 9.5;
+  const flukeKick = kick * s * 11;
+
+  ctx.save();
+  ctx.rotate(bodyPitch);
+
+  /* Trailing hair first (behind body) */
+  const hairGrad = ctx.createLinearGradient(s * 8, -s * 6, -s * 36, s * 4);
+  hairGrad.addColorStop(0, look.hair[0]);
+  hairGrad.addColorStop(0.35, look.hair[1]);
+  hairGrad.addColorStop(0.7, look.hair[2]);
+  hairGrad.addColorStop(1, look.hair[3]);
+  ctx.fillStyle = hairGrad;
+  const hairFlow = Math.sin(t * 3.2 + kick) * s * 2;
+  ctx.beginPath();
+  ctx.moveTo(s * 10, -s * 4);
+  ctx.quadraticCurveTo(s * 2 + hairFlow, -s * 14, -s * 12 + hairFlow * 0.6, -s * 10);
+  ctx.quadraticCurveTo(-s * 28 + hairFlow, -s * 6, -s * 34, s * 2 + kick * s);
+  ctx.quadraticCurveTo(-s * 22, s * 6, -s * 8, s * 2);
+  ctx.quadraticCurveTo(s * 4, -s * 2, s * 12, s * 2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(s * 8, -s * 2);
+  ctx.quadraticCurveTo(-s * 6, s * 8 + hairFlow * 0.4, -s * 24, s * 10 + kick * s * 0.5);
+  ctx.quadraticCurveTo(-s * 12, s * 4, s * 6, s * 3);
+  ctx.closePath();
+  ctx.fill();
+
+  /* Scaled tail — S-curve undulation from hips to fluke */
+  const tailGrad = ctx.createLinearGradient(s * 2, 0, -s * 48, tipY);
+  tailGrad.addColorStop(0, look.tail[0]);
+  tailGrad.addColorStop(0.35, look.tail[1]);
+  tailGrad.addColorStop(0.7, look.tail[2]);
+  tailGrad.addColorStop(1, look.tail[3]);
+  ctx.fillStyle = tailGrad;
+  ctx.beginPath();
+  ctx.moveTo(s * 2, hipY - s * 3);
+  ctx.quadraticCurveTo(-s * 8, hipY + s * 5, -s * 20, midY + s * 2);
+  ctx.quadraticCurveTo(-s * 32, tipY - s * 2, -s * 44, tipY);
+  ctx.quadraticCurveTo(-s * 34, tipY + s * 8, -s * 22, midY + s * 7);
+  ctx.quadraticCurveTo(-s * 10, hipY + s * 8, s * 2, hipY + s * 4);
+  ctx.closePath();
+  ctx.fill();
+  /* Fluke — strong kick stroke */
+  ctx.beginPath();
+  ctx.moveTo(-s * 42, tipY);
+  ctx.quadraticCurveTo(-s * 58, tipY - s * 12 + flukeKick * 0.15, -s * 52, tipY - s * 2);
+  ctx.quadraticCurveTo(-s * 62, tipY + s * 10 + flukeKick * 0.1, -s * 44, tipY + s * 6);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = look.scaleStroke;
+  ctx.lineWidth = s * 0.5;
+  for (let i = 0; i < 4; i++) {
+    const lx = -s * (6 + i * 7);
+    const ly = hipY + kick * s * (i * 1.8) + s * (2 + i);
+    ctx.beginPath();
+    ctx.moveTo(lx, ly);
+    ctx.quadraticCurveTo(lx - s * 4, ly + s * 4 + kick * s, lx - s * 8, ly + s * 1.5);
+    ctx.stroke();
+  }
+
+  /* Torso — slightly arched with the kick */
+  const bodyGrad = ctx.createLinearGradient(s * 4, -s * 6, s * 4, s * 8);
+  bodyGrad.addColorStop(0, skin);
+  bodyGrad.addColorStop(1, skinShade);
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.ellipse(s * 6, hipY * 0.35, s * 11, s * 7.5, 0.08 + kick * 0.04, 0, Math.PI * 2);
+  ctx.fill();
+
+  /* Clamshell top */
+  const drawClam = (ox, oy, tilt, flip) => {
+    ctx.save();
+    ctx.translate(ox, oy);
+    ctx.rotate(tilt);
+    ctx.scale(flip, 1);
+    const shell = ctx.createLinearGradient(-s * 4, -s * 3, s * 4, s * 3);
+    shell.addColorStop(0, look.shell[0]);
+    shell.addColorStop(0.35, look.shell[1]);
+    shell.addColorStop(0.7, look.shell[2]);
+    shell.addColorStop(1, look.shell[3]);
+    ctx.fillStyle = shell;
+    ctx.beginPath();
+    ctx.moveTo(0, s * 2.6);
+    ctx.quadraticCurveTo(-s * 5.2, s * 1, -s * 4.6, -s * 2);
+    ctx.quadraticCurveTo(-s * 2.4, -s * 4.4, 0, -s * 3.5);
+    ctx.quadraticCurveTo(s * 2.4, -s * 4.4, s * 4.6, -s * 2);
+    ctx.quadraticCurveTo(s * 5.2, s * 1, 0, s * 2.6);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255, 250, 255, 0.45)";
+    ctx.lineWidth = s * 0.35;
+    for (let r = -2; r <= 2; r++) {
+      ctx.beginPath();
+      ctx.moveTo(0, s * 2.2);
+      ctx.quadraticCurveTo(r * s * 1.3, 0, r * s * 2, -s * 2.6);
+      ctx.stroke();
+    }
+    ctx.fillStyle = look.shellHi;
+    ctx.beginPath();
+    ctx.ellipse(0, -s * 1.8, s * 1.5, s * 1.1, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  };
+  drawClam(s * 3, hipY * 0.2 - s * 1.5, -0.5, 1);
+  drawClam(s * 9, hipY * 0.2 - s * 1.2, 0.45, -1);
+  ctx.fillStyle = look.shellHi;
+  ctx.beginPath();
+  ctx.arc(s * 6, hipY * 0.2 - s * 0.6, s * 1, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = look.clasp;
+  ctx.beginPath();
+  ctx.arc(s * 6, hipY * 0.2 - s * 0.6, s * 0.45, 0, Math.PI * 2);
+  ctx.fill();
+
+  /* Arms — swept in a swimming stroke */
+  const armStroke = Math.sin(t * 2.8 + kick) * s * 2.5;
+  ctx.strokeStyle = skin;
+  ctx.lineWidth = s * 2.4;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(s * 10, hipY * 0.2 - s * 2);
+  ctx.quadraticCurveTo(s * 18, -s * 8 + armStroke, s * 16, -s * 14 + armStroke * 0.5);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(s * 2, hipY * 0.2);
+  ctx.quadraticCurveTo(-s * 4, s * 6 + armStroke * 0.4, -s * 2, s * 10);
+  ctx.stroke();
+
+  /* Head */
+  ctx.fillStyle = skin;
+  ctx.beginPath();
+  ctx.ellipse(s * 16, -s * 1 + hipY * 0.15, s * 7.5, s * 8.2, 0.05, 0, Math.PI * 2);
+  ctx.fill();
+
+  /* Hair crown covering scalp + flowing bangs */
+  ctx.fillStyle = hairGrad;
+  ctx.beginPath();
+  ctx.ellipse(s * 15, -s * 5 + hipY * 0.15, s * 9.5, s * 8, -0.15, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(s * 10, -s * 6);
+  ctx.quadraticCurveTo(s * 14, -s * 12, s * 20, -s * 8);
+  ctx.quadraticCurveTo(s * 22, -s * 2, s * 18, s * 2);
+  ctx.quadraticCurveTo(s * 14, -s * 2, s * 10, -s * 2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.globalAlpha = alpha * 0.5;
+  ctx.fillStyle = look.hairHi;
+  ctx.beginPath();
+  ctx.ellipse(s * 17, -s * 7, s * 2.8, s * 5, 0.3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = alpha;
+
+  /* Face peek */
+  ctx.fillStyle = "#1e293b";
+  ctx.beginPath();
+  ctx.ellipse(s * 18.5, -s * 1.5, s * 1.05, s * 1.3, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(s * 14.8, -s * 1.7, s * 1, s * 1.25, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#fff";
+  ctx.beginPath();
+  ctx.arc(s * 18.8, -s * 1.9, s * 0.3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(s * 15.1, -s * 2.1, s * 0.28, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = look.lips;
+  ctx.lineWidth = s * 0.5;
+  ctx.beginPath();
+  ctx.arc(s * 16.6, s * 2.2, s * 1.7, 0.15, Math.PI - 0.15);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+/**
+ * Mermaid Coast background presence — several different mermaids, dolphin-kick swim.
  */
 function drawVagueMermaidSilhouette(now) {
   if (!adventureSession) return;
   const startedAt = adventureSession.mermaidRoundStartedAt || now;
   const elapsed = Math.max(0, now - startedAt);
-  /* Soft far swim-by deep in the scene — never a mid-water “hero” pass. */
   const glimpseStart = 3200;
   const glimpseDur = 9000;
   const inGlimpse = elapsed >= glimpseStart && elapsed <= glimpseStart + glimpseDur;
@@ -5920,210 +6190,49 @@ function drawVagueMermaidSilhouette(now) {
   const t = now * 0.001;
   const wy = waterTop;
   const wh = h - waterTop;
-  const progress = inGlimpse
-    ? Math.min(1, Math.max(0, (elapsed - glimpseStart) / glimpseDur))
-    : (elapsed % 22000) / 22000;
-  const dir = adventureSession.levelIndex % 2 === 0 ? 1 : -1;
-  const cx = dir > 0
-    ? w * (-0.12 + progress * 1.24)
-    : w * (1.12 - progress * 1.24);
-  /* Keep her deep / distant so she reads as scenery, not playfield. */
-  const cy = wy + wh * (0.62 + Math.sin(t * 0.85 + progress * 4) * 0.04);
-  const s = dpr * (inGlimpse ? 0.92 : 0.72);
-  const pulse = inGlimpse ? Math.sin(progress * Math.PI) : 0.4;
-  const alpha = inGlimpse ? 0.22 + pulse * 0.14 : 0.12;
+  const levelSeed = adventureSession.levelIndex | 0;
+  const lookA = MERMAID_LOOKS[levelSeed % MERMAID_LOOKS.length];
+  const lookB = MERMAID_LOOKS[(levelSeed + 2) % MERMAID_LOOKS.length];
+  const lookC = MERMAID_LOOKS[(levelSeed + 4) % MERMAID_LOOKS.length];
 
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.scale(dir, 1);
-  ctx.globalAlpha = alpha;
-
-  const tailWave = Math.sin(t * 3.6 + progress * 6) * s * 4;
-  const skin = "#f8dcc4";
-  const skinShade = "#e8b896";
-
-  /* Emerald scaled tail */
-  const tailGrad = ctx.createLinearGradient(s * 2, s * 4, -s * 40, s * 12);
-  tailGrad.addColorStop(0, "#34d399");
-  tailGrad.addColorStop(0.45, "#059669");
-  tailGrad.addColorStop(1, "#064e3b");
-  ctx.fillStyle = tailGrad;
-  ctx.beginPath();
-  ctx.moveTo(s * 4, s * 7);
-  ctx.quadraticCurveTo(-s * 10, s * 15 + tailWave * 0.4, -s * 26, s * 11 + tailWave);
-  ctx.quadraticCurveTo(-s * 36, s * 5 + tailWave, -s * 44, s * 3 + tailWave * 1.1);
-  ctx.quadraticCurveTo(-s * 32, s * 18 + tailWave, -s * 16, s * 20);
-  ctx.quadraticCurveTo(-s * 4, s * 18, s * 6, s * 12);
-  ctx.closePath();
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(-s * 42, s * 3 + tailWave);
-  ctx.quadraticCurveTo(-s * 56, -s * 7 + tailWave, -s * 50, s * 3 + tailWave);
-  ctx.quadraticCurveTo(-s * 58, s * 13 + tailWave, -s * 42, s * 8 + tailWave);
-  ctx.closePath();
-  ctx.fill();
-  ctx.strokeStyle = "rgba(167, 243, 208, 0.45)";
-  ctx.lineWidth = s * 0.55;
-  for (let i = 0; i < 4; i++) {
-    const lx = -s * (8 + i * 6.5);
-    ctx.beginPath();
-    ctx.moveTo(lx, s * (8 + i * 1.4));
-    ctx.quadraticCurveTo(lx - s * 3.5, s * (12 + i * 1.8) + tailWave * 0.25, lx - s * 7, s * (9 + i));
-    ctx.stroke();
+  function swimX(progress, dir) {
+    return dir > 0
+      ? w * (-0.14 + progress * 1.28)
+      : w * (1.14 - progress * 1.28);
   }
 
-  /* Torso */
-  const bodyGrad = ctx.createLinearGradient(0, -s * 8, 0, s * 10);
-  bodyGrad.addColorStop(0, skin);
-  bodyGrad.addColorStop(1, skinShade);
-  ctx.fillStyle = bodyGrad;
-  ctx.beginPath();
-  ctx.ellipse(s * 1.5, s * 2.5, s * 8.5, s * 13, 0.1, 0, Math.PI * 2);
-  ctx.fill();
-
-  /* Purple / pink clamshell bikini top — full chest coverage */
-  const drawClamShell = (ox, oy, tilt, flip) => {
+  function drawPasser(look, progress, dir, depth, sizeMul, alpha, phase) {
+    const cx = swimX(progress, dir);
+    const kick = Math.sin(t * 4.4 + phase + progress * 7);
+    const cy =
+      wy +
+      wh * (depth + Math.sin(t * 0.9 + phase) * 0.025 + kick * 0.012);
+    const s = dpr * sizeMul;
     ctx.save();
-    ctx.translate(ox, oy);
-    ctx.rotate(tilt);
-    ctx.scale(flip, 1);
-    const shell = ctx.createLinearGradient(-s * 5, -s * 4, s * 5, s * 4);
-    shell.addColorStop(0, "#f0abfc");
-    shell.addColorStop(0.35, "#c084fc");
-    shell.addColorStop(0.7, "#a855f7");
-    shell.addColorStop(1, "#7e22ce");
-    ctx.fillStyle = shell;
-    ctx.beginPath();
-    ctx.moveTo(0, s * 3.2);
-    ctx.quadraticCurveTo(-s * 6.2, s * 1.2, -s * 5.4, -s * 2.4);
-    ctx.quadraticCurveTo(-s * 2.8, -s * 5.2, 0, -s * 4.2);
-    ctx.quadraticCurveTo(s * 2.8, -s * 5.2, s * 5.4, -s * 2.4);
-    ctx.quadraticCurveTo(s * 6.2, s * 1.2, 0, s * 3.2);
-    ctx.closePath();
-    ctx.fill();
-    /* Ridges */
-    ctx.strokeStyle = "rgba(255, 240, 255, 0.55)";
-    ctx.lineWidth = s * 0.45;
-    for (let r = -2; r <= 2; r++) {
-      ctx.beginPath();
-      ctx.moveTo(0, s * 2.6);
-      ctx.quadraticCurveTo(r * s * 1.6, -s * 0.2, r * s * 2.4, -s * 3.2);
-      ctx.stroke();
-    }
-    ctx.fillStyle = "rgba(253, 224, 255, 0.7)";
-    ctx.beginPath();
-    ctx.ellipse(0, -s * 2.2, s * 1.8, s * 1.35, 0, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.translate(cx, cy);
+    ctx.scale(dir, 1);
+    ctx.globalAlpha = alpha;
+    drawSwimmingMermaidFigure(s, look, kick, t + phase, alpha);
     ctx.restore();
-  };
-  drawClamShell(-s * 3.2, -s * 1.2, -0.28, 1);
-  drawClamShell(s * 5.2, -s * 0.6, 0.28, -1);
-  /* Center clasp */
-  ctx.fillStyle = "#fce7f3";
-  ctx.beginPath();
-  ctx.arc(s * 1.1, -s * 0.4, s * 1.15, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#e879f9";
-  ctx.beginPath();
-  ctx.arc(s * 1.1, -s * 0.4, s * 0.55, 0, Math.PI * 2);
-  ctx.fill();
+  }
 
-  /* Arms */
-  ctx.strokeStyle = skin;
-  ctx.lineWidth = s * 2.8;
-  ctx.lineCap = "round";
-  ctx.beginPath();
-  ctx.moveTo(s * 5, -s * 3);
-  ctx.quadraticCurveTo(s * 14, -s * 1 + Math.sin(t * 2.6) * s * 1.6, s * 16, s * 5);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(-s * 3, -s * 1.5);
-  ctx.quadraticCurveTo(-s * 11, s * 2, -s * 9, s * 7);
-  ctx.stroke();
+  /* Far ambient pair — always drifting */
+  const ambProg = (elapsed % 26000) / 26000;
+  const ambDir = levelSeed % 2 === 0 ? 1 : -1;
+  drawPasser(lookB, ambProg, ambDir, 0.7, 0.58, 0.1, 1.2);
+  if (!PERF_CHROMEBOOK) {
+    const amb2 = ((elapsed + 11000) % 28000) / 28000;
+    drawPasser(lookC, amb2, -ambDir, 0.58, 0.5, 0.08, 3.7);
+  }
 
-  /* Head (drawn under a full hair crown so no bald spot) */
-  ctx.fillStyle = skin;
-  ctx.beginPath();
-  ctx.ellipse(s * 2.5, -s * 17.5, s * 8, s * 9, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  /* Full auburn hair — crown + sides + flowing length (covers entire scalp) */
-  const hairGrad = ctx.createLinearGradient(s * 6, -s * 32, -s * 14, s * 2);
-  hairGrad.addColorStop(0, "#fb923c");
-  hairGrad.addColorStop(0.3, "#ea580c");
-  hairGrad.addColorStop(0.65, "#c2410c");
-  hairGrad.addColorStop(1, "#7c2d12");
-  ctx.fillStyle = hairGrad;
-  /* Back / side volume */
-  ctx.beginPath();
-  ctx.moveTo(s * 2, -s * 28);
-  ctx.quadraticCurveTo(s * 20, -s * 30, s * 18, -s * 10);
-  ctx.quadraticCurveTo(s * 16, s * 2, s * 10, s * 6);
-  ctx.quadraticCurveTo(s * 6, -s * 4, s * 4, -s * 8);
-  ctx.quadraticCurveTo(-s * 2, -s * 2, -s * 10, s * 6);
-  ctx.quadraticCurveTo(-s * 18, -s * 4, -s * 14, -s * 18);
-  ctx.quadraticCurveTo(-s * 12, -s * 32, s * 2, -s * 28);
-  ctx.closePath();
-  ctx.fill();
-  /* Solid scalp crown (no bald gap above forehead) */
-  ctx.beginPath();
-  ctx.ellipse(s * 2.5, -s * 22, s * 10.5, s * 9.5, 0, Math.PI, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(s * 2.5, -s * 20.5, s * 9.5, s * 7.5, 0, 0, Math.PI * 2);
-  ctx.fill();
-  /* Soft bangs over forehead */
-  ctx.beginPath();
-  ctx.moveTo(-s * 5, -s * 20);
-  ctx.quadraticCurveTo(-s * 1, -s * 14, s * 2.5, -s * 15.5);
-  ctx.quadraticCurveTo(s * 6, -s * 14, s * 10, -s * 19.5);
-  ctx.quadraticCurveTo(s * 8, -s * 24, s * 2.5, -s * 25);
-  ctx.quadraticCurveTo(-s * 3, -s * 24, -s * 5, -s * 20);
-  ctx.closePath();
-  ctx.fill();
-  /* Extra strand curls so hair feels full */
-  ctx.beginPath();
-  ctx.moveTo(s * 12, -s * 16);
-  ctx.quadraticCurveTo(s * 20, -s * 8, s * 14, s * 4);
-  ctx.quadraticCurveTo(s * 10, -s * 2, s * 11, -s * 10);
-  ctx.closePath();
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(-s * 8, -s * 14);
-  ctx.quadraticCurveTo(-s * 18, -s * 4, -s * 12, s * 5);
-  ctx.quadraticCurveTo(-s * 6, -s * 2, -s * 7, -s * 10);
-  ctx.closePath();
-  ctx.fill();
-  /* Highlight */
-  ctx.globalAlpha = alpha * 0.5;
-  ctx.fillStyle = "#fdba74";
-  ctx.beginPath();
-  ctx.ellipse(s * 7, -s * 23, s * 3.2, s * 6.5, 0.35, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.globalAlpha = alpha;
-
-  /* Soft face peek (eyes + smile only — framed by hair) */
-  ctx.fillStyle = "#1e293b";
-  ctx.beginPath();
-  ctx.ellipse(s * 5, -s * 18.2, s * 1.15, s * 1.45, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(s * 1, -s * 18.4, s * 1.1, s * 1.35, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#fff";
-  ctx.beginPath();
-  ctx.arc(s * 5.35, -s * 18.7, s * 0.35, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(s * 1.35, -s * 18.9, s * 0.32, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = "#db2777";
-  ctx.lineWidth = s * 0.55;
-  ctx.beginPath();
-  ctx.arc(s * 3, -s * 14.2, s * 1.9, 0.2, Math.PI - 0.2);
-  ctx.stroke();
-
-  ctx.restore();
+  /* Softer closer pass (or the guaranteed glimpse) */
+  const mainProg = inGlimpse
+    ? Math.min(1, Math.max(0, (elapsed - glimpseStart) / glimpseDur))
+    : (elapsed % 20000) / 20000;
+  const mainDir = (levelSeed + 1) % 2 === 0 ? 1 : -1;
+  const pulse = inGlimpse ? Math.sin(mainProg * Math.PI) : 0.45;
+  const mainAlpha = inGlimpse ? 0.24 + pulse * 0.14 : 0.11;
+  drawPasser(lookA, mainProg, mainDir, 0.62, inGlimpse ? 0.88 : 0.68, mainAlpha, 0.4);
 }
 
 function drawAdventureDoubloonBayEffect(now) {
