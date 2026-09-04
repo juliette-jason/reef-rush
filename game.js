@@ -8479,6 +8479,9 @@ function tryStartDailyPrizeCelebration() {
 
 /** Fishing Tournament — community vote, 35 daily signups, 11 AM, 4 PM & 8 PM windows. */
 const TOURNEY_MAX_PLAYERS = 35;
+/** Always pad the field to this many anglers with COMs when real signups/scores are short. */
+const TOURNEY_FIELD_SIZE = TOURNEY_MAX_PLAYERS;
+const TOURNEY_COM_ID_PREFIX = "com-tourney-";
 const TOURNEY_WINDOW_MS = 30 * 60_000;
 const TOURNEY_SLOTS = [
   { key: "morning", hour: 11, name: "Morning" },
@@ -8782,6 +8785,92 @@ async function fetchTourneyLeaderboard(dayKey = getTourneyDayKey()) {
   }
 }
 
+function tourneyHash32(str) {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function tourneyComRng(seed) {
+  let s = seed >>> 0;
+  return () => {
+    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+    return s / 4294967296;
+  };
+}
+
+function isTourneyComClientId(clientId) {
+  return String(clientId || "").startsWith(TOURNEY_COM_ID_PREFIX);
+}
+
+function tourneyComScoreRange(eventKind) {
+  if (eventKind === "duel") return { min: 2200, max: 9800 };
+  if (eventKind === "coop") return { min: 3600, max: 12800 };
+  if (eventKind === "roulette") return { min: 1800, max: 8200 };
+  if (eventKind === "survivor") return { min: 400, max: 4200 };
+  if (eventKind === "crab") return { min: 4, max: 28 };
+  return { min: 2000, max: 9000 };
+}
+
+function buildTourneyComField(dayKey, realRows, eventKind, slotKey = "field") {
+  const reals = (Array.isArray(realRows) ? realRows : []).filter(
+    (row) => row && !isTourneyComClientId(row.client_id),
+  );
+  const need = Math.max(0, TOURNEY_FIELD_SIZE - reals.length);
+  if (!need) {
+    return [...reals]
+      .sort((a, b) => b.score - a.score || String(a.initials).localeCompare(String(b.initials)))
+      .slice(0, TOURNEY_MAX_PLAYERS);
+  }
+  const rng = tourneyComRng(tourneyHash32(`${dayKey}|${slotKey}|${eventKind}|coms`));
+  const range = tourneyComScoreRange(eventKind);
+  const fillers = [];
+  const usedNames = new Set(reals.map((r) => String(r.display_name || r.initials || "").toLowerCase()));
+  for (let i = 0; i < need; i++) {
+    let name = "";
+    for (let attempt = 0; attempt < 12; attempt++) {
+      const part = COM_PLAYER_NAME_PARTS[Math.floor(rng() * COM_PLAYER_NAME_PARTS.length)];
+      const num = 100 + Math.floor(rng() * 900);
+      name = `${part} ${num}`;
+      if (!usedNames.has(name.toLowerCase())) break;
+    }
+    usedNames.add(name.toLowerCase());
+    const t = rng();
+    const ease = t * t * (3 - 2 * t);
+    const score = Math.floor(range.min + (range.max - range.min) * ease);
+    fillers.push({
+      client_id: `${TOURNEY_COM_ID_PREFIX}${dayKey}-${slotKey}-${i}`,
+      initials: formatDuelInitials(name) || "COM",
+      display_name: name,
+      score,
+      slot_key: slotKey,
+      event_kind: eventKind,
+      is_com: true,
+    });
+  }
+  return [...reals, ...fillers]
+    .sort((a, b) => b.score - a.score || String(a.display_name || a.initials).localeCompare(String(b.display_name || b.initials)))
+    .slice(0, TOURNEY_MAX_PLAYERS);
+}
+
+function applyTourneyComField(dayKey = getTourneyDayKey(), slotKey = null, eventKind = null) {
+  const slot = slotKey || getTourneySlotState().slotKey || getTourneySlotState().upcoming || "field";
+  const kind = eventKind || winningTourneyEventKind();
+  tourneyLeaderboardRows = buildTourneyComField(dayKey, tourneyLeaderboardRows, kind, slot);
+  return tourneyLeaderboardRows;
+}
+
+function tourneyRealSignupCount() {
+  return Math.max(0, Math.min(TOURNEY_MAX_PLAYERS, tourneySignupCount || 0));
+}
+
+function tourneyComSignupFillCount() {
+  return Math.max(0, TOURNEY_FIELD_SIZE - tourneyRealSignupCount());
+}
+
 function tourneyPlayerIdentity() {
   let identity = resolveScorePlayerIdentity(gameMeta.playerName);
   if (!identity.name) {
@@ -8959,9 +9048,13 @@ function refreshTourneyQuickJoin() {
   if (tourneyQuickJoin) tourneyQuickJoin.hidden = signed;
   if (tourneyQuickJoinLine) {
     if (full && !signed) {
-      tourneyQuickJoinLine.textContent = "All 35 spots filled — try again tomorrow.";
+      tourneyQuickJoinLine.textContent = "All 35 human spots filled — try again tomorrow.";
     } else {
-      tourneyQuickJoinLine.textContent = `${tourneySignupCount}/${TOURNEY_MAX_PLAYERS} spots · heats at 11 AM, 4 PM & 8 PM`;
+      const comFill = tourneyComSignupFillCount();
+      tourneyQuickJoinLine.textContent =
+        comFill > 0
+          ? `${tourneyRealSignupCount()}/35 signed up · random anglers fill the rest · heats 11 AM, 4 PM & 8 PM`
+          : `Full field · heats at 11 AM, 4 PM & 8 PM`;
     }
   }
   if (btnTourneyQuickJoin) {
@@ -9010,11 +9103,19 @@ async function finishTournamentRun(scorePts) {
   if (!run) return;
   await submitTourneyScore(scorePts, run.slotKey, run.eventKind);
   await fetchTourneyLeaderboard(run.dayKey);
+  applyTourneyComField(run.dayKey, run.slotKey, run.eventKind);
   const rank = tourneyLeaderboardRows.findIndex((r) => r.client_id === getDuelClientId()) + 1;
+  const fieldSize = tourneyLeaderboardRows.length;
+  const comCount = tourneyLeaderboardRows.filter((r) => r.is_com || isTourneyComClientId(r.client_id)).length;
   if (rank > 0 && rank <= 3) {
     showToast(`Tournament heat complete — you're #${rank}! Prize pending at day's end.`, 4200);
   } else if (rank > 0) {
-    showToast(`Tournament heat complete — you're #${rank} of ${tourneyLeaderboardRows.length}.`, 3600);
+    showToast(
+      comCount
+        ? `Tournament heat complete — #${rank} of ${fieldSize} (random anglers filled empty spots).`
+        : `Tournament heat complete — you're #${rank} of ${fieldSize}.`,
+      3800,
+    );
   } else {
     showToast("Tournament score posted!", 2400);
   }
@@ -9033,7 +9134,13 @@ function beginTournamentCompetition() {
   }
   const eventKind = winningTourneyEventKind();
   tournamentRun = { dayKey: getTourneyDayKey(), slotKey: slot.slotKey, eventKind };
-  showToast(`Tournament heat: ${tourneyEventLabel(eventKind)}!`, 2600);
+  const comFill = tourneyComSignupFillCount();
+  showToast(
+    comFill > 0
+      ? `Tournament heat: ${tourneyEventLabel(eventKind)}! Random anglers fill ${comFill} empty spots.`
+      : `Tournament heat: ${tourneyEventLabel(eventKind)}!`,
+    3000,
+  );
   if (eventKind === "duel") {
     openEventPrep("duel");
     return;
@@ -9052,6 +9159,7 @@ function beginTournamentCompetition() {
 function renderTournamentLeaderboard() {
   if (!tourneyLeaderboard) return;
   tourneyLeaderboard.innerHTML = "";
+  applyTourneyComField();
   if (!tourneyLeaderboardRows.length) {
     const empty = document.createElement("li");
     empty.className = "leaderboard__empty";
@@ -9062,9 +9170,12 @@ function renderTournamentLeaderboard() {
   tourneyLeaderboardRows.slice(0, 10).forEach((row, idx) => {
     const li = document.createElement("li");
     li.className = "leaderboard__row";
+    if (row.is_com || isTourneyComClientId(row.client_id)) li.classList.add("leaderboard__row--com");
     const rank = idx + 1;
-  const medal = rank <= 3 ? ["🥇", "🥈", "🥉"][rank - 1] : `${rank}.`;
-    li.innerHTML = `<span class="leaderboard__rank">${medal}</span><span class="leaderboard__name">${row.display_name || row.initials}</span><span class="leaderboard__score">${row.score.toLocaleString()}</span>`;
+    const medal = rank <= 3 ? ["🥇", "🥈", "🥉"][rank - 1] : `${rank}.`;
+    const label = row.display_name || row.initials;
+    const suffix = row.is_com || isTourneyComClientId(row.client_id) ? "" : "";
+    li.innerHTML = `<span class="leaderboard__rank">${medal}</span><span class="leaderboard__name">${label}${suffix}</span><span class="leaderboard__score">${Number(row.score || 0).toLocaleString()}</span>`;
     tourneyLeaderboard.appendChild(li);
   });
 }
@@ -9103,14 +9214,22 @@ async function refreshTournamentCard() {
   }
   if (tourneySignupLine) {
     const signed = isTourneySignedUpToday();
+    const real = tourneyRealSignupCount();
+    const comFill = tourneyComSignupFillCount();
     if (tourneyBackendMissing && !tourneyRemoteReady) {
       tourneySignupLine.textContent = signed
-        ? `You're in on this device (${tourneySignupCount}/${TOURNEY_MAX_PLAYERS}) · run fishing_tournament.sql for shared spots`
-        : `${tourneySignupCount}/${TOURNEY_MAX_PLAYERS} spots · run supabase/fishing_tournament.sql to sync`;
+        ? `You're in on this device (${real}/${TOURNEY_MAX_PLAYERS}) · empty spots use random anglers`
+        : `${real}/${TOURNEY_MAX_PLAYERS} signed up · random anglers fill the rest`;
+    } else if (signed) {
+      tourneySignupLine.textContent =
+        comFill > 0
+          ? `You're in — ${real} signed up, ${comFill} random anglers fill the field.`
+          : `You're in — full field of ${TOURNEY_MAX_PLAYERS} players.`;
     } else {
-      tourneySignupLine.textContent = signed
-        ? `You're in — spot secured (${tourneySignupCount}/${TOURNEY_MAX_PLAYERS} filled).`
-        : `${tourneySignupCount}/${TOURNEY_MAX_PLAYERS} spots filled · sign up early!`;
+      tourneySignupLine.textContent =
+        comFill > 0
+          ? `${real}/${TOURNEY_MAX_PLAYERS} signed up · random anglers fill empty spots`
+          : `Field full (${TOURNEY_MAX_PLAYERS}/${TOURNEY_MAX_PLAYERS})`;
     }
   }
   if (tourneyScheduleLine) {
@@ -9122,7 +9241,8 @@ async function refreshTournamentCard() {
     }
   }
   if (tourneyPrizeLine) {
-    tourneyPrizeLine.textContent = "Top 3 of 35 win chests + gems · 11:00 AM, 4:00 PM & 8:00 PM heats";
+    tourneyPrizeLine.textContent =
+      "Top 3 of 35 win chests + gems · empty spots filled with random anglers · 11 AM, 4 PM & 8 PM";
   }
   if (btnTourneySignup) {
     btnTourneySignup.hidden = isTourneySignedUpToday();
