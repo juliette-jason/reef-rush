@@ -11004,22 +11004,17 @@ async function findOnlineMatch(matchKind, roundMs, deadlineMs, friendUserId = nu
     await duelSleep(DUEL_LOBBY_POLL_MS);
   }
 
-  /* Last chance before COM: leave your empty lobby and join any still-open rival. */
+  /* Last chance before COM: join any still-open rival (cancel own empty lobby on success). */
   if (hostedMatchId && !friendUserId) {
     try {
       const lastLobbies = await safeFetchOpenDuelLobbies(matchKind, { skipInviteFilter: true });
       for (const lobby of lastLobbies) {
         if (!lobby?.matchId || lobby.matchId === hostedMatchId) continue;
-        await cancelLobbyIfHost(hostedMatchId);
         const joined = await tryJoinDuelLobby(lobby.matchId);
         if (joined) {
           const plan = await tryReturnJoined(joined);
           if (plan) return plan;
         }
-        /* Recreate host pointer if join failed so COM path can still use it. */
-        const stillMine = await safeFetchDuelMatchById(hostedMatchId);
-        if (!stillMine || stillMine.status === "cancelled") clearHosted();
-        break;
       }
       if (hostedMatchId) {
         const row = await safeFetchDuelMatchById(hostedMatchId);
