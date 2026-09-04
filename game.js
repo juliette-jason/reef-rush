@@ -5635,34 +5635,135 @@ function drawVagueLeviathanSilhouette(now) {
   ctx.restore();
 }
 
-/** Soft teal seabed accents for Mermaid Coast voyages. */
+/** Neverland-style lagoon rock (smooth pale stone, soft mossy highlight). */
+function drawMermaidLagoonRock(cx, cy, rw, rh, tint) {
+  const g = ctx.createLinearGradient(cx - rw, cy - rh, cx + rw, cy + rh);
+  g.addColorStop(0, tint?.lit || "rgba(210, 220, 215, 0.92)");
+  g.addColorStop(0.45, tint?.mid || "rgba(150, 165, 160, 0.88)");
+  g.addColorStop(1, tint?.shade || "rgba(88, 105, 108, 0.9)");
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.moveTo(cx - rw, cy + rh * 0.35);
+  ctx.quadraticCurveTo(cx - rw * 1.05, cy - rh * 0.15, cx - rw * 0.55, cy - rh);
+  ctx.quadraticCurveTo(cx, cy - rh * 1.15, cx + rw * 0.5, cy - rh * 0.85);
+  ctx.quadraticCurveTo(cx + rw * 1.1, cy - rh * 0.2, cx + rw * 0.95, cy + rh * 0.4);
+  ctx.quadraticCurveTo(cx + rw * 0.3, cy + rh * 1.05, cx - rw * 0.35, cy + rh * 0.95);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "rgba(255, 255, 245, 0.28)";
+  ctx.beginPath();
+  ctx.ellipse(cx - rw * 0.25, cy - rh * 0.45, rw * 0.28, rh * 0.22, -0.4, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+/**
+ * Mermaid Coast seabed — Neverland lagoon: pale rocks, coral fans, shells, soft sand shelf.
+ */
 function drawMermaidCoastBed(themeId) {
   const sandTop = h - dpr * 92;
-  const base = sandTop + dpr * 8;
-  ctx.fillStyle = "rgba(80, 170, 180, 0.18)";
+  const base = sandTop + dpr * 10;
+
+  /* Turquoise sand shelf */
+  ctx.fillStyle = "rgba(120, 200, 195, 0.22)";
   ctx.beginPath();
-  ctx.ellipse(w * 0.5, base + dpr * 4, w * 0.42, dpr * 12, 0, 0, Math.PI * 2);
+  ctx.ellipse(w * 0.5, base + dpr * 6, w * 0.46, dpr * 16, 0, 0, Math.PI * 2);
   ctx.fill();
-  for (let i = 0; i < 6; i++) {
-    const px = w * (0.12 + i * 0.14);
-    const ht = dpr * (10 + (i % 3) * 8);
-    ctx.fillStyle = i % 2 === 0 ? "rgba(100, 200, 170, 0.35)" : "rgba(230, 140, 170, 0.28)";
+  ctx.fillStyle = "rgba(255, 235, 200, 0.14)";
+  ctx.beginPath();
+  ctx.ellipse(w * 0.5, base + dpr * 2, w * 0.32, dpr * 10, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  /* Side lagoon cliffs / boulder stacks */
+  drawMermaidLagoonRock(w * 0.06, base - dpr * 18, dpr * 42, dpr * 38, {
+    lit: "rgba(200, 210, 205, 0.95)",
+    mid: "rgba(130, 150, 148, 0.9)",
+    shade: "rgba(70, 95, 100, 0.92)",
+  });
+  drawMermaidLagoonRock(w * 0.14, base - dpr * 8, dpr * 28, dpr * 22, null);
+  drawMermaidLagoonRock(w * 0.94, base - dpr * 20, dpr * 40, dpr * 36, {
+    lit: "rgba(215, 220, 210, 0.94)",
+    mid: "rgba(140, 155, 150, 0.88)",
+    shade: "rgba(75, 98, 102, 0.9)",
+  });
+  drawMermaidLagoonRock(w * 0.86, base - dpr * 6, dpr * 26, dpr * 20, null);
+
+  /* Mid-lagoon perch rocks (mermaid lounging stones) */
+  const perches = [
+    { x: 0.28, y: 10, rw: 34, rh: 18 },
+    { x: 0.48, y: 4, rw: 42, rh: 22 },
+    { x: 0.68, y: 12, rw: 30, rh: 16 },
+  ];
+  for (const p of perches) {
+    drawMermaidLagoonRock(w * p.x, base - dpr * p.y, dpr * p.rw, dpr * p.rh, {
+      lit: "rgba(225, 230, 220, 0.9)",
+      mid: "rgba(155, 170, 165, 0.86)",
+      shade: "rgba(95, 115, 118, 0.88)",
+    });
+  }
+  /* Flat sunning ledge on the center rock */
+  ctx.fillStyle = "rgba(235, 240, 230, 0.55)";
+  ctx.beginPath();
+  ctx.ellipse(w * 0.48, base - dpr * 22, dpr * 28, dpr * 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  /* Coral fans & sea blossoms */
+  const coralN = PERF_CHROMEBOOK ? 5 : 8;
+  for (let i = 0; i < coralN; i++) {
+    const px = w * (0.18 + i * 0.09 + (i % 2) * 0.02);
+    const ht = dpr * (14 + (i % 4) * 7);
+    const pink = i % 2 === 0;
+    ctx.fillStyle = pink ? "rgba(240, 130, 170, 0.42)" : "rgba(90, 210, 180, 0.4)";
     ctx.beginPath();
-    ctx.moveTo(px, base);
-    ctx.quadraticCurveTo(px + dpr * 4, base - ht, px + dpr * 8, base);
+    ctx.moveTo(px, base + dpr * 2);
+    ctx.quadraticCurveTo(px - dpr * 6, base - ht * 0.55, px - dpr * 2, base - ht);
+    ctx.quadraticCurveTo(px + dpr * 4, base - ht * 0.7, px + dpr * 8, base - ht * 0.35);
+    ctx.quadraticCurveTo(px + dpr * 3, base - ht * 0.15, px + dpr * 2, base + dpr * 2);
+    ctx.closePath();
+    ctx.fill();
+    if (!PERF_CHROMEBOOK) {
+      ctx.strokeStyle = pink ? "rgba(255, 190, 210, 0.35)" : "rgba(160, 245, 220, 0.3)";
+      ctx.lineWidth = dpr * 0.7;
+      for (let b = 0; b < 3; b++) {
+        ctx.beginPath();
+        ctx.moveTo(px + dpr, base);
+        ctx.quadraticCurveTo(px + (b - 1) * dpr * 5, base - ht * 0.5, px + (b - 1) * dpr * 3, base - ht * 0.85);
+        ctx.stroke();
+      }
+    }
+  }
+
+  /* Scattered shells & pebbles */
+  for (let i = 0; i < perfN(14); i++) {
+    const sx = w * (0.12 + ((i * 73) % 760) / 1000);
+    const sy = sandTop + dpr * (10 + (i % 5) * 10);
+    ctx.fillStyle = i % 3 === 0 ? "rgba(255, 220, 200, 0.55)" : "rgba(200, 210, 215, 0.5)";
+    ctx.beginPath();
+    ctx.ellipse(sx, sy, dpr * (2.2 + (i % 3)), dpr * (1.4 + (i % 2) * 0.6), i * 0.4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  if (themeId === "mermaid-crown") {
+    ctx.fillStyle = "rgba(255, 220, 140, 0.4)";
+    ctx.beginPath();
+    ctx.moveTo(w * 0.42, base - dpr * 28);
+    ctx.lineTo(w * 0.46, base - dpr * 48);
+    ctx.lineTo(w * 0.5, base - dpr * 34);
+    ctx.lineTo(w * 0.54, base - dpr * 48);
+    ctx.lineTo(w * 0.58, base - dpr * 28);
     ctx.closePath();
     ctx.fill();
   }
-  if (themeId === "mermaid-crown") {
-    ctx.fillStyle = "rgba(255, 220, 140, 0.35)";
-    ctx.beginPath();
-    ctx.moveTo(w * 0.42, base - dpr * 8);
-    ctx.lineTo(w * 0.46, base - dpr * 28);
-    ctx.lineTo(w * 0.5, base - dpr * 14);
-    ctx.lineTo(w * 0.54, base - dpr * 28);
-    ctx.lineTo(w * 0.58, base - dpr * 8);
-    ctx.closePath();
-    ctx.fill();
+  if (themeId === "whispering-kelp" || themeId === "coral-choir") {
+    ctx.strokeStyle = "rgba(60, 150, 110, 0.35)";
+    ctx.lineWidth = dpr * 1.6;
+    ctx.lineCap = "round";
+    for (let i = 0; i < 4; i++) {
+      const x = w * (0.22 + i * 0.18);
+      ctx.beginPath();
+      ctx.moveTo(x, base);
+      ctx.quadraticCurveTo(x + dpr * 8, base - dpr * 28, x - dpr * 4, base - dpr * 50);
+      ctx.stroke();
+    }
   }
 }
 
@@ -5677,18 +5778,108 @@ function drawShellsongReachBed() { drawMermaidCoastBed("shellsong-reach"); }
 function drawGlimmerDepthsBed() { drawMermaidCoastBed("glimmer-depths"); }
 function drawMermaidCrownBed() { drawMermaidCoastBed("mermaid-crown"); }
 
+/**
+ * Mermaid Coast water-column FX — Neverland lagoon cliffs, soft falls, sun glitter.
+ */
 function drawAdventureMermaidCoastEffect(now, themeId) {
   const t = now * 0.001;
-  ctx.fillStyle = "rgba(255, 200, 220, 0.04)";
-  ctx.fillRect(0, waterTop, w, (h - waterTop) * 0.35);
-  ctx.fillStyle = "rgba(120, 220, 230, 0.08)";
-  for (let i = 0; i < perfN(8); i++) {
-    const bx = ((i * 131 + Math.floor(t * 12)) % 1000) / 1000 * w;
-    const by = waterTop + (h - waterTop) * (0.35 + ((i * 71) % 500) / 1000);
+  const wh = h - waterTop;
+  const sandTop = h - dpr * 92;
+
+  /* Warm tropical lagoon wash */
+  const lagoon = ctx.createLinearGradient(0, waterTop, 0, h);
+  lagoon.addColorStop(0, "rgba(255, 210, 220, 0.07)");
+  lagoon.addColorStop(0.35, "rgba(120, 220, 230, 0.08)");
+  lagoon.addColorStop(1, "rgba(40, 120, 130, 0.06)");
+  ctx.fillStyle = lagoon;
+  ctx.fillRect(0, waterTop, w, wh);
+
+  /* Side cliff silhouettes rising through the water column */
+  function drawLagoonCliff(side) {
+    const left = side < 0;
+    const edge = left ? 0 : w;
+    const inward = left ? 1 : -1;
+    ctx.fillStyle = "rgba(70, 95, 100, 0.28)";
     ctx.beginPath();
-    ctx.arc(bx, by, dpr * (0.9 + (i % 3) * 0.4), 0, Math.PI * 2);
+    ctx.moveTo(edge, waterTop);
+    ctx.lineTo(edge + inward * w * 0.02, waterTop);
+    ctx.quadraticCurveTo(edge + inward * w * 0.16, waterTop + wh * 0.22, edge + inward * w * 0.12, waterTop + wh * 0.45);
+    ctx.quadraticCurveTo(edge + inward * w * 0.2, waterTop + wh * 0.62, edge + inward * w * 0.14, sandTop);
+    ctx.lineTo(edge, h);
+    ctx.closePath();
+    ctx.fill();
+    /* Ledge shelves */
+    ctx.fillStyle = "rgba(180, 195, 190, 0.22)";
+    for (let i = 0; i < 3; i++) {
+      const ly = waterTop + wh * (0.28 + i * 0.18);
+      const lx = edge + inward * w * (0.05 + i * 0.025);
+      ctx.beginPath();
+      ctx.ellipse(lx, ly, dpr * (18 + i * 6), dpr * 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  drawLagoonCliff(-1);
+  drawLagoonCliff(1);
+
+  /* Soft waterfall ribbons down the cliffs */
+  ctx.save();
+  ctx.globalAlpha = 0.22 + Math.sin(t * 1.4) * 0.04;
+  for (const side of [-1, 1]) {
+    const x0 = side < 0 ? w * 0.08 : w * 0.92;
+    for (let i = 0; i < (PERF_CHROMEBOOK ? 2 : 3); i++) {
+      const sway = Math.sin(t * 2.2 + i + side) * dpr * 3;
+      const grad = ctx.createLinearGradient(x0, waterTop + wh * 0.12, x0, sandTop);
+      grad.addColorStop(0, "rgba(220, 245, 255, 0.55)");
+      grad.addColorStop(0.5, "rgba(160, 220, 235, 0.28)");
+      grad.addColorStop(1, "rgba(140, 210, 220, 0)");
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = dpr * (2.2 + i * 0.8);
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(x0 + side * i * dpr * 5 + sway, waterTop + wh * 0.1);
+      ctx.quadraticCurveTo(
+        x0 + side * dpr * (8 + i * 4) + sway * 0.5,
+        waterTop + wh * 0.45,
+        x0 + side * dpr * (4 + i * 3),
+        sandTop - dpr * 4
+      );
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+
+  /* Mid-water boulder islands (distant, soft) */
+  ctx.globalAlpha = 0.35;
+  drawMermaidLagoonRock(w * 0.22, waterTop + wh * 0.72, dpr * 36, dpr * 20, {
+    lit: "rgba(190, 205, 200, 0.7)",
+    mid: "rgba(120, 140, 138, 0.65)",
+    shade: "rgba(60, 80, 85, 0.7)",
+  });
+  drawMermaidLagoonRock(w * 0.78, waterTop + wh * 0.68, dpr * 32, dpr * 18, {
+    lit: "rgba(195, 208, 200, 0.68)",
+    mid: "rgba(125, 142, 140, 0.62)",
+    shade: "rgba(55, 78, 82, 0.68)",
+  });
+  ctx.globalAlpha = 1;
+
+  /* Sun glitter / lagoon sparkles */
+  ctx.fillStyle = "rgba(255, 245, 210, 0.35)";
+  for (let i = 0; i < perfN(10); i++) {
+    const bx = ((i * 131 + Math.floor(t * 14)) % 1000) / 1000 * w;
+    const by = waterTop + wh * (0.18 + ((i * 71) % 450) / 1000);
+    ctx.beginPath();
+    ctx.arc(bx, by, dpr * (0.8 + (i % 3) * 0.35), 0, Math.PI * 2);
     ctx.fill();
   }
+  ctx.fillStyle = "rgba(180, 240, 245, 0.2)";
+  for (let i = 0; i < perfN(6); i++) {
+    const bx = ((i * 97 + Math.floor(t * 9 + 40)) % 1000) / 1000 * w;
+    const by = waterTop + wh * (0.4 + ((i * 53) % 400) / 1000);
+    ctx.beginPath();
+    ctx.arc(bx, by, dpr * (1 + (i % 2) * 0.5), 0, Math.PI * 2);
+    ctx.fill();
+  }
+
   if (themeId === "whispering-kelp") {
     ctx.strokeStyle = "rgba(70, 160, 110, 0.18)";
     ctx.lineWidth = dpr * 1.4;
@@ -5696,8 +5887,18 @@ function drawAdventureMermaidCoastEffect(now, themeId) {
       const x = w * (0.15 + i * 0.16);
       ctx.beginPath();
       ctx.moveTo(x, h - dpr * 20);
-      ctx.quadraticCurveTo(x + Math.sin(t + i) * dpr * 10, h * 0.55, x + Math.sin(t * 0.7 + i) * dpr * 6, waterTop + (h - waterTop) * 0.4);
+      ctx.quadraticCurveTo(x + Math.sin(t + i) * dpr * 10, h * 0.55, x + Math.sin(t * 0.7 + i) * dpr * 6, waterTop + wh * 0.4);
       ctx.stroke();
+    }
+  }
+  if (themeId === "moonfin-lagoon" || themeId === "pearlveil-cove") {
+    ctx.fillStyle = "rgba(255, 230, 250, 0.12)";
+    for (let i = 0; i < perfN(5); i++) {
+      const px = w * (0.2 + ((i * 41 + Math.floor(t * 6)) % 600) / 1000);
+      const py = waterTop + wh * (0.25 + (i % 4) * 0.12);
+      ctx.beginPath();
+      ctx.ellipse(px, py, dpr * 3, dpr * 1.4, t + i, 0, Math.PI * 2);
+      ctx.fill();
     }
   }
 }
