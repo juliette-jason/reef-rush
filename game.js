@@ -11296,7 +11296,8 @@ async function waitForOnlineRoundStart(plan, { mode }) {
   else setDuelMatchmakingUi(false);
 
   await duelSleep(waitMs);
-  /* Leave matchup class on — beginDuelSession / beginCoopSession clear it after canvas is sized. */
+  hideOnlineMatchup();
+  /* Keep app--matchup until beginDuelSession / beginCoopSession sizes the canvas. */
 }
 
 function scheduleDuelStateSync(force = false) {
@@ -11918,9 +11919,13 @@ function beginDuelSession(plan) {
     playing = false;
     appRoot?.classList.remove("app--playing", "app--duel", "app--duel-solo");
   }
+  duelResultSettling = false;
   const reef = REEFS.find((r) => r.id === plan.reefId) || REEFS[0];
   duelLastReefId = reef.id;
   duelPendingReefId = reef.id;
+  /* Arm the timer BEFORE playing=true so gameLoop can't instantly endRound() on a stale roundEndAt. */
+  const roundStart = performance.now();
+  roundEndAt = roundStart + DUEL_ROUND_MS;
   duelSession = {
     reefId: plan.reefId,
     targetScore: plan.targetScore || 0,
@@ -11936,14 +11941,13 @@ function beginDuelSession(plan) {
     opponentFish: [],
     opponentSpawnAcc: 0,
     opponentNextSpawn: rollNextSpawnDelay(reef, true),
-    roundStart: 0,
+    roundStart,
     pacingBias: 0.93 + Math.random() * 0.1,
     lastStatePush: 0,
     lastOpponentPoll: 0,
     remoteHook: { xPct: 0.5, yPct: 0.08, cast: 0 },
   };
 
-  playing = true;
   normalizeSelectedRod();
   stopHomeMusic();
   stopEventsMusic();
@@ -11959,17 +11963,14 @@ function beginDuelSession(plan) {
   jackpotCrab = null;
   hideMenuPanelsOnly({ clearMatchup: false });
   if (panelDuelOver) panelDuelOver.hidden = true;
-  /* Playing first so canvas-wrap is visible before resize measures it. */
+  /* Playing only after timer + session exist, so canvas-wrap is visible before resize. */
   appRoot.classList.add("app--playing", "app--duel", "app--matchup");
   if (isPhoneDevice()) appRoot.classList.add("app--duel-solo");
   else appRoot.classList.remove("app--duel-solo");
   hideOnlineMatchup();
+  playing = true;
   ensurePlayfieldReady();
   seedStarterFish(reef);
-  // plan.roundStartMs is wall-clock (Date.now); game loop uses performance.now().
-  const roundStart = performance.now();
-  duelSession.roundStart = roundStart;
-  roundEndAt = roundStart + DUEL_ROUND_MS;
   showDuelHud();
   lastPearlAt = -999999;
   scoreDisplay.textContent = "0";
@@ -12012,9 +12013,15 @@ function beginDuelSession(plan) {
   syncHomeLaunchButtons();
   ensureActiveDuelPlayUi();
   window.requestAnimationFrame(() => {
+    if (!isActiveDuelPlay()) return;
     ensurePlayfieldReady();
     appRoot?.classList.remove("app--matchup");
+    /* Re-arm timer after layout in case a frame slipped through during setup. */
+    const now = performance.now();
+    if (duelSession) duelSession.roundStart = now;
+    roundEndAt = now + DUEL_ROUND_MS;
     if (w > 0 && fishList.length === 0) seedStarterFish(getReef());
+    if (timeDisplay) timeDisplay.textContent = formatTime(DUEL_ROUND_MS);
   });
 }
 
@@ -19064,7 +19071,6 @@ function initBubbles() {
 }
 
 function startRound() {
-  playing = true;
   deferDailyPrizeCelebration();
   setStartMoreOptionsOpen(false);
   if (mapSeagullMode === "howto") {
@@ -19141,6 +19147,7 @@ function startRound() {
   seedStarterFish(reef);
   const roundStart = performance.now();
   roundEndAt = roundStart + reef.roundMs;
+  playing = true;
   const spawnFrac = 0.18 + Math.random() * 0.52;
   const isSurvivor = eventMinigameSession?.kind === "survivor";
   if (isSurvivor) {
@@ -24112,7 +24119,7 @@ function gameLoop(now) {
       syncUrgentTimerUi(left);
       tickClimaxMusic(now);
     }
-    if (!isSurvivorRound && left <= 0) {
+    if (!isSurvivorRound && left <= 0 && Number.isFinite(roundEndAt) && roundEndAt > 0) {
       endRound();
     } else {
       if (!treasureMapRevealPaused) {
