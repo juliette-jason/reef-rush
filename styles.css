@@ -2892,13 +2892,15 @@ button.seagull-avatar:active {
 }
 
 .canvas-wrap {
-  flex: 1;
-  min-height: 0;
+  flex: 1 1 auto;
+  min-height: 180px;
   position: relative;
   width: 100%;
   z-index: 1;
   /* Let taps reach the start / game-over panels when they sit above this layer. */
   pointer-events: none;
+  background:
+    linear-gradient(180deg, #0a4a66 0%, #0a3a5c 42%, #031525 100%);
 }
 
 .app--playing .canvas-wrap {
@@ -3189,14 +3191,21 @@ button.seagull-avatar:active {
 
 #gameCanvas {
   display: block;
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   touch-action: none;
   /* Menu sits above; before play, ignore canvas so taps always hit UI (some mobile stacks). */
   pointer-events: none;
+  background: transparent;
 }
 
 .app--playing #gameCanvas {
+  pointer-events: auto;
+}
+
+.app--matchup #gameCanvas {
   pointer-events: auto;
 }
 
@@ -3232,7 +3241,7 @@ button.seagull-avatar:active {
 }
 
 .toast[hidden] {
-  display: none;
+  display: none !important;
 }
 
 @keyframes toastPop {

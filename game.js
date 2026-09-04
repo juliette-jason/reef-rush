@@ -7563,7 +7563,7 @@ function ensureActiveDuelPlayUi() {
   if (panelEvents && !panelEvents.hidden) panelEvents.hidden = true;
   if (eventsOcean) eventsOcean.hidden = true;
   if (duelHud?.hidden) showDuelHud();
-  if (w <= 0 || h <= 0) ensurePlayfieldReady();
+  if (w <= 1 || h <= 1) ensurePlayfieldReady();
 }
 
 function guardActiveDuelNavigation() {
@@ -12012,17 +12012,29 @@ function beginDuelSession(plan) {
   appRoot.classList.remove("app--matchup");
   syncHomeLaunchButtons();
   ensureActiveDuelPlayUi();
-  window.requestAnimationFrame(() => {
+  paintPlayfieldNow();
+  let paintTries = 0;
+  const finishDuelPaint = () => {
     if (!isActiveDuelPlay()) return;
     ensurePlayfieldReady();
     appRoot?.classList.remove("app--matchup");
-    /* Re-arm timer after layout in case a frame slipped through during setup. */
     const now = performance.now();
     if (duelSession) duelSession.roundStart = now;
     roundEndAt = now + DUEL_ROUND_MS;
-    if (w > 0 && fishList.length === 0) seedStarterFish(getReef());
+    if (w > 1 && fishList.length === 0) seedStarterFish(getReef());
+    if (!isDuelSoloView() && duelSession && (duelSession.opponentFish?.length || 0) === 0) {
+      for (let i = 0; i < 3; i++) spawnFishInDuelHalf("opponent");
+    }
     if (timeDisplay) timeDisplay.textContent = formatTime(DUEL_ROUND_MS);
-  });
+    paintPlayfieldNow();
+    paintTries += 1;
+    if ((w <= 1 || h <= 1) && paintTries < 8) {
+      window.requestAnimationFrame(finishDuelPaint);
+    }
+  };
+  window.requestAnimationFrame(finishDuelPaint);
+  window.setTimeout(finishDuelPaint, 50);
+  window.setTimeout(finishDuelPaint, 200);
 }
 
 async function startDuelFromEvents(fromPrep = false) {
@@ -13316,7 +13328,7 @@ function hideAllPanels() {
 }
 
 function ensurePlayfieldReady() {
-  if (!appRoot) return;
+  if (!appRoot || !canvas) return;
   appRoot.classList.remove("app--events-mode", "app--show-tabs");
   if (homeLaunchDock) homeLaunchDock.hidden = true;
   if (homeLaunchStack) homeLaunchStack.hidden = true;
@@ -13324,12 +13336,21 @@ function ensurePlayfieldReady() {
   if (!appRoot.classList.contains("app--playing")) {
     appRoot.classList.add("app--matchup");
   }
+  const wrap = canvas.parentElement;
+  if (wrap) {
+    wrap.style.display = "";
+    wrap.style.visibility = "visible";
+  }
+  canvas.style.display = "block";
+  canvas.hidden = false;
+  void wrap?.offsetWidth;
+  void canvas.offsetWidth;
   resize();
-  if (w <= 0 || h <= 0) {
-    /* Force a layout pass after unhiding the canvas. */
-    void canvas?.offsetWidth;
+  if (w <= 1 || h <= 1) {
+    void wrap?.offsetHeight;
     resize();
   }
+  paintPlayfieldNow();
 }
 
 /** Show exactly one home menu surface; every other overlay stays hidden. */
@@ -18965,6 +18986,50 @@ function invalidateBackgroundCache() {
   bgCacheKey = "";
 }
 
+function measurePlayfieldCssSize() {
+  const wrap = canvas?.parentElement;
+  let cssW = 0;
+  let cssH = 0;
+  if (canvas) {
+    const rect = canvas.getBoundingClientRect();
+    cssW = rect.width;
+    cssH = rect.height;
+  }
+  if ((cssW < 2 || cssH < 2) && wrap) {
+    const wrapRect = wrap.getBoundingClientRect();
+    cssW = Math.max(cssW, wrapRect.width, wrap.clientWidth || 0);
+    cssH = Math.max(cssH, wrapRect.height, wrap.clientHeight || 0);
+  }
+  if (cssW < 2 || cssH < 2) {
+    cssW = Math.max(cssW, window.innerWidth || 360);
+    cssH = Math.max(cssH, Math.floor((window.innerHeight || 640) * 0.58));
+  }
+  return { cssW, cssH };
+}
+
+function paintPlayfieldNow() {
+  if (!ctx || w <= 0 || h <= 0) return;
+  try {
+    ctx.clearRect(0, 0, w, h);
+    drawCachedBackground();
+    drawLiveAquaticOverlay();
+    if (playing && isDuelActive()) drawDuelPlayfield();
+    else if (playing) {
+      drawKraken();
+      drawJackpotCrab();
+      for (const f of fishList) drawFish(f);
+      drawBoatHullAndCatchNet();
+      drawHookLine();
+      drawReleasedFishJumpFx();
+      drawTrenchRodLight();
+    }
+    drawCatchFlash();
+    drawCelebration();
+  } catch (err) {
+    console.warn("Playfield paint failed", err);
+  }
+}
+
 /** Spawn delay (ms) — faster on Chromebook so adventure rounds feel responsive. */
 function rollNextSpawnDelay(reef, quickStart = false) {
   let wait = reef.spawnMin + Math.random() * Math.max(80, reef.spawnMax - reef.spawnMin);
@@ -19002,18 +19067,32 @@ function seedStarterFish(reef) {
 }
 
 function resize() {
-  const rect = canvas.getBoundingClientRect();
+  if (!canvas) return;
+  const { cssW, cssH } = measurePlayfieldCssSize();
   dpr = Math.min(window.devicePixelRatio || 1, PERF_CHROMEBOOK ? 1 : 2);
-  w = Math.floor(rect.width * dpr);
-  h = Math.floor(rect.height * dpr);
-  canvas.width = w;
-  canvas.height = h;
+  w = Math.max(1, Math.floor(cssW * dpr));
+  h = Math.max(1, Math.floor(cssH * dpr));
+  if (canvas.width !== w) canvas.width = w;
+  if (canvas.height !== h) canvas.height = h;
   invalidateBackgroundCache();
   waterTop = h * 0.08;
   waterH = h - waterTop;
-  hook.x = w * 0.5;
-  hook.targetX = hook.x;
-  hook.tipY = waterTop + dpr * 24;
+  if (!playing) {
+    hook.x = w * 0.5;
+    hook.targetX = hook.x;
+    hook.tipY = waterTop + dpr * 24;
+  } else if (isDuelActive()) {
+    const margin = dpr * 16;
+    const maxX = duelPlayerMaxX() - margin;
+    hook.targetX = Math.max(margin, Math.min(maxX, hook.targetX || duelSideCenter("player")));
+    hook.x = hook.targetX;
+    if (!hook.tipY || hook.tipY < waterTop) hook.tipY = surfaceTipY();
+    if (duelSession?.opponentHook && (!duelSession.opponentHook.tipY || duelSession.opponentHook.tipY < waterTop)) {
+      duelSession.opponentHook.tipY = surfaceTipY();
+    }
+  } else if (!hook.tipY || hook.tipY < waterTop) {
+    hook.tipY = waterTop + dpr * 24;
+  }
   clam.baseCx = w * 0.5;
   clam.cx = clam.baseCx;
   clam.cy = h - dpr * 36;
@@ -21697,6 +21776,7 @@ function drawBackground() {
 }
 
 function drawCachedBackground() {
+  if (w <= 1 || h <= 1 || !ctx) return;
   const themeKey = adventureSession ? getAdventureLevelTheme(adventureSession.levelIndex) : "";
   const key = `${w}|${h}|${getReef().id}|${themeKey}`;
   if (!bgCacheCanvas || bgCacheKey !== key) {
@@ -21705,7 +21785,9 @@ function drawCachedBackground() {
     bgCacheCanvas.height = h;
     const saved = ctx;
     try {
-      ctx = bgCacheCanvas.getContext("2d");
+      const cacheCtx = bgCacheCanvas.getContext("2d");
+      if (!cacheCtx) return;
+      ctx = cacheCtx;
       drawBackground();
       bgCacheKey = key;
     } finally {
@@ -24089,6 +24171,11 @@ function gameLoop(now) {
     return;
   }
 
+  if ((playing || duelSession || eventMinigameSession) && (w <= 1 || h <= 1)) {
+    ensurePlayfieldReady();
+  }
+
+  try {
   ctx.clearRect(0, 0, w, h);
   drawCachedBackground();
   drawLiveAquaticOverlay();
@@ -24174,6 +24261,10 @@ function gameLoop(now) {
     drawCatchFlash();
     if (dailyPrizeCelebrationActive) drawTreasureChestCinematic();
     drawCelebration();
+  }
+  } catch (err) {
+    console.warn("gameLoop draw error", err);
+    if (playing || duelSession) ensurePlayfieldReady();
   }
 
   requestAnimationFrame(gameLoop);
