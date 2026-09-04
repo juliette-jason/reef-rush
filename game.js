@@ -7556,11 +7556,11 @@ function ensureActiveDuelPlayUi() {
     if (isPhoneDevice()) appRoot.classList.add("app--duel-solo");
     else appRoot.classList.remove("app--duel-solo");
   }
-  appRoot.classList.remove("app--events-mode", "app--matchup");
+  appRoot.classList.remove("app--events-mode");
   if (panelEvents && !panelEvents.hidden) panelEvents.hidden = true;
   if (eventsOcean) eventsOcean.hidden = true;
   if (duelHud?.hidden) showDuelHud();
-  if (w <= 0 || h <= 0) resize();
+  if (w <= 0 || h <= 0) ensurePlayfieldReady();
 }
 
 function guardActiveDuelNavigation() {
@@ -9858,7 +9858,7 @@ async function fetchOpenDuelLobbies(matchKind = MATCH_KIND_DUEL, options = {}, l
   if (duelLobbyMatchKindFilterReady) {
     url += `&match_kind=eq.${encodeURIComponent(matchKind)}`;
   }
-  if (duelLobbyInviteFilterReady) {
+  if (duelLobbyInviteFilterReady && !options.skipInviteFilter) {
     if (options.inviteUserId) {
       url += `&invite_user_id=eq.${encodeURIComponent(options.inviteUserId)}`;
     } else {
@@ -10316,7 +10316,13 @@ async function findOnlineMatch(matchKind, roundMs, deadlineMs, friendUserId = nu
       }
 
       const lobbies = await safeFetchOpenDuelLobbies(matchKind, lobbyFetchOptions);
-      for (const lobby of lobbies) {
+      let joinCandidates = lobbies;
+      /* Open matchmaking: if invite filter hides every lobby, retry without it once. */
+      if (!friendUserId && !joinCandidates.length && duelLobbyInviteFilterReady) {
+        const openAny = await safeFetchOpenDuelLobbies(matchKind, { skipInviteFilter: true });
+        if (openAny.length) joinCandidates = openAny;
+      }
+      for (const lobby of joinCandidates) {
         if (!lobby?.matchId) continue;
         if (friendUserId && lobby.hostUserId !== friendUserId) continue;
         const joined = await tryJoinDuelLobby(lobby.matchId);
@@ -10743,11 +10749,12 @@ function hideOnlineMatchup() {
 }
 
 function showDuelSearchOverlay(deadlineMs) {
-  hideAllPanels();
+  hideMenuPanelsOnly({ clearMatchup: false });
   if (eventsOcean) eventsOcean.hidden = true;
-  appRoot?.classList.remove("app--events-mode");
+  appRoot?.classList.remove("app--events-mode", "app--show-tabs");
   appRoot?.classList.add("app--matchup");
-  syncHomeLaunchButtons();
+  if (homeLaunchDock) homeLaunchDock.hidden = true;
+  if (homeLaunchStack) homeLaunchStack.hidden = true;
   showOnlineMatchup({
     mode: "duel",
     relation: "Finding a real rival",
@@ -10755,21 +10762,39 @@ function showDuelSearchOverlay(deadlineMs) {
     rivalName: "…",
     playerCompanionId: equippedCompanionId(),
     rivalCompanionId: COM_COMPANION_ID,
-    reefName: `Up to ${DUEL_LOBBY_TIMEOUT_SEC}s to match a player`,
+    reefName: `Searching up to ${DUEL_LOBBY_TIMEOUT_SEC}s for a real player`,
+    deadlineMs,
+  });
+}
+
+function showCoopSearchOverlay(deadlineMs) {
+  hideMenuPanelsOnly({ clearMatchup: false });
+  if (eventsOcean) eventsOcean.hidden = true;
+  appRoot?.classList.remove("app--events-mode", "app--show-tabs");
+  appRoot?.classList.add("app--matchup");
+  if (homeLaunchDock) homeLaunchDock.hidden = true;
+  if (homeLaunchStack) homeLaunchStack.hidden = true;
+  showOnlineMatchup({
+    mode: "coop",
+    relation: "Finding a co-op partner",
+    playerName: getLeaderboardPlayerLabel() || "You",
+    rivalName: "…",
+    playerCompanionId: equippedCompanionId(),
+    rivalCompanionId: COM_COMPANION_ID,
+    reefName: `Searching up to ${DUEL_LOBBY_TIMEOUT_SEC}s for a real partner`,
     deadlineMs,
   });
 }
 
 function hideDuelSearchOverlay() {
   hideOnlineMatchup();
-  appRoot?.classList.remove("app--matchup");
+  /* Keep app--matchup until play starts so the canvas stays visible. */
 }
 
 function restoreEventsAfterDuelAbort() {
   hideDuelLobbyCountdown();
-  hideDuelSearchOverlay();
   hideOnlineMatchup();
-  appRoot?.classList.remove("app--matchup", "app--events-mode");
+  appRoot?.classList.remove("app--matchup", "app--events-mode", "app--playing", "app--duel", "app--duel-solo");
   duelMatchmakingActive = false;
   void cancelDuelLobbyIfHost(duelLobbyMatchId);
   duelLobbyMatchId = null;
@@ -10781,7 +10806,7 @@ function restoreEventsAfterDuelAbort() {
 function restoreEventsAfterCoopAbort() {
   hideCoopLobbyCountdown();
   hideOnlineMatchup();
-  appRoot?.classList.remove("app--matchup", "app--events-mode");
+  appRoot?.classList.remove("app--matchup", "app--events-mode", "app--playing");
   coopMatchmakingActive = false;
   void cancelCoopLobbyIfHost(coopLobbyMatchId);
   coopLobbyMatchId = null;
@@ -10806,10 +10831,12 @@ async function waitForOnlineRoundStart(plan, { mode }) {
       ? COM_COMPANION_ID
       : normalizeCompanionId(isCoop ? plan.partnerCompanionId : plan.opponentCompanionId);
 
-  hideMenuPanelsOnly();
+  hideMenuPanelsOnly({ clearMatchup: false });
   if (eventsOcean) eventsOcean.hidden = true;
-  appRoot?.classList.remove("app--events-mode");
+  appRoot?.classList.remove("app--events-mode", "app--show-tabs");
   appRoot?.classList.add("app--matchup");
+  if (homeLaunchDock) homeLaunchDock.hidden = true;
+  if (homeLaunchStack) homeLaunchStack.hidden = true;
 
   showOnlineMatchup({
     mode,
@@ -10826,8 +10853,7 @@ async function waitForOnlineRoundStart(plan, { mode }) {
   else setDuelMatchmakingUi(false);
 
   await duelSleep(waitMs);
-  hideOnlineMatchup();
-  appRoot?.classList.remove("app--matchup");
+  /* Leave matchup class on — beginDuelSession / beginCoopSession clear it after canvas is sized. */
 }
 
 function scheduleDuelStateSync(force = false) {
@@ -11447,7 +11473,7 @@ function beginDuelSession(plan) {
     hideDuelHud();
     duelSession = null;
     playing = false;
-    appRoot?.classList.remove("app--playing", "app--duel", "app--duel-solo", "app--matchup");
+    appRoot?.classList.remove("app--playing", "app--duel", "app--duel-solo");
   }
   const reef = REEFS.find((r) => r.id === plan.reefId) || REEFS[0];
   duelLastReefId = reef.id;
@@ -11486,23 +11512,26 @@ function beginDuelSession(plan) {
   catchLog = [];
   spawnAcc = 0;
   nextSpawnIn = rollNextSpawnDelay(reef, true);
+  clearKrakens();
+  jackpotCrab = null;
+  hideMenuPanelsOnly({ clearMatchup: false });
+  if (panelDuelOver) panelDuelOver.hidden = true;
+  /* Playing first so canvas-wrap is visible before resize measures it. */
+  appRoot.classList.add("app--playing", "app--duel", "app--matchup");
+  if (isPhoneDevice()) appRoot.classList.add("app--duel-solo");
+  else appRoot.classList.remove("app--duel-solo");
+  hideOnlineMatchup();
+  ensurePlayfieldReady();
   seedStarterFish(reef);
   // plan.roundStartMs is wall-clock (Date.now); game loop uses performance.now().
   const roundStart = performance.now();
   duelSession.roundStart = roundStart;
   roundEndAt = roundStart + DUEL_ROUND_MS;
-  clearKrakens();
-  jackpotCrab = null;
-  hideMenuPanelsOnly();
-  if (panelDuelOver) panelDuelOver.hidden = true;
-  appRoot.classList.add("app--playing", "app--duel");
-  if (isPhoneDevice()) appRoot.classList.add("app--duel-solo");
   showDuelHud();
   lastPearlAt = -999999;
   scoreDisplay.textContent = "0";
   timeDisplay.textContent = formatTime(DUEL_ROUND_MS);
   initBubbles();
-  resize();
   hook.targetX = duelSideCenter("player");
   hook.x = hook.targetX;
   hook.tipY = surfaceTipY();
@@ -11536,8 +11565,14 @@ function beginDuelSession(plan) {
     void pollDuelOpponentFromMatch();
     void pushDuelMatchState();
   }
+  appRoot.classList.remove("app--matchup");
   syncHomeLaunchButtons();
   ensureActiveDuelPlayUi();
+  window.requestAnimationFrame(() => {
+    ensurePlayfieldReady();
+    appRoot?.classList.remove("app--matchup");
+    if (w > 0 && fishList.length === 0) seedStarterFish(getReef());
+  });
 }
 
 async function startDuelFromEvents(fromPrep = false) {
@@ -11585,13 +11620,13 @@ async function startDuelFromEvents(fromPrep = false) {
 
   try {
     const plan = await resolveDuelMatchPlan(matchmakingDeadline);
-    hideDuelSearchOverlay();
     setDuelMatchmakingUi(false);
     hideDuelLobbyCountdown();
     await waitForDuelRoundStart(plan);
     beginDuelSession(plan);
-    if (!isActiveDuelPlay()) {
-      throw new Error("Duel failed to start");
+    if (!isActiveDuelPlay() || w <= 0 || h <= 0) {
+      ensurePlayfieldReady();
+      if (!isActiveDuelPlay() || w <= 0 || h <= 0) throw new Error("Duel failed to start");
     }
   } catch (err) {
     console.warn(err);
@@ -12751,7 +12786,7 @@ function clearPlayfieldCanvas() {
   paint.clearRect(0, 0, w, h);
 }
 
-function hideMenuPanelsOnly() {
+function hideMenuPanelsOnly({ clearMatchup = true } = {}) {
   if (panelProfile && !panelProfile.hidden) saveProfileNameFromInput();
   if (panelSplash) panelSplash.hidden = true;
   if (panelStart) panelStart.hidden = true;
@@ -12770,29 +12805,57 @@ function hideMenuPanelsOnly() {
   if (panelCollectables) panelCollectables.hidden = true;
   if (panelProfile) panelProfile.hidden = true;
   deferDailyPrizeCelebration();
-  appRoot?.classList.remove("app--events-mode", "app--splash", "app--matchup");
+  appRoot?.classList.remove("app--events-mode", "app--splash");
+  if (clearMatchup) appRoot?.classList.remove("app--matchup");
   clearAdventurePlayThemeClasses();
   stopDailyEventCountdown();
   stopEventsMusic();
 }
 
 function hideAllPanels() {
-  if (panelEvents && !panelEvents.hidden && duelMatchmakingActive) {
-    duelMatchmakingActive = false;
-    void cancelDuelLobbyIfHost(duelLobbyMatchId);
-    duelLobbyMatchId = null;
-    setDuelMatchmakingUi(false);
-  }
+  /* Do not auto-cancel duel matchmaking here — that caused instant blank screens
+     when search overlays called hideAllPanels while Events was still open. */
   hideMenuPanelsOnly();
-  if (!isActiveDuelPlay()) {
+  if (!isActiveDuelPlay() && !eventMinigameSession) {
     appRoot?.classList.remove("app--playing", "app--duel", "app--duel-solo", "app--adventure-play");
     clearPlayfieldCanvas();
+  }
+}
+
+function ensurePlayfieldReady() {
+  if (!appRoot) return;
+  appRoot.classList.remove("app--events-mode", "app--show-tabs");
+  if (homeLaunchDock) homeLaunchDock.hidden = true;
+  if (homeLaunchStack) homeLaunchStack.hidden = true;
+  /* Keep matchup until after first sized frame so canvas-wrap is not display:none. */
+  if (!appRoot.classList.contains("app--playing")) {
+    appRoot.classList.add("app--matchup");
+  }
+  resize();
+  if (w <= 0 || h <= 0) {
+    /* Force a layout pass after unhiding the canvas. */
+    void canvas?.offsetWidth;
+    resize();
   }
 }
 
 /** Show exactly one home menu surface; every other overlay stays hidden. */
 function showExclusiveMenu(which) {
   if (guardActiveDuelNavigation()) return;
+  if (duelMatchmakingActive) {
+    duelMatchmakingActive = false;
+    void cancelDuelLobbyIfHost(duelLobbyMatchId);
+    duelLobbyMatchId = null;
+    setDuelMatchmakingUi(false);
+    hideOnlineMatchup();
+  }
+  if (coopMatchmakingActive) {
+    coopMatchmakingActive = false;
+    void cancelCoopLobbyIfHost(coopLobbyMatchId);
+    coopLobbyMatchId = null;
+    setCoopMatchmakingUi(false);
+    hideOnlineMatchup();
+  }
   hideAllPanels();
   if (!duelSession && !eventMinigameSession && !crabTrapSession && !adventureSession) {
     playing = false;
@@ -13054,6 +13117,9 @@ function getActiveTabId() {
 
 function shouldShowTabBar() {
   if (playing || isSplashScreenActive()) return false;
+  if (duelMatchmakingActive || coopMatchmakingActive) return false;
+  if (appRoot?.classList.contains("app--matchup")) return false;
+  if (duelSession || eventMinigameSession) return false;
   if (panelOver && !panelOver.hidden) return false;
   if (panelIntro && !panelIntro.hidden) return false;
   if (panelDuelOver && !panelDuelOver.hidden) return false;
@@ -16347,7 +16413,7 @@ function pickMinigameReef(kind) {
 }
 
 function beginCoopSession(plan) {
-  hideAllPanels();
+  hideMenuPanelsOnly({ clearMatchup: false });
   if (panelCrabReward) panelCrabReward.hidden = true;
   stopEventsMusic();
   const reef = REEFS.find((r) => r.id === plan.reefId) || pickMinigameReef("coop");
@@ -16372,7 +16438,16 @@ function beginCoopSession(plan) {
     lastStatePush: 0,
     lastPartnerPoll: 0,
   };
+  appRoot?.classList.add("app--matchup");
+  hideOnlineMatchup();
   startRound();
+  appRoot?.classList.remove("app--matchup");
+  ensurePlayfieldReady();
+  syncHomeLaunchButtons();
+  window.requestAnimationFrame(() => {
+    ensurePlayfieldReady();
+    appRoot?.classList.remove("app--matchup");
+  });
   if (plan.mode === "pvp") {
     void pollCoopPartnerFromMatch();
     void pushCoopMatchState();
@@ -16401,22 +16476,9 @@ async function startCoopFromEvents(fromPrep = false) {
     return;
   }
 
-  hideAllPanels();
   const matchmakingDeadline = Date.now() + COOP_LOBBY_TIMEOUT_MS;
   setCoopMatchmakingUi(true, "Trying to find a partner…");
-  showOnlineMatchup({
-    mode: "coop",
-    relation: "Finding a co-op partner",
-    playerName: getLeaderboardPlayerLabel() || "You",
-    rivalName: "…",
-    playerCompanionId: equippedCompanionId(),
-    rivalCompanionId: COM_COMPANION_ID,
-    reefName: `Up to ${DUEL_LOBBY_TIMEOUT_SEC}s to match`,
-    deadlineMs: matchmakingDeadline,
-  });
-  appRoot?.classList.remove("app--events-mode");
-  appRoot?.classList.add("app--matchup");
-  syncHomeLaunchButtons();
+  showCoopSearchOverlay(matchmakingDeadline);
 
   try {
     const plan = await resolveCoopMatchPlan(matchmakingDeadline);
@@ -16424,6 +16486,10 @@ async function startCoopFromEvents(fromPrep = false) {
     await waitForCoopRoundStart(plan);
     setCoopMatchmakingUi(false);
     beginCoopSession(plan);
+    if (!playing || !eventMinigameSession || w <= 0 || h <= 0) {
+      ensurePlayfieldReady();
+      if (!playing || w <= 0 || h <= 0) throw new Error("Co-op failed to start");
+    }
   } catch (err) {
     console.warn(err);
     gameMeta.duelTickets += 1;
@@ -16433,6 +16499,8 @@ async function startCoopFromEvents(fromPrep = false) {
         "Co-op matchmaking isn't set up yet — run supabase/duel_matches_coop_kind.sql in your Supabase SQL editor, then try again.",
         5200,
       );
+    } else if (/failed to start/i.test(String(err?.message || ""))) {
+      showToast("Co-op couldn't start — try again from Events.", 3600);
     } else {
       showToast("Co-op matchmaking cancelled.", 2400);
     }
