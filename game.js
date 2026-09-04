@@ -1874,21 +1874,26 @@ const ADVENTURE_MAIN_LEVEL_COUNT = 15;
 const ADVENTURE_BONUS_LEVEL_COUNT = 7;
 const ADVENTURE_ICE_LEVEL_COUNT = 5;
 const ADVENTURE_LOST_CITY_LEVEL_COUNT = 5;
+const ADVENTURE_MERMAID_LEVEL_COUNT = 10;
 const ADVENTURE_LEVEL_COUNT =
   ADVENTURE_MAIN_LEVEL_COUNT +
   ADVENTURE_BONUS_LEVEL_COUNT +
   ADVENTURE_ICE_LEVEL_COUNT +
-  ADVENTURE_LOST_CITY_LEVEL_COUNT;
+  ADVENTURE_LOST_CITY_LEVEL_COUNT +
+  ADVENTURE_MERMAID_LEVEL_COUNT;
 /** Index of Treasure Cove (level 15) — clearing it unlocks bonus voyages. */
 const TREASURE_COVE_INDEX = ADVENTURE_MAIN_LEVEL_COUNT - 1;
 /** Index of Legend's Gate (last Gold Quest voyage) — clearing it unlocks ice voyages. */
 const LEGENDS_GATE_INDEX = ADVENTURE_MAIN_LEVEL_COUNT + ADVENTURE_BONUS_LEVEL_COUNT - 1;
 const ADVENTURE_ICE_START_INDEX = ADVENTURE_MAIN_LEVEL_COUNT + ADVENTURE_BONUS_LEVEL_COUNT;
 const ADVENTURE_LOST_CITY_START_INDEX = ADVENTURE_ICE_START_INDEX + ADVENTURE_ICE_LEVEL_COUNT;
+const ADVENTURE_MERMAID_START_INDEX = ADVENTURE_LOST_CITY_START_INDEX + ADVENTURE_LOST_CITY_LEVEL_COUNT;
 /** Index of Aurora Reach — clearing it unlocks The Lost City. */
 const AURORA_REACH_INDEX = ADVENTURE_LOST_CITY_START_INDEX - 1;
+/** Index of Throne of Atlantis — clearing it unlocks Mermaid Coast. */
+const THRONE_OF_ATLANTIS_INDEX = ADVENTURE_MERMAID_START_INDEX - 1;
 /** Bump when inserting voyages mid-chart so saved progress can remapped. */
-const ADVENTURE_MAP_CONTENT_REV = 4;
+const ADVENTURE_MAP_CONTENT_REV = 5;
 /** Ice start index before Middle Passage / Kraken's Grotto were added to Gold Quest. */
 const ADVENTURE_PREV_ICE_START_FOR_REV1 = 20;
 
@@ -1896,9 +1901,10 @@ const ADVENTURE_SECTION_PIRATES_PATH = "Pirates Path";
 const ADVENTURE_SECTION_GOLD_QUEST = "Gold Quest";
 const ADVENTURE_SECTION_FROZEN_SEA = "Frozen Sea";
 const ADVENTURE_SECTION_LOST_CITY = "The Lost City";
+const ADVENTURE_SECTION_MERMAID_COAST = "Mermaid Coast";
 /** +0.7s per Pirates Path voyage so later main levels keep a little more clock. */
 const ADVENTURE_LEVEL_TIME_BONUS_MS = 700;
-/** +0.55s per voyage from Gold Quest through The Lost City — keep the ramp modest. */
+/** +0.55s per voyage from Gold Quest through Mermaid Coast — keep the ramp modest. */
 const ADVENTURE_GOLD_TO_LOST_CITY_TIME_BONUS_MS = 550;
 /** Extra clock on Legend's Gate so the Gold Quest finale is a bit more forgiving. */
 const LEGENDS_GATE_TIME_BONUS_MS = 7_000;
@@ -1920,7 +1926,7 @@ const TREASURE_CINEMATIC_HOLD_MS = 1800;
 /** Logical chart size for trail SVG coords (matches adventure-chart__art viewBox). */
 const ADVENTURE_MAP_SVG_WIDTH = 800;
 const ADVENTURE_MAP_SVG_HEIGHT = 600;
-const ADVENTURE_MAP_SECTION_IDS = ["pirates", "gold", "ice", "lost-city"];
+const ADVENTURE_MAP_SECTION_IDS = ["pirates", "gold", "ice", "lost-city", "mermaid"];
 
 /** Section metadata — each themed voyage lives on its own landscape chart. */
 const ADVENTURE_MAP_SECTIONS = {
@@ -1946,11 +1952,18 @@ const ADVENTURE_MAP_SECTIONS = {
     id: "lost-city",
     label: ADVENTURE_SECTION_LOST_CITY,
     startIndex: ADVENTURE_LOST_CITY_START_INDEX,
+    endIndex: ADVENTURE_MERMAID_START_INDEX - 1,
+  },
+  mermaid: {
+    id: "mermaid",
+    label: ADVENTURE_SECTION_MERMAID_COAST,
+    startIndex: ADVENTURE_MERMAID_START_INDEX,
     endIndex: ADVENTURE_LEVEL_COUNT - 1,
   },
 };
 
 function adventureSectionIdForIndex(i) {
+  if (i >= ADVENTURE_MERMAID_START_INDEX) return "mermaid";
   if (i >= ADVENTURE_LOST_CITY_START_INDEX) return "lost-city";
   if (i >= ADVENTURE_ICE_START_INDEX) return "ice";
   if (i >= ADVENTURE_MAIN_LEVEL_COUNT) return "gold";
@@ -1961,6 +1974,7 @@ function isAdventureSectionUnlocked(sectionId) {
   if (sectionId === "gold") return isAdventureBonusUnlocked();
   if (sectionId === "ice") return isAdventureIceUnlocked();
   if (sectionId === "lost-city") return isAdventureLostCityUnlocked();
+  if (sectionId === "mermaid") return isAdventureMermaidCoastUnlocked();
   return sectionId === "pirates";
 }
 
@@ -2006,11 +2020,24 @@ function buildAdventureMapNodeLayout() {
     { x: 81, y: 30 },
     { x: 90, y: 82 },
   ];
+  const mermaid = [
+    { x: 10, y: 78 },
+    { x: 22, y: 52 },
+    { x: 38, y: 28 },
+    { x: 54, y: 18 },
+    { x: 70, y: 30 },
+    { x: 84, y: 48 },
+    { x: 72, y: 66 },
+    { x: 52, y: 78 },
+    { x: 34, y: 62 },
+    { x: 58, y: 44 },
+  ];
   return [
     ...pirates.map((p) => ({ ...p, section: "pirates" })),
     ...gold.map((p) => ({ ...p, section: "gold" })),
     ...ice.map((p) => ({ ...p, section: "ice" })),
     ...lostCity.map((p) => ({ ...p, section: "lost-city" })),
+    ...mermaid.map((p) => ({ ...p, section: "mermaid" })),
   ];
 }
 
@@ -2050,6 +2077,16 @@ const ADVENTURE_MAP_PLACES = [
   "Poseidon's Plaza",
   "Temple of Tides",
   "Throne of Atlantis",
+  "Siren's Shallows",
+  "Pearlveil Cove",
+  "Moonfin Lagoon",
+  "Coral Choir",
+  "Tideglass Reef",
+  "Whispering Kelp",
+  "Mirror Mer Bay",
+  "Shellsong Reach",
+  "Glimmer Depths",
+  "Mermaid Crown",
 ];
 
 /** Visual theme slug per voyage — matches ADVENTURE_MAP_PLACES order. */
@@ -2086,7 +2123,23 @@ const ADVENTURE_LEVEL_THEMES = [
   "poseidons-plaza",
   "temple-of-tides",
   "throne-of-atlantis",
+  "sirens-shallows",
+  "pearlveil-cove",
+  "moonfin-lagoon",
+  "coral-choir",
+  "tideglass-reef",
+  "whispering-kelp",
+  "mirror-mer-bay",
+  "shellsong-reach",
+  "glimmer-depths",
+  "mermaid-crown",
 ];
+
+const ADVENTURE_MERMAID_THEMES = new Set(ADVENTURE_LEVEL_THEMES.slice(ADVENTURE_MERMAID_START_INDEX));
+
+function isMermaidCoastTheme(themeId) {
+  return ADVENTURE_MERMAID_THEMES.has(themeId);
+}
 
 function adventureMapSceneSvg(themeId, idSuffix = "") {
   const sid = String(idSuffix).replace(/[^a-z0-9-]/gi, "") || "map";
@@ -2440,6 +2493,86 @@ function adventureMapSceneSvg(themeId, idSuffix = "") {
       <circle cx="36" cy="8" r="4" fill="#ffe878" opacity="0.85"/>
       <path d="M36 4 L36 0 M40 6 L43 3 M32 6 L29 3" stroke="#ffe878" stroke-width="0.8" opacity="0.7"/>
     </svg>`,
+    "sirens-shallows": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#4ab0c8"/>
+      <path d="M0 36 Q36 30 72 36 L72 52 L0 52 Z" fill="#e8d0b0"/>
+      <ellipse cx="36" cy="28" rx="10" ry="6" fill="#f0c8d8" opacity="0.55"/>
+      <path d="M28 30 Q36 22 44 30 Q40 38 36 40 Q32 38 28 30" fill="#68c8b8" opacity="0.7"/>
+      <circle cx="18" cy="18" r="1.2" fill="#ffe0f0" opacity="0.8"/>
+      <circle cx="54" cy="16" r="1" fill="#ffe0f0" opacity="0.7"/>
+    </svg>`,
+    "pearlveil-cove": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#58b8d0"/>
+      <ellipse cx="36" cy="34" rx="22" ry="10" fill="#d8f0f8" opacity="0.45"/>
+      <circle cx="36" cy="28" r="8" fill="#f8f0e8" stroke="#e0d0b8" stroke-width="0.8"/>
+      <circle cx="36" cy="28" r="3.5" fill="#f0e8d0"/>
+      <path d="M8 42 Q36 36 64 42" fill="none" stroke="#a8e0f0" stroke-width="1.2" opacity="0.6"/>
+    </svg>`,
+    "moonfin-lagoon": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#286888"/>
+      <circle cx="52" cy="14" r="9" fill="#f0f4ff" opacity="0.85"/>
+      <circle cx="56" cy="12" r="8" fill="#286888"/>
+      <ellipse cx="28" cy="34" rx="16" ry="8" fill="#68c8d8" opacity="0.5"/>
+      <path d="M16 36 Q28 28 40 36" fill="none" stroke="#a8e8f8" stroke-width="1.5" opacity="0.55"/>
+    </svg>`,
+    "coral-choir": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#38a0b8"/>
+      <path d="M14 44 L18 22 L22 44 Z" fill="#e87898"/>
+      <path d="M28 44 L32 18 L36 44 Z" fill="#f098b0"/>
+      <path d="M42 44 L46 20 L50 44 Z" fill="#e87898"/>
+      <path d="M54 44 L58 24 L62 44 Z" fill="#d86888"/>
+      <ellipse cx="36" cy="10" rx="18" ry="5" fill="#ffe090" opacity="0.35"/>
+    </svg>`,
+    "tideglass-reef": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#48a8c0"/>
+      <path d="M20 12 L36 40 L52 12 Z" fill="none" stroke="#c8f0ff" stroke-width="1.4" opacity="0.7"/>
+      <path d="M24 16 L36 36 L48 16" fill="none" stroke="#a0e0f0" stroke-width="0.9" opacity="0.55"/>
+      <circle cx="36" cy="28" r="3" fill="#e8f8ff" opacity="0.65"/>
+      <path d="M0 44 Q36 38 72 44 L72 52 L0 52 Z" fill="#68b8c8" opacity="0.5"/>
+    </svg>`,
+    "whispering-kelp": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#2a7888"/>
+      <path d="M16 48 Q18 20 14 8" fill="none" stroke="#48a868" stroke-width="2.2"/>
+      <path d="M30 48 Q34 18 28 6" fill="none" stroke="#58b878" stroke-width="2.4"/>
+      <path d="M44 48 Q42 22 46 10" fill="none" stroke="#48a868" stroke-width="2"/>
+      <path d="M58 48 Q60 24 56 12" fill="none" stroke="#68c888" stroke-width="2.2"/>
+      <ellipse cx="36" cy="40" rx="24" ry="4" fill="#1a5868" opacity="0.45"/>
+    </svg>`,
+    "mirror-mer-bay": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#40a0b8"/>
+      <ellipse cx="36" cy="26" rx="20" ry="12" fill="#b8e8f8" opacity="0.45"/>
+      <ellipse cx="36" cy="24" rx="12" ry="7" fill="#e0f4ff" opacity="0.55"/>
+      <path d="M24 30 Q36 38 48 30" fill="none" stroke="#f0c8d8" stroke-width="1.2" opacity="0.6"/>
+      <circle cx="30" cy="22" r="1.2" fill="#fff" opacity="0.7"/>
+    </svg>`,
+    "shellsong-reach": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#50b0c8"/>
+      <path d="M22 36 Q36 12 50 36 Q36 42 22 36 Z" fill="#f0d8c0" stroke="#d0b090" stroke-width="0.8"/>
+      <path d="M28 34 Q36 20 44 34" fill="none" stroke="#c8a888" stroke-width="0.7"/>
+      <circle cx="36" cy="30" r="2" fill="#e8c8b0"/>
+      <path d="M0 44 Q36 40 72 44 L72 52 L0 52 Z" fill="#e8d8c0" opacity="0.55"/>
+    </svg>`,
+    "glimmer-depths": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#186878"/>
+      <circle cx="22" cy="18" r="1.4" fill="#ffe8f0" opacity="0.85"/>
+      <circle cx="40" cy="12" r="1.1" fill="#e8f8ff" opacity="0.8"/>
+      <circle cx="54" cy="22" r="1.3" fill="#f8e0ff" opacity="0.75"/>
+      <circle cx="30" cy="30" r="0.9" fill="#fff0c8" opacity="0.7"/>
+      <path d="M10 44 Q36 32 62 44" fill="none" stroke="#68c8d8" stroke-width="1.5" opacity="0.45"/>
+    </svg>`,
+    "mermaid-crown": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <radialGradient id="mer-glow-${sid}" cx="50%" cy="35%" r="55%">
+          <stop offset="0%" stop-color="#ffe0f0" stop-opacity="0.55"/>
+          <stop offset="100%" stop-color="#186878" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="72" height="52" fill="#146878"/>
+      <rect width="72" height="52" fill="url(#mer-glow-${sid})"/>
+      <path d="M22 36 Q36 18 50 36 L46 40 Q36 32 26 40 Z" fill="#68d0c0" stroke="#98e8d8" stroke-width="0.7"/>
+      <path d="M28 22 L32 12 L36 20 L40 12 L44 22" fill="none" stroke="#ffe090" stroke-width="1.4" stroke-linecap="round"/>
+      <circle cx="36" cy="14" r="2.2" fill="#ffe878"/>
+    </svg>`,
   };
   return scenes[themeId] || scenes["skull-shoals"];
 }
@@ -2506,6 +2639,16 @@ const ADVENTURE_THEME_REEF_ID = {
   "poseidons-plaza": "australia",
   "temple-of-tides": "mediterranean",
   "throne-of-atlantis": "japan_kuroshio",
+  "sirens-shallows": "caribbean",
+  "pearlveil-cove": "mediterranean",
+  "moonfin-lagoon": "australia",
+  "coral-choir": "caribbean",
+  "tideglass-reef": "mediterranean",
+  "whispering-kelp": "australia",
+  "mirror-mer-bay": "caribbean",
+  "shellsong-reach": "mediterranean",
+  "glimmer-depths": "japan_kuroshio",
+  "mermaid-crown": "caribbean",
 };
 
 function isSkullShoalsPlay() {
@@ -2650,6 +2793,87 @@ const ADVENTURE_PLAY_ATMOSPHERE = {
       [1, "rgba(6, 28, 48, 0.36)"],
     ],
     effect: "throne-of-atlantis",
+  },
+  "sirens-shallows": {
+    stops: [
+      [0, "rgba(255, 200, 220, 0.12)"],
+      [0.5, "rgba(80, 190, 210, 0.14)"],
+      [1, "rgba(20, 70, 90, 0.22)"],
+    ],
+    effect: "sirens-shallows",
+  },
+  "pearlveil-cove": {
+    stops: [
+      [0, "rgba(230, 245, 255, 0.14)"],
+      [0.55, "rgba(120, 200, 220, 0.12)"],
+      [1, "rgba(30, 80, 100, 0.24)"],
+    ],
+    effect: "pearlveil-cove",
+  },
+  "moonfin-lagoon": {
+    stops: [
+      [0, "rgba(180, 200, 255, 0.12)"],
+      [0.45, "rgba(60, 140, 180, 0.16)"],
+      [1, "rgba(15, 45, 70, 0.3)"],
+    ],
+    effect: "moonfin-lagoon",
+  },
+  "coral-choir": {
+    stops: [
+      [0, "rgba(255, 160, 190, 0.12)"],
+      [0.5, "rgba(80, 180, 200, 0.14)"],
+      [1, "rgba(25, 70, 90, 0.26)"],
+    ],
+    effect: "coral-choir",
+  },
+  "tideglass-reef": {
+    stops: [
+      [0, "rgba(180, 240, 255, 0.14)"],
+      [0.5, "rgba(90, 190, 210, 0.12)"],
+      [1, "rgba(20, 75, 95, 0.24)"],
+    ],
+    effect: "tideglass-reef",
+  },
+  "whispering-kelp": {
+    stops: [
+      [0, "rgba(120, 200, 160, 0.1)"],
+      [0.5, "rgba(40, 130, 140, 0.16)"],
+      [1, "rgba(12, 50, 60, 0.28)"],
+    ],
+    effect: "whispering-kelp",
+  },
+  "mirror-mer-bay": {
+    stops: [
+      [0, "rgba(200, 240, 255, 0.16)"],
+      [0.45, "rgba(140, 210, 230, 0.12)"],
+      [1, "rgba(25, 80, 100, 0.22)"],
+    ],
+    effect: "mirror-mer-bay",
+  },
+  "shellsong-reach": {
+    stops: [
+      [0, "rgba(255, 220, 200, 0.12)"],
+      [0.5, "rgba(100, 190, 210, 0.14)"],
+      [1, "rgba(30, 85, 100, 0.24)"],
+    ],
+    effect: "shellsong-reach",
+  },
+  "glimmer-depths": {
+    stops: [
+      [0, "rgba(255, 220, 240, 0.1)"],
+      [0.4, "rgba(80, 160, 200, 0.14)"],
+      [1, "rgba(10, 40, 60, 0.32)"],
+    ],
+    effect: "glimmer-depths",
+  },
+  "mermaid-crown": {
+    stops: [
+      [0, "rgba(255, 210, 230, 0.16)"],
+      [0.35, "rgba(255, 220, 150, 0.1)"],
+      [0.7, "rgba(60, 180, 190, 0.14)"],
+      [1, "rgba(8, 45, 65, 0.34)"],
+    ],
+    effect: "mermaid-crown",
   },
 };
 
@@ -2857,6 +3081,86 @@ const ADVENTURE_THEME_SAND = {
     ],
     speck: "rgba(255, 230, 160, 0.34)",
   },
+  "sirens-shallows": {
+    stops: [
+      [0, "rgba(255, 220, 230, 0)"],
+      [0.4, "rgba(180, 210, 220, 0.22)"],
+      [1, "rgba(120, 160, 170, 0.48)"],
+    ],
+    speck: "rgba(255, 200, 220, 0.28)",
+  },
+  "pearlveil-cove": {
+    stops: [
+      [0, "rgba(240, 250, 255, 0)"],
+      [0.4, "rgba(200, 225, 235, 0.24)"],
+      [1, "rgba(140, 175, 190, 0.5)"],
+    ],
+    speck: "rgba(245, 250, 255, 0.3)",
+  },
+  "moonfin-lagoon": {
+    stops: [
+      [0, "rgba(180, 200, 230, 0)"],
+      [0.4, "rgba(100, 140, 180, 0.24)"],
+      [1, "rgba(50, 80, 120, 0.52)"],
+    ],
+    speck: "rgba(200, 220, 255, 0.26)",
+  },
+  "coral-choir": {
+    stops: [
+      [0, "rgba(255, 200, 210, 0)"],
+      [0.4, "rgba(200, 150, 170, 0.22)"],
+      [1, "rgba(130, 100, 120, 0.48)"],
+    ],
+    speck: "rgba(255, 170, 190, 0.28)",
+  },
+  "tideglass-reef": {
+    stops: [
+      [0, "rgba(200, 240, 250, 0)"],
+      [0.4, "rgba(150, 210, 225, 0.24)"],
+      [1, "rgba(90, 150, 170, 0.5)"],
+    ],
+    speck: "rgba(210, 245, 255, 0.3)",
+  },
+  "whispering-kelp": {
+    stops: [
+      [0, "rgba(160, 210, 180, 0)"],
+      [0.4, "rgba(90, 150, 130, 0.24)"],
+      [1, "rgba(45, 90, 80, 0.52)"],
+    ],
+    speck: "rgba(160, 230, 190, 0.26)",
+  },
+  "mirror-mer-bay": {
+    stops: [
+      [0, "rgba(210, 240, 250, 0)"],
+      [0.4, "rgba(160, 210, 225, 0.22)"],
+      [1, "rgba(100, 155, 175, 0.48)"],
+    ],
+    speck: "rgba(220, 245, 255, 0.28)",
+  },
+  "shellsong-reach": {
+    stops: [
+      [0, "rgba(255, 230, 210, 0)"],
+      [0.4, "rgba(210, 190, 170, 0.24)"],
+      [1, "rgba(150, 130, 115, 0.5)"],
+    ],
+    speck: "rgba(255, 220, 200, 0.28)",
+  },
+  "glimmer-depths": {
+    stops: [
+      [0, "rgba(180, 210, 230, 0)"],
+      [0.4, "rgba(90, 140, 170, 0.24)"],
+      [1, "rgba(40, 70, 95, 0.54)"],
+    ],
+    speck: "rgba(255, 220, 240, 0.26)",
+  },
+  "mermaid-crown": {
+    stops: [
+      [0, "rgba(255, 220, 235, 0)"],
+      [0.35, "rgba(200, 180, 160, 0.26)"],
+      [1, "rgba(110, 130, 140, 0.52)"],
+    ],
+    speck: "rgba(255, 230, 180, 0.32)",
+  },
 };
 
 /** Water column palette overrides while on a voyage. */
@@ -3010,6 +3314,66 @@ const ADVENTURE_THEME_REEF_OVERRIDES = {
     shaft: ["rgba(255, 230, 150, 0.22)", "rgba(255, 200, 80, 0)"],
     silhouette: "rgba(12, 45, 62, 0.58)",
     bubble: "rgba(255, 220, 140, 0.3)",
+  },
+  "sirens-shallows": {
+    gradient: ["#58c0d0", "#48b0c0", "#3898b0", "#287898"],
+    shaft: ["rgba(255, 190, 220, 0.16)", "rgba(255, 190, 220, 0)"],
+    silhouette: "rgba(30, 80, 95, 0.42)",
+    bubble: "rgba(255, 210, 230, 0.26)",
+  },
+  "pearlveil-cove": {
+    gradient: ["#68c8d8", "#58b8c8", "#48a8b8", "#3898a8"],
+    shaft: ["rgba(240, 250, 255, 0.18)", "rgba(240, 250, 255, 0)"],
+    silhouette: "rgba(35, 85, 100, 0.4)",
+    bubble: "rgba(230, 245, 255, 0.28)",
+  },
+  "moonfin-lagoon": {
+    gradient: ["#4070a0", "#306090", "#285080", "#204070"],
+    shaft: ["rgba(200, 220, 255, 0.14)", "rgba(200, 220, 255, 0)"],
+    silhouette: "rgba(20, 45, 70, 0.5)",
+    bubble: "rgba(180, 210, 255, 0.22)",
+  },
+  "coral-choir": {
+    gradient: ["#48b0c0", "#40a0b0", "#3890a0", "#308090"],
+    shaft: ["rgba(255, 160, 190, 0.14)", "rgba(255, 160, 190, 0)"],
+    silhouette: "rgba(40, 80, 95, 0.45)",
+    bubble: "rgba(255, 170, 200, 0.24)",
+  },
+  "tideglass-reef": {
+    gradient: ["#58c0d0", "#48b0c0", "#40a0b0", "#3890a0"],
+    shaft: ["rgba(180, 240, 255, 0.16)", "rgba(180, 240, 255, 0)"],
+    silhouette: "rgba(30, 85, 100, 0.4)",
+    bubble: "rgba(200, 245, 255, 0.26)",
+  },
+  "whispering-kelp": {
+    gradient: ["#389888", "#308878", "#287868", "#206858"],
+    shaft: ["rgba(140, 220, 180, 0.12)", "rgba(140, 220, 180, 0)"],
+    silhouette: "rgba(20, 60, 55, 0.5)",
+    bubble: "rgba(150, 230, 190, 0.2)",
+  },
+  "mirror-mer-bay": {
+    gradient: ["#50b8c8", "#48a8b8", "#4098a8", "#388898"],
+    shaft: ["rgba(210, 245, 255, 0.18)", "rgba(210, 245, 255, 0)"],
+    silhouette: "rgba(28, 80, 95, 0.4)",
+    bubble: "rgba(220, 245, 255, 0.28)",
+  },
+  "shellsong-reach": {
+    gradient: ["#58b8c8", "#50a8b8", "#4898a8", "#408898"],
+    shaft: ["rgba(255, 220, 200, 0.14)", "rgba(255, 220, 200, 0)"],
+    silhouette: "rgba(35, 85, 95, 0.42)",
+    bubble: "rgba(255, 230, 210, 0.24)",
+  },
+  "glimmer-depths": {
+    gradient: ["#287898", "#206888", "#185878", "#104868"],
+    shaft: ["rgba(255, 210, 240, 0.12)", "rgba(255, 210, 240, 0)"],
+    silhouette: "rgba(12, 40, 55, 0.55)",
+    bubble: "rgba(255, 220, 245, 0.22)",
+  },
+  "mermaid-crown": {
+    gradient: ["#3898a8", "#308898", "#287888", "#206878"],
+    shaft: ["rgba(255, 210, 230, 0.2)", "rgba(255, 220, 150, 0)"],
+    silhouette: "rgba(15, 50, 65, 0.52)",
+    bubble: "rgba(255, 220, 235, 0.3)",
   },
 };
 
@@ -5015,6 +5379,16 @@ const ADVENTURE_THEME_BED_DRAW = {
   "poseidons-plaza": drawPoseidonsPlazaBed,
   "temple-of-tides": drawTempleOfTidesBed,
   "throne-of-atlantis": drawThroneOfAtlantisBed,
+  "sirens-shallows": drawSirensShallowsBed,
+  "pearlveil-cove": drawPearlveilCoveBed,
+  "moonfin-lagoon": drawMoonfinLagoonBed,
+  "coral-choir": drawCoralChoirBed,
+  "tideglass-reef": drawTideglassReefBed,
+  "whispering-kelp": drawWhisperingKelpBed,
+  "mirror-mer-bay": drawMirrorMerBayBed,
+  "shellsong-reach": drawShellsongReachBed,
+  "glimmer-depths": drawGlimmerDepthsBed,
+  "mermaid-crown": drawMermaidCrownBed,
 };
 
 function drawAdventureThemeBed(themeId) {
@@ -5252,6 +5626,144 @@ function drawVagueLeviathanSilhouette(now) {
   ctx.beginPath();
   ctx.ellipse(w * 0.62 - Math.sin(t * 0.8) * w * 0.02, cy - wh * 0.03, dpr * 7, dpr * 4.5, 0, 0, Math.PI * 2);
   ctx.fill();
+  ctx.restore();
+}
+
+/** Soft teal seabed accents for Mermaid Coast voyages. */
+function drawMermaidCoastBed(themeId) {
+  const sandTop = h - dpr * 92;
+  const base = sandTop + dpr * 8;
+  ctx.fillStyle = "rgba(80, 170, 180, 0.18)";
+  ctx.beginPath();
+  ctx.ellipse(w * 0.5, base + dpr * 4, w * 0.42, dpr * 12, 0, 0, Math.PI * 2);
+  ctx.fill();
+  for (let i = 0; i < 6; i++) {
+    const px = w * (0.12 + i * 0.14);
+    const ht = dpr * (10 + (i % 3) * 8);
+    ctx.fillStyle = i % 2 === 0 ? "rgba(100, 200, 170, 0.35)" : "rgba(230, 140, 170, 0.28)";
+    ctx.beginPath();
+    ctx.moveTo(px, base);
+    ctx.quadraticCurveTo(px + dpr * 4, base - ht, px + dpr * 8, base);
+    ctx.closePath();
+    ctx.fill();
+  }
+  if (themeId === "mermaid-crown") {
+    ctx.fillStyle = "rgba(255, 220, 140, 0.35)";
+    ctx.beginPath();
+    ctx.moveTo(w * 0.42, base - dpr * 8);
+    ctx.lineTo(w * 0.46, base - dpr * 28);
+    ctx.lineTo(w * 0.5, base - dpr * 14);
+    ctx.lineTo(w * 0.54, base - dpr * 28);
+    ctx.lineTo(w * 0.58, base - dpr * 8);
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+
+function drawSirensShallowsBed() { drawMermaidCoastBed("sirens-shallows"); }
+function drawPearlveilCoveBed() { drawMermaidCoastBed("pearlveil-cove"); }
+function drawMoonfinLagoonBed() { drawMermaidCoastBed("moonfin-lagoon"); }
+function drawCoralChoirBed() { drawMermaidCoastBed("coral-choir"); }
+function drawTideglassReefBed() { drawMermaidCoastBed("tideglass-reef"); }
+function drawWhisperingKelpBed() { drawMermaidCoastBed("whispering-kelp"); }
+function drawMirrorMerBayBed() { drawMermaidCoastBed("mirror-mer-bay"); }
+function drawShellsongReachBed() { drawMermaidCoastBed("shellsong-reach"); }
+function drawGlimmerDepthsBed() { drawMermaidCoastBed("glimmer-depths"); }
+function drawMermaidCrownBed() { drawMermaidCoastBed("mermaid-crown"); }
+
+function drawAdventureMermaidCoastEffect(now, themeId) {
+  const t = now * 0.001;
+  ctx.fillStyle = "rgba(255, 200, 220, 0.04)";
+  ctx.fillRect(0, waterTop, w, (h - waterTop) * 0.35);
+  ctx.fillStyle = "rgba(120, 220, 230, 0.08)";
+  for (let i = 0; i < perfN(8); i++) {
+    const bx = ((i * 131 + Math.floor(t * 12)) % 1000) / 1000 * w;
+    const by = waterTop + (h - waterTop) * (0.35 + ((i * 71) % 500) / 1000);
+    ctx.beginPath();
+    ctx.arc(bx, by, dpr * (0.9 + (i % 3) * 0.4), 0, Math.PI * 2);
+    ctx.fill();
+  }
+  if (themeId === "whispering-kelp") {
+    ctx.strokeStyle = "rgba(70, 160, 110, 0.18)";
+    ctx.lineWidth = dpr * 1.4;
+    for (let i = 0; i < 5; i++) {
+      const x = w * (0.15 + i * 0.16);
+      ctx.beginPath();
+      ctx.moveTo(x, h - dpr * 20);
+      ctx.quadraticCurveTo(x + Math.sin(t + i) * dpr * 10, h * 0.55, x + Math.sin(t * 0.7 + i) * dpr * 6, waterTop + (h - waterTop) * 0.4);
+      ctx.stroke();
+    }
+  }
+}
+
+/**
+ * Guaranteed mermaid glimpse each Mermaid Coast voyage:
+ * faint ambient silhouette always, plus one clearer swim-by early in the round.
+ */
+function drawVagueMermaidSilhouette(now) {
+  if (!adventureSession) return;
+  const startedAt = adventureSession.mermaidRoundStartedAt || now;
+  const elapsed = Math.max(0, now - startedAt);
+  const glimpseStart = 3200;
+  const glimpseDur = 4200;
+  const inGlimpse = elapsed >= glimpseStart && elapsed <= glimpseStart + glimpseDur;
+  if (inGlimpse) adventureSession.mermaidGlimpseSeen = true;
+
+  const t = now * 0.0004;
+  const wy = waterTop;
+  const wh = h - waterTop;
+  const progress = inGlimpse
+    ? Math.min(1, Math.max(0, (elapsed - glimpseStart) / glimpseDur))
+    : (elapsed % 14000) / 14000;
+  const dir = adventureSession.levelIndex % 2 === 0 ? 1 : -1;
+  const cx = dir > 0
+    ? w * (-0.12 + progress * 1.24)
+    : w * (1.12 - progress * 1.24);
+  const cy = wy + wh * (0.42 + Math.sin(t * 1.2 + progress * 4) * 0.06);
+  const alpha = inGlimpse ? 0.16 + Math.sin(progress * Math.PI) * 0.14 : 0.055;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = "rgba(20, 70, 85, 0.92)";
+  // torso
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, dpr * 11, dpr * 16, dir * 0.15, 0, Math.PI * 2);
+  ctx.fill();
+  // head
+  ctx.beginPath();
+  ctx.ellipse(cx + dir * dpr * 2, cy - dpr * 18, dpr * 7, dpr * 8, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // hair
+  ctx.globalAlpha = alpha * 0.85;
+  ctx.fillStyle = "rgba(180, 90, 140, 0.75)";
+  ctx.beginPath();
+  ctx.ellipse(cx - dir * dpr * 2, cy - dpr * 20, dpr * 10, dpr * 12, dir * -0.4, 0, Math.PI * 2);
+  ctx.fill();
+  // tail
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = "rgba(40, 160, 150, 0.85)";
+  ctx.beginPath();
+  ctx.moveTo(cx - dir * dpr * 4, cy + dpr * 10);
+  ctx.quadraticCurveTo(
+    cx - dir * dpr * 28,
+    cy + dpr * 22 + Math.sin(t * 3) * dpr * 4,
+    cx - dir * dpr * 36,
+    cy + dpr * 8,
+  );
+  ctx.quadraticCurveTo(cx - dir * dpr * 24, cy + dpr * 30, cx - dir * dpr * 2, cy + dpr * 16);
+  ctx.closePath();
+  ctx.fill();
+  // fluke
+  ctx.beginPath();
+  ctx.ellipse(cx - dir * dpr * 38, cy + dpr * 6, dpr * 10, dpr * 5, dir * 0.6, 0, Math.PI * 2);
+  ctx.fill();
+  if (inGlimpse) {
+    ctx.globalAlpha = alpha * 0.7;
+    ctx.fillStyle = "rgba(255, 230, 180, 0.8)";
+    ctx.beginPath();
+    ctx.arc(cx + dir * dpr * 3, cy - dpr * 6, dpr * 1.6, 0, Math.PI * 2);
+    ctx.fill();
+  }
   ctx.restore();
 }
 
@@ -5581,6 +6093,16 @@ const ADVENTURE_THEME_EFFECT_DRAW = {
   "poseidons-plaza": (now) => drawAdventureAtlantisThemeEffect(now, "poseidons-plaza"),
   "temple-of-tides": (now) => drawAdventureAtlantisThemeEffect(now, "temple-of-tides"),
   "throne-of-atlantis": (now) => drawAdventureAtlantisThemeEffect(now, "throne-of-atlantis"),
+  "sirens-shallows": (now) => drawAdventureMermaidCoastEffect(now, "sirens-shallows"),
+  "pearlveil-cove": (now) => drawAdventureMermaidCoastEffect(now, "pearlveil-cove"),
+  "moonfin-lagoon": (now) => drawAdventureMermaidCoastEffect(now, "moonfin-lagoon"),
+  "coral-choir": (now) => drawAdventureMermaidCoastEffect(now, "coral-choir"),
+  "tideglass-reef": (now) => drawAdventureMermaidCoastEffect(now, "tideglass-reef"),
+  "whispering-kelp": (now) => drawAdventureMermaidCoastEffect(now, "whispering-kelp"),
+  "mirror-mer-bay": (now) => drawAdventureMermaidCoastEffect(now, "mirror-mer-bay"),
+  "shellsong-reach": (now) => drawAdventureMermaidCoastEffect(now, "shellsong-reach"),
+  "glimmer-depths": (now) => drawAdventureMermaidCoastEffect(now, "glimmer-depths"),
+  "mermaid-crown": (now) => drawAdventureMermaidCoastEffect(now, "mermaid-crown"),
 };
 
 const ADVENTURE_BONUS_THEME_BASE = {
@@ -5688,8 +6210,12 @@ function adventurePassScoreForIndex(i) {
     const iceI = i - ADVENTURE_ICE_START_INDEX;
     return 10000 + Math.round((iceI * (11000 - 10000)) / Math.max(1, ADVENTURE_ICE_LEVEL_COUNT - 1));
   }
-  const lostI = i - ADVENTURE_LOST_CITY_START_INDEX;
-  return 10500 + Math.round((lostI * (11800 - 10500)) / Math.max(1, ADVENTURE_LOST_CITY_LEVEL_COUNT - 1));
+  if (i < ADVENTURE_MERMAID_START_INDEX) {
+    const lostI = i - ADVENTURE_LOST_CITY_START_INDEX;
+    return 10500 + Math.round((lostI * (11800 - 10500)) / Math.max(1, ADVENTURE_LOST_CITY_LEVEL_COUNT - 1));
+  }
+  const merI = i - ADVENTURE_MERMAID_START_INDEX;
+  return 11200 + Math.round((merI * (12600 - 11200)) / Math.max(1, ADVENTURE_MERMAID_LEVEL_COUNT - 1));
 }
 
 function drawAdventureThemeOverlayInner(now) {
@@ -5699,6 +6225,7 @@ function drawAdventureThemeOverlayInner(now) {
 
   if (themeId === "serpent-strait") drawVagueSerpentSilhouette(now);
   if (themeId === "leviathan-deep" || themeId === "bounty-trench") drawVagueLeviathanSilhouette(now);
+  if (isMermaidCoastTheme(themeId)) drawVagueMermaidSilhouette(now);
 
   const g = ctx.createLinearGradient(0, waterTop, 0, h);
   for (const [stop, color] of atm.stops) g.addColorStop(stop, color);
@@ -5784,6 +6311,7 @@ function defaultMeta() {
     pendingBonusVoyagesCelebration: false,
     pendingIceVoyagesCelebration: false,
     pendingLostCityCelebration: false,
+    pendingMermaidCoastCelebration: false,
     pendingDailyPrizeCelebration: null,
     playerInitials: "",
     playerName: "",
@@ -5867,6 +6395,7 @@ function loadMeta() {
       pendingBonusVoyagesCelebration: Boolean(o.pendingBonusVoyagesCelebration),
       pendingIceVoyagesCelebration: Boolean(o.pendingIceVoyagesCelebration),
       pendingLostCityCelebration: Boolean(o.pendingLostCityCelebration),
+      pendingMermaidCoastCelebration: Boolean(o.pendingMermaidCoastCelebration),
       pendingDailyPrizeCelebration: normalizePendingDailyPrizeCelebration(o.pendingDailyPrizeCelebration),
       playerInitials: String(o.playerInitials || "")
         .toUpperCase()
@@ -7123,47 +7652,53 @@ function buildAdventureLevels() {
     const tier = Math.floor(i / cycle.length);
     const isBonus = i >= ADVENTURE_MAIN_LEVEL_COUNT && i < ADVENTURE_ICE_START_INDEX;
     const isIce = i >= ADVENTURE_ICE_START_INDEX && i < ADVENTURE_LOST_CITY_START_INDEX;
-    const isLostCity = i >= ADVENTURE_LOST_CITY_START_INDEX;
+    const isLostCity = i >= ADVENTURE_LOST_CITY_START_INDEX && i < ADVENTURE_MERMAID_START_INDEX;
+    const isMermaid = i >= ADVENTURE_MERMAID_START_INDEX;
     levels.push({
       level: i + 1,
       id: `adv_${i + 1}`,
       name: ADVENTURE_MAP_PLACES[i] || `Voyage ${i + 1}`,
-      subtitle: isLostCity
-        ? `${ADVENTURE_SECTION_LOST_CITY} · ${reef.name}`
-        : isIce
-          ? `${ADVENTURE_SECTION_FROZEN_SEA} · ${reef.name}`
-          : isBonus
-            ? `${ADVENTURE_SECTION_GOLD_QUEST} · ${reef.name}`
-            : `${ADVENTURE_SECTION_PIRATES_PATH} · ${reef.name}`,
+      subtitle: isMermaid
+        ? `${ADVENTURE_SECTION_MERMAID_COAST} · ${reef.name}`
+        : isLostCity
+          ? `${ADVENTURE_SECTION_LOST_CITY} · ${reef.name}`
+          : isIce
+            ? `${ADVENTURE_SECTION_FROZEN_SEA} · ${reef.name}`
+            : isBonus
+              ? `${ADVENTURE_SECTION_GOLD_QUEST} · ${reef.name}`
+              : `${ADVENTURE_SECTION_PIRATES_PATH} · ${reef.name}`,
       mapPlace: ADVENTURE_MAP_PLACES[i] || `Isle ${i + 1}`,
       reefId: reef.id,
       isBonus,
       isIce,
       isLostCity,
+      isMermaid,
       passScore: adventurePassScoreForIndex(i),
       roundMs:
         Math.max(
-          isLostCity ? 46_000 : isIce ? 47_000 : isBonus ? 44_000 : 46_000,
+          isMermaid ? 45_000 : isLostCity ? 46_000 : isIce ? 47_000 : isBonus ? 44_000 : 46_000,
           reef.roundMs - tier * 2200 - i * 420,
         ) + adventureLevelTimeBonusMs(i),
       spawnMin: Math.max(
-        isLostCity ? 140 : isIce ? 150 : isBonus ? 165 : 185,
+        isMermaid ? 135 : isLostCity ? 140 : isIce ? 150 : isBonus ? 165 : 185,
         Math.min(400, reef.spawnMin - i * 12),
       ),
       spawnMax: Math.max(
-        isLostCity ? 340 : isIce ? 360 : isBonus ? 390 : 430,
+        isMermaid ? 330 : isLostCity ? 340 : isIce ? 360 : isBonus ? 390 : 430,
         Math.min(1500, reef.spawnMax - i * 30),
       ),
       maxFish: Math.min(
-        isLostCity ? 21 : isIce ? 20 : isBonus ? 19 : 18,
+        isMermaid ? 22 : isLostCity ? 21 : isIce ? 20 : isBonus ? 19 : 18,
         reef.maxFish + Math.floor(i / 2.4),
       ),
       fishSpeed: Math.max(
         0.96,
-        reef.fishSpeed * (1.12 + i * 0.02) * (isLostCity ? 0.82 : isIce ? 0.84 : isBonus ? 0.94 : 1),
+        reef.fishSpeed *
+          (1.12 + i * 0.02) *
+          (isMermaid ? 0.8 : isLostCity ? 0.82 : isIce ? 0.84 : isBonus ? 0.94 : 1),
       ),
       rareRollMult: Math.max(
-        isLostCity || isIce ? 0.66 : 0.55,
+        isMermaid || isLostCity || isIce ? 0.66 : 0.55,
         reef.rareRollMult * (0.97 - i * 0.009),
       ),
     });
@@ -7222,6 +7757,7 @@ function isAdventureLevelPlayable(levelNum) {
   if (levelNum > ADVENTURE_MAIN_LEVEL_COUNT && highest < ADVENTURE_MAIN_LEVEL_COUNT) return false;
   if (levelNum > ADVENTURE_ICE_START_INDEX && highest < ADVENTURE_ICE_START_INDEX) return false;
   if (levelNum > ADVENTURE_LOST_CITY_START_INDEX && highest < ADVENTURE_LOST_CITY_START_INDEX) return false;
+  if (levelNum > ADVENTURE_MERMAID_START_INDEX && highest < ADVENTURE_MERMAID_START_INDEX) return false;
   return levelNum <= highest + 1;
 }
 
@@ -7235,6 +7771,10 @@ function isAdventureIceUnlocked() {
 
 function isAdventureLostCityUnlocked() {
   return (gameMeta.adventureHighestLevel || 0) >= ADVENTURE_LOST_CITY_START_INDEX;
+}
+
+function isAdventureMermaidCoastUnlocked() {
+  return (gameMeta.adventureHighestLevel || 0) >= ADVENTURE_MERMAID_START_INDEX;
 }
 
 function getAdventureLevel(index) {
@@ -7304,6 +7844,9 @@ function getReef() {
     themeId === "aurora-reach"
   ) {
     merged.desc = `Icy waters · floating ice chunks · score ${lvl.passScore}+ to continue`;
+  }
+  if (isMermaidCoastTheme(themeId)) {
+    merged.desc = `Enchanted teal waters · glimpse a mermaid · score ${lvl.passScore}+ to continue`;
   }
   return merged;
 }
@@ -12966,6 +13509,7 @@ const adventureWinTreasureCelebrate = document.getElementById("adventureWinTreas
 const adventureMapBonusBanner = document.getElementById("adventureMapBonusBanner");
 const adventureMapIceBanner = document.getElementById("adventureMapIceBanner");
 const adventureMapLostCityBanner = document.getElementById("adventureMapLostCityBanner");
+const adventureMapMermaidBanner = document.getElementById("adventureMapMermaidBanner");
 const adventureFailTheme = document.getElementById("adventureFailTheme");
 
 let selectedRod = RODS[0];
@@ -13488,6 +14032,7 @@ function loadMetaFromObject(o) {
       pendingBonusVoyagesCelebration: Boolean(o.pendingBonusVoyagesCelebration),
       pendingIceVoyagesCelebration: Boolean(o.pendingIceVoyagesCelebration),
       pendingLostCityCelebration: Boolean(o.pendingLostCityCelebration),
+      pendingMermaidCoastCelebration: Boolean(o.pendingMermaidCoastCelebration),
       pendingDailyPrizeCelebration: normalizePendingDailyPrizeCelebration(o.pendingDailyPrizeCelebration),
       playerInitials: String(o.playerInitials || "")
         .toUpperCase()
@@ -14062,6 +14607,7 @@ function runAdventureMapSectionReveal(kind) {
     scrollAdventureMapToSection(kind, true);
     if (kind === "gold") clearBonusVoyagesMapCelebration();
     else if (kind === "ice") clearIceVoyagesMapCelebration();
+    else if (kind === "mermaid") clearMermaidCoastMapCelebration();
     else clearLostCityMapCelebration();
     return;
   }
@@ -14080,6 +14626,7 @@ function runAdventureMapSectionReveal(kind) {
     });
     if (kind === "gold") clearBonusVoyagesMapCelebration();
     else if (kind === "ice") clearIceVoyagesMapCelebration();
+    else if (kind === "mermaid") clearMermaidCoastMapCelebration();
     else clearLostCityMapCelebration();
   }, 3600);
 }
@@ -14287,6 +14834,7 @@ let adventureMapUiProgress = -1;
 let adventureMapUiBonusRevealed = null;
 let adventureMapUiIceRevealed = null;
 let adventureMapUiLostCityRevealed = null;
+let adventureMapUiMermaidRevealed = null;
 
 function syncAdventureMapNodeStates() {
   if (!adventureLevelList) return;
@@ -14314,6 +14862,7 @@ function buildAdventureLevelUI(force = false) {
   const bonusRevealed = isAdventureBonusUnlocked();
   const iceRevealed = isAdventureIceUnlocked();
   const lostCityRevealed = isAdventureLostCityUnlocked();
+  const mermaidRevealed = isAdventureMermaidCoastUnlocked();
   const visibleCount = adventureMapVisibleLevelCount();
   const existingNodes = adventureLevelList.querySelectorAll(".adventure-map-node").length;
   if (
@@ -14322,6 +14871,7 @@ function buildAdventureLevelUI(force = false) {
     adventureMapUiBonusRevealed === bonusRevealed &&
     adventureMapUiIceRevealed === iceRevealed &&
     adventureMapUiLostCityRevealed === lostCityRevealed &&
+    adventureMapUiMermaidRevealed === mermaidRevealed &&
     existingNodes === visibleCount
   ) {
     syncAdventureMapNodeStates();
@@ -14336,6 +14886,7 @@ function buildAdventureLevelUI(force = false) {
   adventureMapUiBonusRevealed = bonusRevealed;
   adventureMapUiIceRevealed = iceRevealed;
   adventureMapUiLostCityRevealed = lostCityRevealed;
+  adventureMapUiMermaidRevealed = mermaidRevealed;
   adventureLevelList.querySelectorAll(".adventure-chart__nodes").forEach((el) => {
     el.innerHTML = "";
   });
@@ -14357,7 +14908,8 @@ function buildAdventureLevelUI(force = false) {
     const isTreasureCoveFinale = i === TREASURE_COVE_INDEX;
     const isBonus = i >= ADVENTURE_MAIN_LEVEL_COUNT && i < ADVENTURE_ICE_START_INDEX;
     const isIce = i >= ADVENTURE_ICE_START_INDEX && i < ADVENTURE_LOST_CITY_START_INDEX;
-    const isLostCity = i >= ADVENTURE_LOST_CITY_START_INDEX;
+    const isLostCity = i >= ADVENTURE_LOST_CITY_START_INDEX && i < ADVENTURE_MERMAID_START_INDEX;
+    const isMermaid = i >= ADVENTURE_MERMAID_START_INDEX;
     const isUltimateFinale = i === ADVENTURE_LEVEL_COUNT - 1;
     const themeId = getAdventureLevelTheme(i);
     const b = document.createElement("button");
@@ -14371,23 +14923,39 @@ function buildAdventureLevelUI(force = false) {
     if (isBonus) b.classList.add("adventure-map-node--bonus");
     if (isIce) b.classList.add("adventure-map-node--ice");
     if (isLostCity) b.classList.add("adventure-map-node--lost-city");
+    if (isMermaid) b.classList.add("adventure-map-node--mermaid");
     if (isUltimateFinale) b.classList.add("adventure-map-node--bonus-finale");
     if (isIce && i === AURORA_REACH_INDEX) b.classList.add("adventure-map-node--ice-finale");
-    if (isLostCity && isUltimateFinale) b.classList.add("adventure-map-node--lost-city-finale");
+    if (isLostCity && i === THRONE_OF_ATLANTIS_INDEX) b.classList.add("adventure-map-node--lost-city-finale");
+    if (isMermaid && isUltimateFinale) b.classList.add("adventure-map-node--mermaid-finale");
     b.disabled = !playable;
     b.style.left = `${layout.x}%`;
     b.style.top = `${layout.y}%`;
-    const sectionName = isLostCity
-      ? ADVENTURE_SECTION_LOST_CITY
-      : isIce
-        ? ADVENTURE_SECTION_FROZEN_SEA
-        : isBonus
-          ? ADVENTURE_SECTION_GOLD_QUEST
-          : ADVENTURE_SECTION_PIRATES_PATH;
+    const sectionName = isMermaid
+      ? ADVENTURE_SECTION_MERMAID_COAST
+      : isLostCity
+        ? ADVENTURE_SECTION_LOST_CITY
+        : isIce
+          ? ADVENTURE_SECTION_FROZEN_SEA
+          : isBonus
+            ? ADVENTURE_SECTION_GOLD_QUEST
+            : ADVENTURE_SECTION_PIRATES_PATH;
     b.title = `${lvl.name} — ${sectionName} · pass ${lvl.passScore}`;
     b.dataset.levelIndex = String(i);
-    b.dataset.section = isLostCity ? "lost-city" : isIce ? "ice" : isBonus ? "gold" : "pirates";
-    const showTreasureX = isTreasureCoveFinale || isUltimateFinale || (isIce && i === AURORA_REACH_INDEX);
+    b.dataset.section = isMermaid
+      ? "mermaid"
+      : isLostCity
+        ? "lost-city"
+        : isIce
+          ? "ice"
+          : isBonus
+            ? "gold"
+            : "pirates";
+    const showTreasureX =
+      isTreasureCoveFinale ||
+      isUltimateFinale ||
+      (isIce && i === AURORA_REACH_INDEX) ||
+      i === THRONE_OF_ATLANTIS_INDEX;
     b.innerHTML = `
       <span class="adventure-map-node__mark" aria-hidden="true">
         <span class="adventure-map-node__pin">
@@ -14430,14 +14998,16 @@ function buildAdventureLevelUI(force = false) {
   });
   if (adventureMapBanner) {
     adventureMapBanner.hidden = !isAdventureUnlocked();
-    if (iceRevealed) {
-      adventureMapBanner.textContent = lostCityRevealed
-        ? `Chart the course — ${ADVENTURE_SECTION_LOST_CITY} unlocked!`
-        : `Chart the course — ${ADVENTURE_SECTION_FROZEN_SEA} unlocked!`;
+    if (mermaidRevealed) {
+      adventureMapBanner.textContent = `Chart the course — ${ADVENTURE_SECTION_MERMAID_COAST} unlocked!`;
+    } else if (lostCityRevealed) {
+      adventureMapBanner.textContent = `Chart the course — ${ADVENTURE_SECTION_LOST_CITY} unlocked!`;
+    } else if (iceRevealed) {
+      adventureMapBanner.textContent = `Chart the course — ${ADVENTURE_SECTION_FROZEN_SEA} unlocked!`;
     } else if (bonusRevealed) {
       adventureMapBanner.textContent = `Chart the course — ${ADVENTURE_SECTION_GOLD_QUEST} unlocked beyond Pirates Path!`;
     } else {
-      adventureMapBanner.textContent = `Chart the course — ${ADVENTURE_SECTION_PIRATES_PATH}, then ${ADVENTURE_SECTION_GOLD_QUEST}, ${ADVENTURE_SECTION_FROZEN_SEA}, and ${ADVENTURE_SECTION_LOST_CITY}!`;
+      adventureMapBanner.textContent = `Chart the course — ${ADVENTURE_SECTION_PIRATES_PATH}, then ${ADVENTURE_SECTION_GOLD_QUEST}, ${ADVENTURE_SECTION_FROZEN_SEA}, ${ADVENTURE_SECTION_LOST_CITY}, and ${ADVENTURE_SECTION_MERMAID_COAST}!`;
     }
   }
   if (adventureMapBonusBanner) {
@@ -14476,6 +15046,18 @@ function buildAdventureLevelUI(force = false) {
       Boolean(gameMeta.pendingLostCityCelebration),
     );
   }
+  if (adventureMapMermaidBanner) {
+    const showMermaidBanner =
+      (isAdventureMermaidCoastUnlocked() || gameMeta.pendingMermaidCoastCelebration) && isAdventureUnlocked();
+    adventureMapMermaidBanner.hidden = !showMermaidBanner;
+    adventureMapMermaidBanner.textContent = mermaidRevealed
+      ? `${ADVENTURE_SECTION_MERMAID_COAST} — enchanted voyages beyond Atlantis`
+      : `${ADVENTURE_SECTION_MERMAID_COAST} — clear Throne of Atlantis to unlock`;
+    adventureMapMermaidBanner.classList.toggle(
+      "adventure-map-mermaid-banner--reveal",
+      Boolean(gameMeta.pendingMermaidCoastCelebration),
+    );
+  }
 }
 
 function clearBonusVoyagesMapCelebration() {
@@ -14493,6 +15075,15 @@ function clearLostCityMapCelebration() {
   saveMeta();
   if (adventureMapLostCityBanner) {
     adventureMapLostCityBanner.classList.remove("adventure-map-lost-city-banner--reveal");
+  }
+}
+
+function clearMermaidCoastMapCelebration() {
+  if (!gameMeta.pendingMermaidCoastCelebration) return;
+  gameMeta.pendingMermaidCoastCelebration = false;
+  saveMeta();
+  if (adventureMapMermaidBanner) {
+    adventureMapMermaidBanner.classList.remove("adventure-map-mermaid-banner--reveal");
   }
 }
 
@@ -14526,6 +15117,9 @@ function openAdventureHub() {
   } else if (gameMeta.pendingIceVoyagesCelebration) {
     showToast(`${ADVENTURE_SECTION_FROZEN_SEA} unlocked! A new chart is unfurled.`, 4200);
     window.requestAnimationFrame(() => runAdventureMapSectionReveal("ice"));
+  } else if (gameMeta.pendingMermaidCoastCelebration) {
+    showToast(`${ADVENTURE_SECTION_MERMAID_COAST} unlocked! A new chart is unfurled.`, 4200);
+    window.requestAnimationFrame(() => runAdventureMapSectionReveal("mermaid"));
   } else if (gameMeta.pendingLostCityCelebration) {
     showToast(`${ADVENTURE_SECTION_LOST_CITY} unlocked! A new chart is unfurled.`, 4200);
     window.requestAnimationFrame(() => runAdventureMapSectionReveal("lost-city"));
@@ -14540,7 +15134,11 @@ function startAdventureLevel(levelIndex) {
   const lvl = getAdventureLevel(levelIndex);
   if (!isAdventureLevelPlayable(lvl.level)) return;
   pendingAdventureLevelIndex = levelIndex;
-  adventureSession = { levelIndex };
+  adventureSession = {
+    levelIndex,
+    mermaidRoundStartedAt: performance.now(),
+    mermaidGlimpseSeen: false,
+  };
   selectedReefId = lvl.reefId;
   hideAllPanels();
   updateAdventurePlayTheme(levelIndex);
@@ -14548,6 +15146,7 @@ function startAdventureLevel(levelIndex) {
 }
 
 function adventurePrepSectionLabel(lvl) {
+  if (lvl.isMermaid) return ADVENTURE_SECTION_MERMAID_COAST;
   if (lvl.isLostCity) return ADVENTURE_SECTION_LOST_CITY;
   if (lvl.isIce) return ADVENTURE_SECTION_FROZEN_SEA;
   if (lvl.isBonus) return ADVENTURE_SECTION_GOLD_QUEST;
@@ -14650,11 +15249,13 @@ function endAdventureRound() {
   const clearedTreasureCove = passed && levelIndex === TREASURE_COVE_INDEX;
   const clearedLegendsGate = passed && levelIndex === LEGENDS_GATE_INDEX;
   const clearedAuroraReach = passed && levelIndex === AURORA_REACH_INDEX;
+  const clearedThroneOfAtlantis = passed && levelIndex === THRONE_OF_ATLANTIS_INDEX;
   if (passed) {
     gameMeta.adventureHighestLevel = Math.max(gameMeta.adventureHighestLevel || 0, lvl.level);
     if (clearedTreasureCove) gameMeta.pendingBonusVoyagesCelebration = true;
     if (clearedLegendsGate) gameMeta.pendingIceVoyagesCelebration = true;
     if (clearedAuroraReach) gameMeta.pendingLostCityCelebration = true;
+    if (clearedThroneOfAtlantis) gameMeta.pendingMermaidCoastCelebration = true;
     saveMeta();
     adventureMapUiProgress = -1;
     pendingAdventureTrailReveal = true;
@@ -14688,7 +15289,9 @@ function endAdventureRound() {
           ? "Legend's Gate cleared!"
           : clearedAuroraReach
             ? "Aurora Reach cleared!"
-            : `Level ${lvl.level} cleared!`;
+            : clearedThroneOfAtlantis
+              ? "Throne of Atlantis cleared!"
+              : `Level ${lvl.level} cleared!`;
     }
     if (adventureWinScore) {
       adventureWinScore.textContent = clearedTreasureCove
@@ -14697,7 +15300,9 @@ function endAdventureRound() {
           ? `You scored ${score} (needed ${lvl.passScore}). ${ADVENTURE_SECTION_FROZEN_SEA} voyages now appear on the map!`
           : clearedAuroraReach
             ? `You scored ${score} (needed ${lvl.passScore}). ${ADVENTURE_SECTION_LOST_CITY} voyages now appear on the map!`
-            : `You scored ${score} (needed ${lvl.passScore}).`;
+            : clearedThroneOfAtlantis
+              ? `You scored ${score} (needed ${lvl.passScore}). ${ADVENTURE_SECTION_MERMAID_COAST} voyages now appear on the map!`
+              : `You scored ${score} (needed ${lvl.passScore}).`;
     }
     if (adventureWinTreasureCelebrate) {
       adventureWinTreasureCelebrate.hidden = !clearedTreasureCove;
@@ -14718,9 +15323,11 @@ function endAdventureRound() {
           ? `Start ${ADVENTURE_SECTION_FROZEN_SEA} voyage 1`
           : clearedAuroraReach
             ? `Start ${ADVENTURE_SECTION_LOST_CITY} voyage 1`
-            : hasNext
-              ? `Start level ${lvl.level + 1}`
-              : "Back to map";
+            : clearedThroneOfAtlantis
+              ? `Start ${ADVENTURE_SECTION_MERMAID_COAST} voyage 1`
+              : hasNext
+                ? `Start level ${lvl.level + 1}`
+                : "Back to map";
     }
     if (panelAdventureWin) panelAdventureWin.hidden = false;
   } else {
@@ -16890,6 +17497,7 @@ function showAdventureWinForLevel(levelIndex, scoreForCopy) {
   const clearedTreasureCove = levelIndex === TREASURE_COVE_INDEX;
   const clearedLegendsGate = levelIndex === LEGENDS_GATE_INDEX;
   const clearedAuroraReach = levelIndex === AURORA_REACH_INDEX;
+  const clearedThroneOfAtlantis = levelIndex === THRONE_OF_ATLANTIS_INDEX;
   if (clearedTreasureCove) playTreasureCoveVictorySound();
   fillAdventureResultTheme(adventureWinTheme, levelIndex);
   if (adventureFailTheme) adventureFailTheme.hidden = true;
@@ -16900,7 +17508,9 @@ function showAdventureWinForLevel(levelIndex, scoreForCopy) {
         ? "Legend's Gate cleared!"
         : clearedAuroraReach
           ? "Aurora Reach cleared!"
-          : `Level ${lvl.level} cleared!`;
+          : clearedThroneOfAtlantis
+            ? "Throne of Atlantis cleared!"
+            : `Level ${lvl.level} cleared!`;
   }
   if (adventureWinScore) {
     adventureWinScore.textContent = clearedTreasureCove
@@ -16909,7 +17519,9 @@ function showAdventureWinForLevel(levelIndex, scoreForCopy) {
         ? `Skip Rope cleared the gate (score ${scoreForCopy}). ${ADVENTURE_SECTION_FROZEN_SEA} voyages now appear on the map!`
         : clearedAuroraReach
           ? `Skip Rope cleared Aurora Reach (score ${scoreForCopy}). ${ADVENTURE_SECTION_LOST_CITY} voyages now appear on the map!`
-          : `Adventure Skip Rope cleared level ${lvl.level} (score ${scoreForCopy}).`;
+          : clearedThroneOfAtlantis
+            ? `Skip Rope cleared the throne (score ${scoreForCopy}). ${ADVENTURE_SECTION_MERMAID_COAST} voyages now appear on the map!`
+            : `Adventure Skip Rope cleared level ${lvl.level} (score ${scoreForCopy}).`;
   }
   if (adventureWinTreasureCelebrate) {
     adventureWinTreasureCelebrate.hidden = !clearedTreasureCove;
@@ -16930,9 +17542,11 @@ function showAdventureWinForLevel(levelIndex, scoreForCopy) {
         ? `Start ${ADVENTURE_SECTION_FROZEN_SEA} voyage 1`
         : clearedAuroraReach
           ? `Start ${ADVENTURE_SECTION_LOST_CITY} voyage 1`
-          : hasNext
-            ? `Start level ${lvl.level + 1}`
-            : "Back to map";
+          : clearedThroneOfAtlantis
+            ? `Start ${ADVENTURE_SECTION_MERMAID_COAST} voyage 1`
+            : hasNext
+              ? `Start level ${lvl.level + 1}`
+              : "Back to map";
   }
   if (panelAdventureFail) panelAdventureFail.hidden = true;
   if (panelAdventureWin) panelAdventureWin.hidden = false;
@@ -16951,10 +17565,12 @@ function useAdventureSkipRope() {
   const clearedTreasureCove = levelIndex === TREASURE_COVE_INDEX;
   const clearedLegendsGate = levelIndex === LEGENDS_GATE_INDEX;
   const clearedAuroraReach = levelIndex === AURORA_REACH_INDEX;
+  const clearedThroneOfAtlantis = levelIndex === THRONE_OF_ATLANTIS_INDEX;
   gameMeta.adventureHighestLevel = Math.max(gameMeta.adventureHighestLevel || 0, lvl.level);
   if (clearedTreasureCove) gameMeta.pendingBonusVoyagesCelebration = true;
   if (clearedLegendsGate) gameMeta.pendingIceVoyagesCelebration = true;
   if (clearedAuroraReach) gameMeta.pendingLostCityCelebration = true;
+  if (clearedThroneOfAtlantis) gameMeta.pendingMermaidCoastCelebration = true;
   saveMeta();
   adventureMapUiProgress = -1;
   pendingAdventureTrailReveal = true;

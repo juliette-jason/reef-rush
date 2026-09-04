@@ -8390,6 +8390,11 @@ button.seagull-avatar:active {
   filter: drop-shadow(0 1px 0.5px rgba(20, 60, 70, 0.4));
 }
 
+.adventure-chart--mermaid .adventure-map-trail {
+  stroke: #68b8c8;
+  filter: drop-shadow(0 1px 0.5px rgba(80, 40, 70, 0.35));
+}
+
 .adventure-chart--revealing .adventure-map-node--section-reveal {
   animation: adventureMapNodeSectionReveal 0.75s cubic-bezier(0.34, 1.4, 0.64, 1) both;
 }
@@ -8641,6 +8646,52 @@ button.seagull-avatar:active {
 
 .adventure-map-lost-city-banner--reveal {
   animation: adventureLostCityBannerPulse 1.8s ease-in-out infinite;
+}
+
+.adventure-map-mermaid-banner {
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: none;
+  z-index: 40;
+  width: 100%;
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 240, 248, 0.98), rgba(140, 210, 220, 0.92));
+  border: 2px solid #78b8c8;
+  color: #1a4050;
+  font-weight: 800;
+  font-size: 0.72rem;
+  text-align: center;
+  box-shadow:
+    0 6px 18px rgba(100, 60, 90, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  pointer-events: none;
+}
+
+.adventure-map-mermaid-banner[hidden] {
+  display: none;
+}
+
+.adventure-map-mermaid-banner--reveal {
+  animation: adventureMermaidBannerPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes adventureMermaidBannerPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 6px 18px rgba(100, 60, 90, 0.28),
+      inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow:
+      0 8px 28px rgba(255, 180, 210, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    transform: scale(1.03);
+  }
 }
 
 @keyframes adventureLostCityBannerPulse {
@@ -8958,6 +9009,11 @@ button.seagull-avatar:active {
 .adventure-map-node--lost-city .adventure-map-node__pin {
   background: radial-gradient(circle at 35% 30%, #fff8e0, #d8c898 50%, #78b0c8);
   border-color: #3a6880;
+}
+
+.adventure-map-node--mermaid .adventure-map-node__pin {
+  background: radial-gradient(circle at 35% 30%, #fff0f6, #e8c0d0 45%, #78c0c8);
+  border-color: #5a7890;
 }
 
 .adventure-map-node--bonus .adventure-map-node__bonus-lock {

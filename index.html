@@ -23,7 +23,7 @@
       rel="stylesheet"
     />
     <link rel="canonical" href="https://juliette-jason.github.io/reef-rush/" />
-    <link rel="stylesheet" href="styles.css?v=2026-09-04-duel-sync-1" />
+    <link rel="stylesheet" href="styles.css?v=2026-09-04-mermaid-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -266,7 +266,7 @@
             </div>
             <p class="treasure-map-reveal__badge">★ Adventure Mode Unlocked ★</p>
             <h2 id="treasureMapRevealTitle" class="treasure-map-reveal__title">Treasure map unlocked!</h2>
-            <p class="treasure-map-reveal__lede">Adventure Mode awaits — Pirates Path, Gold Quest, Frozen Sea, and The Lost City.</p>
+            <p class="treasure-map-reveal__lede">Adventure Mode awaits — Pirates Path, Gold Quest, Frozen Sea, The Lost City, and Mermaid Coast.</p>
             <button type="button" id="btnTreasureMapRevealDone" class="btn btn--primary treasure-map-reveal__btn">Continue fishing</button>
           </div>
         </div>
@@ -1494,15 +1494,99 @@
               </svg>
               <div class="adventure-chart__nodes" data-section="lost-city"></div>
             </article>
+
+            <article class="adventure-chart adventure-chart--mermaid" data-section="mermaid" hidden>
+              <svg class="adventure-chart__art" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+              <defs>
+                <linearGradient id="merParchment" x1="8%" y1="0%" x2="92%" y2="100%">
+                  <stop offset="0%" stop-color="#f0e8f0" />
+                  <stop offset="40%" stop-color="#e0d8e8" />
+                  <stop offset="100%" stop-color="#d0c8d8" />
+                </linearGradient>
+                <linearGradient id="merLand" x1="20%" y1="0%" x2="80%" y2="100%">
+                  <stop offset="0%" stop-color="#e8dcc8" />
+                  <stop offset="100%" stop-color="#c8b898" />
+                </linearGradient>
+                <linearGradient id="merOcean" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#c8e0e8" />
+                  <stop offset="55%" stop-color="#98c8d0" />
+                  <stop offset="100%" stop-color="#78b0c0" />
+                </linearGradient>
+                <filter id="merGrain" x="-8%" y="-8%" width="116%" height="116%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" result="noise" />
+                  <feColorMatrix type="saturate" values="0" in="noise" result="gray" />
+                  <feComponentTransfer in="gray" result="grain">
+                    <feFuncA type="linear" slope="0.34" />
+                  </feComponentTransfer>
+                  <feBlend in="SourceGraphic" in2="grain" mode="multiply" />
+                </filter>
+                <clipPath id="merTorn">
+                  <path d="M14 32 L48 10 L110 22 L180 8 L260 18 L340 6 L420 16 L500 7 L580 18 L660 8 L730 20 L786 36 L796 90 L800 180 L794 280 L798 380 L792 470 L786 548 L720 592 L620 584 L520 596 L420 586 L320 594 L220 584 L120 592 L28 560 L6 480 L10 360 L4 240 L12 130 L8 60 Z" />
+                </clipPath>
+              </defs>
+              <g clip-path="url(#merTorn)" filter="url(#merGrain)">
+                <rect width="800" height="600" fill="url(#merParchment)" />
+                <path fill="url(#merOcean)" opacity="0.32" d="M0 0 H800 V600 H0 Z" />
+                <g class="adv-map-lands">
+                  <path fill="url(#merLand)" stroke="#3a5860" stroke-width="1.4" d="M70 420 L90 360 Q140 320 190 350 L210 410 Q180 470 120 460 Z" />
+                  <path fill="url(#merLand)" stroke="#3a5860" stroke-width="1.4" d="M250 220 L280 150 Q360 120 420 170 L400 250 Q340 280 270 260 Z" />
+                  <path fill="url(#merLand)" stroke="#3a5860" stroke-width="1.4" d="M480 160 L540 110 Q620 100 680 160 L660 230 Q580 250 500 220 Z" />
+                  <path fill="url(#merLand)" stroke="#3a5860" stroke-width="1.4" d="M520 380 L580 330 Q680 320 740 380 L720 450 Q640 470 540 440 Z" />
+                  <path fill="url(#merLand)" stroke="#3a5860" stroke-width="1.2" d="M300 470 L340 450 Q380 470 360 500 L320 505 Z" />
+                </g>
+                <g class="adv-map-doodles" pointer-events="none">
+                  <g transform="translate(700 100) scale(0.75)" opacity="0.9">
+                    <circle cx="0" cy="0" r="46" fill="#efe4d8" stroke="#3a2814" stroke-width="1.4" />
+                    <path d="M0 -38 L8 0 L0 38 L-8 0 Z" fill="#3a2814" />
+                    <path d="M-38 0 L0 -8 L38 0 L0 8 Z" fill="#5a3c1c" />
+                    <circle cx="0" cy="0" r="5" fill="#c45c88" stroke="#3a2814" stroke-width="0.8" />
+                    <text x="0" y="-52" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="13" fill="#3a2814">N</text>
+                  </g>
+                  <g transform="translate(160 390)" opacity="0.88">
+                    <path d="M-8 20 Q0 0 8 20 Q0 28 -8 20" fill="#68c8b8" stroke="#3a5860" stroke-width="0.8"/>
+                    <circle cx="0" cy="-2" r="6" fill="#f0c8d8" opacity="0.7"/>
+                    <text x="-34" y="42" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#2a4850" font-style="italic">Siren's Shallows</text>
+                  </g>
+                  <g transform="translate(360 180)" opacity="0.86">
+                    <circle cx="0" cy="8" r="10" fill="#f8f0e8" stroke="#3a5860" stroke-width="0.8"/>
+                    <text x="-30" y="36" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#2a4850" font-style="italic">Pearlveil Cove</text>
+                  </g>
+                  <g transform="translate(600 190)" opacity="0.86">
+                    <path d="M-12 18 L0 -6 L12 18 Z" fill="#88d0c0" stroke="#3a5860" stroke-width="0.8"/>
+                    <text x="-28" y="38" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#2a4850" font-style="italic">Coral Choir</text>
+                  </g>
+                  <g transform="translate(620 400)" opacity="0.92">
+                    <path d="M-14 10 L0 -16 L14 10 Q0 18 -14 10" fill="#68d0c0" stroke="#98e8d8" stroke-width="0.8"/>
+                    <path d="M-6 -4 L-2 -14 L2 -4 L6 -14 L10 -2" fill="none" stroke="#ffe090" stroke-width="1.2"/>
+                    <text x="-36" y="36" font-family="'IM Fell English SC', Georgia, serif" font-size="12" fill="#155e75">Mermaid Crown</text>
+                  </g>
+                  <g transform="translate(40 28)" opacity="0.94">
+                    <rect x="0" y="0" width="230" height="58" rx="4" fill="#efe4d8" stroke="#3a2814" stroke-width="1.6"/>
+                    <rect x="5" y="5" width="220" height="48" rx="2" fill="none" stroke="#3a2814" stroke-width="0.7" opacity="0.55"/>
+                    <text x="115" y="26" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="20" fill="#3a2010">Mermaid Coast</text>
+                    <text x="115" y="44" text-anchor="middle" font-family="'IM Fell English', Georgia, serif" font-size="11" font-style="italic" fill="#5a3c1c">Where the sirens swim</text>
+                  </g>
+                </g>
+                <path class="adventure-map-edge" fill="none" stroke="#487888" stroke-width="3.2" opacity="0.5" d="M14 32 L48 10 L110 22 L180 8 L260 18 L340 6 L420 16 L500 7 L580 18 L660 8 L730 20 L786 36 L796 90 L800 180 L794 280 L798 380 L792 470 L786 548 L720 592 L620 584 L520 596 L420 586 L320 594 L220 584 L120 592 L28 560 L6 480 L10 360 L4 240 L12 130 L8 60 Z" />
+              </g>
+            </svg>
+              <svg class="adventure-chart__trail" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                <path id="adventureMapTrail-mermaid" class="adventure-map-trail" fill="none" d="" />
+                <path id="adventureMapTrailReveal-mermaid" class="adventure-map-trail adventure-map-trail--reveal" fill="none" d="" />
+              </svg>
+              <div class="adventure-chart__nodes" data-section="mermaid"></div>
+            </article>
+
           </div>
         </div>
         <header class="adventure-map-header">
           <h2 class="adventure-map-title">Pirate's Chart</h2>
           <p id="adventureMapHere" class="adventure-map-here"></p>
-          <p id="adventureMapBanner" class="adventure-map-banner" hidden>Chart the course — Pirates Path, then Gold Quest, Frozen Sea, and The Lost City!</p>
+          <p id="adventureMapBanner" class="adventure-map-banner" hidden>Chart the course — Pirates Path, then Gold Quest, Frozen Sea, The Lost City, and Mermaid Coast!</p>
           <p id="adventureMapBonusBanner" class="adventure-map-bonus-banner" hidden>Gold Quest — conquer Treasure Cove to unlock</p>
           <p id="adventureMapIceBanner" class="adventure-map-ice-banner" hidden>Frozen Sea — clear Legend's Gate to unlock</p>
           <p id="adventureMapLostCityBanner" class="adventure-map-lost-city-banner" hidden>The Lost City — clear Aurora Reach to unlock</p>
+          <p id="adventureMapMermaidBanner" class="adventure-map-mermaid-banner" hidden>Mermaid Coast — clear Throne of Atlantis to unlock</p>
         </header>
         <button type="button" id="btnAdventureBack" class="btn btn--secondary adventure-map-back">
           <span class="adventure-map-back__label">← Back to home</span>
@@ -2903,6 +2987,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-09-04-duel-sync-1" defer></script>
+    <script src="game.js?v=2026-09-04-mermaid-1" defer></script>
   </body>
 </html>
