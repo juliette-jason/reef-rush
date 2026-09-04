@@ -957,13 +957,19 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M62 90 H98" stroke="#0f172a" stroke-width="3" opacity="0.45"/>`;
     case "wizard_turtle":
       return `${shadow}${companionTurtleMarkup()}
-        <g transform="rotate(-18 130 58)">
-          <path d="M114 64 L124 30 Q134 18 146 32 L152 66 Q138 74 128 72 Q116 70 114 64Z" fill="#4c1d95" stroke="#2e1065" stroke-width="1.2"/>
-          <path d="M126 58 Q136 48 146 58" fill="none" stroke="#c4b5fd" stroke-width="1.35"/>
-          <circle cx="136" cy="38" r="4" fill="#fde047"/>
+        <g class="wizard-turtle__hat">
+          <ellipse cx="94" cy="84" rx="13" ry="4.2" fill="#3b0764" stroke="#2e1065" stroke-width="1"/>
+          <path d="M82 84 L94 48 L106 84 Z" fill="#6d28d9" stroke="#2e1065" stroke-width="1.15"/>
+          <path d="M88 76 Q94 68 100 76" fill="none" stroke="#c4b5fd" stroke-width="1.25"/>
+          <circle cx="94" cy="50" r="3.4" fill="#fde047" stroke="#b45309" stroke-width="0.7"/>
+          <path d="M94 45 L94 55 M89 50 L99 50" stroke="#fef9c3" stroke-width="1.1" stroke-linecap="round"/>
         </g>
-        <path d="M96 108 C110 92 124 80 128 78 C122 96 118 112 112 114 C104 116 98 112 96 108Z" fill="#7c3aed" stroke="#4c1d95" stroke-width="1"/>
-        <circle cx="130" cy="76" r="4.4" fill="#fbbf24"/>`;
+        <g class="wizard-turtle__wand">
+          <path d="M104 102 L120 78" stroke="#4c1d95" stroke-width="3.1" stroke-linecap="round"/>
+          <path d="M104 102 L120 78" stroke="#a78bfa" stroke-width="1.45" stroke-linecap="round"/>
+          <circle cx="121" cy="76" r="4" fill="#fbbf24" stroke="#b45309" stroke-width="0.75"/>
+          <path d="M121 70 L121 82 M115 76 L127 76" stroke="#fde047" stroke-width="1.35" stroke-linecap="round"/>
+        </g>`;
     case "super_dolphin":
       return `${shadow}
         <path d="M48 78 C72 58 108 54 138 78 C118 92 84 96 58 88 C50 84 48 80 48 78Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="1.1"/>
@@ -1136,7 +1142,7 @@ const COMPANION_ART_FIT = {
   cowboy_shark: { cx: 80, cy: 86, scale: 1.0 },
   party_fish: { cx: 81, cy: 75.1, scale: 1.111 },
   ninja_octopus: { cx: 83, cy: 96, scale: 1.28 },
-  wizard_turtle: { cx: 80, cy: 90, scale: 0.98 },
+  wizard_turtle: { cx: 82, cy: 86, scale: 1.18 },
   super_dolphin: { cx: 84, cy: 85, scale: 0.784 },
   chef_crab: { cx: 80, cy: 88, scale: 0.98 },
   disco_jelly: { cx: 80, cy: 96, scale: 1.28 },
