@@ -7257,7 +7257,7 @@ const REEFS = [
     fishSpeed: 1.14,
     rareRollMult: 0.92,
     weights: { common: 58, uncommon: 24, rare: 11, epic: 5, legendary: 2 },
-    mapPin: { x: 108, y: 12 },
+    mapPin: { x: 111, y: 21 },
     fishPool: [
       "atlantic_herring",
       "european_sprat",
