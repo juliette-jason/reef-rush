@@ -6219,10 +6219,10 @@ function drawVagueMermaidSilhouette(now) {
   /* Far ambient pair — always drifting */
   const ambProg = (elapsed % 26000) / 26000;
   const ambDir = levelSeed % 2 === 0 ? 1 : -1;
-  drawPasser(lookB, ambProg, ambDir, 0.7, 0.58, 0.1, 1.2);
+  drawPasser(lookB, ambProg, ambDir, 0.7, 0.68, 0.18, 1.2);
   if (!PERF_CHROMEBOOK) {
     const amb2 = ((elapsed + 11000) % 28000) / 28000;
-    drawPasser(lookC, amb2, -ambDir, 0.58, 0.5, 0.08, 3.7);
+    drawPasser(lookC, amb2, -ambDir, 0.58, 0.6, 0.15, 3.7);
   }
 
   /* Softer closer pass (or the guaranteed glimpse) */
@@ -6231,8 +6231,8 @@ function drawVagueMermaidSilhouette(now) {
     : (elapsed % 20000) / 20000;
   const mainDir = (levelSeed + 1) % 2 === 0 ? 1 : -1;
   const pulse = inGlimpse ? Math.sin(mainProg * Math.PI) : 0.45;
-  const mainAlpha = inGlimpse ? 0.24 + pulse * 0.14 : 0.11;
-  drawPasser(lookA, mainProg, mainDir, 0.62, inGlimpse ? 0.88 : 0.68, mainAlpha, 0.4);
+  const mainAlpha = inGlimpse ? 0.38 + pulse * 0.2 : 0.2;
+  drawPasser(lookA, mainProg, mainDir, 0.62, inGlimpse ? 1.05 : 0.82, mainAlpha, 0.4);
 }
 
 function drawAdventureDoubloonBayEffect(now) {
