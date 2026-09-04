@@ -3112,7 +3112,11 @@ button.seagull-avatar:active {
 .party-join-form {
   display: grid;
   gap: 8px;
-  margin-top: 8px;
+  margin: 8px 16px 0;
+  width: auto;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .party-join-form__label {
@@ -3127,11 +3131,17 @@ button.seagull-avatar:active {
   display: flex;
   gap: 8px;
   align-items: stretch;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .party-join-form__input {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 10px 12px;
   border-radius: 12px;
   border: 1px solid rgba(125, 211, 252, 0.35);
@@ -3172,10 +3182,96 @@ button.seagull-avatar:active {
 
 .event-card--party-join {
   border-color: rgba(125, 211, 252, 0.28);
+  box-sizing: border-box;
+  max-width: min(420px, 100%);
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .online-matchup--coop .online-matchup__reef {
   color: rgba(187, 247, 208, 0.9);
+}
+
+@media (max-width: 560px) {
+  .panel--events__inner {
+    max-width: 100%;
+    padding-inline: max(10px, env(safe-area-inset-left, 0px)) max(10px, env(safe-area-inset-right, 0px));
+    box-sizing: border-box;
+  }
+
+  .panel--events .event-card,
+  .event-card--party-join {
+    max-width: 100%;
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .event-card--party-join .event-card__head,
+  .event-card--party-join .event-card__hint {
+    margin-left: 12px;
+    margin-right: 12px;
+  }
+
+  .event-card--party-join .event-card__title {
+    font-size: 1.28rem;
+  }
+
+  .event-card--party-join .event-card__hint {
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
+
+  .party-join-form {
+    margin: 8px 12px 4px;
+  }
+
+  .party-join-form__row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .party-join-form__input {
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    padding: 12px 14px;
+    text-align: center;
+  }
+
+  .party-join-form__btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .online-matchup {
+    padding: 10px;
+    align-items: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .online-matchup__card {
+    width: 100%;
+    max-width: 100%;
+    padding: 16px 12px 14px;
+    box-sizing: border-box;
+  }
+
+  .online-matchup__party {
+    margin: 0 0 12px;
+    padding: 10px;
+  }
+
+  .online-matchup__party-code {
+    font-size: clamp(1.8rem, 11vw, 2.6rem);
+    letter-spacing: 0.12em;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .online-matchup__party-hint {
+    font-size: 0.72rem;
+  }
 }
 
 @media (max-width: 420px) {
