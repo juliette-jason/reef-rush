@@ -6133,17 +6133,18 @@ function drawSwimmingMermaidFigure(s, look, kick, t, alpha) {
   ctx.fill();
 
   /* Arms — swept in a swimming stroke */
-  const armStroke = Math.sin(t * 2.8 + kick) * s * 2.5;
+  const armStroke = Math.sin(t * 3.1 + kick) * s * 4.2;
+  const armStroke2 = Math.sin(t * 2.6 + kick + 1.1) * s * 3.4;
   ctx.strokeStyle = skin;
   ctx.lineWidth = s * 2.4;
   ctx.lineCap = "round";
   ctx.beginPath();
   ctx.moveTo(s * 10, hipY * 0.2 - s * 2);
-  ctx.quadraticCurveTo(s * 18, -s * 8 + armStroke, s * 16, -s * 14 + armStroke * 0.5);
+  ctx.quadraticCurveTo(s * 18, -s * 8 + armStroke, s * 16, -s * 14 + armStroke * 0.65);
   ctx.stroke();
   ctx.beginPath();
   ctx.moveTo(s * 2, hipY * 0.2);
-  ctx.quadraticCurveTo(-s * 4, s * 6 + armStroke * 0.4, -s * 2, s * 10);
+  ctx.quadraticCurveTo(-s * 5, s * 5 + armStroke2 * 0.55, -s * 3, s * 11 + armStroke2 * 0.35);
   ctx.stroke();
 
   /* Head */
@@ -6202,10 +6203,10 @@ function drawSittingMermaidFigure(s, look, faceDir, t, alpha, swayPhase) {
   const skin = look.skin;
   const skinShade = look.skinShade;
   /* Whole-body idle motion */
-  const sway = Math.sin(t * 1.25 + swayPhase) * 0.055;
-  const bob = Math.sin(t * 1.55 + swayPhase * 0.7) * s * 1.1;
-  const lean = Math.sin(t * 0.85 + swayPhase + 0.4) * 0.03;
-  const breath = Math.sin(t * 1.9 + swayPhase) * s * 0.4;
+  const sway = Math.sin(t * 1.35 + swayPhase) * 0.09;
+  const bob = Math.sin(t * 1.55 + swayPhase * 0.7) * s * 1.6;
+  const lean = Math.sin(t * 0.95 + swayPhase + 0.4) * 0.05;
+  const breath = Math.sin(t * 1.9 + swayPhase) * s * 0.55;
   /* Hair flow — strong enough to read as moving locks in current */
   const flowA = Math.sin(t * 2.6 + swayPhase) * s * 4.5;
   const flowB = Math.sin(t * 2.1 + swayPhase + 1.1) * s * 3.8;
@@ -6338,19 +6339,40 @@ function drawSittingMermaidFigure(s, look, faceDir, t, alpha, swayPhase) {
   ctx.arc(s * 0.8, -s * 0.8, s * 0.4, 0, Math.PI * 2);
   ctx.fill();
 
-  /* Arms — gentle idle, resting on rock (no hair twirl) */
-  const armBob = Math.sin(t * 1.7 + swayPhase) * s * 1.2;
+  /* Arms — visible idle: one lifts a little, the other drifts on the rock */
+  const armL = Math.sin(t * 1.9 + swayPhase) * s * 3.2;
+  const armR = Math.sin(t * 2.15 + swayPhase + 1.3) * s * 3.8;
+  const armRLift = 0.5 + 0.5 * Math.sin(t * 1.35 + swayPhase + 0.6);
   ctx.strokeStyle = skin;
   ctx.lineWidth = s * 2.3;
   ctx.lineCap = "round";
   ctx.beginPath();
   ctx.moveTo(-s * 3, -s * 2);
-  ctx.quadraticCurveTo(-s * 10, s * 2 + armBob * 0.3, -s * 8, s * 8 + armBob * 0.2);
+  ctx.quadraticCurveTo(-s * 11, s * 1 + armL * 0.55, -s * 9 + armL * 0.25, s * 8 + armL * 0.35);
   ctx.stroke();
   ctx.beginPath();
   ctx.moveTo(s * 5, -s * 3);
-  ctx.quadraticCurveTo(s * 12, -s * 1 + armBob, s * 13, s * 5 + armBob * 0.5);
+  ctx.quadraticCurveTo(
+    s * 11 + armR * 0.2,
+    -s * (2 + armRLift * 4) + armR * 0.35,
+    s * (12 + armRLift * 2) + armR * 0.15,
+    s * (2 - armRLift * 5) + armR * 0.5
+  );
   ctx.stroke();
+  /* Soft hand dots so motion reads */
+  ctx.fillStyle = skin;
+  ctx.beginPath();
+  ctx.arc(-s * 9 + armL * 0.25, s * 8 + armL * 0.35, s * 1.35, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(
+    s * (12 + armRLift * 2) + armR * 0.15,
+    s * (2 - armRLift * 5) + armR * 0.5,
+    s * 1.35,
+    0,
+    Math.PI * 2
+  );
+  ctx.fill();
 
   /* ===== Head (face stays clear of hair) ===== */
   const headY = -s * 16.2 + breath * 0.12;
