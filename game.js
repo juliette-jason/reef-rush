@@ -528,26 +528,26 @@ function rollCatchStampPrize() {
 function rollSpecialChestPrize(tier) {
   const roll = Math.random();
   tier = normalizeChestTier(tier);
-  // Catch stamps target ~1 per 15 chests; better tiers still drop more often.
+  // Catch stamps target ~1 per 12 chests; better tiers still drop more often.
   if (tier === "legendary") {
     if (roll < 0.035) return { kind: "adventure_skip_rope", qty: 1 };
     if (roll < 0.12) return { kind: "golden_net", qty: 1 };
     if (roll < 0.22) return { kind: "mystery_reef", qty: 1 };
-    if (roll < 0.36) return rollCatchStampPrize();
+    if (roll < 0.4) return rollCatchStampPrize();
     if (roll < 0.5) return { kind: "double_haul", qty: 1 };
     if (roll < 0.66) return { kind: "lucky_lure", qty: 1 };
     return null;
   }
   if (tier === "rare") {
-    if (roll < 0.09) return rollCatchStampPrize();
-    if (roll < 0.21) return { kind: "lucky_lure", qty: 1 };
-    if (roll < 0.31) return { kind: "double_haul", qty: 1 };
-    if (roll < 0.37) return { kind: "mystery_reef", qty: 1 };
-    if (roll < 0.41) return { kind: "golden_net", qty: 1 };
+    if (roll < 0.12) return rollCatchStampPrize();
+    if (roll < 0.24) return { kind: "lucky_lure", qty: 1 };
+    if (roll < 0.34) return { kind: "double_haul", qty: 1 };
+    if (roll < 0.4) return { kind: "mystery_reef", qty: 1 };
+    if (roll < 0.44) return { kind: "golden_net", qty: 1 };
     return null;
   }
   if (roll < 0.06) return { kind: "lucky_lure", qty: 1 };
-  if (roll < 0.11) return rollCatchStampPrize();
+  if (roll < 0.14) return rollCatchStampPrize();
   return null;
 }
 
