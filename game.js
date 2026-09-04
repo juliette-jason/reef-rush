@@ -5703,16 +5703,16 @@ function drawAdventureMermaidCoastEffect(now, themeId) {
 }
 
 /**
- * Guaranteed mermaid glimpse each Mermaid Coast voyage:
- * soft ambient silhouette always, plus one bright classic-animation swim-by.
- * Look: auburn hair, purple shell top, emerald scaled tail (fairy-tale cartoon style).
+ * Mermaid Coast background-only presence (behind fish / tint).
+ * Fairytale look: full auburn hair (no bald scalp), purple clamshell top, emerald tail.
  */
 function drawVagueMermaidSilhouette(now) {
   if (!adventureSession) return;
   const startedAt = adventureSession.mermaidRoundStartedAt || now;
   const elapsed = Math.max(0, now - startedAt);
-  const glimpseStart = 2800;
-  const glimpseDur = 5200;
+  /* Soft far swim-by deep in the scene — never a mid-water “hero” pass. */
+  const glimpseStart = 3200;
+  const glimpseDur = 9000;
   const inGlimpse = elapsed >= glimpseStart && elapsed <= glimpseStart + glimpseDur;
   if (inGlimpse) adventureSession.mermaidGlimpseSeen = true;
 
@@ -5721,168 +5721,206 @@ function drawVagueMermaidSilhouette(now) {
   const wh = h - waterTop;
   const progress = inGlimpse
     ? Math.min(1, Math.max(0, (elapsed - glimpseStart) / glimpseDur))
-    : (elapsed % 16000) / 16000;
+    : (elapsed % 22000) / 22000;
   const dir = adventureSession.levelIndex % 2 === 0 ? 1 : -1;
   const cx = dir > 0
-    ? w * (-0.18 + progress * 1.36)
-    : w * (1.18 - progress * 1.36);
-  const cy = wy + wh * (0.38 + Math.sin(t * 1.1 + progress * 5) * 0.05);
-  const s = dpr * (inGlimpse ? 1.55 : 1.05);
-  const pulse = inGlimpse ? Math.sin(progress * Math.PI) : 0.35;
-  const alpha = inGlimpse ? 0.55 + pulse * 0.4 : 0.18;
+    ? w * (-0.12 + progress * 1.24)
+    : w * (1.12 - progress * 1.24);
+  /* Keep her deep / distant so she reads as scenery, not playfield. */
+  const cy = wy + wh * (0.62 + Math.sin(t * 0.85 + progress * 4) * 0.04);
+  const s = dpr * (inGlimpse ? 0.92 : 0.72);
+  const pulse = inGlimpse ? Math.sin(progress * Math.PI) : 0.4;
+  const alpha = inGlimpse ? 0.22 + pulse * 0.14 : 0.12;
 
   ctx.save();
   ctx.translate(cx, cy);
   ctx.scale(dir, 1);
   ctx.globalAlpha = alpha;
 
-  if (inGlimpse) {
-    const glow = ctx.createRadialGradient(0, 0, s * 4, 0, 0, s * 48);
-    glow.addColorStop(0, "rgba(255, 220, 160, 0.55)");
-    glow.addColorStop(0.45, "rgba(120, 220, 255, 0.22)");
-    glow.addColorStop(1, "rgba(120, 220, 255, 0)");
-    ctx.fillStyle = glow;
-    ctx.beginPath();
-    ctx.arc(0, 0, s * 48, 0, Math.PI * 2);
-    ctx.fill();
-  }
+  const tailWave = Math.sin(t * 3.6 + progress * 6) * s * 4;
+  const skin = "#f8dcc4";
+  const skinShade = "#e8b896";
 
-  const tailWave = Math.sin(t * 4.2 + progress * 8) * s * 5;
   /* Emerald scaled tail */
-  const tailGrad = ctx.createLinearGradient(s * 2, s * 4, -s * 42, s * 10);
+  const tailGrad = ctx.createLinearGradient(s * 2, s * 4, -s * 40, s * 12);
   tailGrad.addColorStop(0, "#34d399");
   tailGrad.addColorStop(0.45, "#059669");
-  tailGrad.addColorStop(1, "#065f46");
+  tailGrad.addColorStop(1, "#064e3b");
   ctx.fillStyle = tailGrad;
   ctx.beginPath();
-  ctx.moveTo(s * 4, s * 6);
-  ctx.quadraticCurveTo(-s * 10, s * 14 + tailWave * 0.4, -s * 28, s * 10 + tailWave);
-  ctx.quadraticCurveTo(-s * 38, s * 4 + tailWave, -s * 46, s * 2 + tailWave * 1.2);
-  ctx.quadraticCurveTo(-s * 34, s * 18 + tailWave, -s * 18, s * 20);
+  ctx.moveTo(s * 4, s * 7);
+  ctx.quadraticCurveTo(-s * 10, s * 15 + tailWave * 0.4, -s * 26, s * 11 + tailWave);
+  ctx.quadraticCurveTo(-s * 36, s * 5 + tailWave, -s * 44, s * 3 + tailWave * 1.1);
+  ctx.quadraticCurveTo(-s * 32, s * 18 + tailWave, -s * 16, s * 20);
   ctx.quadraticCurveTo(-s * 4, s * 18, s * 6, s * 12);
   ctx.closePath();
   ctx.fill();
-  /* Fluke */
   ctx.beginPath();
-  ctx.moveTo(-s * 44, s * 2 + tailWave);
-  ctx.quadraticCurveTo(-s * 58, -s * 8 + tailWave, -s * 52, s * 2 + tailWave);
-  ctx.quadraticCurveTo(-s * 60, s * 14 + tailWave, -s * 44, s * 8 + tailWave);
+  ctx.moveTo(-s * 42, s * 3 + tailWave);
+  ctx.quadraticCurveTo(-s * 56, -s * 7 + tailWave, -s * 50, s * 3 + tailWave);
+  ctx.quadraticCurveTo(-s * 58, s * 13 + tailWave, -s * 42, s * 8 + tailWave);
   ctx.closePath();
   ctx.fill();
-  ctx.strokeStyle = "rgba(167, 243, 208, 0.55)";
-  ctx.lineWidth = s * 0.7;
+  ctx.strokeStyle = "rgba(167, 243, 208, 0.45)";
+  ctx.lineWidth = s * 0.55;
   for (let i = 0; i < 4; i++) {
-    const lx = -s * (8 + i * 7);
+    const lx = -s * (8 + i * 6.5);
     ctx.beginPath();
-    ctx.moveTo(lx, s * (8 + i * 1.5));
-    ctx.quadraticCurveTo(lx - s * 4, s * (12 + i * 2) + tailWave * 0.3, lx - s * 8, s * (9 + i));
+    ctx.moveTo(lx, s * (8 + i * 1.4));
+    ctx.quadraticCurveTo(lx - s * 3.5, s * (12 + i * 1.8) + tailWave * 0.25, lx - s * 7, s * (9 + i));
     ctx.stroke();
   }
 
-  /* Fair torso */
-  const skin = "#f6d5b8";
-  const skinShade = "#e8b896";
+  /* Torso */
   const bodyGrad = ctx.createLinearGradient(0, -s * 8, 0, s * 10);
   bodyGrad.addColorStop(0, skin);
   bodyGrad.addColorStop(1, skinShade);
   ctx.fillStyle = bodyGrad;
   ctx.beginPath();
-  ctx.ellipse(s * 2, s * 2, s * 9, s * 14, 0.12, 0, Math.PI * 2);
+  ctx.ellipse(s * 1.5, s * 2.5, s * 8.5, s * 13, 0.1, 0, Math.PI * 2);
   ctx.fill();
 
-  /* Purple seashell top */
-  ctx.fillStyle = "#a78bfa";
+  /* Purple / pink clamshell bikini top — full chest coverage */
+  const drawClamShell = (ox, oy, tilt, flip) => {
+    ctx.save();
+    ctx.translate(ox, oy);
+    ctx.rotate(tilt);
+    ctx.scale(flip, 1);
+    const shell = ctx.createLinearGradient(-s * 5, -s * 4, s * 5, s * 4);
+    shell.addColorStop(0, "#f0abfc");
+    shell.addColorStop(0.35, "#c084fc");
+    shell.addColorStop(0.7, "#a855f7");
+    shell.addColorStop(1, "#7e22ce");
+    ctx.fillStyle = shell;
+    ctx.beginPath();
+    ctx.moveTo(0, s * 3.2);
+    ctx.quadraticCurveTo(-s * 6.2, s * 1.2, -s * 5.4, -s * 2.4);
+    ctx.quadraticCurveTo(-s * 2.8, -s * 5.2, 0, -s * 4.2);
+    ctx.quadraticCurveTo(s * 2.8, -s * 5.2, s * 5.4, -s * 2.4);
+    ctx.quadraticCurveTo(s * 6.2, s * 1.2, 0, s * 3.2);
+    ctx.closePath();
+    ctx.fill();
+    /* Ridges */
+    ctx.strokeStyle = "rgba(255, 240, 255, 0.55)";
+    ctx.lineWidth = s * 0.45;
+    for (let r = -2; r <= 2; r++) {
+      ctx.beginPath();
+      ctx.moveTo(0, s * 2.6);
+      ctx.quadraticCurveTo(r * s * 1.6, -s * 0.2, r * s * 2.4, -s * 3.2);
+      ctx.stroke();
+    }
+    ctx.fillStyle = "rgba(253, 224, 255, 0.7)";
+    ctx.beginPath();
+    ctx.ellipse(0, -s * 2.2, s * 1.8, s * 1.35, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  };
+  drawClamShell(-s * 3.2, -s * 1.2, -0.28, 1);
+  drawClamShell(s * 5.2, -s * 0.6, 0.28, -1);
+  /* Center clasp */
+  ctx.fillStyle = "#fce7f3";
   ctx.beginPath();
-  ctx.ellipse(-s * 2.5, -s * 2, s * 4.2, s * 3.2, -0.35, 0, Math.PI * 2);
+  ctx.arc(s * 1.1, -s * 0.4, s * 1.15, 0, Math.PI * 2);
   ctx.fill();
+  ctx.fillStyle = "#e879f9";
   ctx.beginPath();
-  ctx.ellipse(s * 5.5, -s * 1.5, s * 4.2, s * 3.2, 0.35, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#c4b5fd";
-  ctx.beginPath();
-  ctx.ellipse(-s * 2.5, -s * 2.6, s * 1.6, s * 1.2, -0.35, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(s * 5.5, -s * 2.1, s * 1.6, s * 1.2, 0.35, 0, Math.PI * 2);
+  ctx.arc(s * 1.1, -s * 0.4, s * 0.55, 0, Math.PI * 2);
   ctx.fill();
 
   /* Arms */
   ctx.strokeStyle = skin;
-  ctx.lineWidth = s * 3.2;
+  ctx.lineWidth = s * 2.8;
   ctx.lineCap = "round";
   ctx.beginPath();
-  ctx.moveTo(s * 6, -s * 4);
-  ctx.quadraticCurveTo(s * 16, -s * 2 + Math.sin(t * 3) * s * 2, s * 18, s * 6);
+  ctx.moveTo(s * 5, -s * 3);
+  ctx.quadraticCurveTo(s * 14, -s * 1 + Math.sin(t * 2.6) * s * 1.6, s * 16, s * 5);
   ctx.stroke();
   ctx.beginPath();
-  ctx.moveTo(-s * 2, -s * 2);
-  ctx.quadraticCurveTo(-s * 12, s * 2, -s * 10, s * 8);
+  ctx.moveTo(-s * 3, -s * 1.5);
+  ctx.quadraticCurveTo(-s * 11, s * 2, -s * 9, s * 7);
   ctx.stroke();
 
-  /* Head */
+  /* Head (drawn under a full hair crown so no bald spot) */
   ctx.fillStyle = skin;
   ctx.beginPath();
-  ctx.ellipse(s * 3, -s * 18, s * 8.5, s * 9.5, 0, 0, Math.PI * 2);
+  ctx.ellipse(s * 2.5, -s * 17.5, s * 8, s * 9, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  /* Flowing auburn hair */
-  const hairGrad = ctx.createLinearGradient(s * 8, -s * 30, -s * 16, -s * 4);
+  /* Full auburn hair — crown + sides + flowing length (covers entire scalp) */
+  const hairGrad = ctx.createLinearGradient(s * 6, -s * 32, -s * 14, s * 2);
   hairGrad.addColorStop(0, "#fb923c");
-  hairGrad.addColorStop(0.35, "#ea580c");
-  hairGrad.addColorStop(0.7, "#c2410c");
-  hairGrad.addColorStop(1, "#9a3412");
+  hairGrad.addColorStop(0.3, "#ea580c");
+  hairGrad.addColorStop(0.65, "#c2410c");
+  hairGrad.addColorStop(1, "#7c2d12");
   ctx.fillStyle = hairGrad;
+  /* Back / side volume */
   ctx.beginPath();
-  ctx.moveTo(s * 2, -s * 26);
-  ctx.quadraticCurveTo(s * 18, -s * 28, s * 16, -s * 12);
-  ctx.quadraticCurveTo(s * 14, -s * 2, s * 8, s * 2);
-  ctx.quadraticCurveTo(s * 4, -s * 6, s * 2, -s * 10);
-  ctx.quadraticCurveTo(-s * 2, -s * 4, -s * 8, s * 4);
-  ctx.quadraticCurveTo(-s * 16, -s * 6, -s * 12, -s * 18);
-  ctx.quadraticCurveTo(-s * 10, -s * 30, s * 2, -s * 26);
+  ctx.moveTo(s * 2, -s * 28);
+  ctx.quadraticCurveTo(s * 20, -s * 30, s * 18, -s * 10);
+  ctx.quadraticCurveTo(s * 16, s * 2, s * 10, s * 6);
+  ctx.quadraticCurveTo(s * 6, -s * 4, s * 4, -s * 8);
+  ctx.quadraticCurveTo(-s * 2, -s * 2, -s * 10, s * 6);
+  ctx.quadraticCurveTo(-s * 18, -s * 4, -s * 14, -s * 18);
+  ctx.quadraticCurveTo(-s * 12, -s * 32, s * 2, -s * 28);
   ctx.closePath();
   ctx.fill();
-  /* Hair highlight */
-  ctx.globalAlpha = alpha * 0.55;
+  /* Solid scalp crown (no bald gap above forehead) */
+  ctx.beginPath();
+  ctx.ellipse(s * 2.5, -s * 22, s * 10.5, s * 9.5, 0, Math.PI, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(s * 2.5, -s * 20.5, s * 9.5, s * 7.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  /* Soft bangs over forehead */
+  ctx.beginPath();
+  ctx.moveTo(-s * 5, -s * 20);
+  ctx.quadraticCurveTo(-s * 1, -s * 14, s * 2.5, -s * 15.5);
+  ctx.quadraticCurveTo(s * 6, -s * 14, s * 10, -s * 19.5);
+  ctx.quadraticCurveTo(s * 8, -s * 24, s * 2.5, -s * 25);
+  ctx.quadraticCurveTo(-s * 3, -s * 24, -s * 5, -s * 20);
+  ctx.closePath();
+  ctx.fill();
+  /* Extra strand curls so hair feels full */
+  ctx.beginPath();
+  ctx.moveTo(s * 12, -s * 16);
+  ctx.quadraticCurveTo(s * 20, -s * 8, s * 14, s * 4);
+  ctx.quadraticCurveTo(s * 10, -s * 2, s * 11, -s * 10);
+  ctx.closePath();
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(-s * 8, -s * 14);
+  ctx.quadraticCurveTo(-s * 18, -s * 4, -s * 12, s * 5);
+  ctx.quadraticCurveTo(-s * 6, -s * 2, -s * 7, -s * 10);
+  ctx.closePath();
+  ctx.fill();
+  /* Highlight */
+  ctx.globalAlpha = alpha * 0.5;
   ctx.fillStyle = "#fdba74";
   ctx.beginPath();
-  ctx.ellipse(s * 8, -s * 22, s * 3.5, s * 7, 0.4, 0, Math.PI * 2);
+  ctx.ellipse(s * 7, -s * 23, s * 3.2, s * 6.5, 0.35, 0, Math.PI * 2);
   ctx.fill();
   ctx.globalAlpha = alpha;
 
-  /* Face */
+  /* Soft face peek (eyes + smile only — framed by hair) */
   ctx.fillStyle = "#1e293b";
   ctx.beginPath();
-  ctx.ellipse(s * 5.5, -s * 19, s * 1.35, s * 1.7, 0, 0, Math.PI * 2);
+  ctx.ellipse(s * 5, -s * 18.2, s * 1.15, s * 1.45, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.beginPath();
-  ctx.ellipse(s * 1.2, -s * 19.2, s * 1.25, s * 1.6, 0, 0, Math.PI * 2);
+  ctx.ellipse(s * 1, -s * 18.4, s * 1.1, s * 1.35, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "#fff";
   ctx.beginPath();
-  ctx.arc(s * 5.9, -s * 19.6, s * 0.45, 0, Math.PI * 2);
+  ctx.arc(s * 5.35, -s * 18.7, s * 0.35, 0, Math.PI * 2);
   ctx.fill();
   ctx.beginPath();
-  ctx.arc(s * 1.6, -s * 19.8, s * 0.4, 0, Math.PI * 2);
+  ctx.arc(s * 1.35, -s * 18.9, s * 0.32, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = "#db2777";
-  ctx.lineWidth = s * 0.7;
+  ctx.lineWidth = s * 0.55;
   ctx.beginPath();
-  ctx.arc(s * 3.2, -s * 14.5, s * 2.2, 0.15, Math.PI - 0.15);
+  ctx.arc(s * 3, -s * 14.2, s * 1.9, 0.2, Math.PI - 0.2);
   ctx.stroke();
-
-  if (inGlimpse) {
-    ctx.globalAlpha = alpha * 0.9;
-    for (let i = 0; i < 7; i++) {
-      const ang = t * 2 + i * 0.9;
-      const sparkX = Math.cos(ang) * s * (18 + (i % 3) * 6);
-      const sparkY = Math.sin(ang * 1.3) * s * (14 + (i % 2) * 8) - s * 6;
-      ctx.fillStyle = i % 2 === 0 ? "#fde68a" : "#a5f3fc";
-      ctx.beginPath();
-      ctx.arc(sparkX, sparkY, s * (1.1 + (i % 3) * 0.4), 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
 
   ctx.restore();
 }
