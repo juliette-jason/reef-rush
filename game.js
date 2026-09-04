@@ -10671,12 +10671,13 @@ async function resolveDuelMatchPlan(deadlineMs) {
       await cancelDuelLobbyIfHost(duelLobbyMatchId);
       duelLobbyMatchId = null;
     }
-    if (isDuelBackendMissingError(err)) throw err;
     if (/cancelled/i.test(String(err?.message || ""))) throw err;
     const msg = String(err?.message || "");
     const envIssue = onlineDuelEnvironmentIssue();
     if (envIssue) {
       showToast(envIssue.message, 5200);
+    } else if (isDuelBackendMissingError(err)) {
+      showToast("Online lobbies unavailable — matching a random rival instead.", 3200);
     } else if (/lobby service|lobby fetch|lobby create|network|failed to fetch/i.test(msg)) {
       showToast("Couldn't reach duel servers — playing vs a random rival instead.", 3000);
     } else {
@@ -10697,9 +10698,9 @@ async function resolveCoopMatchPlan(deadlineMs) {
       await cancelCoopLobbyIfHost(coopLobbyMatchId);
       coopLobbyMatchId = null;
     }
-    if (isDuelBackendMissingError(err)) throw err;
+    if (/cancelled/i.test(String(err?.message || ""))) throw err;
     const msg = String(err?.message || "");
-    if (/lobby service|lobby fetch|lobby create|network|failed to fetch/i.test(msg)) {
+    if (isDuelBackendMissingError(err) || /lobby service|lobby fetch|lobby create|network|failed to fetch/i.test(msg)) {
       showToast("Couldn't reach co-op servers — random partner instead.", 3000);
     } else {
       showToast("No live partner found in time — random angler instead.", 2800);
@@ -11767,35 +11768,34 @@ function beginDuelSession(plan) {
 }
 
 async function startDuelFromEvents(fromPrep = false) {
-  if (playing || duelMatchmakingActive || coopMatchmakingActive) return;
+  if (playing) {
+    showToast("Finish your current run first", 2000);
+    if (fromPrep) openEvents();
+    return;
+  }
+  /* Stale search flags used to no-op Cast off and leave Events empty. */
+  if (fromPrep) {
+    duelMatchmakingActive = false;
+    coopMatchmakingActive = false;
+  } else if (duelMatchmakingActive || coopMatchmakingActive) {
+    return;
+  }
+
   const envIssue = onlineDuelEnvironmentIssue();
   if (envIssue) {
     showToast(envIssue.message, 6200);
+    if (fromPrep) openEvents();
     return;
   }
   refreshDuelTicketsForToday();
   if (!tournamentRun && getDuelTicketCount() <= 0) {
     showToast("No duel tickets left — buy more in the shop or come back tomorrow.", 2800);
     refreshDuelEventCard();
+    if (fromPrep) openEvents();
     return;
   }
   if (!fromPrep) {
     openEventPrep("duel");
-    return;
-  }
-  try {
-    await probeDuelBackendReady();
-  } catch (err) {
-    console.warn(err);
-    if (isDuelBackendMissingError(err)) {
-      showToast(
-        "Duel matchmaking isn't set up yet — run supabase/duel_matches.sql in your Supabase SQL editor, then try again.",
-        5200,
-      );
-    } else {
-      showToast("Can't reach duel servers right now — check your connection and try again.", 4000);
-    }
-    openEvents();
     return;
   }
   if (!tournamentRun && !spendDuelTicket()) {
@@ -11804,7 +11804,9 @@ async function startDuelFromEvents(fromPrep = false) {
     return;
   }
 
+  /* Don't probe-and-bounce here — Cast off must enter matchmaking (or COM). */
   hideDuelHud();
+  appRoot?.classList.remove("app--events-mode");
   const matchmakingDeadline = Date.now() + DUEL_LOBBY_TIMEOUT_MS;
   setDuelMatchmakingUi(true, `Searching up to ${DUEL_LOBBY_TIMEOUT_SEC}s for a real rival…`);
   showDuelSearchOverlay(matchmakingDeadline);
@@ -11823,13 +11825,24 @@ async function startDuelFromEvents(fromPrep = false) {
     console.warn(err);
     gameMeta.duelTickets += 1;
     saveMeta();
-    if (isDuelBackendMissingError(err)) {
-      showToast(
-        "Duel matchmaking isn't set up yet — run supabase/duel_matches.sql in your Supabase SQL editor, then try again.",
-        5200,
-      );
+    if (/cancelled/i.test(String(err?.message || ""))) {
+      showToast("Duel matchmaking cancelled.", 2400);
     } else if (/failed to start/i.test(String(err?.message || ""))) {
       showToast("Duel couldn't start — try again from Events.", 3600);
+    } else if (isDuelBackendMissingError(err)) {
+      showToast(
+        "Online lobbies aren't set up — playing a random rival. Run supabase/duel_matches.sql for live PvP.",
+        4800,
+      );
+      try {
+        const reefId = pickRandomDuelReefId(duelLastReefId);
+        duelPendingReefId = reefId;
+        const plan = buildLocalComDuelPlan(reefId);
+        beginDuelSession(plan);
+        if (isActiveDuelPlay()) return;
+      } catch (startErr) {
+        console.warn(startErr);
+      }
     } else {
       showToast("Duel matchmaking cancelled.", 2400);
     }
@@ -16646,15 +16659,27 @@ function beginCoopSession(plan) {
 }
 
 async function startCoopFromEvents(fromPrep = false) {
-  if (playing || coopMatchmakingActive || duelMatchmakingActive || eventMinigameSession) return;
+  if (playing || eventMinigameSession) {
+    showToast("Finish your current run first", 2000);
+    if (fromPrep) openEvents();
+    return;
+  }
+  if (fromPrep) {
+    duelMatchmakingActive = false;
+    coopMatchmakingActive = false;
+  } else if (coopMatchmakingActive || duelMatchmakingActive) {
+    return;
+  }
   if (crabTrapSession || duelSession || adventureSession) {
     showToast("Finish your current run first", 2000);
+    if (fromPrep) openEvents();
     return;
   }
   refreshDuelTicketsForToday();
   if (!tournamentRun && getDuelTicketCount() <= 0) {
     showToast("No tickets — visit the shop", 2200);
     refreshCoopEventCard();
+    if (fromPrep) openEvents();
     return;
   }
   if (!fromPrep) {
@@ -16667,6 +16692,7 @@ async function startCoopFromEvents(fromPrep = false) {
     return;
   }
 
+  appRoot?.classList.remove("app--events-mode");
   const matchmakingDeadline = Date.now() + COOP_LOBBY_TIMEOUT_MS;
   setCoopMatchmakingUi(true, "Trying to find a partner…");
   showCoopSearchOverlay(matchmakingDeadline);
@@ -16685,13 +16711,19 @@ async function startCoopFromEvents(fromPrep = false) {
     console.warn(err);
     gameMeta.duelTickets += 1;
     saveMeta();
-    if (isDuelBackendMissingError(err)) {
-      showToast(
-        "Co-op matchmaking isn't set up yet — run supabase/duel_matches_coop_kind.sql in your Supabase SQL editor, then try again.",
-        5200,
-      );
+    if (/cancelled/i.test(String(err?.message || ""))) {
+      showToast("Co-op matchmaking cancelled.", 2400);
     } else if (/failed to start/i.test(String(err?.message || ""))) {
       showToast("Co-op couldn't start — try again from Events.", 3600);
+    } else if (isDuelBackendMissingError(err)) {
+      showToast("Online co-op unavailable — teaming with a random partner.", 3600);
+      try {
+        const reef = pickMinigameReef("coop");
+        beginCoopSession(buildLocalComCoopPlan(reef.id));
+        if (playing && eventMinigameSession) return;
+      } catch (startErr) {
+        console.warn(startErr);
+      }
     } else {
       showToast("Co-op matchmaking cancelled.", 2400);
     }
@@ -16762,6 +16794,7 @@ function confirmEventPrepStart() {
   const kind = pendingEventPrepKind;
   pendingEventPrepKind = null;
   if (panelEventPrep) panelEventPrep.hidden = true;
+  appRoot?.classList.remove("app--events-mode");
   if (kind === "duel") {
     void startDuelFromEvents(true);
     return;
@@ -16772,7 +16805,10 @@ function confirmEventPrepStart() {
   }
   if (kind === "roulette" || kind === "survivor") {
     beginEventMinigame(kind, true);
+    return;
   }
+  /* Prep closed with no mode — don't leave a blank Events shell. */
+  openEvents();
 }
 
 function beginEventMinigame(kind, fromPrep = false) {
