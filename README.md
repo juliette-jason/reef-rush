@@ -1,5 +1,13 @@
 # reef-rush
 
+## Fishing Tourney (shared votes + 35 daily spots)
+
+Events → **Fishing Tourney** needs three Supabase tables. Without them, join/vote still work on your device, but spots won't sync across phones/tablets.
+
+1. Open [Supabase](https://supabase.com/dashboard) → your project → **SQL Editor**
+2. Paste and run [`supabase/fishing_tournament.sql`](supabase/fishing_tournament.sql)
+3. Hard-refresh the live game — Join and Vote should update the shared `X/35` count
+
 ## Duel matchmaking (play real people)
 
 Duel Fishing matches two players through Supabase. If you always get **COM** instead of a real rival, the `duel_matches` table is probably missing.

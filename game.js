@@ -8426,12 +8426,83 @@ let tourneyVoteCounts = {};
 let tourneySignupCount = 0;
 let tourneyLeaderboardRows = [];
 let tourneyRemoteReady = false;
+let tourneyBackendMissing = false;
 let tourneySignupInFlight = false;
 /** Active tournament run — score submits on finish. */
 let tournamentRun = null;
+const TOURNEY_LOCAL_KEY = "reefRushTourneyLocal_v1";
 
 function getTourneyDayKey(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function loadTourneyLocal() {
+  try {
+    const raw = localStorage.getItem(TOURNEY_LOCAL_KEY);
+    if (!raw) return { votes: {}, signups: {} };
+    const parsed = JSON.parse(raw);
+    return {
+      votes: parsed?.votes && typeof parsed.votes === "object" ? parsed.votes : {},
+      signups: parsed?.signups && typeof parsed.signups === "object" ? parsed.signups : {},
+    };
+  } catch {
+    return { votes: {}, signups: {} };
+  }
+}
+
+function saveTourneyLocal(data) {
+  try {
+    localStorage.setItem(TOURNEY_LOCAL_KEY, JSON.stringify(data));
+  } catch {
+    /* ignore quota */
+  }
+}
+
+function tourneyLocalDayVotes(dayKey = getTourneyDayKey()) {
+  const local = loadTourneyLocal();
+  const day = local.votes[dayKey];
+  return day && typeof day === "object" ? day : {};
+}
+
+function tourneyLocalDaySignups(dayKey = getTourneyDayKey()) {
+  const local = loadTourneyLocal();
+  const day = local.signups[dayKey];
+  return Array.isArray(day) ? day : [];
+}
+
+function rememberTourneyLocalVote(dayKey, eventKind, voterId) {
+  const local = loadTourneyLocal();
+  if (!local.votes[dayKey] || typeof local.votes[dayKey] !== "object") local.votes[dayKey] = {};
+  local.votes[dayKey][voterId] = eventKind;
+  saveTourneyLocal(local);
+}
+
+function rememberTourneyLocalSignup(dayKey, entry) {
+  const local = loadTourneyLocal();
+  const list = Array.isArray(local.signups[dayKey]) ? local.signups[dayKey] : [];
+  if (!list.some((row) => row.client_id === entry.client_id)) {
+    list.push(entry);
+    local.signups[dayKey] = list;
+    saveTourneyLocal(local);
+  }
+}
+
+function isTourneyBackendMissingError(status, bodyText = "") {
+  if (status === 404 || status === 406) return true;
+  const text = String(bodyText || "");
+  return (
+    /PGRST205/i.test(text) ||
+    /Could not find the table/i.test(text) ||
+    /relation .* does not exist/i.test(text) ||
+    /tourney_votes|tourney_signups|tourney_scores/i.test(text)
+  );
+}
+
+function tourneySetupToast() {
+  showToast(
+    "Tourney tables aren't set up yet — run supabase/fishing_tournament.sql in Supabase (you're still signed up on this device).",
+    5200,
+  );
 }
 
 function formatTourneyHeatTime(hour) {
@@ -8509,46 +8580,92 @@ function hasTourneyVotedToday() {
 }
 
 async function fetchTourneyVoteCounts(dayKey = getTourneyDayKey()) {
+  const localVotes = tourneyLocalDayVotes(dayKey);
+  const mergeLocal = (counts) => {
+    const next = { ...counts };
+    for (const kind of Object.values(localVotes)) {
+      if (!kind) continue;
+      next[kind] = (next[kind] || 0) + 1;
+    }
+    return next;
+  };
   try {
     const res = await fetch(
-      `${TOURNEY_VOTES_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=event_kind`,
+      `${TOURNEY_VOTES_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=event_kind,voter_client_id`,
       { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS },
     );
-    if (!res.ok) throw new Error(`Tourney votes failed: ${res.status}`);
-    const rawVotes = await res.json();
-    const rows = Array.isArray(rawVotes) ? rawVotes : [];
+    const bodyText = await res.text();
+    if (!res.ok) {
+      if (isTourneyBackendMissingError(res.status, bodyText)) tourneyBackendMissing = true;
+      throw new Error(`Tourney votes failed: ${res.status}`);
+    }
+    let rows = [];
+    try {
+      rows = JSON.parse(bodyText);
+    } catch {
+      rows = [];
+    }
+    if (!Array.isArray(rows)) rows = [];
     const counts = {};
+    const remoteVoters = new Set();
     for (const row of rows) {
       const kind = row.event_kind;
+      const voter = row.voter_client_id;
+      if (voter) remoteVoters.add(voter);
+      counts[kind] = (counts[kind] || 0) + 1;
+    }
+    /* Add local-only votes that never reached the server. */
+    for (const [voter, kind] of Object.entries(localVotes)) {
+      if (remoteVoters.has(voter) || !kind) continue;
       counts[kind] = (counts[kind] || 0) + 1;
     }
     tourneyVoteCounts = counts;
     tourneyRemoteReady = true;
+    tourneyBackendMissing = false;
     return counts;
   } catch (err) {
     console.warn(err);
-    if (hasTourneyVotedToday() && gameMeta.tourneyVoteKind) {
-      tourneyVoteCounts = { [gameMeta.tourneyVoteKind]: 1 };
-    }
+    tourneyVoteCounts = mergeLocal({});
     return tourneyVoteCounts;
   }
 }
 
 async function fetchTourneySignupCount(dayKey = getTourneyDayKey()) {
+  const localSignups = tourneyLocalDaySignups(dayKey);
   try {
+    /* Prefer counting rows in the JSON body — Content-Range is often blocked by CORS. */
     const res = await fetch(
-      `${TOURNEY_SIGNUPS_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=id`,
+      `${TOURNEY_SIGNUPS_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=client_id&order=created_at.asc&limit=${TOURNEY_MAX_PLAYERS + 5}`,
       { headers: leaderboardHeaders({ Prefer: "count=exact" }), ...LEADERBOARD_FETCH_OPTS },
     );
-    if (!res.ok) throw new Error(`Tourney signups failed: ${res.status}`);
+    const bodyText = await res.text();
+    if (!res.ok) {
+      if (isTourneyBackendMissingError(res.status, bodyText)) tourneyBackendMissing = true;
+      throw new Error(`Tourney signups failed: ${res.status}`);
+    }
+    let rows = [];
+    try {
+      rows = JSON.parse(bodyText);
+    } catch {
+      rows = [];
+    }
+    if (!Array.isArray(rows)) rows = [];
+    const ids = new Set(rows.map((r) => r.client_id).filter(Boolean));
+    for (const row of localSignups) {
+      if (row?.client_id) ids.add(row.client_id);
+    }
     const countHeader = res.headers.get("content-range");
     const m = countHeader && countHeader.match(/\/(\d+)$/);
-    tourneySignupCount = m ? Number(m[1]) : 0;
+    const headerCount = m ? Number(m[1]) : 0;
+    tourneySignupCount = Math.max(ids.size, headerCount || 0);
     tourneyRemoteReady = true;
+    tourneyBackendMissing = false;
     return tourneySignupCount;
   } catch (err) {
     console.warn(err);
-    tourneySignupCount = isTourneySignedUpToday() ? 1 : 0;
+    const ids = new Set(localSignups.map((r) => r.client_id).filter(Boolean));
+    if (isTourneySignedUpToday()) ids.add(getDuelClientId());
+    tourneySignupCount = ids.size;
     return tourneySignupCount;
   }
 }
@@ -8559,9 +8676,18 @@ async function fetchTourneyLeaderboard(dayKey = getTourneyDayKey()) {
       `${TOURNEY_SCORES_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=initials,display_name,score,slot_key,client_id&order=score.desc,created_at.asc&limit=120`,
       { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS },
     );
-    if (!res.ok) throw new Error(`Tourney board failed: ${res.status}`);
-    const rawScores = await res.json();
-    const rows = Array.isArray(rawScores) ? rawScores : [];
+    const bodyText = await res.text();
+    if (!res.ok) {
+      if (isTourneyBackendMissingError(res.status, bodyText)) tourneyBackendMissing = true;
+      throw new Error(`Tourney board failed: ${res.status}`);
+    }
+    let rows = [];
+    try {
+      rows = JSON.parse(bodyText);
+    } catch {
+      rows = [];
+    }
+    if (!Array.isArray(rows)) rows = [];
     const bestByClient = new Map();
     for (const row of rows) {
       const prev = bestByClient.get(row.client_id);
@@ -8599,28 +8725,62 @@ async function postTourneyVote(eventKind, { silent = false } = {}) {
   const dayKey = getTourneyDayKey();
   if (!TOURNEY_EVENT_OPTIONS.some((o) => o.id === eventKind)) return false;
   if (hasTourneyVotedToday()) return true;
+  const voterId = getDuelClientId();
   const payload = {
     day_key: dayKey,
-    voter_client_id: getDuelClientId(),
+    voter_client_id: voterId,
     event_kind: eventKind,
   };
-  const res = await fetch(TOURNEY_VOTES_URL, {
-    method: "POST",
-    headers: leaderboardHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error(`Vote failed: ${res.status}`);
-  gameMeta.tourneyVoteDayKey = dayKey;
-  gameMeta.tourneyVoteKind = eventKind;
-  saveMeta();
-  if (!silent) showToast(`Voted for ${tourneyEventLabel(eventKind)}!`, 2200);
-  await fetchTourneyVoteCounts(dayKey);
-  return true;
+
+  const finishLocal = (fromSetup) => {
+    rememberTourneyLocalVote(dayKey, eventKind, voterId);
+    gameMeta.tourneyVoteDayKey = dayKey;
+    gameMeta.tourneyVoteKind = eventKind;
+    saveMeta();
+    tourneyVoteCounts[eventKind] = (tourneyVoteCounts[eventKind] || 0) + 1;
+    if (fromSetup && !silent) tourneySetupToast();
+    else if (!silent) showToast(`Voted for ${tourneyEventLabel(eventKind)}!`, 2200);
+    return true;
+  };
+
+  try {
+    const res = await fetch(TOURNEY_VOTES_URL, {
+      method: "POST",
+      headers: leaderboardHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
+      body: JSON.stringify(payload),
+    });
+    if (res.status === 409) {
+      /* Already voted on server — treat as success. */
+      return finishLocal(false);
+    }
+    if (!res.ok) {
+      const bodyText = await res.text().catch(() => "");
+      if (isTourneyBackendMissingError(res.status, bodyText)) {
+        tourneyBackendMissing = true;
+        return finishLocal(true);
+      }
+      throw new Error(`Vote failed: ${res.status} ${bodyText.slice(0, 120)}`);
+    }
+    tourneyBackendMissing = false;
+    rememberTourneyLocalVote(dayKey, eventKind, voterId);
+    gameMeta.tourneyVoteDayKey = dayKey;
+    gameMeta.tourneyVoteKind = eventKind;
+    saveMeta();
+    if (!silent) showToast(`Voted for ${tourneyEventLabel(eventKind)}!`, 2200);
+    await fetchTourneyVoteCounts(dayKey);
+    return true;
+  } catch (err) {
+    console.warn(err);
+    /* Offline / DNS / missing table — keep the vote on this device so the UI works. */
+    tourneyBackendMissing = true;
+    return finishLocal(true);
+  }
 }
 
 async function submitTourneyVote(eventKind) {
   if (hasTourneyVotedToday()) {
     showToast("You already voted today.", 2200);
+    refreshTournamentCard();
     return;
   }
   try {
@@ -8637,30 +8797,27 @@ async function submitTourneySignup() {
   const dayKey = getTourneyDayKey();
   if (isTourneySignedUpToday()) {
     showToast("You're already in today's tourney!", 2400);
+    refreshTournamentCard();
     return;
   }
   tourneySignupInFlight = true;
   setTourneySignupButtonsBusy(true);
-  try {
-    await fetchTourneySignupCount(dayKey);
-    if (tourneySignupCount >= TOURNEY_MAX_PLAYERS) {
-      showToast("All 35 tourney spots are full today.", 2800);
-      return;
-    }
-    const identity = tourneyPlayerIdentity();
-    const res = await fetch(TOURNEY_SIGNUPS_URL, {
-      method: "POST",
-      headers: leaderboardHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
-      body: JSON.stringify({
-        day_key: dayKey,
-        client_id: getDuelClientId(),
-        initials: identity.initials,
-        display_name: identity.name || identity.initials,
-      }),
-    });
-    if (!res.ok) throw new Error(`Signup failed: ${res.status}`);
+  const identity = tourneyPlayerIdentity();
+  const entry = {
+    day_key: dayKey,
+    client_id: getDuelClientId(),
+    initials: identity.initials,
+    display_name: identity.name || identity.initials,
+  };
+
+  const finishLocalSignup = async (fromSetup) => {
+    rememberTourneyLocalSignup(dayKey, entry);
     gameMeta.tourneySignedUpDayKey = dayKey;
     saveMeta();
+    await fetchTourneySignupCount(dayKey);
+    if (!tourneySignupCount) tourneySignupCount = Math.max(1, tourneyLocalDaySignups(dayKey).length);
+    if (fromSetup) tourneySetupToast();
+    else showToast(`You're in! Spot ${tourneySignupCount} of ${TOURNEY_MAX_PLAYERS}.`, 3000);
     if (!hasTourneyVotedToday()) {
       try {
         await postTourneyVote(defaultTourneyVoteKind(), { silent: true });
@@ -8668,12 +8825,40 @@ async function submitTourneySignup() {
         console.warn(err);
       }
     }
-    await fetchTourneySignupCount(dayKey);
-    showToast(`You're in! Spot ${tourneySignupCount} of ${TOURNEY_MAX_PLAYERS}.`, 3000);
     refreshTournamentCard();
+  };
+
+  try {
+    await fetchTourneySignupCount(dayKey);
+    if (tourneySignupCount >= TOURNEY_MAX_PLAYERS && !isTourneySignedUpToday()) {
+      showToast("All 35 tourney spots are full today.", 2800);
+      return;
+    }
+    const res = await fetch(TOURNEY_SIGNUPS_URL, {
+      method: "POST",
+      headers: leaderboardHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
+      body: JSON.stringify(entry),
+    });
+    if (res.status === 409) {
+      await finishLocalSignup(false);
+      return;
+    }
+    if (!res.ok) {
+      const bodyText = await res.text().catch(() => "");
+      if (isTourneyBackendMissingError(res.status, bodyText)) {
+        tourneyBackendMissing = true;
+        await finishLocalSignup(true);
+        return;
+      }
+      throw new Error(`Signup failed: ${res.status} ${bodyText.slice(0, 120)}`);
+    }
+    tourneyBackendMissing = false;
+    await finishLocalSignup(false);
   } catch (err) {
     console.warn(err);
-    showToast("Couldn't sign up — check your connection and try again.", 3200);
+    /* Still claim a local spot so Join / Vote aren't stuck on 0/35. */
+    tourneyBackendMissing = true;
+    await finishLocalSignup(true);
   } finally {
     tourneySignupInFlight = false;
     setTourneySignupButtonsBusy(false);
@@ -8840,9 +9025,15 @@ async function refreshTournamentCard() {
   }
   if (tourneySignupLine) {
     const signed = isTourneySignedUpToday();
-    tourneySignupLine.textContent = signed
-      ? `You're in — spot secured (${tourneySignupCount}/${TOURNEY_MAX_PLAYERS} filled).`
-      : `${tourneySignupCount}/${TOURNEY_MAX_PLAYERS} spots filled · sign up early!`;
+    if (tourneyBackendMissing && !tourneyRemoteReady) {
+      tourneySignupLine.textContent = signed
+        ? `You're in on this device (${tourneySignupCount}/${TOURNEY_MAX_PLAYERS}) · run fishing_tournament.sql for shared spots`
+        : `${tourneySignupCount}/${TOURNEY_MAX_PLAYERS} spots · run supabase/fishing_tournament.sql to sync`;
+    } else {
+      tourneySignupLine.textContent = signed
+        ? `You're in — spot secured (${tourneySignupCount}/${TOURNEY_MAX_PLAYERS} filled).`
+        : `${tourneySignupCount}/${TOURNEY_MAX_PLAYERS} spots filled · sign up early!`;
+    }
   }
   if (tourneyScheduleLine) {
     if (slot.slotKey) {
