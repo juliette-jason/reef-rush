@@ -9678,11 +9678,12 @@ const DUEL_ROUND_MS = 60_000;
 const DUEL_RIVAL_MIN_TARGET = 4000;
 const DUEL_MATCH_TABLE_URL = `${SUPABASE_REST_URL}/duel_matches`;
 const DUEL_CLIENT_ID_KEY = "reefRushDuelClientId_v1";
-const DUEL_LOBBY_TIMEOUT_MS = 25_000;
+const DUEL_LOBBY_TIMEOUT_MS = 35_000;
 const DUEL_LOBBY_TIMEOUT_SEC = DUEL_LOBBY_TIMEOUT_MS / 1000;
-const DUEL_LOBBY_POLL_MS = 400;
-const DUEL_LOBBY_CREATE_GRACE_MS = 0;
-const DUEL_LOBBY_FETCH_LIMIT = 6;
+const DUEL_LOBBY_POLL_MS = 350;
+/** Base wait before hosting; each client also adds a small id-based stagger. */
+const DUEL_LOBBY_CREATE_GRACE_MS = 200;
+const DUEL_LOBBY_FETCH_LIMIT = 8;
 const DUEL_SCORE_SYNC_MS = 400;
 const DUEL_STATE_SYNC_MS = 220;
 const DUEL_OPPONENT_POLL_MS = 350;
@@ -10195,8 +10196,36 @@ function normalizeDuelMatchRow(row) {
     matchKind: row.match_kind || row.matchKind || MATCH_KIND_DUEL,
     isComGuest: Boolean(row.is_com_guest ?? row.isComGuest),
     status: row.status || "lobby",
+    createdAt: row.created_at || row.createdAt || null,
     ...duelHookFieldsFromRow(row),
   };
+}
+
+/** Stagger lobby create so two friends tapping Cast off together don't both host on the same tick. */
+function duelLobbyCreateStaggerMs() {
+  const id = String(getDuelClientId() || "");
+  let h = 2166136261;
+  for (let i = 0; i < id.length; i++) {
+    h ^= id.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return Math.abs(h) % 900;
+}
+
+/**
+ * When both players already hosted, only the newer lobby may join the older one.
+ * Prevents mutual join (each becomes guest of the other) which orphans both into COM.
+ */
+function shouldJoinOpenLobbyWhileHosting(lobby, hostedMatchId, hostedCreatedAt) {
+  if (!lobby?.matchId || lobby.matchId === hostedMatchId) return false;
+  if (!hostedMatchId) return true;
+  const lobbyMs = Date.parse(lobby.createdAt || "") || 0;
+  const hostMs = Date.parse(hostedCreatedAt || "") || 0;
+  if (lobbyMs && hostMs) {
+    if (lobbyMs < hostMs) return true;
+    if (lobbyMs > hostMs) return false;
+  }
+  return String(lobby.matchId) < String(hostedMatchId);
 }
 
 function duelRoleFromMatch(row) {
@@ -10460,7 +10489,11 @@ async function tryJoinDuelLobby(lobbyId) {
 }
 
 async function activateComDuelGuest(matchId) {
-  const res = await fetch(`${DUEL_MATCH_TABLE_URL}?id=eq.${encodeURIComponent(matchId)}`, {
+  /* Only fill COM while still an open lobby — never overwrite a real joiner. */
+  const patchUrl =
+    `${DUEL_MATCH_TABLE_URL}?id=eq.${encodeURIComponent(matchId)}` +
+    `&status=eq.lobby&guest_client_id=is.null`;
+  const res = await fetch(patchUrl, {
     method: "PATCH",
     headers: leaderboardHeaders({
       "Content-Type": "application/json",
@@ -10475,9 +10508,14 @@ async function activateComDuelGuest(matchId) {
       round_start_ms: Date.now() + DUEL_MATCH_START_DELAY_MS,
     }),
   });
+  const { body } = await readDuelResponse(res);
   if (!res.ok) throw new Error(`Duel COM fallback failed: ${res.status}`);
-  const rows = await res.json();
-  return normalizeDuelMatchRow(rows[0]);
+  const rows = Array.isArray(body) ? body : [];
+  if (rows[0]) return normalizeDuelMatchRow(rows[0]);
+  /* Real player likely joined in the same window — use that match instead of COM. */
+  const live = await safeFetchDuelMatchById(matchId);
+  if (live?.guestClientId && !live.isComGuest) return live;
+  throw new Error(`Duel COM fallback empty: ${matchId}`);
 }
 
 async function cancelDuelLobbyIfHost(matchId) {
@@ -10851,6 +10889,7 @@ async function findOnlineMatch(matchKind, roundMs, deadlineMs, friendUserId = nu
   const buildLocalComPlan = isCoop ? buildLocalComCoopPlan : buildLocalComDuelPlan;
   const cancelLobbyIfHost = isCoop ? cancelCoopLobbyIfHost : cancelDuelLobbyIfHost;
   let hostedMatchId = isCoop ? coopLobbyMatchId : duelLobbyMatchId;
+  let hostedCreatedAt = null;
   const friendProfile = friendUserId ? socialFriends.find((f) => f.userId === friendUserId) : null;
   const friendLabel = friendProfile?.displayName || "friend";
   const lobbyFetchOptions = friendUserId ? { inviteUserId: authUser?.id } : {};
@@ -10861,8 +10900,27 @@ async function findOnlineMatch(matchKind, roundMs, deadlineMs, friendUserId = nu
   );
 
   const startedAt = Date.now();
-  const createAfterMs = startedAt + DUEL_LOBBY_CREATE_GRACE_MS;
+  const createAfterMs = startedAt + DUEL_LOBBY_CREATE_GRACE_MS + duelLobbyCreateStaggerMs();
   let backendReady = false;
+
+  const clearHosted = () => {
+    hostedMatchId = null;
+    hostedCreatedAt = null;
+    if (isCoop) coopLobbyMatchId = null;
+    else duelLobbyMatchId = null;
+  };
+
+  const tryReturnJoined = async (joined) => {
+    const role = duelRoleFromMatch(joined);
+    if (!role) return null;
+    if (hostedMatchId && hostedMatchId !== joined.matchId) {
+      await cancelLobbyIfHost(hostedMatchId);
+    }
+    clearHosted();
+    duelPendingReefId = joined.reefId;
+    hideCountdown();
+    return planFromMatch(joined, role);
+  };
 
   while (Date.now() < deadlineMs) {
     if (isDuelMatchmakingCancelled(isCoop)) {
@@ -10880,17 +10938,8 @@ async function findOnlineMatch(matchKind, roundMs, deadlineMs, friendUserId = nu
         if (incoming?.matchId && incoming.hostUserId === friendUserId) {
           const joined = await tryJoinDuelLobby(incoming.matchId);
           if (joined) {
-            const role = duelRoleFromMatch(joined);
-            if (role) {
-              if (hostedMatchId && hostedMatchId !== joined.matchId) {
-                await cancelLobbyIfHost(hostedMatchId);
-              }
-              if (isCoop) coopLobbyMatchId = null;
-              else duelLobbyMatchId = null;
-              duelPendingReefId = joined.reefId;
-              hideCountdown();
-              return planFromMatch(joined, role);
-            }
+            const plan = await tryReturnJoined(joined);
+            if (plan) return plan;
           }
         }
       } else if (authUser?.id) {
@@ -10898,17 +10947,8 @@ async function findOnlineMatch(matchKind, roundMs, deadlineMs, friendUserId = nu
         if (incoming?.matchId) {
           const joined = await tryJoinDuelLobby(incoming.matchId);
           if (joined) {
-            const role = duelRoleFromMatch(joined);
-            if (role) {
-              if (hostedMatchId && hostedMatchId !== joined.matchId) {
-                await cancelLobbyIfHost(hostedMatchId);
-              }
-              if (isCoop) coopLobbyMatchId = null;
-              else duelLobbyMatchId = null;
-              duelPendingReefId = joined.reefId;
-              hideCountdown();
-              return planFromMatch(joined, role);
-            }
+            const plan = await tryReturnJoined(joined);
+            if (plan) return plan;
           }
         }
       }
@@ -10923,19 +10963,11 @@ async function findOnlineMatch(matchKind, roundMs, deadlineMs, friendUserId = nu
       for (const lobby of joinCandidates) {
         if (!lobby?.matchId) continue;
         if (friendUserId && lobby.hostUserId !== friendUserId) continue;
+        if (!shouldJoinOpenLobbyWhileHosting(lobby, hostedMatchId, hostedCreatedAt)) continue;
         const joined = await tryJoinDuelLobby(lobby.matchId);
         if (joined) {
-          const role = duelRoleFromMatch(joined);
-          if (role) {
-            if (hostedMatchId && hostedMatchId !== joined.matchId) {
-              await cancelLobbyIfHost(hostedMatchId);
-            }
-            if (isCoop) coopLobbyMatchId = null;
-            else duelLobbyMatchId = null;
-            duelPendingReefId = joined.reefId;
-            hideCountdown();
-            return planFromMatch(joined, role);
-          }
+          const plan = await tryReturnJoined(joined);
+          if (plan) return plan;
         }
       }
 
@@ -10947,20 +10979,20 @@ async function findOnlineMatch(matchKind, roundMs, deadlineMs, friendUserId = nu
         });
         if (created?.matchId) {
           hostedMatchId = created.matchId;
+          hostedCreatedAt = created.createdAt || new Date().toISOString();
           if (isCoop) coopLobbyMatchId = hostedMatchId;
           else duelLobbyMatchId = hostedMatchId;
         }
       } else if (hostedMatchId) {
         const row = await safeFetchDuelMatchById(hostedMatchId);
         if (!row || row.status === "cancelled") {
-          hostedMatchId = null;
-          if (isCoop) coopLobbyMatchId = null;
-          else duelLobbyMatchId = null;
+          clearHosted();
         } else if (row.guestClientId && !row.isComGuest) {
           hideCountdown();
-          if (isCoop) coopLobbyMatchId = null;
-          else duelLobbyMatchId = null;
+          clearHosted();
           return planFromMatch(row, "host");
+        } else if (row.createdAt && !hostedCreatedAt) {
+          hostedCreatedAt = row.createdAt;
         }
       }
     } catch (err) {
@@ -10970,6 +11002,36 @@ async function findOnlineMatch(matchKind, roundMs, deadlineMs, friendUserId = nu
     }
 
     await duelSleep(DUEL_LOBBY_POLL_MS);
+  }
+
+  /* Last chance before COM: leave your empty lobby and join any still-open rival. */
+  if (hostedMatchId && !friendUserId) {
+    try {
+      const lastLobbies = await safeFetchOpenDuelLobbies(matchKind, { skipInviteFilter: true });
+      for (const lobby of lastLobbies) {
+        if (!lobby?.matchId || lobby.matchId === hostedMatchId) continue;
+        await cancelLobbyIfHost(hostedMatchId);
+        const joined = await tryJoinDuelLobby(lobby.matchId);
+        if (joined) {
+          const plan = await tryReturnJoined(joined);
+          if (plan) return plan;
+        }
+        /* Recreate host pointer if join failed so COM path can still use it. */
+        const stillMine = await safeFetchDuelMatchById(hostedMatchId);
+        if (!stillMine || stillMine.status === "cancelled") clearHosted();
+        break;
+      }
+      if (hostedMatchId) {
+        const row = await safeFetchDuelMatchById(hostedMatchId);
+        if (row?.guestClientId && !row.isComGuest) {
+          hideCountdown();
+          clearHosted();
+          return planFromMatch(row, "host");
+        }
+      }
+    } catch (err) {
+      console.warn(err);
+    }
   }
 
   if (hostedMatchId) {
@@ -10983,9 +11045,20 @@ async function findOnlineMatch(matchKind, roundMs, deadlineMs, friendUserId = nu
       const comRow = await activateComDuelGuest(hostedMatchId);
       if (isCoop) coopLobbyMatchId = null;
       else duelLobbyMatchId = null;
+      /* activateCom may return a real PvP row if someone joined mid-fallback. */
       return planFromMatch(comRow, "host");
     } catch (err) {
       console.warn(err);
+      try {
+        const live = await safeFetchDuelMatchById(hostedMatchId);
+        if (live?.guestClientId && !live.isComGuest) {
+          if (isCoop) coopLobbyMatchId = null;
+          else duelLobbyMatchId = null;
+          return planFromMatch(live, "host");
+        }
+      } catch (_) {
+        /* ignore */
+      }
     }
   }
 
