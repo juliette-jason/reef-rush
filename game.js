@@ -10426,28 +10426,13 @@ function areTourneyVotesLocked(now = Date.now()) {
 function maybeAnnounceTourneyVoteLock() {
   if (!areTourneyVotesLocked()) return;
   const dayKey = getTourneyDayKey();
-  if (gameMeta.tourneyVoteLockAnnouncedDayKey !== dayKey) {
-    gameMeta.tourneyVoteLockAnnouncedDayKey = dayKey;
-    saveMeta();
-    startTourneyVoteReveal(winningTourneyEventKind());
-    return;
-  }
-  if (!isTourneyPlayerReadyToday()) {
-    const reveal = document.getElementById("tourneyVoteReveal");
-    if (reveal && !reveal.hidden) return;
-    startTourneyReadyPrompt();
-  }
+  if (gameMeta.tourneyVoteLockAnnouncedDayKey === dayKey) return;
+  gameMeta.tourneyVoteLockAnnouncedDayKey = dayKey;
+  saveMeta();
+  startTourneyVoteReveal(winningTourneyEventKind());
 }
-
-function isTourneyPlayerReadyToday() {
-  return gameMeta.tourneyReadyDayKey === getTourneyDayKey();
-}
-
-/** "winner" = show community pick · "ready" = wait for I am ready before heats. */
-let tourneyVoteRevealStage = "winner";
 
 function startTourneyVoteReveal(kind) {
-  tourneyVoteRevealStage = "winner";
   const reveal = document.getElementById("tourneyVoteReveal");
   const title = document.getElementById("tourneyVoteRevealTitle");
   const eventEl = document.getElementById("tourneyVoteRevealEvent");
@@ -10465,37 +10450,6 @@ function startTourneyVoteReveal(kind) {
   if (btn) btn.textContent = "Got it";
   if (!reveal) {
     showToast(`Votes tallied! Today's tourney event: ${label}.`, 4800);
-    startTourneyReadyPrompt();
-    return;
-  }
-  reveal.hidden = false;
-  reveal.setAttribute("aria-hidden", "false");
-  reveal.classList.remove("tourney-vote-reveal--active");
-  void reveal.offsetWidth;
-  reveal.classList.add("tourney-vote-reveal--active");
-  window.setTimeout(() => btn?.focus(), 420);
-}
-
-function startTourneyReadyPrompt() {
-  if (isTourneyPlayerReadyToday()) return;
-  tourneyVoteRevealStage = "ready";
-  const reveal = document.getElementById("tourneyVoteReveal");
-  const title = document.getElementById("tourneyVoteRevealTitle");
-  const eventEl = document.getElementById("tourneyVoteRevealEvent");
-  const detail = document.getElementById("tourneyVoteRevealDetail");
-  const btn = document.getElementById("btnTourneyVoteRevealDone");
-  const label = tourneyEventLabel(winningTourneyEventKind());
-  if (title) title.textContent = "Ready for the tourney?";
-  if (eventEl) eventEl.textContent = label;
-  if (detail) {
-    detail.textContent =
-      "Heats won't start for you until you tap I am ready. Chests go to the final top 3 only.";
-  }
-  if (btn) btn.textContent = "I am ready";
-  if (!reveal) {
-    gameMeta.tourneyReadyDayKey = getTourneyDayKey();
-    saveMeta();
-    showToast("You're ready for today's tourney — good luck!", 3600);
     return;
   }
   reveal.hidden = false;
@@ -10508,23 +10462,10 @@ function startTourneyReadyPrompt() {
 
 function endTourneyVoteReveal() {
   const reveal = document.getElementById("tourneyVoteReveal");
-  if (tourneyVoteRevealStage === "winner") {
-    startTourneyReadyPrompt();
-    return;
-  }
-  if (tourneyVoteRevealStage === "ready") {
-    gameMeta.tourneyReadyDayKey = getTourneyDayKey();
-    saveMeta();
-    showToast("You're ready — compete when a heat opens. Good luck!", 3600);
-  }
-  if (!reveal || reveal.hidden) {
-    if (panelEvents && !panelEvents.hidden) void refreshTournamentCard();
-    return;
-  }
+  if (!reveal || reveal.hidden) return;
   reveal.classList.remove("tourney-vote-reveal--active");
   reveal.hidden = true;
   reveal.setAttribute("aria-hidden", "true");
-  tourneyVoteRevealStage = "winner";
   if (panelEvents && !panelEvents.hidden) void refreshTournamentCard();
 }
 
@@ -11912,11 +11853,6 @@ async function beginTournamentCompetition() {
     showToast("Votes lock before the morning heat — hang tight.", 2800);
     return;
   }
-  if (!isTourneyPlayerReadyToday()) {
-    showToast("Dismiss today's event winner, then tap I am ready.", 3200);
-    startTourneyReadyPrompt();
-    return;
-  }
   const slot = getTourneySlotState();
   if (!slot.slotKey) {
     showToast(`Next heat: ${slot.nextLabel}`, 3000);
@@ -11965,7 +11901,7 @@ async function beginTournamentCompetition() {
     return;
   }
   if (eventKind === "crab") {
-    void startCrabTrap();
+    openEventPrep("crab");
     return;
   }
   openEventPrep(eventKind);
@@ -12203,9 +12139,7 @@ async function refreshTournamentCard() {
   }
   if (btnTourneyCompete) {
     btnTourneyCompete.hidden = !isTourneySignedUpToday();
-    const ready = isTourneyPlayerReadyToday();
-    const canCompete = Boolean(slot.slotKey) && ready && areTourneyVotesLocked();
-    btnTourneyCompete.disabled = !canCompete;
+    btnTourneyCompete.disabled = !slot.slotKey || !areTourneyVotesLocked();
     const now = Date.now();
     const bracketPlayable =
       isTourneyDuelBracketDay() && slot.slotKey
@@ -12213,9 +12147,6 @@ async function refreshTournamentCard() {
         : null;
     if (!areTourneyVotesLocked()) {
       btnTourneyCompete.textContent = "Votes still open";
-    } else if (!ready) {
-      btnTourneyCompete.textContent = "Tap I am ready first";
-      btnTourneyCompete.disabled = false;
     } else if (!slot.slotKey) {
       btnTourneyCompete.textContent = "Heat opens soon";
     } else if (isTourneyDuelBracketDay() && bracketPlayable) {
@@ -12570,10 +12501,12 @@ function renderProfileFriendsList() {
 
 function refreshEventPrepFriendsUI() {
   const kind = pendingEventPrepKind;
-  const show = kind === "duel" || kind === "coop";
+  const tourneyLockedMatch = Boolean(tournamentRun?.bracketMatch || pendingBracketMatch);
+  const show = (kind === "duel" || kind === "coop") && !tourneyLockedMatch && !tournamentRun;
   if (eventPrepFriends) eventPrepFriends.hidden = !show;
   if (!show) return;
   const joining = Boolean(pendingJoinPartyCode);
+  const startWord = tournamentRun ? "I am ready" : "Cast off";
   if (joining) {
     pendingPartyIntent = "anyone";
     if (btnEventPrepFriend) {
@@ -12585,7 +12518,7 @@ function refreshEventPrepFriendsUI() {
       btnEventPrepAnyone.setAttribute("aria-pressed", "false");
     }
     if (eventPrepPartyHint) {
-      eventPrepPartyHint.textContent = `Joining code ${pendingJoinPartyCode} — pick bait & rod, then Cast off.`;
+      eventPrepPartyHint.textContent = `Joining code ${pendingJoinPartyCode} — pick bait & rod, then ${startWord}.`;
     }
     return;
   }
@@ -12600,7 +12533,7 @@ function refreshEventPrepFriendsUI() {
   if (eventPrepPartyHint) {
     eventPrepPartyHint.textContent =
       pendingPartyIntent === "friend"
-        ? "After Cast off you’ll get a short code to tell your friend."
+        ? `After ${startWord} you’ll get a short code to tell your friend.`
         : "Match anyone searching at the same time — or a random angler if nobody’s free.";
   }
 }
@@ -20345,11 +20278,28 @@ function eventPrepCopy(kind) {
       detail: "Pick bait and a rod for a random reef run.",
     };
   }
+  if (kind === "crab") {
+    return {
+      eyebrow: "Crab Trap",
+      title: "Ready your gear",
+      detail: "Pick bait and a rod, then start the trap run.",
+    };
+  }
   return {
     eyebrow: "Kraken Survivor",
     title: "Ready your gear",
     detail: "Pick bait and a rod before you hunt the beast.",
   };
+}
+
+function syncEventPrepStartLabel() {
+  const label = btnEventPrepStart?.querySelector(".btn--start__label");
+  if (!label) return;
+  if (tournamentRun) {
+    label.textContent = "I am ready";
+    return;
+  }
+  label.textContent = "Cast off";
 }
 
 function openEventPrep(kind) {
@@ -20366,6 +20316,7 @@ function openEventPrep(kind) {
     pendingPartyIntent = pendingPartyIntent === "friend" ? "friend" : "anyone";
   }
   const copy = eventPrepCopy(kind);
+  const tourneyHeat = Boolean(tournamentRun);
   if (pendingJoinPartyCode) {
     if (eventPrepEyebrow) eventPrepEyebrow.textContent = copy.eyebrow;
     if (eventPrepTitle) eventPrepTitle.textContent = "Join your friend";
@@ -20381,7 +20332,16 @@ function openEventPrep(kind) {
     if (eventPrepEyebrow) eventPrepEyebrow.textContent = "Tourney bracket";
     if (eventPrepTitle) eventPrepTitle.textContent = roundLabel;
     if (eventPrepDetail) {
-      eventPrepDetail.textContent = `Vs ${tourneyBracketEntryName(findTourneyBracketEntry(oppId))} — pick bait and a rod, then Cast off.`;
+      eventPrepDetail.textContent = `Vs ${tourneyBracketEntryName(findTourneyBracketEntry(oppId))} — pick bait and a rod, then tap I am ready.`;
+    }
+  } else if (tourneyHeat) {
+    if (eventPrepEyebrow) eventPrepEyebrow.textContent = `Tourney · ${tourneyEventLabel(kind)}`;
+    if (eventPrepTitle) eventPrepTitle.textContent = "Ready your gear";
+    if (eventPrepDetail) {
+      eventPrepDetail.textContent =
+        kind === "crab"
+          ? "Pick bait and a rod, then tap I am ready to start this tourney heat."
+          : "Pick bait and a rod, then tap I am ready to play this tourney heat.";
     }
   } else {
     if (eventPrepEyebrow) eventPrepEyebrow.textContent = copy.eyebrow;
@@ -20394,6 +20354,7 @@ function openEventPrep(kind) {
   buildBaitUI();
   buildRodUI();
   refreshEventPrepFriendsUI();
+  syncEventPrepStartLabel();
   if (musicEnabled) switchSceneMusic(startHomeMusic);
 }
 
@@ -20401,11 +20362,12 @@ function closeEventPrep() {
   pendingEventPrepKind = null;
   pendingJoinPartyCode = null;
   pendingPartyIntent = "anyone";
-  if (tournamentRun?.bracketMatch) {
+  if (tournamentRun) {
     tournamentRun = null;
     pendingBracketMatch = null;
   }
   if (panelEventPrep) panelEventPrep.hidden = true;
+  syncEventPrepStartLabel();
   openEvents();
 }
 
@@ -20451,6 +20413,7 @@ function confirmEventPrepStart() {
   pendingEventPrepKind = null;
   if (panelEventPrep) panelEventPrep.hidden = true;
   appRoot?.classList.remove("app--events-mode");
+  syncEventPrepStartLabel();
   if (kind === "duel") {
     void startDuelFromEvents(true);
     return;
@@ -20459,11 +20422,19 @@ function confirmEventPrepStart() {
     void startCoopFromEvents(true);
     return;
   }
+  if (kind === "crab") {
+    void startCrabTrap();
+    return;
+  }
   if (kind === "roulette" || kind === "survivor") {
     beginEventMinigame(kind, true);
     return;
   }
   /* Prep closed with no mode — don't leave a blank Events shell. */
+  if (tournamentRun) {
+    tournamentRun = null;
+    pendingBracketMatch = null;
+  }
   openEvents();
 }
 
