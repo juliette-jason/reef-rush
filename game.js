@@ -12593,9 +12593,9 @@ const MINIGAME_FISH_CHEST_MIN = 2000;
 const MINIGAME_FISH_RARE_MIN = 1500;
 const MINIGAME_FISH_LEGENDARY_MIN = 4000;
 /** Co-op haul needs a bigger combined score for top chests. */
-const MINIGAME_COOP_CHEST_MIN = 7200;
-const MINIGAME_COOP_RARE_MIN = 9000;
-const MINIGAME_COOP_LEGENDARY_MIN = 11500;
+const MINIGAME_COOP_CHEST_MIN = 8000;
+const MINIGAME_COOP_RARE_MIN = 10000;
+const MINIGAME_COOP_LEGENDARY_MIN = 12500;
 /** Survivor chest tiers (bonus haul when you hook the kraken). */
 const MINIGAME_SURVIVOR_CHEST_MIN = 250;
 const MINIGAME_SURVIVOR_RARE_MIN = 900;
