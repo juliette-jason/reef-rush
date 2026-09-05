@@ -561,10 +561,56 @@ function chestItemArtSvg(itemId) {
   );
 }
 
-/** Postage-stamp SVG for a catch species — silhouette matches the creature, not a flat swatch. */
+/** Species / morph → sea pal id when the catchable animal has matching shop art. */
+const CATCH_STAMP_SEA_PAL_BY_SPECIES = {
+  clown_anemonefish: "clownfish",
+  green_sea_turtle: "sea_turtle",
+  reef_octopus: "octopus",
+  dumbo_octopus: "octopus",
+  bottlenose_dolphin: "dolphin",
+  moon_jellyfish: "jellyfish",
+  reef_manta: "manta",
+  sea_otter: "otter",
+  queen_angelfish: "angelfish",
+  caribbean_lobster: "lobster",
+};
+const CATCH_STAMP_SEA_PAL_BY_MORPH = {
+  clownfish: "clownfish",
+  seaturtle: "sea_turtle",
+  octopus: "octopus",
+  dolphin: "dolphin",
+  jellyfish: "jellyfish",
+  manta: "manta",
+  otter: "otter",
+  angelfish: "angelfish",
+  lobster: "lobster",
+  sailfish: "sailfish",
+};
+
+function catchStampSeaPalId(spec) {
+  if (!spec) return "";
+  if (spec.id && CATCH_STAMP_SEA_PAL_BY_SPECIES[spec.id]) return CATCH_STAMP_SEA_PAL_BY_SPECIES[spec.id];
+  const morph = String(spec.morph || "");
+  return CATCH_STAMP_SEA_PAL_BY_MORPH[morph] || "";
+}
+
+function catchStampEye(cx, cy, r = 1.6) {
+  return (
+    `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff"/>` +
+    `<circle cx="${cx + r * 0.28}" cy="${cy}" r="${r * 0.45}" fill="#0f172a"/>` +
+    `<circle cx="${cx + r * 0.42}" cy="${cy - r * 0.35}" r="${r * 0.22}" fill="#fff"/>`
+  );
+}
+
+function catchStampForkTail(x, y, c1, depth = 8, spread = 10) {
+  return `<path d="M${x} ${y} L${x - depth} ${y - spread} L${x - depth * 0.55} ${y} L${x - depth} ${y + spread} Z" fill="${c1}"/>`;
+}
+
+/** Postage-stamp SVG — sea pal art when available, otherwise in-game morph shapes. */
 function catchStampArtSvg(spec, opts = {}) {
   const owned = opts.owned !== false;
-  const uid = `stamp-${String(spec?.id || "fish").replace(/[^a-z0-9_-]/gi, "")}-${owned ? "o" : "l"}`;
+  const sid = String(spec?.id || "fish");
+  const uid = `stamp-${sid.replace(/[^a-z0-9_-]/gi, "")}-${owned ? "o" : "l"}`;
   const colors = Array.isArray(spec?.colors) ? spec.colors : ["#64748b", "#1e293b", "#e2e8f0"];
   const c0 = owned ? colors[0] : "#334155";
   const c1 = owned ? colors[1] || colors[0] : "#0f172a";
@@ -573,160 +619,152 @@ function catchStampArtSvg(spec, opts = {}) {
   const paper = owned ? "#fff8e7" : "#1e293b";
   const ink = owned ? "#3f2a14" : "#64748b";
   const rim = owned ? "#c4a574" : "#334155";
+  const seaPalId = catchStampSeaPalId(spec);
 
-  function silhouette() {
-    if (morph === "jellyfish") {
+  function seaPalArt() {
+    if (!seaPalId || typeof companionInnerMarkup !== "function") return "";
+    const fit = (typeof COMPANION_ART_FIT !== "undefined" && COMPANION_ART_FIT[seaPalId]) || {
+      cx: 80,
+      cy: 86,
+      scale: 1.22,
+    };
+    const scale = (fit.scale || 1.22) * 0.3;
+    return (
+      `<g transform="translate(32 33) scale(${scale}) translate(${-fit.cx} ${-fit.cy})"${owned ? "" : ' opacity="0.55"'}>` +
+      companionInnerMarkup(seaPalId, { omitMantaTail: false }) +
+      `</g>`
+    );
+  }
+
+  function morphArt() {
+    const bodyGrad = `url(#${uid}-body)`;
+    if (morph === "cuttlefish") {
       return (
-        `<ellipse cx="32" cy="22" rx="12" ry="9" fill="${c0}" stroke="${c1}" stroke-width="1.2"/>` +
-        `<path d="M22 28 Q24 42 26 46 M28 30 Q30 44 32 48 M36 30 Q38 44 40 46 M42 28 Q44 42 42 46" fill="none" stroke="${c2}" stroke-width="1.6" stroke-linecap="round"/>` +
-        `<circle cx="28" cy="20" r="1.4" fill="${c1}"/><circle cx="36" cy="20" r="1.4" fill="${c1}"/>`
+        `<ellipse cx="33" cy="28" rx="13" ry="9" fill="${bodyGrad}" stroke="${c1}" stroke-width="1.1"/>` +
+        `<ellipse cx="33" cy="28" rx="7" ry="4.5" fill="${c2}" opacity="0.35"/>` +
+        catchStampEye(40, 26, 1.7) +
+        `<path d="M22 34 Q16 44 14 48 M27 36 Q24 48 22 52 M33 37 Q33 50 33 54 M39 36 Q42 48 44 52 M44 34 Q50 44 52 48" fill="none" stroke="${c1}" stroke-width="2.1" stroke-linecap="round"/>` +
+        `<circle cx="24" cy="26" r="1.2" fill="${c2}" opacity="0.7"/><circle cx="30" cy="24" r="1" fill="${c2}" opacity="0.55"/>`
       );
     }
     if (morph === "seahorse") {
       return (
-        `<path d="M34 14 Q40 10 42 16 Q44 24 38 28 L36 46 Q32 48 30 44 L32 30 Q26 28 26 20 Q26 12 34 14 Z" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
-        `<path d="M36 18 Q40 16 40 20" fill="none" stroke="${c2}" stroke-width="1.2"/>` +
-        `<circle cx="36" cy="16" r="1.3" fill="#0f172a"/>` +
-        `<path d="M30 34 Q28 38 30 42 M30 38 Q28 42 30 46" fill="none" stroke="${c1}" stroke-width="1.1"/>`
+        `<path d="M34 12 Q42 8 44 16 Q46 26 38 30 L37 48 Q33 52 30 46 L32 32 Q24 30 24 20 Q24 10 34 12 Z" fill="${bodyGrad}" stroke="${c1}" stroke-width="1.15"/>` +
+        `<path d="M36 18 Q42 15 42 21" fill="none" stroke="${c2}" stroke-width="1.3"/>` +
+        catchStampEye(37, 16, 1.4) +
+        `<path d="M30 36 Q27 40 30 44 M30 40 Q27 44 30 48 M30 44 Q27 48 31 50" fill="none" stroke="${c1}" stroke-width="1.15" stroke-linecap="round"/>` +
+        `<path d="M32 22 H38 M32 26 H37 M32 30 H36" stroke="${c1}" stroke-width="0.9" opacity="0.55"/>`
       );
     }
-    if (morph === "lobster") {
+    if (morph === "seal") {
       return (
-        `<ellipse cx="32" cy="30" rx="10" ry="14" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
-        `<path d="M22 18 Q12 10 10 16 Q14 20 22 22 M42 18 Q52 10 54 16 Q50 20 42 22" fill="none" stroke="${c1}" stroke-width="2.2" stroke-linecap="round"/>` +
-        `<circle cx="28" cy="22" r="1.5" fill="#0f172a"/><circle cx="36" cy="22" r="1.5" fill="#0f172a"/>` +
-        `<path d="M26 42 L24 50 M32 44 L32 52 M38 42 L40 50" stroke="${c1}" stroke-width="1.5" stroke-linecap="round"/>`
-      );
-    }
-    if (morph === "octopus" || morph === "cuttlefish") {
-      return (
-        `<ellipse cx="32" cy="24" rx="12" ry="10" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
-        `<circle cx="28" cy="22" r="2.2" fill="#fff"/><circle cx="36" cy="22" r="2.2" fill="#fff"/>` +
-        `<circle cx="28.5" cy="22.3" r="1" fill="#0f172a"/><circle cx="36.5" cy="22.3" r="1" fill="#0f172a"/>` +
-        `<path d="M22 32 Q18 44 16 48 M26 34 Q24 46 22 50 M32 36 Q32 48 32 52 M38 34 Q40 46 42 50 M42 32 Q46 44 48 48" fill="none" stroke="${c1}" stroke-width="2" stroke-linecap="round"/>`
-      );
-    }
-    if (morph === "seaturtle") {
-      return (
-        `<ellipse cx="32" cy="30" rx="14" ry="11" fill="${c1}" stroke="${c0}" stroke-width="1.2"/>` +
-        `<ellipse cx="32" cy="30" rx="9" ry="7" fill="${c0}"/>` +
-        `<path d="M32 23 L38 30 L32 37 L26 30 Z" fill="${c2}" opacity="0.55"/>` +
-        `<ellipse cx="46" cy="28" rx="5" ry="4" fill="${c0}" stroke="${c1}" stroke-width="0.9"/>` +
-        `<circle cx="47" cy="27" r="1.1" fill="#0f172a"/>` +
-        `<path d="M18 24 Q12 20 14 26 M18 36 Q12 40 14 34 M42 20 Q46 14 48 20 M42 40 Q46 46 48 40" fill="none" stroke="${c1}" stroke-width="2" stroke-linecap="round"/>`
-      );
-    }
-    if (morph === "manta") {
-      return (
-        `<path d="M32 28 L8 18 Q16 28 8 40 L32 34 L56 40 Q48 28 56 18 Z" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
-        `<ellipse cx="32" cy="30" rx="5" ry="7" fill="${c1}"/>` +
-        `<path d="M32 36 L30 48 M32 36 L34 48" stroke="${c1}" stroke-width="1.4" stroke-linecap="round"/>` +
-        `<circle cx="30" cy="26" r="1.2" fill="#fff"/><circle cx="34" cy="26" r="1.2" fill="#fff"/>`
-      );
-    }
-    if (morph === "dolphin" || morph === "seal") {
-      return (
-        `<path d="M12 32 Q18 18 34 20 Q50 22 54 30 Q50 40 34 42 Q20 42 14 36 Z" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
-        `<path d="M28 20 Q32 10 38 18" fill="${c1}"/>` +
-        `<path d="M10 30 L4 24 M10 34 L4 40" stroke="${c1}" stroke-width="2" stroke-linecap="round"/>` +
-        `<circle cx="46" cy="28" r="1.5" fill="#0f172a"/>` +
-        `<path d="M48 32 Q52 34 50 36" fill="none" stroke="${c1}" stroke-width="1.1"/>`
-      );
-    }
-    if (morph === "otter") {
-      return (
-        `<ellipse cx="30" cy="30" rx="14" ry="9" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
-        `<circle cx="44" cy="26" r="7" fill="${c0}" stroke="${c1}" stroke-width="1"/>` +
-        `<circle cx="46" cy="25" r="1.3" fill="#0f172a"/>` +
-        `<ellipse cx="48" cy="29" rx="3" ry="2" fill="${c2}"/>` +
-        `<path d="M16 34 Q10 40 14 44" fill="none" stroke="${c1}" stroke-width="2.2" stroke-linecap="round"/>` +
-        `<path d="M26 38 L24 46 M34 38 L36 46" stroke="${c1}" stroke-width="1.8" stroke-linecap="round"/>`
+        `<path d="M12 34 Q16 20 30 18 Q46 16 52 28 Q54 38 42 42 Q26 46 16 40 Z" fill="${bodyGrad}" stroke="${c1}" stroke-width="1.15"/>` +
+        `<ellipse cx="34" cy="36" rx="12" ry="5" fill="${c2}" opacity="0.45"/>` +
+        `<path d="M10 32 L4 26 M10 36 L4 42" stroke="${c1}" stroke-width="2.2" stroke-linecap="round"/>` +
+        catchStampEye(46, 28, 1.6) +
+        `<ellipse cx="50" cy="32" rx="2.2" ry="1.4" fill="#0f172a" opacity="0.55"/>` +
+        `<circle cx="28" cy="26" r="1.3" fill="${c1}" opacity="0.35"/><circle cx="36" cy="24" r="1.1" fill="${c1}" opacity="0.3"/>`
       );
     }
     if (morph === "hammerhead" || morph === "reefshark") {
       return (
-        `<path d="M10 32 L22 26 L40 24 L54 30 L40 38 L22 36 Z" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
+        `<path d="M8 32 L20 24 L38 22 L50 30 L38 40 L20 38 Z" fill="${bodyGrad}" stroke="${c1}" stroke-width="1.15"/>` +
         (morph === "hammerhead"
-          ? `<rect x="48" y="24" width="14" height="8" rx="3" fill="${c1}"/>`
-          : `<path d="M52 30 L60 26 L58 34 Z" fill="${c1}"/>`) +
-        `<path d="M28 24 L32 14 L36 24" fill="${c1}"/>` +
-        `<path d="M12 32 L4 28 M12 32 L4 36" stroke="${c1}" stroke-width="1.8" stroke-linecap="round"/>` +
-        `<circle cx="44" cy="28" r="1.3" fill="#0f172a"/>`
+          ? `<path d="M48 26 H60 Q62 30 60 34 H48 Z" fill="${c1}"/><circle cx="58" cy="28" r="1.1" fill="#0f172a"/><circle cx="58" cy="32" r="1.1" fill="#0f172a"/>`
+          : `<path d="M50 30 L60 24 L58 36 Z" fill="${c1}"/>`) +
+        `<path d="M26 22 L32 10 L36 22" fill="${c1}"/>` +
+        catchStampForkTail(10, 32, c1, 9, 7) +
+        (morph === "hammerhead" ? "" : catchStampEye(44, 28, 1.35)) +
+        `<path d="M22 30 H40" stroke="${c2}" stroke-width="1.1" opacity="0.45"/>`
       );
     }
     if (morph === "marlin" || morph === "swordfish" || morph === "barracuda" || morph === "sailfish") {
+      const sail =
+        morph === "sailfish" || morph === "marlin"
+          ? `<path d="M24 24 L30 6 L40 22" fill="${c1}"/><path d="M26 22 Q34 14 42 22" fill="none" stroke="${c2}" stroke-width="1" opacity="0.5"/>`
+          : `<path d="M26 24 L32 12 L38 24" fill="${c1}"/>`;
       return (
-        `<path d="M8 32 L24 26 L40 24 L48 30 L40 36 L24 36 Z" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
-        `<path d="M48 30 L62 28" stroke="${c1}" stroke-width="2.2" stroke-linecap="round"/>` +
-        `<path d="M26 24 L30 10 L36 24" fill="${c1}"/>` +
-        `<path d="M8 32 L2 24 M8 32 L2 40" stroke="${c1}" stroke-width="1.6" stroke-linecap="round"/>` +
-        `<circle cx="42" cy="28" r="1.2" fill="#0f172a"/>`
-      );
-    }
-    if (morph === "clownfish") {
-      return (
-        `<ellipse cx="32" cy="32" rx="16" ry="10" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
-        `<path d="M22 22 V42 M32 20 V44 M42 22 V42" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/>` +
-        `<path d="M14 32 L6 24 L6 40 Z" fill="${c1}"/>` +
-        `<circle cx="44" cy="30" r="1.5" fill="#0f172a"/>` +
-        `<path d="M30 22 L34 14 L38 22" fill="${c1}"/>`
-      );
-    }
-    if (morph === "angelfish") {
-      return (
-        `<path d="M20 32 Q32 12 44 32 Q32 52 20 32 Z" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
-        `<path d="M32 16 L36 8 L40 18 M32 48 L36 56 L40 46" fill="${c1}"/>` +
-        `<circle cx="38" cy="30" r="1.4" fill="#0f172a"/>` +
-        `<path d="M18 32 L10 26 L10 38 Z" fill="${c1}"/>`
+        `<path d="M10 32 Q22 22 36 22 Q46 24 50 30 Q46 38 36 40 Q22 42 10 32 Z" fill="${bodyGrad}" stroke="${c1}" stroke-width="1.1"/>` +
+        `<path d="M50 30 L62 27" stroke="${c1}" stroke-width="2.4" stroke-linecap="round"/>` +
+        sail +
+        catchStampForkTail(10, 32, c1, 9, 9) +
+        catchStampEye(44, 28, 1.3) +
+        `<path d="M20 30 Q32 28 44 30" fill="none" stroke="${c2}" stroke-width="1.15" opacity="0.55"/>`
       );
     }
     if (morph === "deepsea" || morph === "skullfish") {
+      const lantern =
+        morph === "deepsea"
+          ? `<circle cx="50" cy="16" r="3.2" fill="${c2}"/><path d="M40 24 Q48 18 50 16" fill="none" stroke="${c2}" stroke-width="1.3"/><circle cx="50" cy="16" r="1.4" fill="#fff" opacity="0.7"/>`
+          : `<path d="M18 26 L14 20 L22 22 Z" fill="${c2}" opacity="0.8"/>`;
       return (
-        `<ellipse cx="30" cy="30" rx="12" ry="9" fill="${c1}" stroke="${c0}" stroke-width="1.2"/>` +
-        `<circle cx="38" cy="28" r="4" fill="${c0}" opacity="0.9"/>` +
-        `<circle cx="38" cy="28" r="2" fill="#fff"/><circle cx="38.5" cy="28" r="1" fill="#0f172a"/>` +
-        `<path d="M20 34 L16 40 M24 36 L22 44 M28 36 L30 44" stroke="${c0}" stroke-width="1.5" stroke-linecap="round"/>` +
-        `<path d="M16 30 L8 24 M16 30 L8 36" stroke="${c0}" stroke-width="1.5"/>` +
-        (morph === "deepsea" ? `<circle cx="48" cy="18" r="3" fill="${c2}"/><path d="M40 24 Q46 20 48 18" fill="none" stroke="${c2}" stroke-width="1.2"/>` : "")
+        `<ellipse cx="30" cy="32" rx="13" ry="9" fill="${bodyGrad}" stroke="${c0}" stroke-width="1.2"/>` +
+        `<circle cx="40" cy="28" r="4.2" fill="${c0}"/>` +
+        catchStampEye(40, 28, 2.1) +
+        `<path d="M20 36 L15 44 M25 38 L22 48 M30 38 L32 48" stroke="${c0}" stroke-width="1.6" stroke-linecap="round"/>` +
+        catchStampForkTail(16, 32, c0, 8, 7) +
+        lantern +
+        (morph === "skullfish"
+          ? `<path d="M24 30 H34 M26 34 H32" stroke="${c2}" stroke-width="1.1" opacity="0.7"/>`
+          : "")
       );
     }
     if (morph === "halibut") {
       return (
-        `<ellipse cx="32" cy="32" rx="20" ry="11" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
-        `<circle cx="44" cy="28" r="1.5" fill="#0f172a"/><circle cx="40" cy="34" r="1.5" fill="#0f172a"/>` +
-        `<path d="M12 32 L4 26 L4 38 Z" fill="${c1}"/>` +
-        `<path d="M32 22 Q36 18 40 22" fill="none" stroke="${c1}" stroke-width="1"/>`
+        `<ellipse cx="32" cy="32" rx="20" ry="11" fill="${bodyGrad}" stroke="${c1}" stroke-width="1.15"/>` +
+        catchStampEye(44, 27, 1.5) +
+        catchStampEye(40, 35, 1.5) +
+        catchStampForkTail(12, 32, c1, 8, 8) +
+        `<path d="M24 24 Q34 20 44 24" fill="none" stroke="${c1}" stroke-width="1" opacity="0.5"/>` +
+        `<circle cx="26" cy="30" r="1.1" fill="${c1}" opacity="0.35"/><circle cx="32" cy="34" r="1" fill="${c1}" opacity="0.3"/>`
       );
     }
     if (morph === "tuna" || morph === "bluefin" || morph === "trevally" || morph === "amberjack" || morph === "mahi") {
       return (
-        `<path d="M10 32 Q20 20 36 22 Q48 24 52 30 Q48 38 36 40 Q20 42 10 32 Z" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
-        `<path d="M10 32 L2 22 L4 32 L2 42 Z" fill="${c1}"/>` +
-        `<path d="M28 22 L32 12 L38 22" fill="${morph === "mahi" ? c2 : c1}"/>` +
-        `<circle cx="44" cy="28" r="1.4" fill="#0f172a"/>` +
-        `<path d="M20 30 H40" stroke="${c2}" stroke-width="1.2" opacity="0.7"/>`
+        `<path d="M12 32 Q22 18 38 20 Q50 22 54 30 Q50 40 38 42 Q22 44 12 32 Z" fill="${bodyGrad}" stroke="${c1}" stroke-width="1.15"/>` +
+        catchStampForkTail(12, 32, c1, 10, 11) +
+        `<path d="M28 20 L34 8 L40 20" fill="${morph === "mahi" ? c2 : c1}"/>` +
+        `<path d="M30 42 L34 52 L40 42" fill="${c1}" opacity="0.85"/>` +
+        catchStampEye(46, 28, 1.45) +
+        `<path d="M20 30 Q34 26 48 30" fill="none" stroke="${c2}" stroke-width="1.3" opacity="0.65"/>` +
+        (morph === "mahi" ? `<path d="M24 24 Q32 18 42 22" fill="none" stroke="${c2}" stroke-width="1.4"/>` : "")
       );
     }
     if (morph === "snapper" || morph === "bass" || morph === "cod" || morph === "barramundi" || morph === "mackerel") {
       return (
-        `<ellipse cx="30" cy="32" rx="15" ry="10" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
-        `<path d="M14 32 L6 24 L6 40 Z" fill="${c1}"/>` +
-        `<path d="M26 22 L30 12 L34 22" fill="${c1}"/>` +
-        `<circle cx="40" cy="30" r="1.5" fill="#0f172a"/>` +
+        `<ellipse cx="32" cy="32" rx="15" ry="10" fill="${bodyGrad}" stroke="${c1}" stroke-width="1.15"/>` +
+        catchStampForkTail(16, 32, c1, 9, 9) +
+        `<path d="M28 22 L34 10 L38 22" fill="${c1}"/>` +
+        `<path d="M30 42 L34 50 L38 42" fill="${c1}" opacity="0.8"/>` +
+        catchStampEye(42, 30, 1.55) +
         (morph === "mackerel"
-          ? `<path d="M20 26 Q26 24 34 26 M20 32 Q28 30 36 32 M20 38 Q28 36 34 38" fill="none" stroke="${c1}" stroke-width="1.1"/>`
-          : `<path d="M22 32 H38" stroke="${c2}" stroke-width="1.1" opacity="0.65"/>`)
+          ? `<path d="M22 26 Q30 22 40 26 M22 32 Q32 28 42 32 M22 38 Q30 34 40 38" fill="none" stroke="${c1}" stroke-width="1.15"/>`
+          : morph === "bass" || morph === "barramundi"
+            ? `<path d="M24 26 H40 M24 32 H40 M24 38 H38" stroke="${c2}" stroke-width="1.05" opacity="0.55"/>`
+            : `<path d="M22 32 H42" stroke="${c2}" stroke-width="1.2" opacity="0.6"/>`)
       );
     }
-    /* silverside / default school fish */
+    /* silverside / default school fish — matches in-water oval + fork tail */
+    const slim = sid === "european_sprat" || sid === "northern_anchovy";
+    const ry = slim ? 7 : 8.5;
+    const rx = slim ? 13 : 15;
     return (
-      `<ellipse cx="30" cy="32" rx="14" ry="8" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
-      `<path d="M16 32 L8 26 L8 38 Z" fill="${c1}"/>` +
-      `<circle cx="40" cy="30" r="1.4" fill="#0f172a"/>` +
-      `<path d="M24 32 H36" stroke="${c2}" stroke-width="1" opacity="0.7"/>` +
-      `<path d="M26 24 L30 18 L34 24" fill="${c1}" opacity="0.85"/>`
+      `<ellipse cx="32" cy="32" rx="${rx}" ry="${ry}" fill="${bodyGrad}" stroke="${c1}" stroke-width="1.1"/>` +
+      `<ellipse cx="34" cy="30" rx="${rx * 0.45}" ry="${ry * 0.45}" fill="#fff" opacity="0.22"/>` +
+      catchStampForkTail(32 - rx, 32, c1, slim ? 8 : 9, slim ? 8 : 9) +
+      `<path d="M28 24 Q34 16 38 24" fill="${c1}" opacity="0.9"/>` +
+      `<path d="M30 40 Q34 46 38 40" fill="${c1}" opacity="0.75"/>` +
+      catchStampEye(32 + rx * 0.55, 30, slim ? 1.2 : 1.45) +
+      `<path d="M${32 - rx * 0.35} 32 Q32 34 ${32 + rx * 0.4} 32" fill="none" stroke="${c1}" stroke-width="1" opacity="0.45"/>` +
+      (sid === "atlantic_herring"
+        ? `<path d="M24 28 L22 34 L26 34 M28 27 L26 34 L30 34 M32 27 L30 34 L34 34" fill="none" stroke="${c1}" stroke-width="0.9"/>`
+        : "") +
+      (sid === "pacific_sardine" ? `<circle cx="36" cy="28" r="1.6" fill="${c1}" opacity="0.55"/>` : "")
     );
   }
+
+  const creature =
+    seaPalId && typeof companionInnerMarkup === "function" ? seaPalArt() : morphArt();
 
   const lockOverlay = owned
     ? ""
@@ -734,7 +772,7 @@ function catchStampArtSvg(spec, opts = {}) {
       `<path d="M28 26 h8 v4 h-8 z M30 26 v-3 a2 2 0 0 1 4 0 v3" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/>`;
 
   return (
-    `<svg class="catch-stamp-art" viewBox="0 0 64 64" width="64" height="64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">` +
+    `<svg class="catch-stamp-art${seaPalId ? " catch-stamp-art--seapal" : ""}" viewBox="0 0 64 64" width="64" height="64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">` +
     `<defs>` +
     `<linearGradient id="${uid}-paper" x1="0" y1="0" x2="0" y2="1">` +
     `<stop offset="0%" stop-color="${paper}"/><stop offset="100%" stop-color="${owned ? "#f5e6c8" : "#0f172a"}"/>` +
@@ -742,11 +780,15 @@ function catchStampArtSvg(spec, opts = {}) {
     `<linearGradient id="${uid}-sea" x1="0" y1="0" x2="1" y2="1">` +
     `<stop offset="0%" stop-color="${owned ? "#bae6fd" : "#1e293b"}"/><stop offset="100%" stop-color="${owned ? "#7dd3fc" : "#0f172a"}"/>` +
     `</linearGradient>` +
+    `<linearGradient id="${uid}-body" x1="0" y1="0" x2="0" y2="1">` +
+    `<stop offset="0%" stop-color="${c1}"/><stop offset="40%" stop-color="${c0}"/><stop offset="100%" stop-color="${c2}"/>` +
+    `</linearGradient>` +
+    `<clipPath id="${uid}-clip"><rect x="11" y="11" width="42" height="42" rx="3"/></clipPath>` +
     `</defs>` +
     `<rect x="3" y="3" width="58" height="58" rx="5" fill="url(#${uid}-paper)" stroke="${rim}" stroke-width="2"/>` +
     `<rect x="7" y="7" width="50" height="50" rx="3" fill="none" stroke="${ink}" stroke-width="1" stroke-dasharray="2 2" opacity="0.55"/>` +
-    `<rect x="11" y="11" width="42" height="42" rx="3" fill="url(#${uid}-sea)" opacity="${owned ? 0.55 : 0.35}"/>` +
-    `<g transform="translate(0,0)">${silhouette()}</g>` +
+    `<rect x="11" y="11" width="42" height="42" rx="3" fill="url(#${uid}-sea)" opacity="${owned ? 0.5 : 0.3}"/>` +
+    `<g clip-path="url(#${uid}-clip)">${creature}</g>` +
     lockOverlay +
     `</svg>`
   );
