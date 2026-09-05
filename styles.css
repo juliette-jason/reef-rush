@@ -6389,13 +6389,18 @@ button.seagull-avatar:active {
   display: grid;
   place-items: center;
   border-radius: 14px;
-  font-size: 1.45rem;
   line-height: 1;
   background:
     radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.2), transparent 50%),
     rgba(12, 74, 110, 0.85);
   border: 1px solid rgba(186, 230, 253, 0.22);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.collectables-item__icon .chest-item-art {
+  width: 34px;
+  height: 34px;
+  display: block;
 }
 
 .collectables-item__body {
@@ -9498,10 +9503,18 @@ button.seagull-avatar:active {
 }
 
 .adventure-prep__boost-icon {
-  font-size: 1.35rem;
   line-height: 1;
-  width: 1.6em;
-  text-align: center;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.adventure-prep__boost-icon .chest-item-art {
+  width: 36px;
+  height: 36px;
+  display: block;
 }
 
 .adventure-prep__boost-body {
@@ -10652,9 +10665,10 @@ button.seagull-avatar:active {
   box-shadow: inset 0 -6px 8px rgba(0, 0, 0, 0.25);
 }
 
-.chest-loot__emoji {
-  font-size: 1.7rem;
-  line-height: 1;
+.chest-loot__art .chest-item-art {
+  width: 36px;
+  height: 36px;
+  display: block;
 }
 
 .chest-loot__qty {

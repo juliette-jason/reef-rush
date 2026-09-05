@@ -437,34 +437,97 @@ const CHEST_ITEM_DEFS = {
   adventure_skip_rope: {
     id: "adventure_skip_rope",
     name: "Adventure Skip Rope",
-    icon: "🪢",
     blurb: "Clears a failed adventure level.",
   },
   golden_net: {
     id: "golden_net",
     name: "Golden Net",
-    icon: "✨",
     blurb: "Saves your catch from the kraken.",
   },
   mystery_reef: {
     id: "mystery_reef",
     name: "Mystery Reef Key",
-    icon: "🗝️",
     blurb: "Next round: random reef.",
   },
   lucky_lure: {
     id: "lucky_lure",
     name: "Lucky Lure",
-    icon: "🍀",
     blurb: "Next round: better rare luck.",
   },
   double_haul: {
     id: "double_haul",
     name: "Double Haul",
-    icon: "💰",
     blurb: "Next round: double coins.",
   },
 };
+
+/** Reef Rush–style SVG icons for chest items (no emoji). */
+function chestItemArtSvg(itemId) {
+  const uid = `ci-${itemId}`;
+  if (itemId === "golden_net") {
+    return (
+      `<svg class="chest-item-art" viewBox="0 0 48 48" width="40" height="40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">` +
+      `<defs><linearGradient id="${uid}-g" x1="0" y1="0" x2="1" y2="1">` +
+      `<stop offset="0%" stop-color="#fff8c8"/><stop offset="45%" stop-color="#f5c542"/><stop offset="100%" stop-color="#b45309"/>` +
+      `</linearGradient></defs>` +
+      `<ellipse cx="24" cy="40" rx="14" ry="3.5" fill="rgba(15,55,70,0.35)"/>` +
+      `<path d="M10 14 Q24 8 38 14 L36 34 Q24 40 12 34 Z" fill="url(#${uid}-g)" stroke="#7c2d12" stroke-width="1.4"/>` +
+      `<path d="M14 18 H34 M14 24 H34 M14 30 H34 M18 14 V34 M24 12 V36 M30 14 V34" fill="none" stroke="#92400e" stroke-width="1.1" opacity="0.75"/>` +
+      `<circle cx="24" cy="12" r="2.2" fill="#ffe08a" stroke="#b45309" stroke-width="0.8"/>` +
+      `</svg>`
+    );
+  }
+  if (itemId === "lucky_lure") {
+    return (
+      `<svg class="chest-item-art" viewBox="0 0 48 48" width="40" height="40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">` +
+      `<defs><linearGradient id="${uid}-g" x1="0" y1="0" x2="0" y2="1">` +
+      `<stop offset="0%" stop-color="#86efac"/><stop offset="100%" stop-color="#15803d"/>` +
+      `</linearGradient></defs>` +
+      `<path d="M24 6 L28 18 L40 18 L30 26 L34 38 L24 30 L14 38 L18 26 L8 18 L20 18 Z" fill="url(#${uid}-g)" stroke="#14532d" stroke-width="1.2"/>` +
+      `<circle cx="24" cy="22" r="3.2" fill="#fef08a" stroke="#ca8a04" stroke-width="0.9"/>` +
+      `<path d="M24 8 V4" stroke="#94a3b8" stroke-width="1.4" stroke-linecap="round"/>` +
+      `</svg>`
+    );
+  }
+  if (itemId === "double_haul") {
+    return (
+      `<svg class="chest-item-art" viewBox="0 0 48 48" width="40" height="40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">` +
+      `<circle cx="18" cy="28" r="10" fill="#f5c542" stroke="#7c2d12" stroke-width="1.3"/>` +
+      `<circle cx="18" cy="28" r="6.5" fill="none" stroke="#fff8c8" stroke-width="1.2" opacity="0.7"/>` +
+      `<circle cx="30" cy="22" r="10" fill="#ffe08a" stroke="#7c2d12" stroke-width="1.3"/>` +
+      `<circle cx="30" cy="22" r="6.5" fill="none" stroke="#fff8c8" stroke-width="1.2" opacity="0.75"/>` +
+      `<text x="30" y="26" text-anchor="middle" font-size="9" font-weight="800" fill="#7c2d12">2×</text>` +
+      `</svg>`
+    );
+  }
+  if (itemId === "mystery_reef") {
+    return (
+      `<svg class="chest-item-art" viewBox="0 0 48 48" width="40" height="40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">` +
+      `<defs><linearGradient id="${uid}-g" x1="0" y1="0" x2="1" y2="1">` +
+      `<stop offset="0%" stop-color="#e0f2fe"/><stop offset="50%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#0369a1"/>` +
+      `</linearGradient></defs>` +
+      `<circle cx="20" cy="18" r="9" fill="url(#${uid}-g)" stroke="#0c4a6e" stroke-width="1.4"/>` +
+      `<circle cx="20" cy="18" r="3.5" fill="#0c4a6e"/>` +
+      `<path d="M27 22 L38 34" stroke="#94a3b8" stroke-width="3.2" stroke-linecap="round"/>` +
+      `<path d="M34 30 L40 28 M36 34 L42 36" stroke="#cbd5e1" stroke-width="2.2" stroke-linecap="round"/>` +
+      `<circle cx="38" cy="34" r="2" fill="#fde68a" stroke="#b45309" stroke-width="0.7"/>` +
+      `</svg>`
+    );
+  }
+  /* adventure_skip_rope */
+  return (
+    `<svg class="chest-item-art" viewBox="0 0 48 48" width="40" height="40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">` +
+    `<defs><linearGradient id="${uid}-g" x1="0" y1="0" x2="0" y2="1">` +
+    `<stop offset="0%" stop-color="#fdba74"/><stop offset="100%" stop-color="#9a3412"/>` +
+    `</linearGradient></defs>` +
+    `<rect x="8" y="10" width="6" height="16" rx="2" fill="#d6dde8" stroke="#4b5563" stroke-width="1"/>` +
+    `<rect x="34" y="10" width="6" height="16" rx="2" fill="#d6dde8" stroke="#4b5563" stroke-width="1"/>` +
+    `<path d="M11 26 Q24 42 37 26" fill="none" stroke="url(#${uid}-g)" stroke-width="3.4" stroke-linecap="round"/>` +
+    `<path d="M14 28 Q24 38 34 28" fill="none" stroke="#fdba74" stroke-width="1.4" opacity="0.7"/>` +
+    `<circle cx="11" cy="12" r="1.4" fill="#fff" opacity="0.55"/>` +
+    `</svg>`
+  );
+}
 
 const CHEST_ITEM_IDS = Object.keys(CHEST_ITEM_DEFS);
 
@@ -14418,8 +14481,12 @@ let eventsMusicStep = 0;
 let climaxMusicTimer = null;
 let climaxMusicActive = false;
 let climaxMusicBeat = 0;
+let krakenMusicTimer = null;
+let krakenMusicActive = false;
+let krakenMusicBeat = 0;
 const CLIMAX_MUSIC_MS = 10_000;
 const CLIMAX_MUSIC_TEMPO_MS = 380;
+const KRAKEN_MUSIC_TEMPO_MS = 420;
 let homeAudioUnlocked = false;
 let musicUnlockEl = null;
 let musicStateHooked = false;
@@ -15095,7 +15162,7 @@ function showHomePanel() {
   adventureSession = null;
   updateAdventureLaunchUI();
   syncHomeLaunchButtons();
-  if (musicEnabled) startHomeMusic();
+  if (musicEnabled) switchSceneMusic(startHomeMusic);
   window.requestAnimationFrame(() => startAdventureHomeUnlockAnimation());
   showIntroIfNeeded();
   void processDailyPrizePayouts().then(() => {
@@ -15847,8 +15914,7 @@ function openAdventureHub() {
     window.requestAnimationFrame(() => runAdventureMapSectionReveal("lost-city"));
   }
   if (musicEnabled) {
-    stopHomeMusic();
-    startAdventureMusic();
+    switchSceneMusic(startAdventureMusic);
   }
 }
 
@@ -15906,7 +15972,7 @@ function refreshAdventurePrepBoosts() {
     const icon = document.createElement("span");
     icon.className = "adventure-prep__boost-icon";
     icon.setAttribute("aria-hidden", "true");
-    icon.textContent = def.icon;
+    icon.innerHTML = chestItemArtSvg(id);
     const body = document.createElement("div");
     body.className = "adventure-prep__boost-body";
     const name = document.createElement("p");
@@ -15947,8 +16013,7 @@ function openAdventurePrep(levelIndex) {
   if (panelAdventurePrep) panelAdventurePrep.hidden = false;
   syncHomeLaunchButtons();
   if (musicEnabled) {
-    stopHomeMusic();
-    startAdventureMusic();
+    switchSceneMusic(startAdventureMusic);
   }
 }
 
@@ -16113,7 +16178,7 @@ function hookMusicContextState(ac) {
     if (!musicEnabled) return;
     if (ac.state === "running") {
       syncMusicMasterGain();
-      if (!document.hidden) restartSceneMusic(true);
+      if (!document.hidden) restartSceneMusic(false);
     } else if ((ac.state === "suspended" || ac.state === "interrupted") && !document.hidden) {
       kickMusicContext();
     }
@@ -16140,13 +16205,13 @@ function musicWatchdogTick() {
     const now = Date.now();
     if (now - musicWatchdogLastKick < 1200) return;
     musicWatchdogLastKick = now;
-    void resumeMusicContext().then(() => restartSceneMusic(true));
+    void resumeMusicContext().then(() => restartSceneMusic(false));
     return;
   }
   if (musicMaster.gain.value <= 0) syncMusicMasterGain();
   const timer = expectedMusicTimer();
   if (timer === null) return;
-  if (!timer) restartSceneMusic(true);
+  if (!timer) restartSceneMusic(false);
 }
 
 function startMusicWatchdog() {
@@ -16523,19 +16588,61 @@ function musicSchedulerReady() {
   return musicCtx.state === "running";
 }
 
+function rampMusicMasterGain(target, fadeSec = 0.12) {
+  if (!musicMaster || !musicCtx) return;
+  const now = musicCtx.currentTime;
+  const cur = Math.max(0.0001, musicMaster.gain.value || 0.0001);
+  try {
+    musicMaster.gain.cancelScheduledValues(now);
+    musicMaster.gain.setValueAtTime(cur, now);
+    musicMaster.gain.linearRampToValueAtTime(Math.max(0.0001, target), now + Math.max(0.04, fadeSec));
+  } catch {
+    musicMaster.gain.value = target;
+  }
+}
+
 function syncMusicMasterGain() {
   if (!musicMaster) return;
   if (!musicEnabled) {
+    try {
+      if (musicCtx) {
+        const now = musicCtx.currentTime;
+        musicMaster.gain.cancelScheduledValues(now);
+      }
+    } catch {
+      /* ignore */
+    }
     musicMaster.gain.value = 0;
     return;
   }
-  if (playing) {
-    musicMaster.gain.value = DEFAULT_MUSIC_MASTER_GAIN;
-  } else if (isEventsMusicActive()) {
-    musicMaster.gain.value = EVENTS_MUSIC_MASTER_GAIN;
-  } else {
-    musicMaster.gain.value = HOME_MUSIC_MASTER_GAIN;
-  }
+  rampMusicMasterGain(sceneMusicTargetGain(), 0.1);
+}
+
+function sceneMusicTargetGain() {
+  if (!musicEnabled) return 0;
+  if (playing) return DEFAULT_MUSIC_MASTER_GAIN;
+  if (isEventsMusicActive()) return EVENTS_MUSIC_MASTER_GAIN;
+  return HOME_MUSIC_MASTER_GAIN;
+}
+
+function stopAllSceneMusicTimers() {
+  stopHomeMusic();
+  stopEventsMusic();
+  stopAdventureMusic();
+  stopReefMusic();
+}
+
+function switchSceneMusic(startFn) {
+  if (!musicEnabled || typeof startFn !== "function") return;
+  unlockAudioFromGesture();
+  rampMusicMasterGain(0.0001, 0.08);
+  stopAllSceneMusicTimers();
+  /* Brief dip so leftover oscillators don't clash with the new scene bed. */
+  window.setTimeout(() => {
+    if (!musicEnabled) return;
+    startFn(true);
+    rampMusicMasterGain(sceneMusicTargetGain(), 0.14);
+  }, 70);
 }
 
 function randomMusicTrackIndex(count, avoid = -1) {
@@ -17157,7 +17264,7 @@ function scheduleClimaxMusicBeat() {
 }
 
 function startClimaxMusic() {
-  if (climaxMusicActive || !musicEnabled || !playing) return;
+  if (climaxMusicActive || !musicEnabled || !playing || krakenMusicActive) return;
   climaxMusicActive = true;
   climaxMusicBeat = 0;
   stopReefMusic();
@@ -17166,8 +17273,75 @@ function startClimaxMusic() {
   climaxMusicTimer = setInterval(scheduleClimaxMusicBeat, CLIMAX_MUSIC_TEMPO_MS);
 }
 
+function scheduleKrakenMusicBeat() {
+  if (!musicSchedulerReady() || !krakenMusicActive || !playing) return;
+  const now = musicCtx.currentTime + 0.02;
+  const beat = krakenMusicBeat % 8;
+  const roots = [55.0, 61.74, 65.41, 73.42];
+  const root = roots[Math.floor(krakenMusicBeat / 2) % 4];
+  const menace = 1 + (krakenMusicBeat % 4) * 0.1;
+  playMusicNote(root, now, 0.42, 0.04 * menace, "sine");
+  playMusicNote(root * 1.5, now + 0.04, 0.3, 0.028 * menace, "triangle");
+  playMusicNote(root * 2, now + 0.08, 0.26, 0.024 * menace, "sawtooth");
+  if (beat === 0 || beat === 4) {
+    playNoiseHit(now, 0.18, 0.05 * menace);
+    playMusicNote(41.2, now + 0.02, 0.5, 0.045 * menace, "sine");
+  } else if (beat === 2 || beat === 6) {
+    playNoiseHit(now + 0.05, 0.12, 0.032 * menace);
+    playMusicNote(82.41, now + 0.06, 0.28, 0.03 * menace, "triangle");
+  } else {
+    playNoiseHit(now + 0.1, 0.07, 0.018 * menace);
+  }
+  if (beat === 7) {
+    playMusicNote(110, now + 0.12, 0.35, 0.036, "sawtooth");
+    playMusicNote(164.81, now + 0.16, 0.22, 0.028, "triangle");
+  }
+  krakenMusicBeat++;
+}
+
+function startKrakenMusic() {
+  if (!musicEnabled || !playing) return;
+  if (krakenMusicActive) return;
+  krakenMusicActive = true;
+  krakenMusicBeat = 0;
+  stopClimaxMusic();
+  stopReefMusic();
+  stopAdventureMusic();
+  scheduleKrakenMusicBeat();
+  if (krakenMusicTimer) clearInterval(krakenMusicTimer);
+  krakenMusicTimer = setInterval(scheduleKrakenMusicBeat, KRAKEN_MUSIC_TEMPO_MS);
+}
+
+function stopKrakenMusic() {
+  krakenMusicActive = false;
+  krakenMusicBeat = 0;
+  if (krakenMusicTimer) {
+    clearInterval(krakenMusicTimer);
+    krakenMusicTimer = null;
+  }
+}
+
+function anyLiveKrakenOnScreen() {
+  return krakens.some((k) => k && (k.state === "active" || k.state === "biting"));
+}
+
+function restorePlayMusicAfterKraken() {
+  if (!musicEnabled || !playing) return;
+  if (anyLiveKrakenOnScreen()) return;
+  stopKrakenMusic();
+  const now = performance.now();
+  const inClimax =
+    roundEndAt &&
+    roundEndAt - now <= CLIMAX_MUSIC_MS &&
+    eventMinigameSession?.kind !== "survivor";
+  if (inClimax) startClimaxMusic();
+  else if (adventureSession) startAdventureMusic(true);
+  else startReefMusic(true);
+}
+
 function tickClimaxMusic(now) {
   if (!playing || treasureMapRevealPaused) return;
+  if (krakenMusicActive) return;
   const isSurvivor = eventMinigameSession?.kind === "survivor";
   if (isSurvivor || !roundEndAt) return;
   const left = roundEndAt - now;
@@ -17200,6 +17374,8 @@ function startHomeMusic(forceRestart = true) {
   unlockAudioFromGesture();
   homeAudioUnlocked = true;
   stopEventsMusic();
+  stopAdventureMusic();
+  stopReefMusic();
   syncMusicMasterGain();
   if (musicTimer) {
     clearInterval(musicTimer);
@@ -17217,7 +17393,6 @@ function stopHomeMusic() {
     clearInterval(musicTimer);
     musicTimer = null;
   }
-  syncMusicMasterGain();
 }
 
 function stopHomeAudio() {
@@ -17226,6 +17401,7 @@ function stopHomeAudio() {
   stopReefMusic();
   stopAdventureMusic();
   stopClimaxMusic();
+  stopKrakenMusic();
 }
 
 function restartSceneMusic(forceRestart = true) {
@@ -17920,7 +18096,7 @@ function closeShop() {
   buildRodUI();
   refreshCoinDisplays();
   syncHomeLaunchButtons();
-  if (musicEnabled) startHomeMusic();
+  if (musicEnabled) switchSceneMusic(startHomeMusic);
 }
 
 function armedBoostLabels() {
@@ -17961,7 +18137,7 @@ function refreshCollectablesUI() {
       card.className = `collectables-item${qty < 1 ? " collectables-item--empty" : ""}`;
       const icon = document.createElement("div");
       icon.className = "collectables-item__icon";
-      icon.textContent = def.icon;
+      icon.innerHTML = chestItemArtSvg(id);
       const body = document.createElement("div");
       body.className = "collectables-item__body";
       const name = document.createElement("p");
@@ -18108,7 +18284,7 @@ function closeCollectables() {
   panelCollectables.hidden = true;
   panelStart.hidden = false;
   syncHomeLaunchButtons();
-  if (musicEnabled) startHomeMusic();
+  if (musicEnabled) switchSceneMusic(startHomeMusic);
 }
 
 function parsePlayerName(value) {
@@ -18172,7 +18348,7 @@ function closeProfile() {
   panelProfile.hidden = true;
   panelStart.hidden = false;
   syncHomeLaunchButtons();
-  if (musicEnabled) startHomeMusic();
+  if (musicEnabled) switchSceneMusic(startHomeMusic);
 }
 
 function armChestBoost(itemId) {
@@ -18329,7 +18505,7 @@ function openEvents() {
   syncHomeLaunchButtons();
   void processDailyPrizePayouts().then(() => refreshEventsPanel());
   startDailyEventCountdown();
-  if (musicEnabled) startEventsMusic();
+  if (musicEnabled) switchSceneMusic(startEventsMusic);
 }
 
 function closeEvents() {
@@ -18346,8 +18522,7 @@ function closeEvents() {
   appRoot?.classList.remove("app--events-mode");
   stopDailyEventCountdown();
   syncHomeLaunchButtons();
-  stopEventsMusic();
-  if (musicEnabled) startHomeMusic();
+  if (musicEnabled) switchSceneMusic(startHomeMusic);
   window.setTimeout(tryStartDailyPrizeCelebration, 300);
 }
 
@@ -18725,8 +18900,7 @@ function openEventPrep(kind) {
   buildBaitUI();
   buildRodUI();
   refreshEventPrepFriendsUI();
-  stopEventsMusic();
-  if (musicEnabled) startHomeMusic();
+  if (musicEnabled) switchSceneMusic(startHomeMusic);
 }
 
 function closeEventPrep() {
@@ -19884,7 +20058,7 @@ function specialPrizeLabel(special) {
   const def = CHEST_ITEM_DEFS[special.kind];
   if (!def) return "Bonus prize";
   const qty = special.qty > 1 ? ` ×${special.qty}` : "";
-  return `${def.icon} ${def.name}${qty}`;
+  return `${def.name}${qty}`;
 }
 
 function crabBundleRewardLines(bundle) {
@@ -19958,7 +20132,7 @@ function chestLootItems(bundle, extras = []) {
         kind: "item",
         qty: sp.qty > 1 ? `×${sp.qty}` : "",
         label: def.name,
-        art: `<span class="chest-loot__emoji">${def.icon}</span>`,
+        art: chestItemArtSvg(sp.kind),
       });
     }
   }
@@ -20863,6 +21037,7 @@ function endRound() {
   }
   playing = false;
   stopClimaxMusic();
+  stopKrakenMusic();
   syncUrgentTimerUi(99999);
   stopReefMusic();
   clearKrakens();
@@ -22303,13 +22478,13 @@ function clearKrakenBubbles() {
   bubbles = bubbles.filter((b) => !b.kraken);
 }
 
-function spawnKrakenEntranceBubbles(k, count = 28) {
-  const n = Math.max(12, Math.floor(count * (PERF_CHROMEBOOK ? 0.55 : 1)));
+function spawnKrakenEntranceBubbles(k, count = 8) {
+  const n = Math.max(4, Math.floor(count * (PERF_CHROMEBOOK ? 0.5 : 1)));
   for (let i = 0; i < n; i++) {
     bubbles.push({
-      x: k.x + (Math.random() - 0.5) * k.len * 0.85,
-      y: Math.min(h - dpr * 8, k.y + (Math.random() - 0.2) * k.len * 0.45),
-      r: (2.2 + Math.random() * 5.5) * dpr,
+      x: k.x + (Math.random() - 0.5) * k.len * 0.7,
+      y: Math.min(h - dpr * 8, k.y + (Math.random() - 0.2) * k.len * 0.4),
+      r: (2 + Math.random() * 4) * dpr,
       vy: (0.55 + Math.random() * 1.1) * dpr,
       w: Math.random() * Math.PI * 2,
       kraken: true,
@@ -22341,7 +22516,8 @@ function activateKraken(k) {
   k.phase = Math.random() * Math.PI * 2;
   k.face = k.exitDir;
   k.bubblePulseAt = 0;
-  spawnKrakenEntranceBubbles(k, multi ? 36 : 54);
+  spawnKrakenEntranceBubbles(k, multi ? 8 : 12);
+  startKrakenMusic();
 }
 
 function tickOneKraken(k, now, dt) {
@@ -22384,6 +22560,8 @@ function tickOneKraken(k, now, dt) {
       if (eventMinigameSession?.kind === "survivor") {
         k.state = "scheduled";
         k.spawnAt = now + 240 + Math.random() * 640;
+      } else {
+        restorePlayMusicAfterKraken();
       }
     }
     return;
@@ -22399,8 +22577,8 @@ function tickOneKraken(k, now, dt) {
         k.riseCenterX +
         Math.sin(k.phase * 0.62) * dpr * 44 +
         Math.sin(k.phase * 0.29 + 1.1) * dpr * 14;
-      if (!k.bubblePulseAt || now - k.bubblePulseAt > 90) {
-        spawnKrakenEntranceBubbles(k, 10);
+      if (!k.bubblePulseAt || now - k.bubblePulseAt > 220) {
+        spawnKrakenEntranceBubbles(k, 3);
         k.bubblePulseAt = now;
       }
       if (k.y <= k.sweepY) {
@@ -22418,6 +22596,7 @@ function tickOneKraken(k, now, dt) {
     if ((k.exitDir < 0 && k.x < -L * 0.9) || (k.exitDir > 0 && k.x > w + L * 0.9)) {
       k.state = "done";
       clearKrakenBubbles();
+      restorePlayMusicAfterKraken();
       if (eventMinigameSession?.kind === "survivor" && !eventMinigameSession.caughtKraken) {
         k.state = "scheduled";
         k.spawnAt = now + 220 + Math.random() * 580;
@@ -26396,18 +26575,18 @@ document.addEventListener("visibilitychange", () => {
   refreshSharedBoardsFromServer();
   if (!musicEnabled) return;
   unlockAudioFromGesture();
-  void resumeMusicContext().then(() => restartSceneMusic(true));
+  void resumeMusicContext().then(() => restartSceneMusic(false));
 });
 window.addEventListener("pageshow", () => {
   refreshSharedBoardsFromServer();
   if (!musicEnabled) return;
   unlockAudioFromGesture();
-  void resumeMusicContext().then(() => restartSceneMusic(true));
+  void resumeMusicContext().then(() => restartSceneMusic(false));
 });
 window.addEventListener("focus", () => {
   refreshSharedBoardsFromServer();
   if (!musicEnabled) return;
-  void resumeMusicContext().then(() => restartSceneMusic(true));
+  void resumeMusicContext().then(() => restartSceneMusic(false));
 });
 
 async function saveCurrentScoreToBoard() {
