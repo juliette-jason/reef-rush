@@ -7227,6 +7227,7 @@ function defaultMeta() {
     tourneyVoteDayKey: "",
     tourneyVoteKind: "",
     tourneySignedUpDayKey: "",
+    tourneyVoteLockAnnouncedDayKey: "",
   };
 }
 
@@ -7317,6 +7318,8 @@ function loadMeta() {
       tourneyVoteDayKey: typeof o.tourneyVoteDayKey === "string" ? o.tourneyVoteDayKey : "",
       tourneyVoteKind: typeof o.tourneyVoteKind === "string" ? o.tourneyVoteKind : "",
       tourneySignedUpDayKey: typeof o.tourneySignedUpDayKey === "string" ? o.tourneySignedUpDayKey : "",
+      tourneyVoteLockAnnouncedDayKey:
+        typeof o.tourneyVoteLockAnnouncedDayKey === "string" ? o.tourneyVoteLockAnnouncedDayKey : "",
     };
   } catch {
     return defaultMeta();
@@ -9986,6 +9989,14 @@ function tourneyLocalDayVotes(dayKey = getTourneyDayKey()) {
   return day && typeof day === "object" ? day : {};
 }
 
+function normalizeTourneyLocalVoteEntry(entry) {
+  if (typeof entry === "string" && entry) return { kind: entry, at: 0 };
+  if (entry && typeof entry === "object" && typeof entry.kind === "string" && entry.kind) {
+    return { kind: entry.kind, at: Math.max(0, Number(entry.at) || 0) };
+  }
+  return null;
+}
+
 function tourneyLocalDaySignups(dayKey = getTourneyDayKey()) {
   const local = loadTourneyLocal();
   const day = local.signups[dayKey];
@@ -9995,7 +10006,7 @@ function tourneyLocalDaySignups(dayKey = getTourneyDayKey()) {
 function rememberTourneyLocalVote(dayKey, eventKind, voterId) {
   const local = loadTourneyLocal();
   if (!local.votes[dayKey] || typeof local.votes[dayKey] !== "object") local.votes[dayKey] = {};
-  local.votes[dayKey][voterId] = eventKind;
+  local.votes[dayKey][voterId] = { kind: eventKind, at: Date.now() };
   saveTourneyLocal(local);
 }
 
@@ -10086,6 +10097,27 @@ function getTourneySlotState(now = Date.now()) {
   return { slotKey: null, start: 0, end: 0, joinStart: 0, joinEnd: 0, nextLabel: "Tomorrow's vote opens at midnight", upcoming: null };
 }
 
+/** Votes lock when morning early-join opens so today's event is set before the first heat. */
+function getTourneyVoteLockAt(day = new Date()) {
+  const morning = tourneySlotWindows(day).morning;
+  return morning?.joinStart || 0;
+}
+
+function areTourneyVotesLocked(now = Date.now()) {
+  const lockAt = getTourneyVoteLockAt(new Date(now));
+  return lockAt > 0 && now >= lockAt;
+}
+
+function maybeAnnounceTourneyVoteLock() {
+  if (!areTourneyVotesLocked()) return;
+  const dayKey = getTourneyDayKey();
+  if (gameMeta.tourneyVoteLockAnnouncedDayKey === dayKey) return;
+  gameMeta.tourneyVoteLockAnnouncedDayKey = dayKey;
+  saveMeta();
+  const kind = winningTourneyEventKind();
+  showToast(`Votes tallied! Today's tourney event: ${tourneyEventLabel(kind)}.`, 4800);
+}
+
 /** Once per heat: toast while fishing when the next tourney is ~5 minutes away. */
 let tourneyFiveMinWarnKey = "";
 function maybeWarnTourneyHeat(now = Date.now()) {
@@ -10138,17 +10170,31 @@ function hasTourneyVotedToday() {
 
 async function fetchTourneyVoteCounts(dayKey = getTourneyDayKey()) {
   const localVotes = tourneyLocalDayVotes(dayKey);
-  const mergeLocal = (counts) => {
+  const dayForLock = (() => {
+    const [y, m, d] = dayKey.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  })();
+  const voteLockAt = getTourneyVoteLockAt(dayForLock);
+  const locked = Date.now() >= voteLockAt;
+  const voteCountsTowardTally = (createdAtMs) => {
+    if (!locked) return true;
+    if (!Number.isFinite(createdAtMs) || createdAtMs <= 0) return true;
+    return createdAtMs < voteLockAt;
+  };
+  const mergeLocal = (counts, remoteVoters = new Set()) => {
     const next = { ...counts };
-    for (const kind of Object.values(localVotes)) {
-      if (!kind) continue;
-      next[kind] = (next[kind] || 0) + 1;
+    for (const [voter, raw] of Object.entries(localVotes)) {
+      if (remoteVoters.has(voter)) continue;
+      const entry = normalizeTourneyLocalVoteEntry(raw);
+      if (!entry?.kind) continue;
+      if (!voteCountsTowardTally(entry.at)) continue;
+      next[entry.kind] = (next[entry.kind] || 0) + 1;
     }
     return next;
   };
   try {
     const res = await fetch(
-      `${TOURNEY_VOTES_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=event_kind,voter_client_id`,
+      `${TOURNEY_VOTES_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=event_kind,voter_client_id,created_at`,
       { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS },
     );
     const bodyText = await res.text();
@@ -10168,18 +10214,16 @@ async function fetchTourneyVoteCounts(dayKey = getTourneyDayKey()) {
     for (const row of rows) {
       const kind = row.event_kind;
       const voter = row.voter_client_id;
+      const createdAtMs = row.created_at ? Date.parse(row.created_at) : 0;
+      if (!voteCountsTowardTally(createdAtMs)) continue;
       if (voter) remoteVoters.add(voter);
       counts[kind] = (counts[kind] || 0) + 1;
     }
-    /* Add local-only votes that never reached the server. */
-    for (const [voter, kind] of Object.entries(localVotes)) {
-      if (remoteVoters.has(voter) || !kind) continue;
-      counts[kind] = (counts[kind] || 0) + 1;
-    }
-    tourneyVoteCounts = counts;
+    /* Add local-only votes that never reached the server (and were cast before lock). */
+    tourneyVoteCounts = mergeLocal(counts, remoteVoters);
     tourneyRemoteReady = true;
     tourneyBackendMissing = false;
-    return counts;
+    return tourneyVoteCounts;
   } catch (err) {
     console.warn(err);
     tourneyVoteCounts = mergeLocal({});
@@ -10367,6 +10411,12 @@ function defaultTourneyVoteKind() {
 async function postTourneyVote(eventKind, { silent = false } = {}) {
   const dayKey = getTourneyDayKey();
   if (!TOURNEY_EVENT_OPTIONS.some((o) => o.id === eventKind)) return false;
+  if (areTourneyVotesLocked()) {
+    if (!silent) {
+      showToast(`Voting closed — today's event is ${tourneyEventLabel(winningTourneyEventKind())}.`, 2800);
+    }
+    return false;
+  }
   if (hasTourneyVotedToday()) return true;
   const voterId = getDuelClientId();
   const payload = {
@@ -10421,6 +10471,11 @@ async function postTourneyVote(eventKind, { silent = false } = {}) {
 }
 
 async function submitTourneyVote(eventKind) {
+  if (areTourneyVotesLocked()) {
+    showToast(`Voting closed — today's event is ${tourneyEventLabel(winningTourneyEventKind())}.`, 2800);
+    refreshTournamentCard();
+    return;
+  }
   if (hasTourneyVotedToday()) {
     showToast("You already voted today.", 2200);
     refreshTournamentCard();
@@ -10461,7 +10516,7 @@ async function submitTourneySignup() {
     if (!tourneySignupCount) tourneySignupCount = Math.max(1, tourneyLocalDaySignups(dayKey).length);
     if (fromSetup) tourneySetupToast();
     else showToast(`You're in! Spot ${tourneySignupCount} of ${TOURNEY_MAX_PLAYERS}.`, 3000);
-    if (!hasTourneyVotedToday()) {
+    if (!hasTourneyVotedToday() && !areTourneyVotesLocked()) {
       try {
         await postTourneyVote(defaultTourneyVoteKind(), { silent: true });
       } catch (err) {
@@ -10598,7 +10653,7 @@ async function finishTournamentRun(scorePts) {
   refreshTournamentCard();
 }
 
-function beginTournamentCompetition() {
+async function beginTournamentCompetition() {
   if (!isTourneySignedUpToday()) {
     showToast("Sign up this morning to claim a tourney spot.", 2800);
     return;
@@ -10608,6 +10663,7 @@ function beginTournamentCompetition() {
     showToast(`Next heat: ${slot.nextLabel}`, 3000);
     return;
   }
+  await fetchTourneyVoteCounts();
   const eventKind = winningTourneyEventKind();
   tournamentRun = { dayKey: getTourneyDayKey(), slotKey: slot.slotKey, eventKind };
   const comFill = tourneyComSignupFillCount();
@@ -10660,18 +10716,29 @@ function renderTournamentVoteButtons() {
   if (!tourneyVoteOptions) return;
   tourneyVoteOptions.innerHTML = "";
   const voted = hasTourneyVotedToday();
+  const locked = areTourneyVotesLocked();
   const leading = winningTourneyEventKind();
+  const details = tourneyVoteOptions.closest?.("details.tourney-vote-details");
+  const summary = details?.querySelector?.(".tourney-vote-details__summary");
+  if (summary) {
+    summary.textContent = locked
+      ? `Votes locked — ${tourneyEventLabel(leading)}`
+      : voted
+        ? "Your vote is in (optional)"
+        : "Vote for today's event (closes before morning heat)";
+  }
   for (const opt of TOURNEY_EVENT_OPTIONS) {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "tourney-vote-btn";
     const count = tourneyVoteCounts[opt.id] || 0;
     btn.textContent = `${opt.label} (${count})`;
-    btn.disabled = voted;
+    btn.disabled = voted || locked;
     btn.setAttribute("aria-pressed", gameMeta.tourneyVoteKind === opt.id ? "true" : "false");
     if (opt.id === leading && Object.values(tourneyVoteCounts).some((n) => n > 0)) {
       btn.classList.add("tourney-vote-btn--lead");
     }
+    if (locked && opt.id === leading) btn.classList.add("tourney-vote-btn--locked-win");
     btn.addEventListener("click", () => void submitTourneyVote(opt.id));
     tourneyVoteOptions.appendChild(btn);
   }
@@ -10683,10 +10750,16 @@ async function refreshTournamentCard() {
   await Promise.all([fetchTourneyVoteCounts(dayKey), fetchTourneySignupCount(dayKey), fetchTourneyLeaderboard(dayKey)]);
   const slot = getTourneySlotState();
   const eventKind = winningTourneyEventKind();
+  const votesLocked = areTourneyVotesLocked();
+  maybeAnnounceTourneyVoteLock();
   if (tourneyEventTitle) {
-    tourneyEventTitle.textContent = Object.values(tourneyVoteCounts).some((n) => n > 0)
-      ? `Today's event: ${tourneyEventLabel(eventKind)}`
-      : "Vote for today's event";
+    if (votesLocked) {
+      tourneyEventTitle.textContent = `Today's event: ${tourneyEventLabel(eventKind)} (votes locked)`;
+    } else if (Object.values(tourneyVoteCounts).some((n) => n > 0)) {
+      tourneyEventTitle.textContent = `Leading: ${tourneyEventLabel(eventKind)} — voting open until morning heat`;
+    } else {
+      tourneyEventTitle.textContent = "Vote for today's event (locks before morning heat)";
+    }
   }
   if (tourneySignupLine) {
     const signed = isTourneySignedUpToday();
@@ -14984,6 +15057,8 @@ function loadMetaFromObject(o) {
       tourneyVoteDayKey: typeof o.tourneyVoteDayKey === "string" ? o.tourneyVoteDayKey : "",
       tourneyVoteKind: typeof o.tourneyVoteKind === "string" ? o.tourneyVoteKind : "",
       tourneySignedUpDayKey: typeof o.tourneySignedUpDayKey === "string" ? o.tourneySignedUpDayKey : "",
+      tourneyVoteLockAnnouncedDayKey:
+        typeof o.tourneyVoteLockAnnouncedDayKey === "string" ? o.tourneyVoteLockAnnouncedDayKey : "",
     };
   } catch {
     return defaultMeta();
@@ -26451,7 +26526,7 @@ btnWorldAdventures?.addEventListener("click", () => {
 btnEvents?.addEventListener("click", openEvents);
 btnTourneySignup?.addEventListener("click", () => void submitTourneySignup());
 btnTourneyQuickJoin?.addEventListener("click", () => void submitTourneySignup());
-btnTourneyCompete?.addEventListener("click", () => beginTournamentCompetition());
+btnTourneyCompete?.addEventListener("click", () => void beginTournamentCompetition());
 btnCollectables?.addEventListener("click", openCollectables);
 document.getElementById("seagullAvatarStart")?.addEventListener("click", () => {
   openProfile();
