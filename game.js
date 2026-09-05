@@ -12586,16 +12586,16 @@ let duelSession = null;
 /** Event mini-games on the main canvas: roulette | coop | survivor. */
 let eventMinigameSession = null;
 const MINIGAME_ROULETTE_MS = 45_000;
-const MINIGAME_COOP_MS = 60_000;
+const MINIGAME_COOP_MS = 50_000;
 const MINIGAME_SURVIVOR_MS = 30 * 60_000;
 /** Fish-score chest tiers for timed mini-games. */
 const MINIGAME_FISH_CHEST_MIN = 2000;
 const MINIGAME_FISH_RARE_MIN = 1500;
 const MINIGAME_FISH_LEGENDARY_MIN = 4000;
 /** Co-op haul needs a bigger combined score for top chests. */
-const MINIGAME_COOP_CHEST_MIN = 5700;
-const MINIGAME_COOP_RARE_MIN = 3600;
-const MINIGAME_COOP_LEGENDARY_MIN = 7800;
+const MINIGAME_COOP_CHEST_MIN = 7200;
+const MINIGAME_COOP_RARE_MIN = 9000;
+const MINIGAME_COOP_LEGENDARY_MIN = 11500;
 /** Survivor chest tiers (bonus haul when you hook the kraken). */
 const MINIGAME_SURVIVOR_CHEST_MIN = 250;
 const MINIGAME_SURVIVOR_RARE_MIN = 900;
@@ -14205,7 +14205,7 @@ function refreshCoopEventCard() {
   if (coopEventMatchup) coopEventMatchup.textContent = formatCoopEventMatchupLine();
   const previewReef = REEFS[Math.floor(Math.random() * REEFS.length)] || REEFS[0];
   if (coopEventReef) {
-    coopEventReef.textContent = `Random reef each haul (e.g. ${previewReef.name}) · 60 seconds · solo fallback ${coopPendingTargetScore.toLocaleString()} pts`;
+    coopEventReef.textContent = `Random reef each haul (e.g. ${previewReef.name}) · 50 seconds · solo fallback ${coopPendingTargetScore.toLocaleString()} pts`;
   }
   if (btn) {
     btn.disabled = tickets <= 0;
@@ -14627,8 +14627,8 @@ function rollDuelRivalTargetScore() {
 
 function rollCoopPartnerTargetScore() {
   const duelTarget = rollDuelRivalTargetScore();
-  const scale = 0.48 + Math.random() * 0.14;
-  return Math.max(1600, Math.floor(duelTarget * scale));
+  const scale = 0.34 + Math.random() * 0.12;
+  return Math.max(1200, Math.floor(duelTarget * scale));
 }
 
 function coopTierForScore(pts) {
@@ -20132,9 +20132,9 @@ function beginCoopSession(plan) {
     reefId: reef.id,
     reefName: `Co-op · ${reef.name}`,
     roundMs: MINIGAME_COOP_MS,
-    spawnMult: 0.76,
-    speedMult: 1.14,
-    maxFishMult: 0.95,
+    spawnMult: 1.08,
+    speedMult: 1.45,
+    maxFishMult: 0.78,
     startedAt: now,
     partnerScore: 0,
     mode: plan.mode,
