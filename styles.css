@@ -4377,11 +4377,8 @@ button.seagull-avatar:active {
 }
 
 .event-card__about .tourney-card-copy {
+  /* Keep the shared info-popover box from .event-card__blurb — don't strip it. */
   margin: 0;
-  padding: 0;
-  border: none;
-  background: transparent;
-  border-radius: 0;
 }
 
 .tourney-card-copy__lead {
@@ -4394,6 +4391,7 @@ button.seagull-avatar:active {
 }
 
 .event-card__about .tourney-card-copy__lead {
+  margin: 0 0 8px;
   font-size: inherit;
   color: inherit;
 }
@@ -7261,7 +7259,7 @@ button.seagull-avatar:active {
 }
 
 .event-card:has(.event-card__about[open]) {
-  z-index: 6;
+  z-index: 14;
 }
 
 .event-card:last-child {
@@ -7671,9 +7669,9 @@ button.seagull-avatar:active {
 }
 
 .event-card__about {
-  position: static;
+  position: relative;
   flex: 0 0 auto;
-  z-index: 5;
+  z-index: 12;
 }
 
 .event-card__info {
@@ -7720,22 +7718,27 @@ button.seagull-avatar:active {
 
 .event-card__blurb {
   position: absolute;
-  left: 0;
-  right: 0;
+  right: -8px;
+  left: auto;
   top: calc(100% + 8px);
-  z-index: 8;
-  width: auto;
-  max-width: none;
+  transform: none;
+  z-index: 20;
+  width: min(320px, calc(100vw - 40px));
+  max-width: min(320px, 88vw);
   margin: 0;
-  padding: 10px 12px;
+  padding: 12px 14px;
   border-radius: 12px;
-  background: rgba(6, 22, 36, 0.96);
-  border: 1px solid rgba(125, 211, 252, 0.35);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+  background: rgba(6, 18, 32, 0.98);
+  border: 1.5px solid rgba(125, 211, 252, 0.5);
+  box-shadow:
+    0 14px 32px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   font-size: 0.8rem;
   font-weight: 700;
   line-height: 1.4;
-  color: rgba(240, 247, 255, 0.92);
+  color: rgba(240, 247, 255, 0.96);
 }
 
 .event-card__blurb--stack {
