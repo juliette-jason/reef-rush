@@ -8949,6 +8949,10 @@ function getReef() {
     merged.weights = { common: 48, uncommon: 28, rare: 14, epic: 7, legendary: 3 };
     merged.desc = `Busy cay shallows · packed schools · score ${lvl.passScore}+ to continue`;
   }
+  if (themeId === "stormbreak-isle") {
+    merged.fishSpeed = Math.max(lvl.fishSpeed * 1.65, 1.35);
+    merged.desc = `Storm-tossed waters · fast darting fish · score ${lvl.passScore}+ to continue`;
+  }
   if (themeId === "lava-falls") {
     merged.subtitle = "Volcanic shallows";
     merged.desc = `Bright lava-lit waters · score ${lvl.passScore}+ to continue`;
