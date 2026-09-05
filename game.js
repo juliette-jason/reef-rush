@@ -2540,12 +2540,12 @@ function adventureMapSceneSvg(themeId, idSuffix = "") {
     </svg>`,
     "compass-cay": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="72" height="52" fill="#6a9888"/>
-      <ellipse cx="36" cy="38" rx="24" ry="8" fill="#d8c898"/>
-      <circle cx="36" cy="24" r="16" fill="#f4ecd8" stroke="#3d3020" stroke-width="1.2"/>
-      <path d="M36 10 L38 24 L36 38 L34 24 Z" fill="#b91c1c"/>
-      <path d="M22 24 L36 22 L50 24 L36 26 Z" fill="#2e2418"/>
-      <circle cx="36" cy="24" r="3" fill="#e8dcc8" stroke="#3d3020" stroke-width="0.8"/>
-      <polygon points="36,12 38,22 36,20 34,22" fill="#3d3020"/>
+      <ellipse cx="36" cy="40" rx="22" ry="7" fill="#d8c898"/>
+      <circle cx="36" cy="26" r="13" fill="#f4ecd8" stroke="#3d3020" stroke-width="1.2"/>
+      <path d="M36 14 L37.6 26 L36 38 L34.4 26 Z" fill="#b91c1c"/>
+      <path d="M24 26 L36 24.4 L48 26 L36 27.6 Z" fill="#2e2418"/>
+      <circle cx="36" cy="26" r="2.6" fill="#e8dcc8" stroke="#3d3020" stroke-width="0.8"/>
+      <polygon points="36,15 37.5,23 36,21.5 34.5,23" fill="#3d3020"/>
     </svg>`,
     "krakens-teeth": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="72" height="52" fill="#2a4860"/>
@@ -7427,7 +7427,7 @@ function updateAdventurePlayTheme(levelIndex) {
   if (adventurePlayName) adventurePlayName.textContent = lvl.name;
   if (adventureGoalLine) {
     adventureGoalLine.hidden = false;
-    adventureGoalLine.textContent = `Goal: ${lvl.passScore} pts`;
+    adventureGoalLine.textContent = `Goal: ${getAdventurePassScore(levelIndex)} pts`;
   }
   applyAdventurePlayThemeClasses(themeId);
   invalidateBackgroundCache();
@@ -8935,6 +8935,13 @@ function getAdventureLevel(index) {
   return ADVENTURE_LEVELS[Math.max(0, Math.min(ADVENTURE_LEVEL_COUNT - 1, index))];
 }
 
+function getAdventurePassScore(levelIndex) {
+  const lvl = getAdventureLevel(levelIndex);
+  const themeId = getAdventureLevelTheme(levelIndex);
+  if (themeId === "compass-cay") return Math.round(lvl.passScore * 1.22);
+  return lvl.passScore;
+}
+
 function getReef() {
   if (duelSession) {
     return REEFS.find((r) => r.id === duelSession.reefId) || REEFS[0];
@@ -8973,7 +8980,7 @@ function getReef() {
     maxFish: lvl.maxFish,
     fishSpeed: lvl.fishSpeed,
     rareRollMult: lvl.rareRollMult,
-    adventurePassScore: lvl.passScore,
+    adventurePassScore: getAdventurePassScore(adventureSession.levelIndex),
     adventureLevel: lvl.level,
   };
   if (themeVis) {
@@ -8985,11 +8992,14 @@ function getReef() {
   }
   if (themeId === "compass-cay") {
     merged.fishPool = COMPASS_CAY_FISH_IDS.slice();
-    merged.maxFish = Math.min(22, Math.max(lvl.maxFish + 6, 20));
-    merged.spawnMin = Math.min(lvl.spawnMin, 150);
-    merged.spawnMax = Math.min(lvl.spawnMax, 520);
-    merged.weights = { common: 48, uncommon: 28, rare: 14, epic: 7, legendary: 3 };
-    merged.desc = `Busy cay shallows · packed schools · score ${lvl.passScore}+ to continue`;
+    /* Harder than the old packed-school setup: fewer fish, longer gaps, faster targets, higher pass bar. */
+    merged.maxFish = Math.min(12, Math.max(8, Math.floor(lvl.maxFish * 0.7)));
+    merged.spawnMin = Math.max(lvl.spawnMin, 380);
+    merged.spawnMax = Math.max(lvl.spawnMax, 1280);
+    merged.fishSpeed = Math.max(lvl.fishSpeed * 1.55, 1.28);
+    merged.rareRollMult = Math.max(0.55, (lvl.rareRollMult || 1) * 0.72);
+    merged.weights = { common: 36, uncommon: 28, rare: 18, epic: 12, legendary: 6 };
+    merged.desc = `Swift cay currents · scarce darting schools · score ${merged.adventurePassScore}+ to continue`;
   }
   if (themeId === "stormbreak-isle") {
     merged.fishSpeed = Math.max(lvl.fishSpeed * 1.65, 1.35);
@@ -10312,6 +10322,9 @@ const TOURNEY_SLOTS = [
 const TOURNEY_VOTES_URL = `${SUPABASE_REST_URL}/tourney_votes`;
 const TOURNEY_SIGNUPS_URL = `${SUPABASE_REST_URL}/tourney_signups`;
 const TOURNEY_SCORES_URL = `${SUPABASE_REST_URL}/tourney_scores`;
+/** Shared vote rows live in duel_matches when tourney_votes table is missing. */
+const TOURNEY_VOTE_MATCH_KIND = "tourney_vote";
+const TOURNEY_VOTE_BRIDGE_URL = `${SUPABASE_REST_URL}/duel_matches`;
 const TOURNEY_EVENT_OPTIONS = [
   { id: "roulette", label: "Reef Roulette" },
   { id: "coop", label: "Co-op Haul" },
@@ -10723,6 +10736,110 @@ function hasTourneyVotedToday() {
   return gameMeta.tourneyVoteDayKey === getTourneyDayKey() && Boolean(gameMeta.tourneyVoteKind);
 }
 
+function tourneyVoteBridgeSelectUrl(dayKey) {
+  return (
+    `${TOURNEY_VOTE_BRIDGE_URL}?match_kind=eq.${encodeURIComponent(TOURNEY_VOTE_MATCH_KIND)}` +
+    `&status=eq.${encodeURIComponent(TOURNEY_VOTE_MATCH_KIND)}` +
+    `&party_code=eq.${encodeURIComponent(dayKey)}` +
+    `&select=reef_id,host_client_id,created_at&order=created_at.asc&limit=400`
+  );
+}
+
+async function fetchTourneyVotesFromBridge(dayKey) {
+  const res = await fetch(tourneyVoteBridgeSelectUrl(dayKey), {
+    headers: leaderboardHeaders(),
+    ...LEADERBOARD_FETCH_OPTS,
+  });
+  const bodyText = await res.text();
+  if (!res.ok) throw new Error(`Tourney vote bridge failed: ${res.status}`);
+  let rows = [];
+  try {
+    rows = JSON.parse(bodyText);
+  } catch {
+    rows = [];
+  }
+  if (!Array.isArray(rows)) rows = [];
+  return rows.map((row) => ({
+    event_kind: row.reef_id,
+    voter_client_id: row.host_client_id,
+    created_at: row.created_at,
+  }));
+}
+
+async function fetchTourneyVotesFromDedicated(dayKey) {
+  const res = await fetch(
+    `${TOURNEY_VOTES_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=event_kind,voter_client_id,created_at`,
+    { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS },
+  );
+  const bodyText = await res.text();
+  if (!res.ok) {
+    if (isTourneyBackendMissingError(res.status, bodyText)) {
+      const err = new Error("TOURNEY_VOTES_MISSING");
+      err.tourneyVotesMissing = true;
+      throw err;
+    }
+    throw new Error(`Tourney votes failed: ${res.status}`);
+  }
+  let rows = [];
+  try {
+    rows = JSON.parse(bodyText);
+  } catch {
+    rows = [];
+  }
+  return Array.isArray(rows) ? rows : [];
+}
+
+async function loadSharedTourneyVoteRows(dayKey) {
+  try {
+    const rows = await fetchTourneyVotesFromDedicated(dayKey);
+    tourneyBackendMissing = false;
+    return rows;
+  } catch (err) {
+    try {
+      const rows = await fetchTourneyVotesFromBridge(dayKey);
+      tourneyBackendMissing = false;
+      return rows;
+    } catch (bridgeErr) {
+      console.warn(err);
+      console.warn(bridgeErr);
+      throw bridgeErr;
+    }
+  }
+}
+
+async function postTourneyVoteToBridge(dayKey, voterId, eventKind) {
+  const checkUrl =
+    `${TOURNEY_VOTE_BRIDGE_URL}?match_kind=eq.${encodeURIComponent(TOURNEY_VOTE_MATCH_KIND)}` +
+    `&party_code=eq.${encodeURIComponent(dayKey)}` +
+    `&host_client_id=eq.${encodeURIComponent(voterId)}` +
+    `&select=id,reef_id&limit=1`;
+  const existingRes = await fetch(checkUrl, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
+  if (existingRes.ok) {
+    const existing = await existingRes.json().catch(() => []);
+    if (Array.isArray(existing) && existing.length) return { ok: true, conflict: true };
+  }
+  const payload = {
+    reef_id: eventKind,
+    host_client_id: voterId,
+    host_initials: "TVT",
+    match_kind: TOURNEY_VOTE_MATCH_KIND,
+    status: TOURNEY_VOTE_MATCH_KIND,
+    party_code: dayKey,
+    round_ms: 1,
+  };
+  const res = await fetch(TOURNEY_VOTE_BRIDGE_URL, {
+    method: "POST",
+    headers: leaderboardHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
+    body: JSON.stringify(payload),
+  });
+  if (res.status === 409) return { ok: true, conflict: true };
+  if (!res.ok) {
+    const bodyText = await res.text().catch(() => "");
+    throw new Error(`Vote bridge failed: ${res.status} ${bodyText.slice(0, 120)}`);
+  }
+  return { ok: true, conflict: false };
+}
+
 async function fetchTourneyVoteCounts(dayKey = getTourneyDayKey()) {
   const localVotes = tourneyLocalDayVotes(dayKey);
   const dayForLock = (() => {
@@ -10748,22 +10865,7 @@ async function fetchTourneyVoteCounts(dayKey = getTourneyDayKey()) {
     return next;
   };
   try {
-    const res = await fetch(
-      `${TOURNEY_VOTES_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=event_kind,voter_client_id,created_at`,
-      { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS },
-    );
-    const bodyText = await res.text();
-    if (!res.ok) {
-      if (isTourneyBackendMissingError(res.status, bodyText)) tourneyBackendMissing = true;
-      throw new Error(`Tourney votes failed: ${res.status}`);
-    }
-    let rows = [];
-    try {
-      rows = JSON.parse(bodyText);
-    } catch {
-      rows = [];
-    }
-    if (!Array.isArray(rows)) rows = [];
+    const rows = await loadSharedTourneyVoteRows(dayKey);
     const counts = {};
     const remoteVoters = new Set();
     for (const row of rows) {
@@ -10772,9 +10874,8 @@ async function fetchTourneyVoteCounts(dayKey = getTourneyDayKey()) {
       const createdAtMs = row.created_at ? Date.parse(row.created_at) : 0;
       if (!voteCountsTowardTally(createdAtMs)) continue;
       if (voter) remoteVoters.add(voter);
-      counts[kind] = (counts[kind] || 0) + 1;
+      if (kind) counts[kind] = (counts[kind] || 0) + 1;
     }
-    /* Add local-only votes that never reached the server (and were cast before lock). */
     tourneyVoteCounts = mergeLocal(counts, remoteVoters);
     tourneyRemoteReady = true;
     tourneyBackendMissing = false;
@@ -10813,22 +10914,7 @@ async function fetchTourneyHeatVoteCounts(slotKey, dayKey = getTourneyDayKey()) 
     return next;
   };
   try {
-    const res = await fetch(
-      `${TOURNEY_VOTES_URL}?day_key=eq.${encodeURIComponent(storageKey)}&select=event_kind,voter_client_id,created_at`,
-      { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS },
-    );
-    const bodyText = await res.text();
-    if (!res.ok) {
-      if (isTourneyBackendMissingError(res.status, bodyText)) tourneyBackendMissing = true;
-      throw new Error(`Heat votes failed: ${res.status}`);
-    }
-    let rows = [];
-    try {
-      rows = JSON.parse(bodyText);
-    } catch {
-      rows = [];
-    }
-    if (!Array.isArray(rows)) rows = [];
+    const rows = await loadSharedTourneyVoteRows(storageKey);
     const counts = {};
     const remoteVoters = new Set();
     for (const row of rows) {
@@ -11066,14 +11152,20 @@ async function postTourneyVote(eventKind, { silent = false } = {}) {
       body: JSON.stringify(payload),
     });
     if (res.status === 409) {
-      /* Already voted on server — treat as success. */
       return finishLocal(false);
     }
     if (!res.ok) {
       const bodyText = await res.text().catch(() => "");
       if (isTourneyBackendMissingError(res.status, bodyText)) {
-        tourneyBackendMissing = true;
-        return finishLocal(true);
+        await postTourneyVoteToBridge(dayKey, voterId, eventKind);
+        rememberTourneyLocalVote(dayKey, eventKind, voterId);
+        gameMeta.tourneyVoteDayKey = dayKey;
+        gameMeta.tourneyVoteKind = eventKind;
+        saveMeta();
+        if (!silent) showToast(`Voted for ${tourneyEventLabel(eventKind)}!`, 2200);
+        await fetchTourneyVoteCounts(dayKey);
+        tourneyBackendMissing = false;
+        return true;
       }
       throw new Error(`Vote failed: ${res.status} ${bodyText.slice(0, 120)}`);
     }
@@ -11087,9 +11179,21 @@ async function postTourneyVote(eventKind, { silent = false } = {}) {
     return true;
   } catch (err) {
     console.warn(err);
-    /* Offline / DNS / missing table — keep the vote on this device so the UI works. */
-    tourneyBackendMissing = true;
-    return finishLocal(true);
+    try {
+      await postTourneyVoteToBridge(dayKey, voterId, eventKind);
+      rememberTourneyLocalVote(dayKey, eventKind, voterId);
+      gameMeta.tourneyVoteDayKey = dayKey;
+      gameMeta.tourneyVoteKind = eventKind;
+      saveMeta();
+      if (!silent) showToast(`Voted for ${tourneyEventLabel(eventKind)}!`, 2200);
+      await fetchTourneyVoteCounts(dayKey);
+      tourneyBackendMissing = false;
+      return true;
+    } catch (bridgeErr) {
+      console.warn(bridgeErr);
+      tourneyBackendMissing = true;
+      return finishLocal(true);
+    }
   }
 }
 
@@ -11139,8 +11243,11 @@ async function postTourneyHeatVote(slotKey, eventKind, { silent = false } = {}) 
     if (!res.ok) {
       const bodyText = await res.text().catch(() => "");
       if (isTourneyBackendMissingError(res.status, bodyText)) {
-        tourneyBackendMissing = true;
-        return finishLocal();
+        await postTourneyVoteToBridge(storageKey, voterId, eventKind);
+        finishLocal();
+        await fetchTourneyHeatVoteCounts(slotKey, dayKey);
+        tourneyBackendMissing = false;
+        return true;
       }
       throw new Error(`Heat vote failed: ${res.status}`);
     }
@@ -11149,8 +11256,17 @@ async function postTourneyHeatVote(slotKey, eventKind, { silent = false } = {}) 
     return true;
   } catch (err) {
     console.warn(err);
-    tourneyBackendMissing = true;
-    return finishLocal();
+    try {
+      await postTourneyVoteToBridge(storageKey, voterId, eventKind);
+      finishLocal();
+      await fetchTourneyHeatVoteCounts(slotKey, dayKey);
+      tourneyBackendMissing = false;
+      return true;
+    } catch (bridgeErr) {
+      console.warn(bridgeErr);
+      tourneyBackendMissing = true;
+      return finishLocal();
+    }
   }
 }
 
@@ -17214,7 +17330,7 @@ function buildAdventureLevelUI(force = false) {
           : isBonus
             ? ADVENTURE_SECTION_GOLD_QUEST
             : ADVENTURE_SECTION_PIRATES_PATH;
-    b.title = `${lvl.name} — ${sectionName} · pass ${lvl.passScore}`;
+    b.title = `${lvl.name} — ${sectionName} · pass ${getAdventurePassScore(i)}`;
     b.dataset.levelIndex = String(i);
     b.dataset.section = isMermaid
       ? "mermaid"
@@ -17491,7 +17607,7 @@ function openAdventurePrep(levelIndex) {
   hideAllPanels();
   if (adventurePrepSection) adventurePrepSection.textContent = adventurePrepSectionLabel(lvl);
   if (adventurePrepTitle) adventurePrepTitle.textContent = lvl.name;
-  if (adventurePrepGoal) adventurePrepGoal.textContent = `Goal: ${lvl.passScore} pts`;
+  if (adventurePrepGoal) adventurePrepGoal.textContent = `Goal: ${getAdventurePassScore(levelIndex)} pts`;
   buildBaitUI();
   buildRodUI();
   refreshAdventurePrepBoosts();
@@ -17517,7 +17633,8 @@ function playTreasureCoveVictorySound() {
 function endAdventureRound() {
   const levelIndex = adventureSession.levelIndex;
   const lvl = getAdventureLevel(levelIndex);
-  const passed = score >= lvl.passScore;
+  const passScore = getAdventurePassScore(levelIndex);
+  const passed = score >= passScore;
   const clearedTreasureCove = passed && levelIndex === TREASURE_COVE_INDEX;
   const clearedLegendsGate = passed && levelIndex === LEGENDS_GATE_INDEX;
   const clearedAuroraReach = passed && levelIndex === AURORA_REACH_INDEX;
@@ -17567,14 +17684,14 @@ function endAdventureRound() {
     }
     if (adventureWinScore) {
       adventureWinScore.textContent = clearedTreasureCove
-        ? `You scored ${score} (needed ${lvl.passScore}). ${ADVENTURE_SECTION_GOLD_QUEST} voyages await beyond the cove!`
+        ? `You scored ${score} (needed ${passScore}). ${ADVENTURE_SECTION_GOLD_QUEST} voyages await beyond the cove!`
         : clearedLegendsGate
-          ? `You scored ${score} (needed ${lvl.passScore}). ${ADVENTURE_SECTION_FROZEN_SEA} voyages now appear on the map!`
+          ? `You scored ${score} (needed ${passScore}). ${ADVENTURE_SECTION_FROZEN_SEA} voyages now appear on the map!`
           : clearedAuroraReach
-            ? `You scored ${score} (needed ${lvl.passScore}). ${ADVENTURE_SECTION_LOST_CITY} voyages now appear on the map!`
+            ? `You scored ${score} (needed ${passScore}). ${ADVENTURE_SECTION_LOST_CITY} voyages now appear on the map!`
             : clearedThroneOfAtlantis
-              ? `You scored ${score} (needed ${lvl.passScore}). ${ADVENTURE_SECTION_MERMAID_COAST} voyages now appear on the map!`
-              : `You scored ${score} (needed ${lvl.passScore}).`;
+              ? `You scored ${score} (needed ${passScore}). ${ADVENTURE_SECTION_MERMAID_COAST} voyages now appear on the map!`
+              : `You scored ${score} (needed ${passScore}).`;
     }
     if (adventureWinTreasureCelebrate) {
       adventureWinTreasureCelebrate.hidden = !clearedTreasureCove;
@@ -17606,7 +17723,7 @@ function endAdventureRound() {
     fillAdventureResultTheme(adventureFailTheme, levelIndex);
     if (adventureWinTheme) adventureWinTheme.hidden = true;
     if (adventureFailScore) adventureFailScore.textContent = `Your score: ${score}`;
-    if (adventureFailGoal) adventureFailGoal.textContent = `Needed: ${lvl.passScore}`;
+    if (adventureFailGoal) adventureFailGoal.textContent = `Needed: ${passScore}`;
     syncAdventureSkipRopeButton();
     if (panelAdventureFail) panelAdventureFail.hidden = false;
   }

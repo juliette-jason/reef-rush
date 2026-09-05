@@ -106,7 +106,7 @@ body {
   width: 72px;
   height: 52px;
   border-radius: 6px;
-  overflow: hidden;
+  overflow: visible;
   border: 1.5px solid rgba(255, 252, 245, 0.45);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
@@ -115,6 +115,8 @@ body {
   display: block;
   width: 100%;
   height: 100%;
+  border-radius: 5px;
+  overflow: hidden;
 }
 
 .adventure-play-theme__text {
@@ -3219,6 +3221,34 @@ button.seagull-avatar:active {
     width: 100%;
     margin-left: 0;
     margin-right: 0;
+    overflow: visible;
+  }
+
+  .panel--events .event-card__head,
+  .panel--events .event-card__title-row {
+    overflow: visible;
+  }
+
+  .panel--events .event-card__info {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+
+  .panel--events .event-card__blurb {
+    right: 0;
+    width: min(300px, calc(100vw - 28px));
+    max-width: calc(100vw - 28px);
+  }
+
+  .adventure-play-theme {
+    gap: 8px;
+    padding: 6px 8px;
+  }
+
+  .adventure-play-theme__scene {
+    width: 64px;
+    height: 46px;
   }
 
   .event-card--party-join .event-card__head,
@@ -7648,6 +7678,7 @@ button.seagull-avatar:active {
   justify-content: space-between;
   gap: 8px 12px;
   margin: 0 16px 6px;
+  overflow: visible;
 }
 
 .event-card__title-row {
@@ -7656,6 +7687,8 @@ button.seagull-avatar:active {
   gap: 8px;
   min-width: 0;
   flex: 1 1 auto;
+  overflow: visible;
+  padding-right: 2px;
 }
 
 .event-card__title {

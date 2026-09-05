@@ -24,11 +24,9 @@ This checks the invariants that previously caused a black playfield after COM ma
 
 ## Fishing Tourney (shared votes + 35 daily spots)
 
-Events → **Fishing Tourney** needs three Supabase tables. Without them, join/vote still work on your device, but spots won't sync across phones/tablets.
+Events → **Fishing Tourney** votes sync across devices automatically (via the shared Supabase project). Prefer running [`supabase/fishing_tournament.sql`](supabase/fishing_tournament.sql) for dedicated vote/signup/score tables; if those tables are missing, votes still share through the existing `duel_matches` bridge so every phone sees the same tallies.
 
-1. Open [Supabase](https://supabase.com/dashboard) → your project → **SQL Editor**
-2. Paste and run [`supabase/fishing_tournament.sql`](supabase/fishing_tournament.sql)
-3. Hard-refresh the live game — Join and Vote should update the shared `X/35` count
+Hard-refresh after updating — Join and Vote should update the shared counts.
 
 ## Duel matchmaking (play real people)
 
