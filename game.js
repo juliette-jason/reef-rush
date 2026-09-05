@@ -16110,7 +16110,6 @@ function musicContextRunning() {
 function expectedMusicTimer() {
   if (!musicEnabled || document.hidden || isSplashScreenActive()) return null;
   if (playing) return adventureSession ? adventureMusicTimer : gameMusicTimer;
-  if (isEventsMusicActive()) return eventsMusicTimer;
   if (isAdventureMusicActive()) return adventureMusicTimer;
   return musicTimer;
 }
@@ -16555,7 +16554,6 @@ function syncMusicMasterGain() {
 function sceneMusicTargetGain() {
   if (!musicEnabled) return 0;
   if (playing) return DEFAULT_MUSIC_MASTER_GAIN;
-  if (isEventsMusicActive()) return EVENTS_MUSIC_MASTER_GAIN;
   return HOME_MUSIC_MASTER_GAIN;
 }
 
@@ -16928,7 +16926,7 @@ function armHomeMusicTimer() {
 }
 
 function scheduleSailingMusicBar() {
-  if (!musicSchedulerReady() || playing || isEventsMusicActive() || isAdventureMusicActive()) return;
+  if (!musicSchedulerReady() || playing || isAdventureMusicActive()) return;
   const track = YACHT_ROCK_HOME_TRACKS[homeMusicTrackIndex] || YACHT_ROCK_HOME_TRACKS[0];
   const chord = track.bars[homeMusicBarIndex % track.bars.length];
   playYachtRockHomeBar(chord, track, homeMusicBarIndex);
@@ -17326,7 +17324,7 @@ function startHomeWaves() {
 }
 
 function startHomeMusic(forceRestart = true) {
-  if (!musicEnabled || playing || isAdventureMusicActive() || isEventsMusicActive()) return;
+  if (!musicEnabled || playing || isAdventureMusicActive()) return;
   if (!forceRestart && musicTimer && musicContextRunning() && musicMasterGainValue() >= MUSIC_AUDIBLE_GAIN_MIN) {
     return;
   }
@@ -17369,8 +17367,6 @@ function restartSceneMusic(forceRestart = true) {
   if (playing) {
     if (adventureSession) startAdventureMusic(forceRestart);
     else startReefMusic(forceRestart);
-  } else if (isEventsMusicActive()) {
-    startEventsMusic(forceRestart);
   } else if (isAdventureMusicActive()) {
     startAdventureMusic(forceRestart);
   } else {
@@ -18053,6 +18049,7 @@ function openShop() {
   showShopGuideIfNeeded();
   showExclusiveMenu("shop");
   syncHomeLaunchButtons();
+  if (musicEnabled) switchSceneMusic(startHomeMusic);
 }
 
 function closeShop() {
@@ -18473,7 +18470,7 @@ function openEvents() {
   syncHomeLaunchButtons();
   void processDailyPrizePayouts().then(() => refreshEventsPanel());
   startDailyEventCountdown();
-  if (musicEnabled) switchSceneMusic(startEventsMusic);
+  if (musicEnabled) switchSceneMusic(startHomeMusic);
 }
 
 function closeEvents() {
