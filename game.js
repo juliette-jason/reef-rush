@@ -561,6 +561,197 @@ function chestItemArtSvg(itemId) {
   );
 }
 
+/** Postage-stamp SVG for a catch species — silhouette matches the creature, not a flat swatch. */
+function catchStampArtSvg(spec, opts = {}) {
+  const owned = opts.owned !== false;
+  const uid = `stamp-${String(spec?.id || "fish").replace(/[^a-z0-9_-]/gi, "")}-${owned ? "o" : "l"}`;
+  const colors = Array.isArray(spec?.colors) ? spec.colors : ["#64748b", "#1e293b", "#e2e8f0"];
+  const c0 = owned ? colors[0] : "#334155";
+  const c1 = owned ? colors[1] || colors[0] : "#0f172a";
+  const c2 = owned ? colors[2] || "#e2e8f0" : "#475569";
+  const morph = String(spec?.morph || "silverside");
+  const paper = owned ? "#fff8e7" : "#1e293b";
+  const ink = owned ? "#3f2a14" : "#64748b";
+  const rim = owned ? "#c4a574" : "#334155";
+
+  function silhouette() {
+    if (morph === "jellyfish") {
+      return (
+        `<ellipse cx="32" cy="22" rx="12" ry="9" fill="${c0}" stroke="${c1}" stroke-width="1.2"/>` +
+        `<path d="M22 28 Q24 42 26 46 M28 30 Q30 44 32 48 M36 30 Q38 44 40 46 M42 28 Q44 42 42 46" fill="none" stroke="${c2}" stroke-width="1.6" stroke-linecap="round"/>` +
+        `<circle cx="28" cy="20" r="1.4" fill="${c1}"/><circle cx="36" cy="20" r="1.4" fill="${c1}"/>`
+      );
+    }
+    if (morph === "seahorse") {
+      return (
+        `<path d="M34 14 Q40 10 42 16 Q44 24 38 28 L36 46 Q32 48 30 44 L32 30 Q26 28 26 20 Q26 12 34 14 Z" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
+        `<path d="M36 18 Q40 16 40 20" fill="none" stroke="${c2}" stroke-width="1.2"/>` +
+        `<circle cx="36" cy="16" r="1.3" fill="#0f172a"/>` +
+        `<path d="M30 34 Q28 38 30 42 M30 38 Q28 42 30 46" fill="none" stroke="${c1}" stroke-width="1.1"/>`
+      );
+    }
+    if (morph === "lobster") {
+      return (
+        `<ellipse cx="32" cy="30" rx="10" ry="14" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
+        `<path d="M22 18 Q12 10 10 16 Q14 20 22 22 M42 18 Q52 10 54 16 Q50 20 42 22" fill="none" stroke="${c1}" stroke-width="2.2" stroke-linecap="round"/>` +
+        `<circle cx="28" cy="22" r="1.5" fill="#0f172a"/><circle cx="36" cy="22" r="1.5" fill="#0f172a"/>` +
+        `<path d="M26 42 L24 50 M32 44 L32 52 M38 42 L40 50" stroke="${c1}" stroke-width="1.5" stroke-linecap="round"/>`
+      );
+    }
+    if (morph === "octopus" || morph === "cuttlefish") {
+      return (
+        `<ellipse cx="32" cy="24" rx="12" ry="10" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
+        `<circle cx="28" cy="22" r="2.2" fill="#fff"/><circle cx="36" cy="22" r="2.2" fill="#fff"/>` +
+        `<circle cx="28.5" cy="22.3" r="1" fill="#0f172a"/><circle cx="36.5" cy="22.3" r="1" fill="#0f172a"/>` +
+        `<path d="M22 32 Q18 44 16 48 M26 34 Q24 46 22 50 M32 36 Q32 48 32 52 M38 34 Q40 46 42 50 M42 32 Q46 44 48 48" fill="none" stroke="${c1}" stroke-width="2" stroke-linecap="round"/>`
+      );
+    }
+    if (morph === "seaturtle") {
+      return (
+        `<ellipse cx="32" cy="30" rx="14" ry="11" fill="${c1}" stroke="${c0}" stroke-width="1.2"/>` +
+        `<ellipse cx="32" cy="30" rx="9" ry="7" fill="${c0}"/>` +
+        `<path d="M32 23 L38 30 L32 37 L26 30 Z" fill="${c2}" opacity="0.55"/>` +
+        `<ellipse cx="46" cy="28" rx="5" ry="4" fill="${c0}" stroke="${c1}" stroke-width="0.9"/>` +
+        `<circle cx="47" cy="27" r="1.1" fill="#0f172a"/>` +
+        `<path d="M18 24 Q12 20 14 26 M18 36 Q12 40 14 34 M42 20 Q46 14 48 20 M42 40 Q46 46 48 40" fill="none" stroke="${c1}" stroke-width="2" stroke-linecap="round"/>`
+      );
+    }
+    if (morph === "manta") {
+      return (
+        `<path d="M32 28 L8 18 Q16 28 8 40 L32 34 L56 40 Q48 28 56 18 Z" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
+        `<ellipse cx="32" cy="30" rx="5" ry="7" fill="${c1}"/>` +
+        `<path d="M32 36 L30 48 M32 36 L34 48" stroke="${c1}" stroke-width="1.4" stroke-linecap="round"/>` +
+        `<circle cx="30" cy="26" r="1.2" fill="#fff"/><circle cx="34" cy="26" r="1.2" fill="#fff"/>`
+      );
+    }
+    if (morph === "dolphin" || morph === "seal") {
+      return (
+        `<path d="M12 32 Q18 18 34 20 Q50 22 54 30 Q50 40 34 42 Q20 42 14 36 Z" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
+        `<path d="M28 20 Q32 10 38 18" fill="${c1}"/>` +
+        `<path d="M10 30 L4 24 M10 34 L4 40" stroke="${c1}" stroke-width="2" stroke-linecap="round"/>` +
+        `<circle cx="46" cy="28" r="1.5" fill="#0f172a"/>` +
+        `<path d="M48 32 Q52 34 50 36" fill="none" stroke="${c1}" stroke-width="1.1"/>`
+      );
+    }
+    if (morph === "otter") {
+      return (
+        `<ellipse cx="30" cy="30" rx="14" ry="9" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
+        `<circle cx="44" cy="26" r="7" fill="${c0}" stroke="${c1}" stroke-width="1"/>` +
+        `<circle cx="46" cy="25" r="1.3" fill="#0f172a"/>` +
+        `<ellipse cx="48" cy="29" rx="3" ry="2" fill="${c2}"/>` +
+        `<path d="M16 34 Q10 40 14 44" fill="none" stroke="${c1}" stroke-width="2.2" stroke-linecap="round"/>` +
+        `<path d="M26 38 L24 46 M34 38 L36 46" stroke="${c1}" stroke-width="1.8" stroke-linecap="round"/>`
+      );
+    }
+    if (morph === "hammerhead" || morph === "reefshark") {
+      return (
+        `<path d="M10 32 L22 26 L40 24 L54 30 L40 38 L22 36 Z" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
+        (morph === "hammerhead"
+          ? `<rect x="48" y="24" width="14" height="8" rx="3" fill="${c1}"/>`
+          : `<path d="M52 30 L60 26 L58 34 Z" fill="${c1}"/>`) +
+        `<path d="M28 24 L32 14 L36 24" fill="${c1}"/>` +
+        `<path d="M12 32 L4 28 M12 32 L4 36" stroke="${c1}" stroke-width="1.8" stroke-linecap="round"/>` +
+        `<circle cx="44" cy="28" r="1.3" fill="#0f172a"/>`
+      );
+    }
+    if (morph === "marlin" || morph === "swordfish" || morph === "barracuda" || morph === "sailfish") {
+      return (
+        `<path d="M8 32 L24 26 L40 24 L48 30 L40 36 L24 36 Z" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
+        `<path d="M48 30 L62 28" stroke="${c1}" stroke-width="2.2" stroke-linecap="round"/>` +
+        `<path d="M26 24 L30 10 L36 24" fill="${c1}"/>` +
+        `<path d="M8 32 L2 24 M8 32 L2 40" stroke="${c1}" stroke-width="1.6" stroke-linecap="round"/>` +
+        `<circle cx="42" cy="28" r="1.2" fill="#0f172a"/>`
+      );
+    }
+    if (morph === "clownfish") {
+      return (
+        `<ellipse cx="32" cy="32" rx="16" ry="10" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
+        `<path d="M22 22 V42 M32 20 V44 M42 22 V42" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/>` +
+        `<path d="M14 32 L6 24 L6 40 Z" fill="${c1}"/>` +
+        `<circle cx="44" cy="30" r="1.5" fill="#0f172a"/>` +
+        `<path d="M30 22 L34 14 L38 22" fill="${c1}"/>`
+      );
+    }
+    if (morph === "angelfish") {
+      return (
+        `<path d="M20 32 Q32 12 44 32 Q32 52 20 32 Z" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
+        `<path d="M32 16 L36 8 L40 18 M32 48 L36 56 L40 46" fill="${c1}"/>` +
+        `<circle cx="38" cy="30" r="1.4" fill="#0f172a"/>` +
+        `<path d="M18 32 L10 26 L10 38 Z" fill="${c1}"/>`
+      );
+    }
+    if (morph === "deepsea" || morph === "skullfish") {
+      return (
+        `<ellipse cx="30" cy="30" rx="12" ry="9" fill="${c1}" stroke="${c0}" stroke-width="1.2"/>` +
+        `<circle cx="38" cy="28" r="4" fill="${c0}" opacity="0.9"/>` +
+        `<circle cx="38" cy="28" r="2" fill="#fff"/><circle cx="38.5" cy="28" r="1" fill="#0f172a"/>` +
+        `<path d="M20 34 L16 40 M24 36 L22 44 M28 36 L30 44" stroke="${c0}" stroke-width="1.5" stroke-linecap="round"/>` +
+        `<path d="M16 30 L8 24 M16 30 L8 36" stroke="${c0}" stroke-width="1.5"/>` +
+        (morph === "deepsea" ? `<circle cx="48" cy="18" r="3" fill="${c2}"/><path d="M40 24 Q46 20 48 18" fill="none" stroke="${c2}" stroke-width="1.2"/>` : "")
+      );
+    }
+    if (morph === "halibut") {
+      return (
+        `<ellipse cx="32" cy="32" rx="20" ry="11" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
+        `<circle cx="44" cy="28" r="1.5" fill="#0f172a"/><circle cx="40" cy="34" r="1.5" fill="#0f172a"/>` +
+        `<path d="M12 32 L4 26 L4 38 Z" fill="${c1}"/>` +
+        `<path d="M32 22 Q36 18 40 22" fill="none" stroke="${c1}" stroke-width="1"/>`
+      );
+    }
+    if (morph === "tuna" || morph === "bluefin" || morph === "trevally" || morph === "amberjack" || morph === "mahi") {
+      return (
+        `<path d="M10 32 Q20 20 36 22 Q48 24 52 30 Q48 38 36 40 Q20 42 10 32 Z" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
+        `<path d="M10 32 L2 22 L4 32 L2 42 Z" fill="${c1}"/>` +
+        `<path d="M28 22 L32 12 L38 22" fill="${morph === "mahi" ? c2 : c1}"/>` +
+        `<circle cx="44" cy="28" r="1.4" fill="#0f172a"/>` +
+        `<path d="M20 30 H40" stroke="${c2}" stroke-width="1.2" opacity="0.7"/>`
+      );
+    }
+    if (morph === "snapper" || morph === "bass" || morph === "cod" || morph === "barramundi" || morph === "mackerel") {
+      return (
+        `<ellipse cx="30" cy="32" rx="15" ry="10" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
+        `<path d="M14 32 L6 24 L6 40 Z" fill="${c1}"/>` +
+        `<path d="M26 22 L30 12 L34 22" fill="${c1}"/>` +
+        `<circle cx="40" cy="30" r="1.5" fill="#0f172a"/>` +
+        (morph === "mackerel"
+          ? `<path d="M20 26 Q26 24 34 26 M20 32 Q28 30 36 32 M20 38 Q28 36 34 38" fill="none" stroke="${c1}" stroke-width="1.1"/>`
+          : `<path d="M22 32 H38" stroke="${c2}" stroke-width="1.1" opacity="0.65"/>`)
+      );
+    }
+    /* silverside / default school fish */
+    return (
+      `<ellipse cx="30" cy="32" rx="14" ry="8" fill="${c0}" stroke="${c1}" stroke-width="1.1"/>` +
+      `<path d="M16 32 L8 26 L8 38 Z" fill="${c1}"/>` +
+      `<circle cx="40" cy="30" r="1.4" fill="#0f172a"/>` +
+      `<path d="M24 32 H36" stroke="${c2}" stroke-width="1" opacity="0.7"/>` +
+      `<path d="M26 24 L30 18 L34 24" fill="${c1}" opacity="0.85"/>`
+    );
+  }
+
+  const lockOverlay = owned
+    ? ""
+    : `<rect x="10" y="10" width="44" height="44" rx="4" fill="rgba(15,23,42,0.55)"/>` +
+      `<path d="M28 26 h8 v4 h-8 z M30 26 v-3 a2 2 0 0 1 4 0 v3" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/>`;
+
+  return (
+    `<svg class="catch-stamp-art" viewBox="0 0 64 64" width="64" height="64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">` +
+    `<defs>` +
+    `<linearGradient id="${uid}-paper" x1="0" y1="0" x2="0" y2="1">` +
+    `<stop offset="0%" stop-color="${paper}"/><stop offset="100%" stop-color="${owned ? "#f5e6c8" : "#0f172a"}"/>` +
+    `</linearGradient>` +
+    `<linearGradient id="${uid}-sea" x1="0" y1="0" x2="1" y2="1">` +
+    `<stop offset="0%" stop-color="${owned ? "#bae6fd" : "#1e293b"}"/><stop offset="100%" stop-color="${owned ? "#7dd3fc" : "#0f172a"}"/>` +
+    `</linearGradient>` +
+    `</defs>` +
+    `<rect x="3" y="3" width="58" height="58" rx="5" fill="url(#${uid}-paper)" stroke="${rim}" stroke-width="2"/>` +
+    `<rect x="7" y="7" width="50" height="50" rx="3" fill="none" stroke="${ink}" stroke-width="1" stroke-dasharray="2 2" opacity="0.55"/>` +
+    `<rect x="11" y="11" width="42" height="42" rx="3" fill="url(#${uid}-sea)" opacity="${owned ? 0.55 : 0.35}"/>` +
+    `<g transform="translate(0,0)">${silhouette()}</g>` +
+    lockOverlay +
+    `</svg>`
+  );
+}
+
 const CHEST_ITEM_IDS = Object.keys(CHEST_ITEM_DEFS);
 
 function emptyChestItems() {
@@ -7488,7 +7679,16 @@ function ensureDailyPrizeBundle(prize) {
   const chestTier = normalizeChestTier(prize.chestTier || dailyPrizeChestTierForRank(prize.rank));
   prize.chestTier = chestTier;
   prize.chestName = prize.chestName || dailyPrizeChestNameForTier(chestTier);
-  if (!prize.bundle) prize.bundle = rollDailyPrizeChestBundle(chestTier);
+  const bundle = prize.bundle;
+  const empty =
+    !bundle ||
+    typeof bundle !== "object" ||
+    (!(Number(bundle.coins) > 0) &&
+      !(Number(bundle.gems) > 0) &&
+      !bundle.bait &&
+      !bundle.rodId &&
+      !bundle.special);
+  if (empty) prize.bundle = rollDailyPrizeChestBundle(chestTier);
   return prize;
 }
 
@@ -9684,14 +9884,26 @@ function refreshSharedBoardsFromServer() {
 }
 
 async function processDailyPrizePayouts() {
-  const ini = gameMeta.playerInitials;
+  if (!gameMeta.playerInitials && gameMeta.playerName) {
+    const derived = initialsFromPlayerName(gameMeta.playerName);
+    if (derived) {
+      gameMeta.playerInitials = derived;
+      saveMeta();
+    }
+  }
+  const ini = String(gameMeta.playerInitials || "")
+    .toUpperCase()
+    .replace(/[^A-Z]/g, "")
+    .slice(0, 3);
   if (!ini) return;
   const yesterday = getPreviousDailyDayKey();
-  if (gameMeta.dailyPrizeCheckedDay === yesterday) return;
+  if (gameMeta.dailyPrizeCheckedDay === yesterday) {
+    if (gameMeta.pendingDailyPrizeCelebration) ensureDailyPrizeBundle(gameMeta.pendingDailyPrizeCelebration);
+    return;
+  }
 
   const rows = await fetchDailyLeaderboardForDay(yesterday);
-  gameMeta.dailyPrizeCheckedDay = yesterday;
-  const rank = rows.findIndex((r) => r.initials === ini);
+  const rank = rows.findIndex((r) => String(r.initials || "").toUpperCase() === ini);
   if (rank >= 0 && rank < DAILY_PRIZE_COUNT) {
     const chestTier = dailyPrizeChestTierForRank(rank);
     const pending = {
@@ -9704,10 +9916,9 @@ async function processDailyPrizePayouts() {
     };
     ensureDailyPrizeBundle(pending);
     gameMeta.pendingDailyPrizeCelebration = pending;
-    saveMeta();
-  } else {
-    saveMeta();
   }
+  gameMeta.dailyPrizeCheckedDay = yesterday;
+  saveMeta();
 }
 
 function dailyPrizeOrdinal(rank) {
@@ -9725,6 +9936,8 @@ function applyPendingDailyPrizeRewards() {
   refreshCoinDisplays();
   buildBaitUI();
   buildRodUI();
+  refreshCollectablesUI();
+  syncHomeLaunchButtons();
 }
 
 let dailyPrizePhase = "board";
@@ -9896,7 +10109,10 @@ function endDailyPrizeCelebration() {
 }
 
 function startDailyPrizeCelebration(prize) {
-  if (!prize || dailyPrizeCelebrationActive || treasureMapRevealPaused || playing || !isHomeScreenActive()) return;
+  if (!prize || dailyPrizeCelebrationActive || treasureMapRevealPaused || playing) return;
+  if (isSplashScreenActive()) return;
+  if (mapSeagullGuide && !mapSeagullGuide.hidden && mapSeagullMode === "howto") return;
+  if (!isHomeScreenActive()) return;
   ensureDailyPrizeBundle(prize);
   saveMeta();
   dailyPrizeCelebrationActive = true;
@@ -9919,6 +10135,14 @@ function startDailyPrizeCelebration(prize) {
 }
 
 function deferDailyPrizeCelebration() {
+  /* If they already opened the chest, bank the rewards before dismissing the overlay. */
+  if (dailyPrizeCelebrationActive && dailyPrizePhase === "opened" && gameMeta.pendingDailyPrizeCelebration) {
+    const prize = gameMeta.pendingDailyPrizeCelebration;
+    applyPendingDailyPrizeRewards();
+    const chest = prize.chestName || dailyPrizeChestNameForTier(prize.chestTier);
+    const extras = dailyPrizeExtrasLabel(prize.rank);
+    showToast(`Fisher of the Day ${dailyPrizeOrdinal(prize.rank)} place collected! ${chest}${extras}.`, 4200);
+  }
   clearDailyPrizeBoardTimer();
   dailyPrizeCelebrationActive = false;
   dailyPrizePhase = "board";
@@ -9930,14 +10154,27 @@ function deferDailyPrizeCelebration() {
   }
 }
 
+function canStartDailyPrizeCelebration() {
+  if (!gameMeta.pendingDailyPrizeCelebration) return false;
+  if (dailyPrizeCelebrationActive || treasureMapRevealPaused || playing) return false;
+  if (crabTrapSession || duelSession || adventureSession || eventMinigameSession) return false;
+  if (isSplashScreenActive()) return false;
+  if (mapSeagullGuide && !mapSeagullGuide.hidden && mapSeagullMode === "howto") return false;
+  return isHomeScreenActive();
+}
+
 function tryStartDailyPrizeCelebration() {
-  const prize = gameMeta.pendingDailyPrizeCelebration;
-  if (!prize || dailyPrizeCelebrationActive || treasureMapRevealPaused || playing || !isHomeScreenActive()) return;
-  if (isAdventureHomeCelebrationActive()) {
-    window.setTimeout(tryStartDailyPrizeCelebration, 1200);
+  if (!canStartDailyPrizeCelebration()) {
+    if (gameMeta.pendingDailyPrizeCelebration && !dailyPrizeCelebrationActive && !playing) {
+      if (mapSeagullGuide && !mapSeagullGuide.hidden && mapSeagullMode === "howto") {
+        window.setTimeout(tryStartDailyPrizeCelebration, 900);
+      } else if (isAdventureHomeCelebrationActive()) {
+        window.setTimeout(tryStartDailyPrizeCelebration, 1200);
+      }
+    }
     return;
   }
-  startDailyPrizeCelebration(prize);
+  startDailyPrizeCelebration(gameMeta.pendingDailyPrizeCelebration);
 }
 
 /** Fishing Tournament — community vote, 35 daily signups, 11 AM, 4 PM & 8 PM windows. */
@@ -16012,6 +16249,7 @@ function flyAwayMapSeagull() {
   const finish = () => {
     hideMapSeagullGuide();
     syncAdventureLaunchVisibility();
+    window.setTimeout(tryStartDailyPrizeCelebration, 350);
   };
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     finish();
@@ -16048,6 +16286,7 @@ function dismissMapSeagullGuide() {
   if (mapSeagullMode === "howto") markIntroSeen();
   hideMapSeagullGuide();
   syncAdventureLaunchVisibility();
+  window.setTimeout(tryStartDailyPrizeCelebration, 350);
 }
 
 function hasSeenShopGuide() {
@@ -16102,6 +16341,7 @@ function closeIntro() {
   hideMapSeagullGuide();
   syncAdventureLaunchVisibility();
   window.requestAnimationFrame(() => startAdventureHomeUnlockAnimation());
+  window.setTimeout(tryStartDailyPrizeCelebration, 400);
 }
 
 function resetProgress() {
@@ -16153,7 +16393,7 @@ function hideMenuPanelsOnly({ clearMatchup = true } = {}) {
   if (panelCrabReward) panelCrabReward.hidden = true;
   if (panelCollectables) panelCollectables.hidden = true;
   if (panelProfile) panelProfile.hidden = true;
-  deferDailyPrizeCelebration();
+  /* Keep Fisher of the Day celebration up — don't dismiss mid-claim when opening menus. */
   appRoot?.classList.remove("app--events-mode", "app--splash");
   if (clearMatchup) appRoot?.classList.remove("app--matchup");
   clearAdventurePlayThemeClasses();
@@ -19417,15 +19657,12 @@ function refreshCollectablesUI() {
     for (const spec of FISH_SPECIES) {
       const have = hasCatchStamp(spec.id);
       if (have) owned += 1;
-      const colors = Array.isArray(spec.colors) ? spec.colors : ["#64748b", "#1e293b", "#e2e8f0"];
       const cell = document.createElement("article");
       cell.className = `collectables-stamp${have ? " collectables-stamp--owned" : " collectables-stamp--locked"}`;
       cell.title = have ? spec.name : "Locked stamp";
       const swatch = document.createElement("div");
       swatch.className = "collectables-stamp__swatch";
-      if (have) {
-        swatch.style.background = `linear-gradient(135deg, ${colors[0]}, ${colors[1] || colors[0]})`;
-      }
+      swatch.innerHTML = catchStampArtSvg(spec, { owned: have });
       const name = document.createElement("p");
       name.className = "collectables-stamp__name";
       name.textContent = have ? spec.name : "???";
@@ -19746,7 +19983,10 @@ function openEvents() {
   showExclusiveMenu("events");
   refreshDuelTicketsForToday();
   syncHomeLaunchButtons();
-  void processDailyPrizePayouts().then(() => refreshEventsPanel());
+  void processDailyPrizePayouts().then(() => {
+    refreshEventsPanel();
+    window.setTimeout(tryStartDailyPrizeCelebration, 400);
+  });
   startDailyEventCountdown();
   if (musicEnabled) switchSceneMusic(startHomeMusic);
 }
@@ -21380,13 +21620,17 @@ function chestLootItems(bundle, extras = []) {
   const sp = bundle?.special;
   if (sp) {
     if (sp.kind === "catch_stamp") {
-      const spec = FISH_SPECIES.find((s) => s.id === sp.speciesId);
-      const colors = Array.isArray(spec?.colors) ? spec.colors : ["#38bdf8", "#0369a1"];
+      const spec = FISH_SPECIES.find((s) => s.id === sp.speciesId) || {
+        id: sp.speciesId || "stamp",
+        name: sp.speciesName || "Catch stamp",
+        morph: "silverside",
+        colors: ["#38bdf8", "#0369a1", "#e0f2fe"],
+      };
       items.push({
         kind: "stamp",
         qty: "",
         label: sp.speciesName ? `${sp.speciesName} stamp` : "Catch stamp",
-        art: `<span class="chest-loot__stamp" style="background:linear-gradient(135deg,${colors[0]},${colors[1] || colors[0]})"></span>`,
+        art: catchStampArtSvg(spec, { owned: true }),
       });
     } else if (sp.consolCoins) {
       items.push({

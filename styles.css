@@ -6715,38 +6715,36 @@ button.seagull-avatar:active {
 }
 
 .collectables-stamp__swatch {
-  width: 48px;
-  height: 32px;
-  border-radius: 999px;
-  border: 2px solid rgba(255, 255, 255, 0.28);
-  background: #1e293b;
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
   position: relative;
+  display: grid;
+  place-items: center;
+  overflow: visible;
+  box-shadow: none;
+}
+
+.collectables-stamp__swatch .catch-stamp-art {
+  width: 64px;
+  height: 64px;
+  display: block;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
 }
 
 .collectables-stamp--owned .collectables-stamp__swatch {
-  box-shadow:
-    0 0 14px rgba(255, 213, 74, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  box-shadow: none;
 }
 
 .collectables-stamp--owned .collectables-stamp__swatch::after {
-  content: "";
-  position: absolute;
-  inset: 4px 8px auto;
-  height: 6px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.35);
+  display: none;
 }
 
 .collectables-stamp--locked .collectables-stamp__swatch {
-  background: repeating-linear-gradient(
-    -45deg,
-    #1e293b,
-    #1e293b 4px,
-    #0f172a 4px,
-    #0f172a 8px
-  );
-  opacity: 0.7;
+  filter: grayscale(0.45);
+  opacity: 0.88;
 }
 
 .collectables-stamp__name {
@@ -10046,7 +10044,7 @@ button.seagull-avatar:active {
 .daily-prize-reveal {
   position: fixed;
   inset: 0;
-  z-index: 90;
+  z-index: 1300;
   display: flex;
   align-items: stretch;
   justify-content: center;
@@ -10873,6 +10871,13 @@ button.seagull-avatar:active {
   border-radius: 50%;
   border: 2px solid rgba(255, 255, 255, 0.55);
   box-shadow: inset 0 -6px 8px rgba(0, 0, 0, 0.25);
+}
+
+.chest-loot__art .catch-stamp-art {
+  width: 40px;
+  height: 40px;
+  display: block;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
 }
 
 .chest-loot__art .chest-item-art {
