@@ -4376,6 +4376,14 @@ button.seagull-avatar:active {
   background: rgba(15, 23, 42, 0.42);
 }
 
+.event-card__about .tourney-card-copy {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 0;
+}
+
 .tourney-card-copy__lead {
   margin: 0 0 8px;
   font-family: "Nunito", sans-serif;
@@ -4383,6 +4391,11 @@ button.seagull-avatar:active {
   font-weight: 700;
   line-height: 1.35;
   color: rgba(237, 233, 254, 0.92);
+}
+
+.event-card__about .tourney-card-copy__lead {
+  font-size: inherit;
+  color: inherit;
 }
 
 .tourney-card-copy__list {
@@ -4395,6 +4408,11 @@ button.seagull-avatar:active {
   font-weight: 650;
   line-height: 1.35;
   color: rgba(226, 232, 240, 0.82);
+}
+
+.event-card__about .tourney-card-copy__list {
+  font-size: inherit;
+  color: inherit;
 }
 
 .tourney-card-copy__list strong {

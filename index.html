@@ -23,7 +23,7 @@
       rel="stylesheet"
     />
     <link rel="canonical" href="https://juliette-jason.github.io/reef-rush/" />
-    <link rel="stylesheet" href="styles.css?v=2026-09-05-stamps-fotd-1" />
+    <link rel="stylesheet" href="styles.css?v=2026-09-05-tourney-info-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -1859,20 +1859,25 @@
           <header class="event-card__head">
             <div class="event-card__title-row">
               <h3 class="event-card__title">Fishing Tourney</h3>
+              <details class="event-card__about">
+                <summary class="event-card__info" aria-label="About Fishing Tourney">
+                  <span class="event-card__info-glyph" aria-hidden="true">i</span>
+                </summary>
+                <div class="event-card__blurb event-card__blurb--stack tourney-card-copy">
+                  <p class="tourney-card-copy__lead">
+                    Community vote picks today's mode. Sign up for one of 35 spots — empty spots fill with random anglers.
+                  </p>
+                  <ul class="tourney-card-copy__list">
+                    <li>Heats at <strong>11 AM</strong>, <strong>4 PM</strong> &amp; <strong>8 PM</strong> (join 2 min early or late).</li>
+                    <li>Morning vote can pick <strong>Duel Fishing</strong> (bracket day) — Duel is only on this morning ballot.</li>
+                    <li>If Duel is <strong>not</strong> picked: morning uses that mode, then vote again before afternoon &amp; evening for different non-duel games.</li>
+                    <li>Duel day: top 32 bracket · seeds 33–35 get <strong>1,000 coins</strong>. Other days: <strong>top 3 scores</strong> win chests + gems.</li>
+                  </ul>
+                </div>
+              </details>
             </div>
             <p id="tourneyEventTitle" class="event-card__reset">Vote for today's event</p>
           </header>
-          <div class="tourney-card-copy">
-            <p class="tourney-card-copy__lead">
-              Community vote picks today's mode. Sign up for one of 35 spots — empty spots fill with random anglers.
-            </p>
-            <ul class="tourney-card-copy__list">
-              <li>Heats at <strong>11 AM</strong>, <strong>4 PM</strong> &amp; <strong>8 PM</strong> (join 2 min early or late).</li>
-              <li>Morning vote can pick <strong>Duel Fishing</strong> (bracket day) — Duel is only on this morning ballot.</li>
-              <li>If Duel is <strong>not</strong> picked: morning uses that mode, then vote again before afternoon &amp; evening for different non-duel games.</li>
-              <li>Duel day: top 32 bracket · seeds 33–35 get <strong>1,000 coins</strong>. Other days: <strong>top 3 scores</strong> win chests + gems.</li>
-            </ul>
-          </div>
           <p id="tourneySignupLine" class="event-card__hint">0/35 spots filled · tap Join below</p>
           <p id="tourneyScheduleLine" class="event-card__hint">Morning heat at 11:00 AM · Afternoon 4:00 PM · Evening 8:00 PM</p>
           <p id="tourneyPrizeLine" class="event-card__hint">Top 3 of 35 win chests + gems</p>
@@ -2963,6 +2968,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-09-05-stamps-fotd-1" defer></script>
+    <script src="game.js?v=2026-09-05-tourney-info-1" defer></script>
   </body>
 </html>
