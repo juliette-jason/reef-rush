@@ -3236,9 +3236,15 @@ button.seagull-avatar:active {
   }
 
   .panel--events .event-card__blurb {
-    right: 0;
-    width: min(300px, calc(100vw - 28px));
-    max-width: calc(100vw - 28px);
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: none;
+  }
+
+  .panel--events .event-card__head {
+    margin-left: 12px;
+    margin-right: 12px;
   }
 
   .adventure-play-theme {
@@ -7772,6 +7778,22 @@ button.seagull-avatar:active {
   font-weight: 700;
   line-height: 1.4;
   color: rgba(240, 247, 255, 0.96);
+  box-sizing: border-box;
+}
+
+@media (max-width: 560px) {
+  /* Keep (i) help fully on-screen: pin to the card, not past the phone edge. */
+  .event-card__about {
+    position: static;
+  }
+
+  .event-card__blurb {
+    left: 0;
+    right: 0;
+    width: auto;
+    max-width: none;
+    top: calc(100% + 6px);
+  }
 }
 
 .event-card__blurb--stack {
@@ -8231,8 +8253,16 @@ button.seagull-avatar:active {
 }
 
 @media (max-width: 560px) {
+  .home-launch-dock {
+    padding:
+      8px max(8px, env(safe-area-inset-left, 0px))
+      max(10px, calc(env(safe-area-inset-bottom, 0px) + 8px))
+      max(8px, env(safe-area-inset-right, 0px));
+  }
+
   .home-launch-stack {
-    gap: 5px;
+    gap: 4px;
+    width: 100%;
   }
 
   .home-launch-stack .events-launch,
@@ -8240,9 +8270,10 @@ button.seagull-avatar:active {
   .home-launch-stack .shop-launch,
   .home-launch-stack .collectables-launch,
   .home-launch-stack .world-launch {
-    padding: 6px 2px 5px;
-    font-size: 0.58rem;
-    min-height: 52px;
+    padding: 7px 2px 6px;
+    font-size: 0.62rem;
+    letter-spacing: 0.02em;
+    min-height: 56px;
     border-radius: 12px;
   }
 
@@ -8251,8 +8282,8 @@ button.seagull-avatar:active {
   .events-launch__glyph,
   .collectables-launch__glyph,
   .world-launch__glyph {
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
     border-radius: 7px;
   }
 
@@ -8261,8 +8292,22 @@ button.seagull-avatar:active {
   .events-launch__glyph svg,
   .collectables-launch__glyph svg,
   .world-launch__glyph svg {
-    width: 13px;
-    height: 13px;
+    width: 14px;
+    height: 14px;
+  }
+
+  .world-launch__label,
+  .shop-launch__label,
+  .adventure-launch__label,
+  .events-launch__label,
+  .collectables-launch__label {
+    display: block;
+    width: 100%;
+    padding: 0 1px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.1;
   }
 
   .adventure-launch__hint {
