@@ -7230,6 +7230,8 @@ function defaultMeta() {
     tourneyPodiumRank: 0,
     tourneyHeatVoteDayKey: "",
     tourneyHeatVotes: {},
+    tourneyActiveDayKey: "",
+    tourneyScorePodiumClaimDayKey: "",
   };
 }
 
@@ -7330,6 +7332,9 @@ function loadMeta() {
         o.tourneyHeatVotes && typeof o.tourneyHeatVotes === "object" && !Array.isArray(o.tourneyHeatVotes)
           ? { ...o.tourneyHeatVotes }
           : {},
+      tourneyActiveDayKey: typeof o.tourneyActiveDayKey === "string" ? o.tourneyActiveDayKey : "",
+      tourneyScorePodiumClaimDayKey:
+        typeof o.tourneyScorePodiumClaimDayKey === "string" ? o.tourneyScorePodiumClaimDayKey : "",
     };
   } catch {
     return defaultMeta();
@@ -9963,6 +9968,34 @@ function getTourneyDayKey(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
+/** Clear in-memory tourney winners/board when the calendar day rolls so each tourney starts fresh. */
+function ensureTourneyDayRollover() {
+  const dayKey = getTourneyDayKey();
+  if (tourneyBracketState && tourneyBracketState.day_key && tourneyBracketState.day_key !== dayKey) {
+    tourneyBracketState = null;
+  }
+  if (tournamentRun && tournamentRun.dayKey && tournamentRun.dayKey !== dayKey) {
+    tournamentRun = null;
+    pendingBracketMatch = null;
+  }
+  if (gameMeta.tourneyActiveDayKey === dayKey) return false;
+  gameMeta.tourneyActiveDayKey = dayKey;
+  gameMeta.tourneyPodiumRank = 0;
+  if (gameMeta.tourneyHeatVoteDayKey !== dayKey) {
+    gameMeta.tourneyHeatVoteDayKey = "";
+    gameMeta.tourneyHeatVotes = {};
+  }
+  saveMeta();
+  tourneyBracketState = null;
+  tourneyVoteCounts = {};
+  tourneyHeatVoteCounts = { afternoon: {}, evening: {} };
+  tourneyLeaderboardRows = [];
+  tourneySignupCount = 0;
+  pendingBracketMatch = null;
+  if (tournamentRun && tournamentRun.dayKey !== dayKey) tournamentRun = null;
+  return true;
+}
+
 function loadTourneyLocal() {
   try {
     const raw = localStorage.getItem(TOURNEY_LOCAL_KEY);
@@ -11272,6 +11305,7 @@ function getMyTourneyBracketPlayableMatch(slotKey, state = tourneyBracketState) 
 
 function getTourneyBracketPodium(state = tourneyBracketState) {
   if (!state?.matches) return null;
+  if (state.day_key && state.day_key !== getTourneyDayKey()) return null;
   const final = findTourneyBracketMatch("final", 0, state);
   const bronze = findTourneyBracketMatch("bronze", 0, state);
   if (!final?.winner_id) return null;
@@ -11308,6 +11342,32 @@ function grantTourneyPodiumPrize(rank) {
   });
 }
 
+/** Score-mode top 3 — paid once after the evening heat ends; resets every tourney day. */
+async function claimTourneyScorePodiumIfNeeded() {
+  ensureTourneyDayRollover();
+  const dayKey = getTourneyDayKey();
+  if (gameMeta.tourneyScorePodiumClaimDayKey === dayKey) return false;
+  if (!areTourneyVotesLocked()) return false;
+  if (isTourneyDuelBracketDay()) return false;
+  const evening = tourneySlotWindows().evening;
+  if (!evening || Date.now() < evening.joinEnd) return false;
+  await fetchTourneyLeaderboard(dayKey);
+  const humans = tourneyLeaderboardRows.filter((r) => !r.is_com && !isTourneyComClientId(r.client_id));
+  const me = getDuelClientId();
+  const rank = humans.findIndex((r) => r.client_id === me) + 1;
+  gameMeta.tourneyScorePodiumClaimDayKey = dayKey;
+  if (rank >= 1 && rank <= 3) {
+    gameMeta.tourneyPodiumRank = rank;
+    saveMeta();
+    grantTourneyPodiumPrize(rank);
+    const prize = TOURNEY_PRIZES.find((p) => p.rank === rank);
+    showToast(`Tourney complete — you're #${rank}! ${prize?.label || "Rewards unlocked."}`, 5200);
+    return true;
+  }
+  saveMeta();
+  return false;
+}
+
 function claimTourneyBracketPodiumIfNeeded(state = tourneyBracketState) {
   if (!state?.seeded) return false;
   const dayKey = state.day_key || getTourneyDayKey();
@@ -11331,10 +11391,14 @@ function claimTourneyBracketPodiumIfNeeded(state = tourneyBracketState) {
 
 async function ensureTourneyBracketSeeded() {
   if (!isTourneyDuelBracketDay()) return null;
+  ensureTourneyDayRollover();
   const dayKey = getTourneyDayKey();
   let local = loadTourneyBracketLocal(dayKey);
+  if (local && local.day_key && local.day_key !== dayKey) local = null;
   let remote = await fetchTourneyBracketFromServer(dayKey);
+  if (remote && remote.day_key && remote.day_key !== dayKey) remote = null;
   let state = mergeTourneyBracketStates(local, remote);
+  if (state && state.day_key !== dayKey) state = null;
   if (!state?.seeded) {
     const signups = await fetchTourneySignupRows(dayKey);
     state = buildTourneyBracketStateFromSignups(dayKey, signups);
@@ -11439,7 +11503,7 @@ function renderTourneyBracketPanel(state = tourneyBracketState) {
   const line = document.getElementById("tourneyBracketLine");
   const list = document.getElementById("tourneyBracketList");
   if (!panel) return;
-  if (!isTourneyDuelBracketDay() || !state?.seeded) {
+  if (!isTourneyDuelBracketDay() || !state?.seeded || state.day_key !== getTourneyDayKey()) {
     panel.hidden = true;
     return;
   }
@@ -11498,7 +11562,7 @@ async function finishTournamentRun(scorePts, duelMeta = null) {
   const fieldSize = tourneyLeaderboardRows.length;
   const comCount = tourneyLeaderboardRows.filter((r) => r.is_com || isTourneyComClientId(r.client_id)).length;
   if (rank > 0 && rank <= 3) {
-    showToast(`Tournament heat complete — you're #${rank}! Prize pending at day's end.`, 4200);
+    showToast(`Tournament heat complete — you're #${rank}! Prizes pay after the evening heat ends.`, 4200);
   } else if (rank > 0) {
     showToast(
       comCount
@@ -11575,10 +11639,12 @@ function renderTournamentLeaderboard() {
   if (!tourneyLeaderboard) return;
   tourneyLeaderboard.innerHTML = "";
   applyTourneyComField();
+  const title = tourneyLeaderboard.closest(".leaderboard-block")?.querySelector(".leaderboard-block__title");
+  if (title) title.textContent = `Today's tourney board · ${getTourneyDayKey()}`;
   if (!tourneyLeaderboardRows.length) {
     const empty = document.createElement("li");
     empty.className = "leaderboard__empty";
-    empty.textContent = "No tournament scores yet — compete at 11 AM, 4 PM, or 8 PM.";
+    empty.textContent = "No scores yet for today's tourney — compete at 11 AM, 4 PM, or 8 PM.";
     tourneyLeaderboard.appendChild(empty);
     return;
   }
@@ -11714,6 +11780,7 @@ function renderTournamentVoteButtons() {
 
 async function refreshTournamentCard() {
   if (!eventCardTourney) return;
+  ensureTourneyDayRollover();
   const dayKey = getTourneyDayKey();
   await Promise.all([fetchTourneyVoteCounts(dayKey), fetchTourneySignupCount(dayKey), fetchTourneyLeaderboard(dayKey)]);
   const slot = getTourneySlotState();
@@ -11722,6 +11789,8 @@ async function refreshTournamentCard() {
   if (isTourneyMixedEventDay()) await fetchAllTourneyHeatVoteCounts(dayKey);
   if (isTourneyDuelBracketDay()) {
     await ensureTourneyBracketSeeded();
+  } else {
+    await claimTourneyScorePodiumIfNeeded();
   }
   const eventKind = slot.slotKey ? getTourneyEventForHeat(slot.slotKey) : winningTourneyEventKind();
   if (tourneyEventTitle) {
