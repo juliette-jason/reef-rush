@@ -7258,6 +7258,7 @@ function defaultMeta() {
     tourneyVoteKind: "",
     tourneySignedUpDayKey: "",
     tourneyVoteLockAnnouncedDayKey: "",
+    tourneyReadyDayKey: "",
     tourneyConsolationDayKey: "",
     tourneyPodiumClaimDayKey: "",
     tourneyPodiumRank: 0,
@@ -7357,6 +7358,7 @@ function loadMeta() {
       tourneySignedUpDayKey: typeof o.tourneySignedUpDayKey === "string" ? o.tourneySignedUpDayKey : "",
       tourneyVoteLockAnnouncedDayKey:
         typeof o.tourneyVoteLockAnnouncedDayKey === "string" ? o.tourneyVoteLockAnnouncedDayKey : "",
+      tourneyReadyDayKey: typeof o.tourneyReadyDayKey === "string" ? o.tourneyReadyDayKey : "",
       tourneyConsolationDayKey: typeof o.tourneyConsolationDayKey === "string" ? o.tourneyConsolationDayKey : "",
       tourneyPodiumClaimDayKey: typeof o.tourneyPodiumClaimDayKey === "string" ? o.tourneyPodiumClaimDayKey : "",
       tourneyPodiumRank: Math.max(0, Math.floor(Number(o.tourneyPodiumRank) || 0)),
@@ -10187,18 +10189,33 @@ function areTourneyVotesLocked(now = Date.now()) {
 function maybeAnnounceTourneyVoteLock() {
   if (!areTourneyVotesLocked()) return;
   const dayKey = getTourneyDayKey();
-  if (gameMeta.tourneyVoteLockAnnouncedDayKey === dayKey) return;
-  gameMeta.tourneyVoteLockAnnouncedDayKey = dayKey;
-  saveMeta();
-  const kind = winningTourneyEventKind();
-  startTourneyVoteReveal(kind);
+  if (gameMeta.tourneyVoteLockAnnouncedDayKey !== dayKey) {
+    gameMeta.tourneyVoteLockAnnouncedDayKey = dayKey;
+    saveMeta();
+    startTourneyVoteReveal(winningTourneyEventKind());
+    return;
+  }
+  if (!isTourneyPlayerReadyToday()) {
+    const reveal = document.getElementById("tourneyVoteReveal");
+    if (reveal && !reveal.hidden) return;
+    startTourneyReadyPrompt();
+  }
 }
 
+function isTourneyPlayerReadyToday() {
+  return gameMeta.tourneyReadyDayKey === getTourneyDayKey();
+}
+
+/** "winner" = show community pick · "ready" = wait for I am ready before heats. */
+let tourneyVoteRevealStage = "winner";
+
 function startTourneyVoteReveal(kind) {
+  tourneyVoteRevealStage = "winner";
   const reveal = document.getElementById("tourneyVoteReveal");
   const title = document.getElementById("tourneyVoteRevealTitle");
   const eventEl = document.getElementById("tourneyVoteRevealEvent");
   const detail = document.getElementById("tourneyVoteRevealDetail");
+  const btn = document.getElementById("btnTourneyVoteRevealDone");
   const label = tourneyEventLabel(kind);
   if (title) title.textContent = "Votes are in!";
   if (eventEl) eventEl.textContent = label;
@@ -10208,8 +10225,10 @@ function startTourneyVoteReveal(kind) {
         ? "Duel Fishing wins — the top 32 enter today's bracket. Seeds 33–35 get 1,000 coins."
         : `${label} opens the morning heat. Afternoon & evening each get a fresh vote (no Duel) so you can play 3 different games today.`;
   }
+  if (btn) btn.textContent = "Got it";
   if (!reveal) {
     showToast(`Votes tallied! Today's tourney event: ${label}.`, 4800);
+    startTourneyReadyPrompt();
     return;
   }
   reveal.hidden = false;
@@ -10217,15 +10236,63 @@ function startTourneyVoteReveal(kind) {
   reveal.classList.remove("tourney-vote-reveal--active");
   void reveal.offsetWidth;
   reveal.classList.add("tourney-vote-reveal--active");
-  window.setTimeout(() => document.getElementById("btnTourneyVoteRevealDone")?.focus(), 420);
+  window.setTimeout(() => btn?.focus(), 420);
+}
+
+function startTourneyReadyPrompt() {
+  if (isTourneyPlayerReadyToday()) return;
+  tourneyVoteRevealStage = "ready";
+  const reveal = document.getElementById("tourneyVoteReveal");
+  const title = document.getElementById("tourneyVoteRevealTitle");
+  const eventEl = document.getElementById("tourneyVoteRevealEvent");
+  const detail = document.getElementById("tourneyVoteRevealDetail");
+  const btn = document.getElementById("btnTourneyVoteRevealDone");
+  const label = tourneyEventLabel(winningTourneyEventKind());
+  if (title) title.textContent = "Ready for the tourney?";
+  if (eventEl) eventEl.textContent = label;
+  if (detail) {
+    detail.textContent =
+      "Heats won't start for you until you tap I am ready. Chests go to the final top 3 only.";
+  }
+  if (btn) btn.textContent = "I am ready";
+  if (!reveal) {
+    gameMeta.tourneyReadyDayKey = getTourneyDayKey();
+    saveMeta();
+    showToast("You're ready for today's tourney — good luck!", 3600);
+    return;
+  }
+  reveal.hidden = false;
+  reveal.setAttribute("aria-hidden", "false");
+  reveal.classList.remove("tourney-vote-reveal--active");
+  void reveal.offsetWidth;
+  reveal.classList.add("tourney-vote-reveal--active");
+  window.setTimeout(() => btn?.focus(), 420);
 }
 
 function endTourneyVoteReveal() {
   const reveal = document.getElementById("tourneyVoteReveal");
-  if (!reveal || reveal.hidden) return;
+  if (tourneyVoteRevealStage === "winner") {
+    if (reveal && !reveal.hidden) {
+      reveal.classList.remove("tourney-vote-reveal--active");
+      window.setTimeout(() => startTourneyReadyPrompt(), 220);
+      return;
+    }
+    startTourneyReadyPrompt();
+    return;
+  }
+  if (tourneyVoteRevealStage === "ready") {
+    gameMeta.tourneyReadyDayKey = getTourneyDayKey();
+    saveMeta();
+    showToast("You're ready — compete when a heat opens. Good luck!", 3600);
+  }
+  if (!reveal || reveal.hidden) {
+    if (panelEvents && !panelEvents.hidden) void refreshTournamentCard();
+    return;
+  }
   reveal.classList.remove("tourney-vote-reveal--active");
   reveal.hidden = true;
   reveal.setAttribute("aria-hidden", "true");
+  tourneyVoteRevealStage = "winner";
   if (panelEvents && !panelEvents.hidden) void refreshTournamentCard();
 }
 
@@ -11593,33 +11660,29 @@ async function finishTournamentRun(scorePts, duelMeta = null) {
     const opponentScore = Math.max(0, Math.floor(Number(duelMeta?.opponentScore) || 0));
     const playerScore = Math.max(0, Math.floor(Number(scorePts) || 0));
     await resolveTourneyBracketMatchFromDuel(run, playerScore, opponentScore);
+    showToast("Tourney event complete — good luck!", 4200);
     refreshTournamentCard();
     return;
   }
   await submitTourneyScore(scorePts, run.slotKey, run.eventKind);
   await fetchTourneyLeaderboard(run.dayKey);
   applyTourneyComField(run.dayKey, run.slotKey, run.eventKind);
-  const rank = tourneyLeaderboardRows.findIndex((r) => r.client_id === getDuelClientId()) + 1;
-  const fieldSize = tourneyLeaderboardRows.length;
-  const comCount = tourneyLeaderboardRows.filter((r) => r.is_com || isTourneyComClientId(r.client_id)).length;
-  if (rank > 0 && rank <= 3) {
-    showToast(`Tournament heat complete — you're #${rank}! Prizes pay after the evening heat ends.`, 4200);
-  } else if (rank > 0) {
-    showToast(
-      comCount
-        ? `Tournament heat complete — #${rank} of ${fieldSize} (random anglers filled empty spots).`
-        : `Tournament heat complete — you're #${rank} of ${fieldSize}.`,
-      3800,
-    );
-  } else {
-    showToast("Tournament score posted!", 2400);
-  }
+  showToast("Tourney event complete — good luck!", 4200);
   refreshTournamentCard();
 }
 
 async function beginTournamentCompetition() {
   if (!isTourneySignedUpToday()) {
     showToast("Sign up this morning to claim a tourney spot.", 2800);
+    return;
+  }
+  if (!areTourneyVotesLocked()) {
+    showToast("Votes lock before the morning heat — hang tight.", 2800);
+    return;
+  }
+  if (!isTourneyPlayerReadyToday()) {
+    showToast("Dismiss today's event winner, then tap I am ready.", 3200);
+    startTourneyReadyPrompt();
     return;
   }
   const slot = getTourneySlotState();
@@ -11891,10 +11954,10 @@ async function refreshTournamentCard() {
   }
   if (tourneyPrizeLine) {
     tourneyPrizeLine.textContent = isTourneyDuelBracketDay()
-      ? "Duel bracket: top 32 play · seeds 33–35 get 1,000 coins · podium wins chests + gems"
+      ? "Duel bracket: top 32 play · seeds 33–35 get 1,000 coins · only final top 3 get chests"
       : isTourneyMixedEventDay()
-        ? "Mixed day: morning pick + afternoon & evening heat votes (no Duel) · top 3 scores win prizes"
-        : "Morning vote can pick Duel (bracket day) or a mode for morning — then heat votes if not Duel";
+        ? "Mixed day: morning pick + heat votes · only final top 3 get chests (no heat chests)"
+        : "Chests only for final top 3 — heat scores don't award chests";
   }
   renderTourneyBracketPanel(tourneyBracketState);
   if (btnTourneySignup) {
@@ -11908,13 +11971,20 @@ async function refreshTournamentCard() {
   }
   if (btnTourneyCompete) {
     btnTourneyCompete.hidden = !isTourneySignedUpToday();
-    btnTourneyCompete.disabled = !slot.slotKey;
+    const ready = isTourneyPlayerReadyToday();
+    const canCompete = Boolean(slot.slotKey) && ready && areTourneyVotesLocked();
+    btnTourneyCompete.disabled = !canCompete;
     const now = Date.now();
     const bracketPlayable =
       isTourneyDuelBracketDay() && slot.slotKey
         ? getMyTourneyBracketPlayableMatch(slot.slotKey, tourneyBracketState)
         : null;
-    if (!slot.slotKey) {
+    if (!areTourneyVotesLocked()) {
+      btnTourneyCompete.textContent = "Votes still open";
+    } else if (!ready) {
+      btnTourneyCompete.textContent = "Tap I am ready first";
+      btnTourneyCompete.disabled = false;
+    } else if (!slot.slotKey) {
       btnTourneyCompete.textContent = "Heat opens soon";
     } else if (isTourneyDuelBracketDay() && bracketPlayable) {
       btnTourneyCompete.textContent = "Play bracket match";
@@ -15129,7 +15199,8 @@ async function endDuelRoundAsync() {
     opponentScore = resolved.opponentScore;
   }
 
-  if (tournamentRun) {
+  const wasTourney = Boolean(tournamentRun);
+  if (wasTourney) {
     await finishTournamentRun(playerScore, { opponentScore, won: playerScore > opponentScore });
   }
 
@@ -15140,15 +15211,17 @@ async function endDuelRoundAsync() {
   const tie = playerScore === opponentScore;
 
   if (duelOverHeadline) {
-    duelOverHeadline.textContent = won
-      ? isPvp
-        ? `You beat ${rivalName}!`
-        : "You win the duel!"
-      : tie
-        ? "It's a tie!"
-        : isPvp
-          ? `${rivalName} wins`
-          : "Rival wins";
+    duelOverHeadline.textContent = wasTourney
+      ? "Tourney event complete — good luck!"
+      : won
+        ? isPvp
+          ? `You beat ${rivalName}!`
+          : "You win the duel!"
+        : tie
+          ? "It's a tie!"
+          : isPvp
+            ? `${rivalName} wins`
+            : "Rival wins";
   }
   if (duelOverScores) {
     duelOverScores.textContent = isPvp
@@ -15165,6 +15238,10 @@ async function endDuelRoundAsync() {
         ? tourneyBracketEntryName(findTourneyBracketEntry(nextOppId, tourneyBracketState))
         : "TBD";
       duelOverDetail.textContent = `Your next duel: ${nextRound?.label || "next round"} vs ${vsName} (${nextRound ? tourneySlotLabel(nextRound.slotKey) : "next"} heat)`;
+    } else if (wasTourney) {
+      duelOverDetail.textContent = won
+        ? "Match result posted · chests are for the final top 3 only."
+        : "Match result posted · hang in for the next heat.";
     } else {
       duelOverDetail.textContent = isPvp
         ? `${reefName} · live duel vs ${rivalName}`
@@ -15172,7 +15249,7 @@ async function endDuelRoundAsync() {
     }
   }
   if (duelOverPrize) {
-    if (won) {
+    if (won && !wasTourney) {
       gameMeta.coins += DUEL_WIN_COINS;
       saveMeta();
       refreshCoinDisplays();
@@ -20213,28 +20290,32 @@ function beginEventMinigame(kind, fromPrep = false) {
   startRound();
 }
 
-function showEventMinigameReward({ source, title, summaryHtml, scorePts, tier }) {
+function showEventMinigameReward({ source, title, summaryHtml, scorePts, tier, tourneyComplete = false }) {
   crabRewardSource = source;
   resetChestOpenUi();
-  const noChest = !tier;
+  const noChest = !tier || tourneyComplete;
   crabRewardBundles = noChest ? [] : rollCrabBundles(tier);
   crabRewardClaimed = noChest;
-  if (crabRewardHeadline) crabRewardHeadline.textContent = title;
+  if (crabRewardHeadline) crabRewardHeadline.textContent = tourneyComplete ? "Tourney event complete" : title;
   if (crabRewardSummary) crabRewardSummary.innerHTML = summaryHtml;
   if (crabRewardTier) {
     crabRewardTier.hidden = false;
-    crabRewardTier.textContent = noChest
-      ? "Too small a haul — no chest this time. Try again for a better score!"
-      : tier === "legendary"
-        ? "Legendary chest — top haul!"
-        : tier === "rare"
-          ? "Rare chest — solid haul."
-          : "Common chest — keep grinding for bigger rewards.";
+    crabRewardTier.textContent = tourneyComplete
+      ? "Good luck! Chests are for the final top 3 only."
+      : noChest
+        ? "Too small a haul — no chest this time. Try again for a better score!"
+        : tier === "legendary"
+          ? "Legendary chest — top haul!"
+          : tier === "rare"
+            ? "Rare chest — solid haul."
+            : "Common chest — keep grinding for bigger rewards.";
   }
   if (crabRewardPrompt) {
-    crabRewardPrompt.textContent = noChest
-      ? "Score higher next run to unlock a chest."
-      : "Choose one chest — better hauls mean richer loot.";
+    crabRewardPrompt.textContent = tourneyComplete
+      ? "Score posted — good luck in the standings!"
+      : noChest
+        ? "Score higher next run to unlock a chest."
+        : "Choose one chest — better hauls mean richer loot.";
   }
   if (crabRewardResult) {
     crabRewardResult.hidden = true;
@@ -20274,14 +20355,16 @@ async function endEventMinigameRoundAsync() {
   const fishScore = Math.max(0, score);
   playCrabRoundEndSound();
   if (session.kind === "roulette") {
-    const tier = minigameFishTierForScore(fishScore);
-    if (tournamentRun) void finishTournamentRun(fishScore);
+    const wasTourney = Boolean(tournamentRun);
+    const tier = wasTourney ? null : minigameFishTierForScore(fishScore);
+    if (wasTourney) void finishTournamentRun(fishScore);
     showEventMinigameReward({
       source: "roulette",
       title: "Reef Roulette!",
       summaryHtml: `Haul on <strong>${session.reefName || "a mystery reef"}</strong>: <strong>${fishScore}</strong> pts`,
       scorePts: fishScore,
       tier,
+      tourneyComplete: wasTourney,
     });
     return;
   }
@@ -20293,21 +20376,24 @@ async function endEventMinigameRoundAsync() {
       partner = await resolveCoopFinalPartnerScore(session, fishScore);
     }
     const combined = fishScore + partner;
-    const tier = coopTierForScore(combined);
-    if (tournamentRun) void finishTournamentRun(combined);
+    const wasTourney = Boolean(tournamentRun);
+    const tier = wasTourney ? null : coopTierForScore(combined);
+    if (wasTourney) void finishTournamentRun(combined);
     showEventMinigameReward({
       source: "coop",
       title: "Co-op Haul!",
       summaryHtml: `You <strong>${fishScore}</strong> + ${partnerName} <strong>${partner}</strong> = <strong>${combined}</strong> pts`,
       scorePts: combined,
       tier,
+      tourneyComplete: wasTourney,
     });
     return;
   }
   // survivor
-  const tier = survivorTierForScore(fishScore);
+  const wasTourney = Boolean(tournamentRun);
+  const tier = wasTourney ? null : survivorTierForScore(fishScore);
   const hooked = Boolean(session.caughtKraken);
-  if (tournamentRun) void finishTournamentRun(fishScore);
+  if (wasTourney) void finishTournamentRun(fishScore);
   showEventMinigameReward({
     source: "survivor",
     title: hooked ? "Kraken Survived!" : "Kraken Survivor",
@@ -20316,6 +20402,7 @@ async function endEventMinigameRoundAsync() {
       : `Bonus haul: <strong>${fishScore}</strong> pts`,
     scorePts: fishScore,
     tier,
+    tourneyComplete: wasTourney,
   });
 }
 
@@ -20491,8 +20578,9 @@ function finishCrabTrap() {
   const finalScore = session.score;
   endCrabTrapStageUi();
   playCrabRoundEndSound();
-  if (tournamentRun) void finishTournamentRun(finalScore);
-  showCrabReward(finalScore);
+  const wasTourney = Boolean(tournamentRun);
+  if (wasTourney) void finishTournamentRun(finalScore);
+  showCrabReward(finalScore, { tourneyComplete: wasTourney });
 }
 
 function claimPendingCrabRewardIfNeeded() {
@@ -21700,25 +21788,30 @@ function revealCrabRewardActions() {
   btnCrabPlayAgain.textContent = tickets > 0 ? againLabel : "No tickets left";
 }
 
-function showCrabReward(finalScore) {
+function showCrabReward(finalScore, opts = {}) {
   crabRewardSource = "crab";
   resetChestOpenUi();
-  const tier = crabTierForScore(finalScore);
+  const tourneyComplete = Boolean(opts.tourneyComplete);
+  const tier = tourneyComplete ? null : crabTierForScore(finalScore);
   const noChest = !tier;
   crabRewardBundles = noChest ? [] : rollCrabBundles(tier);
   crabRewardClaimed = noChest;
-  if (crabRewardHeadline) crabRewardHeadline.textContent = "Crab Trap!";
+  if (crabRewardHeadline) crabRewardHeadline.textContent = tourneyComplete ? "Tourney event complete" : "Crab Trap!";
   if (crabRewardSummary) {
     crabRewardSummary.innerHTML = `You trapped <strong>${finalScore}</strong> treasure crab${finalScore === 1 ? "" : "s"}`;
   }
   if (crabRewardTier) {
     crabRewardTier.hidden = false;
-    crabRewardTier.textContent = crabTierMessage(tier);
+    crabRewardTier.textContent = tourneyComplete
+      ? "Good luck! Chests are for the final top 3 only."
+      : crabTierMessage(tier);
   }
   if (crabRewardPrompt) {
-    crabRewardPrompt.textContent = noChest
-      ? "Trap more crabs next time to unlock a chest."
-      : "Choose one chest to claim your reward.";
+    crabRewardPrompt.textContent = tourneyComplete
+      ? "Score posted — good luck in the standings!"
+      : noChest
+        ? "Trap more crabs next time to unlock a chest."
+        : "Choose one chest to claim your reward.";
   }
   if (crabRewardResult) {
     crabRewardResult.hidden = true;
