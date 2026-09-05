@@ -16123,13 +16123,20 @@ function musicWatchdogTick() {
     const now = Date.now();
     if (now - musicWatchdogLastKick < 1200) return;
     musicWatchdogLastKick = now;
-    void resumeMusicContext().then(() => restartSceneMusic(false));
+    void resumeMusicContext().then(() => {
+      syncMusicMasterGain();
+      restartSceneMusic(false);
+    });
     return;
   }
-  if (musicMaster.gain.value <= 0) syncMusicMasterGain();
+  /* Near-silent gain used to look "fine" ( > 0 ) after a failed scene fade. */
+  if (musicMasterGainValue() < MUSIC_AUDIBLE_GAIN_MIN) syncMusicMasterGain();
   const timer = expectedMusicTimer();
   if (timer === null) return;
-  if (!timer) restartSceneMusic(false);
+  if (!timer) {
+    restartSceneMusic(false);
+    syncMusicMasterGain();
+  }
 }
 
 function startMusicWatchdog() {
@@ -16457,6 +16464,10 @@ function isChromebookOrIPad() {
 const HOME_MUSIC_VOLUME_BOOST = 5;
 const DEFAULT_MUSIC_MASTER_GAIN = 0.28;
 const HOME_MUSIC_MASTER_GAIN = 0.48;
+const EVENTS_MUSIC_MASTER_GAIN = 0.45;
+/** Below this, treat master gain as "silent" so the watchdog can recover. */
+const MUSIC_AUDIBLE_GAIN_MIN = 0.04;
+let sceneMusicSwitchTimer = 0;
 
 function kickMusicContext() {
   const ac = ensureMusicContext();
@@ -16492,6 +16503,32 @@ async function resumeMusicContext() {
   return ac.state === "closed" ? null : ac;
 }
 
+function musicMasterGainValue() {
+  if (!musicMaster) return 0;
+  const v = Number(musicMaster.gain.value);
+  return Number.isFinite(v) ? v : 0;
+}
+
+function setMusicMasterGainNow(target) {
+  if (!musicMaster) return;
+  const value = Math.max(0, Number(target) || 0);
+  try {
+    if (musicCtx && musicCtx.state !== "closed") {
+      const now = musicCtx.currentTime;
+      musicMaster.gain.cancelScheduledValues(now);
+      musicMaster.gain.setValueAtTime(value, now);
+    } else {
+      musicMaster.gain.value = value;
+    }
+  } catch {
+    try {
+      musicMaster.gain.value = value;
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
 function musicSchedulerReady() {
   if (!musicEnabled || !musicCtx || !musicMaster) return false;
   if (musicCtx.state === "closed") {
@@ -16502,38 +16539,17 @@ function musicSchedulerReady() {
     kickMusicContext();
     if (musicCtx.state !== "running") return false;
   }
-  if (musicMaster.gain.value <= 0) syncMusicMasterGain();
+  if (musicMasterGainValue() < MUSIC_AUDIBLE_GAIN_MIN) syncMusicMasterGain();
   return musicCtx.state === "running";
-}
-
-function rampMusicMasterGain(target, fadeSec = 0.12) {
-  if (!musicMaster || !musicCtx) return;
-  const now = musicCtx.currentTime;
-  const cur = Math.max(0.0001, musicMaster.gain.value || 0.0001);
-  try {
-    musicMaster.gain.cancelScheduledValues(now);
-    musicMaster.gain.setValueAtTime(cur, now);
-    musicMaster.gain.linearRampToValueAtTime(Math.max(0.0001, target), now + Math.max(0.04, fadeSec));
-  } catch {
-    musicMaster.gain.value = target;
-  }
 }
 
 function syncMusicMasterGain() {
   if (!musicMaster) return;
   if (!musicEnabled) {
-    try {
-      if (musicCtx) {
-        const now = musicCtx.currentTime;
-        musicMaster.gain.cancelScheduledValues(now);
-      }
-    } catch {
-      /* ignore */
-    }
-    musicMaster.gain.value = 0;
+    setMusicMasterGainNow(0);
     return;
   }
-  rampMusicMasterGain(sceneMusicTargetGain(), 0.1);
+  setMusicMasterGainNow(sceneMusicTargetGain());
 }
 
 function sceneMusicTargetGain() {
@@ -16550,17 +16566,32 @@ function stopAllSceneMusicTimers() {
   stopReefMusic();
 }
 
+/**
+ * Switch beds without dipping master gain to silence (that left music stuck
+ * inaudible when restarts raced or AudioContext was still suspended).
+ */
 function switchSceneMusic(startFn) {
   if (!musicEnabled || typeof startFn !== "function") return;
   unlockAudioFromGesture();
-  rampMusicMasterGain(0.0001, 0.08);
+  if (sceneMusicSwitchTimer) {
+    clearTimeout(sceneMusicSwitchTimer);
+    sceneMusicSwitchTimer = 0;
+  }
   stopAllSceneMusicTimers();
-  /* Brief dip so leftover oscillators don't clash with the new scene bed. */
-  window.setTimeout(() => {
+  syncMusicMasterGain();
+  startFn(true);
+  syncMusicMasterGain();
+  sceneMusicSwitchTimer = window.setTimeout(() => {
+    sceneMusicSwitchTimer = 0;
     if (!musicEnabled) return;
-    startFn(true);
-    rampMusicMasterGain(sceneMusicTargetGain(), 0.14);
-  }, 70);
+    if (!expectedMusicTimer()) restartSceneMusic(true);
+    syncMusicMasterGain();
+  }, 120);
+  void resumeMusicContext().then(() => {
+    if (!musicEnabled) return;
+    syncMusicMasterGain();
+    if (!expectedMusicTimer()) restartSceneMusic(true);
+  });
 }
 
 function randomMusicTrackIndex(count, avoid = -1) {
@@ -16923,7 +16954,6 @@ function reefMusicTuning(reefId) {
 
 const EVENTS_MUSIC_TEMPO_MS = 2600;
 const EVENTS_MUSIC_VOLUME_BOOST = 5;
-const EVENTS_MUSIC_MASTER_GAIN = 0.45;
 
 function scheduleEventsLaidbackMusicBar() {
   if (!musicSchedulerReady() || !isEventsMusicActive()) return;
@@ -17021,7 +17051,9 @@ function scheduleAdventurePirateMusicBar() {
 
 function startEventsMusic(forceRestart = true) {
   if (!musicEnabled || !isEventsMusicActive()) return;
-  if (!forceRestart && eventsMusicTimer && musicContextRunning()) return;
+  if (!forceRestart && eventsMusicTimer && musicContextRunning() && musicMasterGainValue() >= MUSIC_AUDIBLE_GAIN_MIN) {
+    return;
+  }
   unlockAudioFromGesture();
   homeAudioUnlocked = true;
   stopHomeMusic();
@@ -17035,7 +17067,8 @@ function startEventsMusic(forceRestart = true) {
   eventsMusicStep = 0;
   scheduleEventsLaidbackMusicBar();
   eventsMusicTimer = setInterval(scheduleEventsLaidbackMusicBar, EVENTS_MUSIC_TEMPO_MS);
-  void resumeMusicContext();
+  syncMusicMasterGain();
+  void resumeMusicContext().then(() => syncMusicMasterGain());
 }
 
 function stopEventsMusic() {
@@ -17047,7 +17080,9 @@ function stopEventsMusic() {
 
 function startAdventureMusic(forceRestart = true) {
   if (!musicEnabled || !isAdventureMusicActive()) return;
-  if (!forceRestart && adventureMusicTimer && musicContextRunning()) return;
+  if (!forceRestart && adventureMusicTimer && musicContextRunning() && musicMasterGainValue() >= MUSIC_AUDIBLE_GAIN_MIN) {
+    return;
+  }
   unlockAudioFromGesture();
   homeAudioUnlocked = true;
   stopHomeMusic();
@@ -17062,7 +17097,8 @@ function startAdventureMusic(forceRestart = true) {
   adventureMusicBarIndex = 0;
   scheduleAdventurePirateMusicBar();
   armAdventureMusicTimer();
-  void resumeMusicContext();
+  syncMusicMasterGain();
+  void resumeMusicContext().then(() => syncMusicMasterGain());
 }
 
 function stopAdventureMusic() {
@@ -17129,7 +17165,9 @@ function startReefMusic(forceRestart = true) {
     startAdventureMusic(forceRestart);
     return;
   }
-  if (!forceRestart && gameMusicTimer && musicContextRunning()) return;
+  if (!forceRestart && gameMusicTimer && musicContextRunning() && musicMasterGainValue() >= MUSIC_AUDIBLE_GAIN_MIN) {
+    return;
+  }
   stopAdventureMusic();
   unlockAudioFromGesture();
   syncMusicMasterGain();
@@ -17141,7 +17179,8 @@ function startReefMusic(forceRestart = true) {
   reefMusicBarIndex = 0;
   scheduleReefMusicBar();
   armReefMusicTimer();
-  void resumeMusicContext();
+  syncMusicMasterGain();
+  void resumeMusicContext().then(() => syncMusicMasterGain());
 }
 
 function stopReefMusic() {
@@ -17288,7 +17327,9 @@ function startHomeWaves() {
 
 function startHomeMusic(forceRestart = true) {
   if (!musicEnabled || playing || isAdventureMusicActive() || isEventsMusicActive()) return;
-  if (!forceRestart && musicTimer && musicContextRunning()) return;
+  if (!forceRestart && musicTimer && musicContextRunning() && musicMasterGainValue() >= MUSIC_AUDIBLE_GAIN_MIN) {
+    return;
+  }
   unlockAudioFromGesture();
   homeAudioUnlocked = true;
   stopEventsMusic();
@@ -17303,7 +17344,8 @@ function startHomeMusic(forceRestart = true) {
   homeMusicBarIndex = 0;
   scheduleSailingMusicBar();
   armHomeMusicTimer();
-  void resumeMusicContext();
+  syncMusicMasterGain();
+  void resumeMusicContext().then(() => syncMusicMasterGain());
 }
 
 function stopHomeMusic() {
@@ -17341,6 +17383,10 @@ async function toggleHomeMusic() {
   saveMusicEnabledPref();
   updateMusicButton();
   if (!musicEnabled) {
+    if (sceneMusicSwitchTimer) {
+      clearTimeout(sceneMusicSwitchTimer);
+      sceneMusicSwitchTimer = 0;
+    }
     syncMusicMasterGain();
     stopHomeMusic();
     stopEventsMusic();
@@ -17363,7 +17409,11 @@ async function toggleHomeMusic() {
   homeAudioUnlocked = true;
   syncMusicMasterGain();
   restartSceneMusic(true);
-  void resumeMusicContext();
+  syncMusicMasterGain();
+  void resumeMusicContext().then(() => {
+    syncMusicMasterGain();
+    if (!expectedMusicTimer()) restartSceneMusic(true);
+  });
 }
 
 function unlockHomeAudio() {
@@ -26467,18 +26517,27 @@ document.addEventListener("visibilitychange", () => {
   refreshSharedBoardsFromServer();
   if (!musicEnabled) return;
   unlockAudioFromGesture();
-  void resumeMusicContext().then(() => restartSceneMusic(false));
+  void resumeMusicContext().then(() => {
+    syncMusicMasterGain();
+    restartSceneMusic(false);
+  });
 });
 window.addEventListener("pageshow", () => {
   refreshSharedBoardsFromServer();
   if (!musicEnabled) return;
   unlockAudioFromGesture();
-  void resumeMusicContext().then(() => restartSceneMusic(false));
+  void resumeMusicContext().then(() => {
+    syncMusicMasterGain();
+    restartSceneMusic(false);
+  });
 });
 window.addEventListener("focus", () => {
   refreshSharedBoardsFromServer();
   if (!musicEnabled) return;
-  void resumeMusicContext().then(() => restartSceneMusic(false));
+  void resumeMusicContext().then(() => {
+    syncMusicMasterGain();
+    restartSceneMusic(false);
+  });
 });
 
 async function saveCurrentScoreToBoard() {
