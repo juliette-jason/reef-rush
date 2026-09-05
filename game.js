@@ -9511,6 +9511,7 @@ let dailyLeaderboardRows = [];
 let dailyLeaderboardLoading = false;
 let dailyLeaderboardLoadId = 0;
 let dailyEventCountdownTimer = 0;
+let dailyLeaderboardRemoteOk = false;
 
 function getDailyDayKey(d = new Date()) {
   /* UTC so phones and computers share the same Fisher of the Day calendar day. */
@@ -9609,21 +9610,62 @@ function normalizeDailyLeaderboardRows(rows) {
     .slice(0, DAILY_LEADERBOARD_MAX);
 }
 
+function dailyUtcRangeIso(dayKey = getDailyDayKey()) {
+  const start = `${dayKey}T00:00:00.000Z`;
+  const endMs = Date.parse(start) + 24 * 60 * 60 * 1000;
+  return { start, end: new Date(endMs).toISOString() };
+}
+
+function withKnownDailyDisplayNames(rows) {
+  const identity = resolveScorePlayerIdentity(gameMeta.playerName);
+  const ownName = parseLeaderboardName(gameMeta.playerName) || identity.name;
+  return rows.map((r) => {
+    if (ownName && r.initials === identity.initials && (!r.name || r.name === r.initials)) {
+      return { ...r, name: ownName };
+    }
+    return r;
+  });
+}
+
+async function fetchDedicatedDailyLeaderboard(dayKey) {
+  const url = `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=initials,display_name,score,reef_id,created_at,day_key&order=score.desc,created_at.asc&limit=${DAILY_LEADERBOARD_FETCH_LIMIT}`;
+  let res = await fetch(url, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
+  if (!res.ok) {
+    const fallbackUrl = `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=initials,score,reef_id,created_at,day_key&order=score.desc,created_at.asc&limit=${DAILY_LEADERBOARD_FETCH_LIMIT}`;
+    res = await fetch(fallbackUrl, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
+  }
+  if (!res.ok) return null;
+  return normalizeDailyLeaderboardRows(await res.json());
+}
+
+async function fetchSharedLeaderboardForDay(dayKey) {
+  const { start, end } = dailyUtcRangeIso(dayKey);
+  const url =
+    `${LEADERBOARD_TABLE_URL}?select=initials,score,reef_id,created_at` +
+    `&created_at=gte.${encodeURIComponent(start)}&created_at=lt.${encodeURIComponent(end)}` +
+    `&order=score.desc,created_at.asc&limit=${DAILY_LEADERBOARD_FETCH_LIMIT}`;
+  const res = await fetch(url, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
+  if (!res.ok) throw new Error(`Daily leaderboard fetch failed: ${res.status}`);
+  return normalizeDailyLeaderboardRows(
+    (await res.json()).map((row) => ({ ...row, day_key: dayKey, dayKey }))
+  );
+}
+
 async function fetchDailyLeaderboardForDay(dayKey = getDailyDayKey()) {
   try {
-    const url = `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=initials,display_name,score,reef_id,created_at,day_key&order=score.desc,created_at.asc&limit=${DAILY_LEADERBOARD_FETCH_LIMIT}`;
-    let res = await fetch(url, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
-    if (!res.ok) {
-      const fallbackUrl = `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=initials,score,reef_id,created_at,day_key&order=score.desc,created_at.asc&limit=${DAILY_LEADERBOARD_FETCH_LIMIT}`;
-      res = await fetch(fallbackUrl, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
-    }
-    if (!res.ok) throw new Error(`Daily leaderboard fetch failed: ${res.status}`);
-    const rows = normalizeDailyLeaderboardRows(await res.json());
+    /* Prefer dedicated table when present; otherwise reuse shared leaderboard rows for that UTC day. */
+    const dedicated = await fetchDedicatedDailyLeaderboard(dayKey);
+    const rows = withKnownDailyDisplayNames(
+      dedicated || (await fetchSharedLeaderboardForDay(dayKey))
+    );
+    dailyLeaderboardRemoteOk = true;
     saveLocalDailyLeaderboard(dayKey, rows);
     return rows;
   } catch (err) {
     console.warn(err);
-    return normalizeDailyLeaderboardRows(loadLocalDailyLeaderboard(dayKey));
+    dailyLeaderboardRemoteOk = false;
+    /* Never treat a single-device cache as the live board when remote is down. */
+    return [];
   }
 }
 
@@ -9635,37 +9677,52 @@ async function fetchTodayDailyLeaderboard() {
     const rows = await fetchDailyLeaderboardForDay(getDailyDayKey());
     if (loadId !== dailyLeaderboardLoadId) return rows;
     dailyLeaderboardRows = rows;
+    updateDailyEventPlayerHint(rows);
     return rows;
   } finally {
     if (loadId === dailyLeaderboardLoadId) {
       dailyLeaderboardLoading = false;
       renderAllDailyLeaderboards(dailyLeaderboardRows);
+      updateDailyEventPlayerHint(dailyLeaderboardRows);
     }
   }
 }
 
-async function submitDailyScore(initials, score, reefId, displayName = "") {
-  const ini = String(initials || "")
-    .toUpperCase()
-    .replace(/[^A-Z]/g, "")
-    .slice(0, 3);
-  const pts = Math.max(0, Math.floor(Number(score) || 0));
-  if (!ini || pts <= 0) return false;
-  const name = parseLeaderboardName(displayName) || parseLeaderboardName(gameMeta.playerName) || ini;
+async function postDailyScoreToSharedLeaderboard(entry) {
+  const payloadWithName = {
+    initials: entry.initials,
+    display_name: entry.name,
+    score: entry.score,
+    reef_id: entry.reefId,
+  };
+  const payloadBasic = {
+    initials: entry.initials,
+    score: entry.score,
+    reef_id: entry.reefId,
+  };
+  let res = await fetch(LEADERBOARD_TABLE_URL, {
+    method: "POST",
+    headers: leaderboardHeaders({
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    }),
+    body: JSON.stringify(payloadWithName),
+  });
+  if (!res.ok) {
+    res = await fetch(LEADERBOARD_TABLE_URL, {
+      method: "POST",
+      headers: leaderboardHeaders({
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      }),
+      body: JSON.stringify(payloadBasic),
+    });
+  }
+  if (!res.ok) throw new Error(`Daily score save failed: ${res.status}`);
+  return true;
+}
 
-  const dayKey = getDailyDayKey();
-  const localRows = normalizeDailyLeaderboardRows(loadLocalDailyLeaderboard(dayKey));
-  const existing =
-    getPlayerDailyEntryToday(ini, dailyLeaderboardRows) || localRows.find((r) => r.initials === ini);
-  if (existing && existing.score >= pts) return false;
-
-  const entry = { initials: ini, name, score: pts, reefId: reefId || "", at: Date.now(), dayKey };
-  const merged = normalizeDailyLeaderboardRows([...localRows, entry]);
-  dailyLeaderboardRows = merged;
-  saveLocalDailyLeaderboard(dayKey, merged);
-  renderAllDailyLeaderboards(merged);
-  updateDailyEventPlayerHint(merged);
-
+async function postDailyScoreToDedicatedTable(entry, dayKey) {
   const payloadWithName = {
     initials: entry.initials,
     display_name: entry.name,
@@ -9679,71 +9736,82 @@ async function submitDailyScore(initials, score, reefId, displayName = "") {
     reef_id: entry.reefId,
     day_key: dayKey,
   };
+  const patchUrl = `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&initials=eq.${encodeURIComponent(entry.initials)}&score=lt.${entry.score}`;
+  let patchRes = await fetch(patchUrl, {
+    method: "PATCH",
+    headers: leaderboardHeaders({
+      "Content-Type": "application/json",
+      Prefer: "return=representation",
+    }),
+    body: JSON.stringify({
+      score: entry.score,
+      reef_id: entry.reefId,
+      display_name: entry.name,
+    }),
+  });
+  if (patchRes.ok) {
+    const updated = await patchRes.json();
+    if (Array.isArray(updated) && updated.length > 0) return true;
+  } else if (patchRes.status !== 404) {
+    return false;
+  }
 
-  try {
-    const patchUrl = `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&initials=eq.${encodeURIComponent(ini)}&score=lt.${pts}`;
-    let patchRes = await fetch(patchUrl, {
-      method: "PATCH",
-      headers: leaderboardHeaders({
-        "Content-Type": "application/json",
-        Prefer: "return=representation",
-      }),
-      body: JSON.stringify({
-        score: entry.score,
-        reef_id: entry.reefId,
-        display_name: entry.name,
-      }),
-    });
-    if (!patchRes.ok && patchRes.status !== 404) {
-      patchRes = await fetch(patchUrl, {
-        method: "PATCH",
-        headers: leaderboardHeaders({
-          "Content-Type": "application/json",
-          Prefer: "return=representation",
-        }),
-        body: JSON.stringify({
-          score: entry.score,
-          reef_id: entry.reefId,
-        }),
-      });
-    }
-    if (patchRes.ok) {
-      const updated = await patchRes.json();
-      if (Array.isArray(updated) && updated.length > 0) {
-        await fetchTodayDailyLeaderboard();
-        return true;
-      }
-    } else if (!patchRes.ok && patchRes.status !== 404) {
-      throw new Error(`Daily leaderboard update failed: ${patchRes.status}`);
-    }
-
-    let postRes = await fetch(DAILY_LEADERBOARD_TABLE_URL, {
+  let postRes = await fetch(DAILY_LEADERBOARD_TABLE_URL, {
+    method: "POST",
+    headers: leaderboardHeaders({
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    }),
+    body: JSON.stringify(payloadWithName),
+  });
+  if (!postRes.ok && postRes.status !== 409) {
+    postRes = await fetch(DAILY_LEADERBOARD_TABLE_URL, {
       method: "POST",
       headers: leaderboardHeaders({
         "Content-Type": "application/json",
         Prefer: "return=minimal",
       }),
-      body: JSON.stringify(payloadWithName),
+      body: JSON.stringify(payloadBasic),
     });
-    if (!postRes.ok && postRes.status !== 409) {
-      postRes = await fetch(DAILY_LEADERBOARD_TABLE_URL, {
-        method: "POST",
-        headers: leaderboardHeaders({
-          "Content-Type": "application/json",
-          Prefer: "return=minimal",
-        }),
-        body: JSON.stringify(payloadBasic),
-      });
-    }
-    if (postRes.status === 409) {
-      await fetchTodayDailyLeaderboard();
-      return false;
-    }
-    if (!postRes.ok) throw new Error(`Daily leaderboard save failed: ${postRes.status}`);
+  }
+  return postRes.ok || postRes.status === 409;
+}
+
+async function submitDailyScore(initials, score, reefId, displayName = "") {
+  const ini = String(initials || "")
+    .toUpperCase()
+    .replace(/[^A-Z]/g, "")
+    .slice(0, 3);
+  const pts = Math.max(0, Math.floor(Number(score) || 0));
+  if (!ini || pts <= 0) return false;
+  const name = parseLeaderboardName(displayName) || parseLeaderboardName(gameMeta.playerName) || ini;
+  const dayKey = getDailyDayKey();
+
+  const remoteRows = await fetchDailyLeaderboardForDay(dayKey);
+  const existing = getPlayerDailyEntryToday(ini, remoteRows);
+  if (existing && existing.score >= pts) {
+    dailyLeaderboardRows = remoteRows;
+    renderAllDailyLeaderboards(remoteRows);
+    updateDailyEventPlayerHint(remoteRows);
+    return false;
+  }
+
+  const entry = { initials: ini, name, score: pts, reefId: reefId || "", at: Date.now(), dayKey };
+  const optimistic = withKnownDailyDisplayNames(normalizeDailyLeaderboardRows([...remoteRows, entry]));
+  dailyLeaderboardRows = optimistic;
+  renderAllDailyLeaderboards(optimistic);
+  updateDailyEventPlayerHint(optimistic);
+
+  try {
+    /* Shared all-time table is the live sync path (daily_leaderboard table is optional). */
+    await postDailyScoreToSharedLeaderboard(entry);
+    void postDailyScoreToDedicatedTable(entry, dayKey);
     await fetchTodayDailyLeaderboard();
+    void fetchSharedLeaderboard();
     return true;
   } catch (err) {
     console.warn(err);
+    await fetchTodayDailyLeaderboard();
     return false;
   }
 }
@@ -9761,7 +9829,9 @@ function renderDailyLeaderboardOl(el, rows = dailyLeaderboardRows) {
     li.className = "leaderboard__empty";
     li.textContent = dailyLeaderboardLoading
       ? "Loading today's scores..."
-      : "No scores yet today — play a reef run to climb the board!";
+      : dailyLeaderboardRemoteOk
+        ? "No scores yet today — play a reef run to climb the board!"
+        : "Can't reach today's board — check your connection and reopen Events.";
     el.appendChild(li);
     return;
   }
