@@ -14696,7 +14696,7 @@ async function endDuelRoundAsync() {
   }
 
   if (tournamentRun) {
-    void finishTournamentRun(playerScore, { opponentScore, won: playerScore > opponentScore });
+    await finishTournamentRun(playerScore, { opponentScore, won: playerScore > opponentScore });
   }
 
   duelSession = null;
@@ -14722,9 +14722,20 @@ async function endDuelRoundAsync() {
       : `You ${playerScore} · Rival ${opponentScore}`;
   }
   if (duelOverDetail) {
-    duelOverDetail.textContent = isPvp
-      ? `${reefName} · live duel vs ${rivalName}`
-      : `${reefName} · rival target ${targetScore.toLocaleString()} pts`;
+    const nextMatch = won ? getMyNextTourneyBracketMatch(tourneyBracketState) : null;
+    if (nextMatch) {
+      const me = getDuelClientId();
+      const nextOppId = nextMatch.player_a_id === me ? nextMatch.player_b_id : nextMatch.player_a_id;
+      const nextRound = TOURNEY_BRACKET_ROUNDS.find((r) => r.key === nextMatch.round_key);
+      const vsName = nextOppId
+        ? tourneyBracketEntryName(findTourneyBracketEntry(nextOppId, tourneyBracketState))
+        : "TBD";
+      duelOverDetail.textContent = `Your next duel: ${nextRound?.label || "next round"} vs ${vsName} (${nextRound ? tourneySlotLabel(nextRound.slotKey) : "next"} heat)`;
+    } else {
+      duelOverDetail.textContent = isPvp
+        ? `${reefName} · live duel vs ${rivalName}`
+        : `${reefName} · rival target ${targetScore.toLocaleString()} pts`;
+    }
   }
   if (duelOverPrize) {
     if (won) {
