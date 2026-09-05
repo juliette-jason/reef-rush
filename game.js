@@ -13994,7 +13994,7 @@ function coopPlanFromMatch(row, role) {
     roundStartMs: row.roundStartMs,
     roundMs: MINIGAME_COOP_MS,
     partnerTarget: mode === "com" ? rollCoopPartnerTargetScore() : 0,
-    pacingBias: 0.72 + Math.random() * 0.16,
+    pacingBias: 0.62 + Math.random() * 0.14,
   };
 }
 
@@ -14011,7 +14011,7 @@ function buildLocalComCoopPlan(reefId) {
     roundStartMs: Date.now() + DUEL_MATCH_START_DELAY_MS,
     roundMs: MINIGAME_COOP_MS,
     partnerTarget: rollCoopPartnerTargetScore(),
-    pacingBias: 0.72 + Math.random() * 0.16,
+    pacingBias: 0.62 + Math.random() * 0.14,
   };
 }
 
