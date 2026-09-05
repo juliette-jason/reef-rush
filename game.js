@@ -7228,6 +7228,8 @@ function defaultMeta() {
     tourneyConsolationDayKey: "",
     tourneyPodiumClaimDayKey: "",
     tourneyPodiumRank: 0,
+    tourneyHeatVoteDayKey: "",
+    tourneyHeatVotes: {},
   };
 }
 
@@ -7323,6 +7325,11 @@ function loadMeta() {
       tourneyConsolationDayKey: typeof o.tourneyConsolationDayKey === "string" ? o.tourneyConsolationDayKey : "",
       tourneyPodiumClaimDayKey: typeof o.tourneyPodiumClaimDayKey === "string" ? o.tourneyPodiumClaimDayKey : "",
       tourneyPodiumRank: Math.max(0, Math.floor(Number(o.tourneyPodiumRank) || 0)),
+      tourneyHeatVoteDayKey: typeof o.tourneyHeatVoteDayKey === "string" ? o.tourneyHeatVoteDayKey : "",
+      tourneyHeatVotes:
+        o.tourneyHeatVotes && typeof o.tourneyHeatVotes === "object" && !Array.isArray(o.tourneyHeatVotes)
+          ? { ...o.tourneyHeatVotes }
+          : {},
     };
   } catch {
     return defaultMeta();
@@ -9911,6 +9918,9 @@ const TOURNEY_EVENT_OPTIONS = [
   { id: "survivor", label: "Kraken Survivor" },
   { id: "crab", label: "Crab Trap" },
 ];
+/** Non-duel modes for per-heat votes when the morning pick is not Duel Fishing. */
+const TOURNEY_HEAT_EVENT_OPTIONS = TOURNEY_EVENT_OPTIONS.filter((o) => o.id !== "duel");
+const TOURNEY_HEAT_VOTE_SLOTS = ["afternoon", "evening"];
 const TOURNEY_PRIZES = [
   { rank: 1, gems: 400, coins: 2000, chest: "legendary", label: "1st — Legendary chest + 400 gems" },
   { rank: 2, gems: 200, coins: 1000, chest: "rare", label: "2nd — Rare chest + 200 gems" },
@@ -9934,6 +9944,8 @@ const TOURNEY_BRACKET_ROUNDS = [
   { key: "bronze", label: "3rd place", slotKey: "evening", count: 1 },
 ];
 let tourneyVoteCounts = {};
+/** Per-heat community votes when the day is not a Duel bracket day. */
+let tourneyHeatVoteCounts = { afternoon: {}, evening: {} };
 let tourneySignupCount = 0;
 let tourneyLeaderboardRows = [];
 let tourneyRemoteReady = false;
@@ -10120,7 +10132,7 @@ function startTourneyVoteReveal(kind) {
     detail.textContent =
       kind === "duel"
         ? "Duel Fishing wins — the top 32 enter today's bracket. Seeds 33–35 get 1,000 coins."
-        : `The community chose ${label} for today's heats. Compete at 11 AM, 4 PM & 8 PM.`;
+        : `${label} opens the morning heat. Afternoon & evening each get a fresh vote (no Duel) so you can play 3 different games today.`;
   }
   if (!reveal) {
     showToast(`Votes tallied! Today's tourney event: ${label}.`, 4800);
@@ -10168,11 +10180,11 @@ function maybeWarnTourneyHeat(now = Date.now()) {
   }
 }
 
-function winningTourneyEventKind() {
+function winningTourneyEventKind(counts = tourneyVoteCounts) {
   let best = TOURNEY_EVENT_OPTIONS[0].id;
   let bestCount = -1;
   for (const opt of TOURNEY_EVENT_OPTIONS) {
-    const count = tourneyVoteCounts[opt.id] || 0;
+    const count = counts[opt.id] || 0;
     if (count > bestCount) {
       best = opt.id;
       bestCount = count;
@@ -10181,8 +10193,96 @@ function winningTourneyEventKind() {
   return best;
 }
 
+function winningHeatTourneyEventKind(slotKey, counts = null) {
+  const map = counts || tourneyHeatVoteCounts[slotKey] || {};
+  let best = TOURNEY_HEAT_EVENT_OPTIONS[0].id;
+  let bestCount = -1;
+  for (const opt of TOURNEY_HEAT_EVENT_OPTIONS) {
+    const count = map[opt.id] || 0;
+    if (count > bestCount) {
+      best = opt.id;
+      bestCount = count;
+    }
+  }
+  return best;
+}
+
+function isTourneyMixedEventDay() {
+  return areTourneyVotesLocked() && winningTourneyEventKind() !== "duel";
+}
+
+function tourneyHeatVoteStorageKey(slotKey, dayKey = getTourneyDayKey()) {
+  return `${dayKey}~heat~${slotKey}`;
+}
+
+function getTourneyHeatVoteWindow(slotKey, day = new Date()) {
+  const windows = tourneySlotWindows(day);
+  if (slotKey === "afternoon") {
+    return {
+      start: windows.morning.joinEnd,
+      end: windows.afternoon.joinStart,
+      lockAt: windows.afternoon.joinStart,
+    };
+  }
+  if (slotKey === "evening") {
+    return {
+      start: windows.afternoon.joinEnd,
+      end: windows.evening.joinStart,
+      lockAt: windows.evening.joinStart,
+    };
+  }
+  return null;
+}
+
+function areTourneyHeatVotesOpen(slotKey, now = Date.now()) {
+  if (!isTourneyMixedEventDay()) return false;
+  const win = getTourneyHeatVoteWindow(slotKey, new Date(now));
+  if (!win) return false;
+  return now >= win.start && now < win.end;
+}
+
+function areTourneyHeatVotesLocked(slotKey, now = Date.now()) {
+  const win = getTourneyHeatVoteWindow(slotKey, new Date(now));
+  if (!win) return true;
+  return now >= win.lockAt;
+}
+
+function getOpenTourneyHeatVoteSlot(now = Date.now()) {
+  for (const slotKey of TOURNEY_HEAT_VOTE_SLOTS) {
+    if (areTourneyHeatVotesOpen(slotKey, now)) return slotKey;
+  }
+  return null;
+}
+
+function hasTourneyHeatVoted(slotKey) {
+  const dayKey = getTourneyDayKey();
+  if (gameMeta.tourneyHeatVoteDayKey !== dayKey) return false;
+  return Boolean(gameMeta.tourneyHeatVotes?.[slotKey]);
+}
+
+function getTourneyEventForHeat(slotKey) {
+  if (isTourneyDuelBracketDay()) return "duel";
+  if (!slotKey || slotKey === "morning") {
+    const kind = winningTourneyEventKind();
+    return kind === "duel" ? TOURNEY_HEAT_EVENT_OPTIONS[0].id : kind;
+  }
+  if (TOURNEY_HEAT_VOTE_SLOTS.includes(slotKey)) {
+    if (!areTourneyHeatVotesLocked(slotKey) && !Object.values(tourneyHeatVoteCounts[slotKey] || {}).some((n) => n > 0)) {
+      /* Heat vote still open with no ballots — fall back to morning non-duel pick. */
+      const morning = winningTourneyEventKind();
+      return morning === "duel" ? TOURNEY_HEAT_EVENT_OPTIONS[0].id : morning;
+    }
+    return winningHeatTourneyEventKind(slotKey);
+  }
+  return winningTourneyEventKind();
+}
+
 function tourneyEventLabel(kind) {
-  return TOURNEY_EVENT_OPTIONS.find((o) => o.id === kind)?.label || kind;
+  return (
+    TOURNEY_EVENT_OPTIONS.find((o) => o.id === kind)?.label ||
+    TOURNEY_HEAT_EVENT_OPTIONS.find((o) => o.id === kind)?.label ||
+    kind
+  );
 }
 
 function isTourneySignedUpToday() {
@@ -10254,6 +10354,74 @@ async function fetchTourneyVoteCounts(dayKey = getTourneyDayKey()) {
     tourneyVoteCounts = mergeLocal({});
     return tourneyVoteCounts;
   }
+}
+
+async function fetchTourneyHeatVoteCounts(slotKey, dayKey = getTourneyDayKey()) {
+  if (!TOURNEY_HEAT_VOTE_SLOTS.includes(slotKey)) return {};
+  const storageKey = tourneyHeatVoteStorageKey(slotKey, dayKey);
+  const localVotes = tourneyLocalDayVotes(storageKey);
+  const win = getTourneyHeatVoteWindow(slotKey, (() => {
+    const [y, m, d] = dayKey.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  })());
+  const lockAt = win?.lockAt || 0;
+  const locked = Date.now() >= lockAt;
+  const voteCountsTowardTally = (createdAtMs) => {
+    if (!locked) return true;
+    if (!Number.isFinite(createdAtMs) || createdAtMs <= 0) return true;
+    return createdAtMs < lockAt;
+  };
+  const mergeLocal = (counts, remoteVoters = new Set()) => {
+    const next = { ...counts };
+    for (const [voter, raw] of Object.entries(localVotes)) {
+      if (remoteVoters.has(voter)) continue;
+      const entry = normalizeTourneyLocalVoteEntry(raw);
+      if (!entry?.kind || !TOURNEY_HEAT_EVENT_OPTIONS.some((o) => o.id === entry.kind)) continue;
+      if (!voteCountsTowardTally(entry.at)) continue;
+      next[entry.kind] = (next[entry.kind] || 0) + 1;
+    }
+    return next;
+  };
+  try {
+    const res = await fetch(
+      `${TOURNEY_VOTES_URL}?day_key=eq.${encodeURIComponent(storageKey)}&select=event_kind,voter_client_id,created_at`,
+      { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS },
+    );
+    const bodyText = await res.text();
+    if (!res.ok) {
+      if (isTourneyBackendMissingError(res.status, bodyText)) tourneyBackendMissing = true;
+      throw new Error(`Heat votes failed: ${res.status}`);
+    }
+    let rows = [];
+    try {
+      rows = JSON.parse(bodyText);
+    } catch {
+      rows = [];
+    }
+    if (!Array.isArray(rows)) rows = [];
+    const counts = {};
+    const remoteVoters = new Set();
+    for (const row of rows) {
+      const kind = row.event_kind;
+      if (!TOURNEY_HEAT_EVENT_OPTIONS.some((o) => o.id === kind)) continue;
+      const voter = row.voter_client_id;
+      const createdAtMs = row.created_at ? Date.parse(row.created_at) : 0;
+      if (!voteCountsTowardTally(createdAtMs)) continue;
+      if (voter) remoteVoters.add(voter);
+      counts[kind] = (counts[kind] || 0) + 1;
+    }
+    tourneyHeatVoteCounts[slotKey] = mergeLocal(counts, remoteVoters);
+    return tourneyHeatVoteCounts[slotKey];
+  } catch (err) {
+    console.warn(err);
+    tourneyHeatVoteCounts[slotKey] = mergeLocal({});
+    return tourneyHeatVoteCounts[slotKey];
+  }
+}
+
+async function fetchAllTourneyHeatVoteCounts(dayKey = getTourneyDayKey()) {
+  if (!isTourneyMixedEventDay()) return;
+  await Promise.all(TOURNEY_HEAT_VOTE_SLOTS.map((slot) => fetchTourneyHeatVoteCounts(slot, dayKey)));
 }
 
 async function fetchTourneySignupCount(dayKey = getTourneyDayKey()) {
@@ -10495,9 +10663,90 @@ async function postTourneyVote(eventKind, { silent = false } = {}) {
   }
 }
 
+async function postTourneyHeatVote(slotKey, eventKind, { silent = false } = {}) {
+  if (!TOURNEY_HEAT_VOTE_SLOTS.includes(slotKey)) return false;
+  if (!TOURNEY_HEAT_EVENT_OPTIONS.some((o) => o.id === eventKind)) return false;
+  if (!areTourneyHeatVotesOpen(slotKey)) {
+    if (!silent) {
+      showToast(
+        areTourneyHeatVotesLocked(slotKey)
+          ? `${tourneySlotLabel(slotKey)} heat votes are locked — ${tourneyEventLabel(getTourneyEventForHeat(slotKey))}.`
+          : `${tourneySlotLabel(slotKey)} heat voting isn't open yet.`,
+        2800,
+      );
+    }
+    return false;
+  }
+  if (hasTourneyHeatVoted(slotKey)) return true;
+  const dayKey = getTourneyDayKey();
+  const storageKey = tourneyHeatVoteStorageKey(slotKey, dayKey);
+  const voterId = getDuelClientId();
+  const payload = {
+    day_key: storageKey,
+    voter_client_id: voterId,
+    event_kind: eventKind,
+  };
+  const finishLocal = () => {
+    rememberTourneyLocalVote(storageKey, eventKind, voterId);
+    if (gameMeta.tourneyHeatVoteDayKey !== dayKey) {
+      gameMeta.tourneyHeatVoteDayKey = dayKey;
+      gameMeta.tourneyHeatVotes = {};
+    }
+    gameMeta.tourneyHeatVotes = { ...(gameMeta.tourneyHeatVotes || {}), [slotKey]: eventKind };
+    saveMeta();
+    tourneyHeatVoteCounts[slotKey] = tourneyHeatVoteCounts[slotKey] || {};
+    tourneyHeatVoteCounts[slotKey][eventKind] = (tourneyHeatVoteCounts[slotKey][eventKind] || 0) + 1;
+    if (!silent) showToast(`${tourneySlotLabel(slotKey)} heat: voted for ${tourneyEventLabel(eventKind)}!`, 2400);
+    return true;
+  };
+  try {
+    const res = await fetch(TOURNEY_VOTES_URL, {
+      method: "POST",
+      headers: leaderboardHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
+      body: JSON.stringify(payload),
+    });
+    if (res.status === 409) return finishLocal();
+    if (!res.ok) {
+      const bodyText = await res.text().catch(() => "");
+      if (isTourneyBackendMissingError(res.status, bodyText)) {
+        tourneyBackendMissing = true;
+        return finishLocal();
+      }
+      throw new Error(`Heat vote failed: ${res.status}`);
+    }
+    finishLocal();
+    await fetchTourneyHeatVoteCounts(slotKey, dayKey);
+    return true;
+  } catch (err) {
+    console.warn(err);
+    tourneyBackendMissing = true;
+    return finishLocal();
+  }
+}
+
+async function submitTourneyHeatVote(slotKey, eventKind) {
+  if (hasTourneyHeatVoted(slotKey)) {
+    showToast(`You already voted for the ${tourneySlotLabel(slotKey)} heat.`, 2200);
+    refreshTournamentCard();
+    return;
+  }
+  try {
+    await postTourneyHeatVote(slotKey, eventKind);
+    refreshTournamentCard();
+  } catch (err) {
+    console.warn(err);
+    showToast("Couldn't save heat vote — try again.", 2600);
+  }
+}
+
 async function submitTourneyVote(eventKind) {
+  const openHeat = getOpenTourneyHeatVoteSlot();
+  if (openHeat && isTourneyMixedEventDay()) {
+    await submitTourneyHeatVote(openHeat, eventKind);
+    return;
+  }
   if (areTourneyVotesLocked()) {
-    showToast(`Voting closed — today's event is ${tourneyEventLabel(winningTourneyEventKind())}.`, 2800);
+    showToast(`Morning votes closed — today's path is ${tourneyEventLabel(winningTourneyEventKind())}.`, 2800);
     refreshTournamentCard();
     return;
   }
@@ -11274,7 +11523,8 @@ async function beginTournamentCompetition() {
     return;
   }
   await fetchTourneyVoteCounts();
-  const eventKind = winningTourneyEventKind();
+  if (isTourneyMixedEventDay()) await fetchAllTourneyHeatVoteCounts();
+  const eventKind = getTourneyEventForHeat(slot.slotKey);
   if (eventKind === "duel") {
     const bracket = await ensureTourneyBracketSeeded();
     const me = findTourneyBracketEntry(getDuelClientId(), bracket);
@@ -11348,22 +11598,78 @@ function renderTournamentLeaderboard() {
 function renderTournamentVoteButtons() {
   if (!tourneyVoteOptions) return;
   tourneyVoteOptions.innerHTML = "";
-  const voted = hasTourneyVotedToday();
   const locked = areTourneyVotesLocked();
-  const leading = winningTourneyEventKind();
+  const dayLeading = winningTourneyEventKind();
+  const mixed = isTourneyMixedEventDay();
+  const openHeat = getOpenTourneyHeatVoteSlot();
   const heading = document.getElementById("tourneyVoteHeading");
   const hint = document.getElementById("tourneyVoteHint");
   const yours = document.getElementById("tourneyYourVoteLine");
+
+  if (mixed && openHeat) {
+    const leading = winningHeatTourneyEventKind(openHeat);
+    const voted = hasTourneyHeatVoted(openHeat);
+    const options = TOURNEY_HEAT_EVENT_OPTIONS;
+    if (heading) heading.textContent = `Vote for ${tourneySlotLabel(openHeat)} heat`;
+    if (hint) {
+      hint.textContent = voted
+        ? `${tourneySlotLabel(openHeat)} voting open until that heat starts — counts update live.`
+        : `Pick a non-duel mode for the ${tourneySlotLabel(openHeat)} heat (Duel was only available this morning).`;
+    }
+    if (yours) {
+      if (voted && gameMeta.tourneyHeatVotes?.[openHeat]) {
+        yours.hidden = false;
+        yours.textContent = `Your ${tourneySlotLabel(openHeat)} vote: ${tourneyEventLabel(gameMeta.tourneyHeatVotes[openHeat])} (leading: ${tourneyEventLabel(leading)}).`;
+      } else {
+        yours.hidden = true;
+        yours.textContent = "";
+      }
+    }
+    for (const opt of options) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "tourney-vote-btn";
+      const count = tourneyHeatVoteCounts[openHeat]?.[opt.id] || 0;
+      btn.textContent = `${opt.label} (${count})`;
+      btn.disabled = voted;
+      btn.setAttribute("aria-pressed", gameMeta.tourneyHeatVotes?.[openHeat] === opt.id ? "true" : "false");
+      if (opt.id === leading && Object.values(tourneyHeatVoteCounts[openHeat] || {}).some((n) => n > 0)) {
+        btn.classList.add("tourney-vote-btn--lead");
+      }
+      if (voted && gameMeta.tourneyHeatVotes?.[openHeat] === opt.id) btn.classList.add("tourney-vote-btn--mine");
+      btn.addEventListener("click", () => void submitTourneyHeatVote(openHeat, opt.id));
+      tourneyVoteOptions.appendChild(btn);
+    }
+    return;
+  }
+
+  const voted = hasTourneyVotedToday();
+  const leading = dayLeading;
   if (heading) {
-    heading.textContent = locked ? "Votes locked" : "Vote for today's event";
+    heading.textContent = locked
+      ? mixed
+        ? "Morning pick locked — heat votes next"
+        : "Votes locked"
+      : "Vote for today's event";
   }
   if (hint) {
-    if (locked) {
-      hint.textContent = `Community winner: ${tourneyEventLabel(leading)} — this is today's tourney mode.`;
+    if (locked && isTourneyDuelBracketDay()) {
+      hint.textContent = `Community winner: Duel Fishing — bracket day.`;
+    } else if (locked && mixed) {
+      const morningKind = getTourneyEventForHeat("morning");
+      const aft = areTourneyHeatVotesLocked("afternoon")
+        ? getTourneyEventForHeat("afternoon")
+        : null;
+      const eve = areTourneyHeatVotesLocked("evening") ? getTourneyEventForHeat("evening") : null;
+      hint.textContent = [
+        `Morning: ${tourneyEventLabel(morningKind)}`,
+        aft ? `Afternoon: ${tourneyEventLabel(aft)}` : "Afternoon: vote opens after morning heat",
+        eve ? `Evening: ${tourneyEventLabel(eve)}` : "Evening: vote opens after afternoon heat",
+      ].join(" · ");
     } else if (voted) {
-      hint.textContent = "Voting stays open until the morning heat. Counts update live.";
+      hint.textContent = "Morning vote open until the heat starts. Duel can only win this morning ballot.";
     } else {
-      hint.textContent = "Tap one option below — closes before the morning heat.";
+      hint.textContent = "Tap one — if Duel wins, it's a bracket day; otherwise each heat can be a different game.";
     }
   }
   if (yours) {
@@ -11374,13 +11680,21 @@ function renderTournamentVoteButtons() {
         : `Your vote: ${tourneyEventLabel(gameMeta.tourneyVoteKind)} (leading: ${tourneyEventLabel(leading)}).`;
     } else if (locked) {
       yours.hidden = false;
-      yours.textContent = "You didn't cast a vote — community pick stands.";
+      yours.textContent = "You didn't cast a morning vote — community pick stands.";
     } else {
       yours.hidden = true;
       yours.textContent = "";
     }
   }
-  for (const opt of TOURNEY_EVENT_OPTIONS) {
+  const options = locked && mixed ? [] : TOURNEY_EVENT_OPTIONS;
+  if (!options.length) {
+    const note = document.createElement("p");
+    note.className = "tourney-vote-block__hint";
+    note.textContent = "No heat vote open right now — check back between heats.";
+    tourneyVoteOptions.appendChild(note);
+    return;
+  }
+  for (const opt of options) {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "tourney-vote-btn";
@@ -11403,19 +11717,27 @@ async function refreshTournamentCard() {
   const dayKey = getTourneyDayKey();
   await Promise.all([fetchTourneyVoteCounts(dayKey), fetchTourneySignupCount(dayKey), fetchTourneyLeaderboard(dayKey)]);
   const slot = getTourneySlotState();
-  const eventKind = winningTourneyEventKind();
   const votesLocked = areTourneyVotesLocked();
   maybeAnnounceTourneyVoteLock();
+  if (isTourneyMixedEventDay()) await fetchAllTourneyHeatVoteCounts(dayKey);
   if (isTourneyDuelBracketDay()) {
     await ensureTourneyBracketSeeded();
   }
+  const eventKind = slot.slotKey ? getTourneyEventForHeat(slot.slotKey) : winningTourneyEventKind();
   if (tourneyEventTitle) {
-    if (votesLocked && eventKind === "duel") {
+    if (votesLocked && isTourneyDuelBracketDay()) {
       tourneyEventTitle.textContent = "Community pick: Duel Fishing bracket";
-    } else if (votesLocked) {
-      tourneyEventTitle.textContent = `Community pick: ${tourneyEventLabel(eventKind)}`;
+    } else if (votesLocked && isTourneyMixedEventDay()) {
+      if (slot.slotKey) {
+        tourneyEventTitle.textContent = `${tourneySlotLabel(slot.slotKey)} heat: ${tourneyEventLabel(eventKind)}`;
+      } else {
+        const openHeat = getOpenTourneyHeatVoteSlot();
+        tourneyEventTitle.textContent = openHeat
+          ? `Vote now for ${tourneySlotLabel(openHeat)} heat`
+          : `Morning: ${tourneyEventLabel(getTourneyEventForHeat("morning"))} · heat votes between sessions`;
+      }
     } else if (Object.values(tourneyVoteCounts).some((n) => n > 0)) {
-      tourneyEventTitle.textContent = `Community leading: ${tourneyEventLabel(eventKind)}`;
+      tourneyEventTitle.textContent = `Community leading: ${tourneyEventLabel(winningTourneyEventKind())}`;
     } else {
       tourneyEventTitle.textContent = "Vote below — locks before morning heat";
     }
@@ -11460,7 +11782,9 @@ async function refreshTournamentCard() {
   if (tourneyPrizeLine) {
     tourneyPrizeLine.textContent = isTourneyDuelBracketDay()
       ? "Duel bracket: top 32 play · seeds 33–35 get 1,000 coins · podium wins chests + gems"
-      : "Top 3 of 35 win chests + gems · join each heat 2 min early or late · 11 AM, 4 PM & 8 PM";
+      : isTourneyMixedEventDay()
+        ? "Mixed day: morning pick + afternoon & evening heat votes (no Duel) · top 3 scores win prizes"
+        : "Morning vote can pick Duel (bracket day) or a mode for morning — then heat votes if not Duel";
   }
   renderTourneyBracketPanel(tourneyBracketState);
   if (btnTourneySignup) {
