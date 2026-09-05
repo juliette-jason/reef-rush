@@ -23,7 +23,7 @@
       rel="stylesheet"
     />
     <link rel="canonical" href="https://juliette-jason.github.io/reef-rush/" />
-    <link rel="stylesheet" href="styles.css?v=2026-09-05-duel-bracket-1" />
+    <link rel="stylesheet" href="styles.css?v=2026-09-05-tourney-vote-ui-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -294,6 +294,16 @@
               <ul id="dailyPrizeRevealAwards" class="daily-prize-reveal__awards" hidden></ul>
               <button type="button" id="btnDailyPrizeRevealDone" class="btn btn--primary daily-prize-reveal__btn" hidden>Collect prizes</button>
             </div>
+          </div>
+        </div>
+        <div id="tourneyVoteReveal" class="tourney-vote-reveal" hidden aria-hidden="true">
+          <div class="tourney-vote-reveal__backdrop"></div>
+          <div class="tourney-vote-reveal__stage" role="dialog" aria-labelledby="tourneyVoteRevealTitle" aria-modal="true">
+            <p class="tourney-vote-reveal__badge">★ Votes locked ★</p>
+            <h2 id="tourneyVoteRevealTitle" class="tourney-vote-reveal__title">Today's Fishing Tourney</h2>
+            <p id="tourneyVoteRevealEvent" class="tourney-vote-reveal__event">Reef Roulette</p>
+            <p id="tourneyVoteRevealDetail" class="tourney-vote-reveal__detail">The community picked this mode for all three heats.</p>
+            <button type="button" id="btnTourneyVoteRevealDone" class="btn btn--primary tourney-vote-reveal__btn">Got it</button>
           </div>
         </div>
         <div id="crabTrapStage" class="crab-trap-stage" hidden aria-hidden="true">
@@ -1849,15 +1859,20 @@
           <header class="event-card__head">
             <div class="event-card__title-row">
               <h3 class="event-card__title">Fishing Tourney</h3>
-              <details class="event-card__about">
-                <summary class="event-card__info" aria-label="About Fishing Tourney">
-                  <span class="event-card__info-glyph" aria-hidden="true">i</span>
-                </summary>
-                <p class="event-card__blurb">Vote on today's event. Sign up for a spot — empty spots are filled with random anglers. If Duel Fishing wins, the top 32 enter a single-elim bracket (seeds 33–35 get 1,000 coins). Other events use heat scores — top 3 win chests + gems.</p>
-              </details>
             </div>
             <p id="tourneyEventTitle" class="event-card__reset">Vote for today's event</p>
           </header>
+          <div class="tourney-card-copy">
+            <p class="tourney-card-copy__lead">
+              Community vote picks today's mode. Sign up for one of 35 spots — empty spots fill with random anglers.
+            </p>
+            <ul class="tourney-card-copy__list">
+              <li>Heats at <strong>11 AM</strong>, <strong>4 PM</strong> &amp; <strong>8 PM</strong> (join 2 min early or late).</li>
+              <li>If <strong>Duel Fishing</strong> wins: top 32 enter a bracket; seeds 33–35 get <strong>1,000 coins</strong>; podium wins chests + gems.</li>
+              <li>Other winning events: play the heats — <strong>top 3 scores</strong> win chests + gems.</li>
+              <li>Votes lock just before the morning heat opens.</li>
+            </ul>
+          </div>
           <p id="tourneySignupLine" class="event-card__hint">0/35 spots filled · tap Join below</p>
           <p id="tourneyScheduleLine" class="event-card__hint">Morning heat at 11:00 AM · Afternoon 4:00 PM · Evening 8:00 PM</p>
           <p id="tourneyPrizeLine" class="event-card__hint">Top 3 of 35 win chests + gems</p>
@@ -1865,10 +1880,12 @@
             <button type="button" id="btnTourneySignup" class="btn event-card__play tourney-join-btn">Join today's tourney</button>
             <button type="button" id="btnTourneyCompete" class="btn btn--secondary event-card__play" hidden>Compete in live heat</button>
           </div>
-          <details class="tourney-vote-details">
-            <summary class="tourney-vote-details__summary">Vote for today's event (closes before morning heat)</summary>
+          <div class="tourney-vote-block" id="tourneyVoteBlock">
+            <h4 id="tourneyVoteHeading" class="tourney-vote-block__title">Vote for today's event</h4>
+            <p id="tourneyVoteHint" class="tourney-vote-block__hint">Pick one — closes before the morning heat.</p>
+            <p id="tourneyYourVoteLine" class="tourney-vote-block__yours" hidden></p>
             <div id="tourneyVoteOptions" class="tourney-vote-options" role="group" aria-label="Vote for today's tournament event"></div>
-          </details>
+          </div>
           <div id="tourneyBracketPanel" class="tourney-bracket-panel" hidden>
             <h4 class="tourney-bracket-panel__title">Duel bracket</h4>
             <p id="tourneyBracketLine" class="event-card__hint">Bracket seeding locks with the morning heat.</p>
@@ -2946,6 +2963,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-09-05-duel-bracket-1" defer></script>
+    <script src="game.js?v=2026-09-05-tourney-vote-ui-1" defer></script>
   </body>
 </html>

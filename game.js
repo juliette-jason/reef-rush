@@ -10105,7 +10105,42 @@ function maybeAnnounceTourneyVoteLock() {
   gameMeta.tourneyVoteLockAnnouncedDayKey = dayKey;
   saveMeta();
   const kind = winningTourneyEventKind();
-  showToast(`Votes tallied! Today's tourney event: ${tourneyEventLabel(kind)}.`, 4800);
+  startTourneyVoteReveal(kind);
+}
+
+function startTourneyVoteReveal(kind) {
+  const reveal = document.getElementById("tourneyVoteReveal");
+  const title = document.getElementById("tourneyVoteRevealTitle");
+  const eventEl = document.getElementById("tourneyVoteRevealEvent");
+  const detail = document.getElementById("tourneyVoteRevealDetail");
+  const label = tourneyEventLabel(kind);
+  if (title) title.textContent = "Votes are in!";
+  if (eventEl) eventEl.textContent = label;
+  if (detail) {
+    detail.textContent =
+      kind === "duel"
+        ? "Duel Fishing wins — the top 32 enter today's bracket. Seeds 33–35 get 1,000 coins."
+        : `The community chose ${label} for today's heats. Compete at 11 AM, 4 PM & 8 PM.`;
+  }
+  if (!reveal) {
+    showToast(`Votes tallied! Today's tourney event: ${label}.`, 4800);
+    return;
+  }
+  reveal.hidden = false;
+  reveal.setAttribute("aria-hidden", "false");
+  reveal.classList.remove("tourney-vote-reveal--active");
+  void reveal.offsetWidth;
+  reveal.classList.add("tourney-vote-reveal--active");
+  window.setTimeout(() => document.getElementById("btnTourneyVoteRevealDone")?.focus(), 420);
+}
+
+function endTourneyVoteReveal() {
+  const reveal = document.getElementById("tourneyVoteReveal");
+  if (!reveal || reveal.hidden) return;
+  reveal.classList.remove("tourney-vote-reveal--active");
+  reveal.hidden = true;
+  reveal.setAttribute("aria-hidden", "true");
+  if (panelEvents && !panelEvents.hidden) void refreshTournamentCard();
 }
 
 /** Once per heat: toast while fishing when the next tourney is ~5 minutes away. */
@@ -10505,14 +10540,8 @@ async function submitTourneySignup() {
     await fetchTourneySignupCount(dayKey);
     if (!tourneySignupCount) tourneySignupCount = Math.max(1, tourneyLocalDaySignups(dayKey).length);
     if (fromSetup) tourneySetupToast();
-    else showToast(`You're in! Spot ${tourneySignupCount} of ${TOURNEY_MAX_PLAYERS}.`, 3000);
-    if (!hasTourneyVotedToday() && !areTourneyVotesLocked()) {
-      try {
-        await postTourneyVote(defaultTourneyVoteKind(), { silent: true });
-      } catch (err) {
-        console.warn(err);
-      }
-    }
+    else showToast(`You're in! Spot ${tourneySignupCount} of ${TOURNEY_MAX_PLAYERS} — cast your event vote below.`, 3600);
+    /* Do not auto-cast a vote on signup — that made it look like you voted for the leading event. */
     refreshTournamentCard();
   };
 
@@ -11091,6 +11120,23 @@ async function syncTourneyBracketMatchResult(match) {
   }
 }
 
+function getMyNextTourneyBracketMatch(state = tourneyBracketState) {
+  if (!state?.matches) return null;
+  const me = getDuelClientId();
+  const order = ["r32", "r16", "qf", "sf", "final", "bronze"];
+  for (const roundKey of order) {
+    const m = state.matches.find(
+      (row) =>
+        row.round_key === roundKey &&
+        (row.player_a_id === me || row.player_b_id === me) &&
+        !row.winner_id &&
+        row.status !== "done",
+    );
+    if (m) return m;
+  }
+  return null;
+}
+
 async function resolveTourneyBracketMatchFromDuel(run, playerScore, opponentScore) {
   if (!run?.bracketMatch || !tourneyBracketState) return;
   const match = findTourneyBracketMatch(run.bracketMatch.round_key, run.bracketMatch.match_index);
@@ -11114,8 +11160,29 @@ async function resolveTourneyBracketMatchFromDuel(run, playerScore, opponentScor
   claimTourneyBracketPodiumIfNeeded(tourneyBracketState);
   pendingBracketMatch = null;
   const roundLabel = TOURNEY_BRACKET_ROUNDS.find((r) => r.key === match.round_key)?.label || "Match";
-  if (won) showToast(`${roundLabel}: you advance!`, 3200);
-  else showToast(`${roundLabel}: eliminated — great fight.`, 3200);
+  if (won) {
+    const nextMatch = getMyNextTourneyBracketMatch(tourneyBracketState);
+    if (nextMatch) {
+      const nextOppId = nextMatch.player_a_id === me ? nextMatch.player_b_id : nextMatch.player_a_id;
+      const nextRound = TOURNEY_BRACKET_ROUNDS.find((r) => r.key === nextMatch.round_key);
+      const heat = nextRound ? tourneySlotLabel(nextRound.slotKey) : "next";
+      const vsName = nextOppId
+        ? tourneyBracketEntryName(findTourneyBracketEntry(nextOppId, tourneyBracketState))
+        : "TBD";
+      showToast(
+        `You advance! Your next duel: ${nextRound?.label || "next round"} vs ${vsName} (${heat} heat).`,
+        5600,
+      );
+    } else if (match.round_key === "final") {
+      showToast("You won the Fishing Tourney final!", 4200);
+    } else if (match.round_key === "bronze") {
+      showToast("You take 3rd place in the tourney!", 4200);
+    } else {
+      showToast(`${roundLabel}: you advance! Check Events for your next duel.`, 4200);
+    }
+  } else {
+    showToast(`${roundLabel}: eliminated — great fight.`, 3200);
+  }
 }
 
 function renderTourneyBracketPanel(state = tourneyBracketState) {
@@ -11284,14 +11351,34 @@ function renderTournamentVoteButtons() {
   const voted = hasTourneyVotedToday();
   const locked = areTourneyVotesLocked();
   const leading = winningTourneyEventKind();
-  const details = tourneyVoteOptions.closest?.("details.tourney-vote-details");
-  const summary = details?.querySelector?.(".tourney-vote-details__summary");
-  if (summary) {
-    summary.textContent = locked
-      ? `Votes locked — ${tourneyEventLabel(leading)}`
-      : voted
-        ? "Your vote is in (optional)"
-        : "Vote for today's event (closes before morning heat)";
+  const heading = document.getElementById("tourneyVoteHeading");
+  const hint = document.getElementById("tourneyVoteHint");
+  const yours = document.getElementById("tourneyYourVoteLine");
+  if (heading) {
+    heading.textContent = locked ? "Votes locked" : "Vote for today's event";
+  }
+  if (hint) {
+    if (locked) {
+      hint.textContent = `Community winner: ${tourneyEventLabel(leading)} — this is today's tourney mode.`;
+    } else if (voted) {
+      hint.textContent = "Voting stays open until the morning heat. Counts update live.";
+    } else {
+      hint.textContent = "Tap one option below — closes before the morning heat.";
+    }
+  }
+  if (yours) {
+    if (voted && gameMeta.tourneyVoteKind) {
+      yours.hidden = false;
+      yours.textContent = locked
+        ? `You voted for ${tourneyEventLabel(gameMeta.tourneyVoteKind)}.`
+        : `Your vote: ${tourneyEventLabel(gameMeta.tourneyVoteKind)} (leading: ${tourneyEventLabel(leading)}).`;
+    } else if (locked) {
+      yours.hidden = false;
+      yours.textContent = "You didn't cast a vote — community pick stands.";
+    } else {
+      yours.hidden = true;
+      yours.textContent = "";
+    }
   }
   for (const opt of TOURNEY_EVENT_OPTIONS) {
     const btn = document.createElement("button");
@@ -11300,11 +11387,12 @@ function renderTournamentVoteButtons() {
     const count = tourneyVoteCounts[opt.id] || 0;
     btn.textContent = `${opt.label} (${count})`;
     btn.disabled = voted || locked;
-    btn.setAttribute("aria-pressed", gameMeta.tourneyVoteKind === opt.id ? "true" : "false");
+    btn.setAttribute("aria-pressed", gameMeta.tourneyVoteKind === opt.id && voted ? "true" : "false");
     if (opt.id === leading && Object.values(tourneyVoteCounts).some((n) => n > 0)) {
       btn.classList.add("tourney-vote-btn--lead");
     }
     if (locked && opt.id === leading) btn.classList.add("tourney-vote-btn--locked-win");
+    if (voted && gameMeta.tourneyVoteKind === opt.id) btn.classList.add("tourney-vote-btn--mine");
     btn.addEventListener("click", () => void submitTourneyVote(opt.id));
     tourneyVoteOptions.appendChild(btn);
   }
@@ -11323,13 +11411,13 @@ async function refreshTournamentCard() {
   }
   if (tourneyEventTitle) {
     if (votesLocked && eventKind === "duel") {
-      tourneyEventTitle.textContent = "Today's event: Duel Fishing bracket (votes locked)";
+      tourneyEventTitle.textContent = "Community pick: Duel Fishing bracket";
     } else if (votesLocked) {
-      tourneyEventTitle.textContent = `Today's event: ${tourneyEventLabel(eventKind)} (votes locked)`;
+      tourneyEventTitle.textContent = `Community pick: ${tourneyEventLabel(eventKind)}`;
     } else if (Object.values(tourneyVoteCounts).some((n) => n > 0)) {
-      tourneyEventTitle.textContent = `Leading: ${tourneyEventLabel(eventKind)} — voting open until morning heat`;
+      tourneyEventTitle.textContent = `Community leading: ${tourneyEventLabel(eventKind)}`;
     } else {
-      tourneyEventTitle.textContent = "Vote for today's event (locks before morning heat)";
+      tourneyEventTitle.textContent = "Vote below — locks before morning heat";
     }
   }
   if (tourneySignupLine) {
@@ -27328,6 +27416,7 @@ btnAgain.addEventListener("click", () => {
 });
 
 btnTreasureMapRevealDone?.addEventListener("click", endTreasureMapReveal);
+document.getElementById("btnTourneyVoteRevealDone")?.addEventListener("click", endTourneyVoteReveal);
 btnDailyPrizeContinue?.addEventListener("click", showDailyPrizeChestPhase);
 btnDailyPrizeChest?.addEventListener("click", () => {
   if (dailyPrizePhase === "chest") openDailyPrizeChest();

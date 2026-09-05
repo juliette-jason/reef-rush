@@ -4368,6 +4368,185 @@ button.seagull-avatar:active {
   letter-spacing: 0.02em;
 }
 
+.tourney-card-copy {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(167, 139, 250, 0.22);
+  background: rgba(15, 23, 42, 0.42);
+}
+
+.tourney-card-copy__lead {
+  margin: 0 0 8px;
+  font-family: "Nunito", sans-serif;
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: rgba(237, 233, 254, 0.92);
+}
+
+.tourney-card-copy__list {
+  margin: 0;
+  padding: 0 0 0 1.1rem;
+  display: grid;
+  gap: 5px;
+  font-family: "Nunito", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1.35;
+  color: rgba(226, 232, 240, 0.82);
+}
+
+.tourney-card-copy__list strong {
+  color: #fde68a;
+  font-weight: 800;
+}
+
+.tourney-vote-block {
+  margin: 0 0 12px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  background: linear-gradient(160deg, rgba(14, 116, 144, 0.28), rgba(15, 23, 42, 0.55));
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+}
+
+.tourney-vote-block__title {
+  margin: 0 0 4px;
+  font-family: "Nunito", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #e0f2fe;
+}
+
+.tourney-vote-block__hint {
+  margin: 0 0 8px;
+  font-family: "Nunito", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: rgba(186, 230, 253, 0.88);
+}
+
+.tourney-vote-block__yours {
+  margin: 0 0 10px;
+  font-family: "Nunito", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #fde68a;
+}
+
+.tourney-vote-btn--mine {
+  border-color: #fde68a !important;
+  box-shadow: 0 0 0 1px rgba(253, 230, 138, 0.45);
+}
+
+.tourney-vote-reveal {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+}
+
+.tourney-vote-reveal[hidden] {
+  display: none !important;
+}
+
+.tourney-vote-reveal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 30%, rgba(76, 29, 149, 0.55), rgba(2, 6, 23, 0.92));
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+
+.tourney-vote-reveal__stage {
+  position: relative;
+  z-index: 1;
+  width: min(420px, 100%);
+  padding: 28px 22px 22px;
+  border-radius: 22px;
+  border: 1px solid rgba(253, 230, 138, 0.4);
+  background: linear-gradient(165deg, #1e1b4b 0%, #0f172a 55%, #082f49 100%);
+  text-align: center;
+  transform: translateY(18px) scale(0.94);
+  opacity: 0;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.45s ease;
+}
+
+.tourney-vote-reveal--active .tourney-vote-reveal__backdrop {
+  opacity: 1;
+}
+
+.tourney-vote-reveal--active .tourney-vote-reveal__stage {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.tourney-vote-reveal__badge {
+  margin: 0 0 10px;
+  font-family: "Nunito", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fde68a;
+}
+
+.tourney-vote-reveal__title {
+  margin: 0 0 12px;
+  font-family: "Bebas Neue", "Nunito", sans-serif;
+  font-size: clamp(1.6rem, 5vw, 2.1rem);
+  letter-spacing: 0.04em;
+  color: #f8fafc;
+}
+
+.tourney-vote-reveal__event {
+  margin: 0 0 12px;
+  font-family: "Nunito", sans-serif;
+  font-size: clamp(1.35rem, 4.5vw, 1.85rem);
+  font-weight: 900;
+  color: #7dd3fc;
+  text-shadow: 0 0 24px rgba(56, 189, 248, 0.45);
+  animation: tourneyVotePulse 1.4s ease-in-out infinite;
+}
+
+.tourney-vote-reveal__detail {
+  margin: 0 0 18px;
+  font-family: "Nunito", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: rgba(226, 232, 240, 0.88);
+}
+
+.tourney-vote-reveal__btn {
+  min-width: 140px;
+}
+
+@keyframes tourneyVotePulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tourney-vote-reveal__backdrop,
+  .tourney-vote-reveal__stage,
+  .tourney-vote-reveal__event {
+    transition: none;
+    animation: none;
+  }
+  .tourney-vote-reveal--active .tourney-vote-reveal__stage {
+    transform: none;
+  }
+}
+
 .tourney-vote-details {
   margin: 0 0 10px;
   padding: 10px 12px;
