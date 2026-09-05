@@ -10272,11 +10272,6 @@ function startTourneyReadyPrompt() {
 function endTourneyVoteReveal() {
   const reveal = document.getElementById("tourneyVoteReveal");
   if (tourneyVoteRevealStage === "winner") {
-    if (reveal && !reveal.hidden) {
-      reveal.classList.remove("tourney-vote-reveal--active");
-      window.setTimeout(() => startTourneyReadyPrompt(), 220);
-      return;
-    }
     startTourneyReadyPrompt();
     return;
   }
