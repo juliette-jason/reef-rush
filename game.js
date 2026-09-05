@@ -9919,6 +9919,11 @@ const TOURNEY_MAX_PLAYERS = 35;
 const TOURNEY_FIELD_SIZE = TOURNEY_MAX_PLAYERS;
 const TOURNEY_COM_ID_PREFIX = "com-tourney-";
 const TOURNEY_WINDOW_MS = 30 * 60_000;
+/** Compete from 2 min before official start through 2 min after the heat ends. */
+const TOURNEY_JOIN_EARLY_MS = 2 * 60_000;
+const TOURNEY_JOIN_LATE_MS = 2 * 60_000;
+/** In-play toast when the next heat is about 5 minutes away. */
+const TOURNEY_WARN_AHEAD_MS = 5 * 60_000;
 const TOURNEY_SLOTS = [
   { key: "morning", hour: 11, name: "Morning" },
   { key: "afternoon", hour: 16, name: "Afternoon" },
@@ -10037,7 +10042,15 @@ function tourneySlotWindows(day = new Date()) {
   for (const slot of TOURNEY_SLOTS) {
     const start = new Date(day);
     start.setHours(slot.hour, 0, 0, 0);
-    windows[slot.key] = { key: slot.key, start: start.getTime(), end: start.getTime() + TOURNEY_WINDOW_MS };
+    const startMs = start.getTime();
+    const endMs = startMs + TOURNEY_WINDOW_MS;
+    windows[slot.key] = {
+      key: slot.key,
+      start: startMs,
+      end: endMs,
+      joinStart: startMs - TOURNEY_JOIN_EARLY_MS,
+      joinEnd: endMs + TOURNEY_JOIN_LATE_MS,
+    };
   }
   return windows;
 }
@@ -10047,7 +10060,7 @@ function getTourneySlotState(now = Date.now()) {
   for (let i = 0; i < TOURNEY_SLOTS.length; i++) {
     const def = TOURNEY_SLOTS[i];
     const win = windows[def.key];
-    if (now >= win.start && now < win.end) {
+    if (now >= win.joinStart && now < win.joinEnd) {
       const next = TOURNEY_SLOTS[i + 1];
       return {
         slotKey: def.key,
@@ -10058,17 +10071,44 @@ function getTourneySlotState(now = Date.now()) {
   }
   for (const def of TOURNEY_SLOTS) {
     const win = windows[def.key];
-    if (now < win.start) {
+    if (now < win.joinStart) {
       return {
         slotKey: null,
         start: win.start,
         end: win.end,
-        nextLabel: `${def.name} heat at ${formatTourneyHeatTime(def.hour)}`,
+        joinStart: win.joinStart,
+        joinEnd: win.joinEnd,
+        nextLabel: `${def.name} heat at ${formatTourneyHeatTime(def.hour)} · join 2 min early / late`,
         upcoming: def.key,
       };
     }
   }
-  return { slotKey: null, start: 0, end: 0, nextLabel: "Tomorrow's vote opens at midnight", upcoming: null };
+  return { slotKey: null, start: 0, end: 0, joinStart: 0, joinEnd: 0, nextLabel: "Tomorrow's vote opens at midnight", upcoming: null };
+}
+
+/** Once per heat: toast while fishing when the next tourney is ~5 minutes away. */
+let tourneyFiveMinWarnKey = "";
+function maybeWarnTourneyHeat(now = Date.now()) {
+  if (!playing) return;
+  const windows = tourneySlotWindows(new Date(now));
+  const dayKey = getTourneyDayKey();
+  for (const def of TOURNEY_SLOTS) {
+    const win = windows[def.key];
+    const msUntil = win.start - now;
+    if (msUntil <= 0 || msUntil > TOURNEY_WARN_AHEAD_MS) continue;
+    const key = `${dayKey}|${def.key}`;
+    if (tourneyFiveMinWarnKey === key) return;
+    tourneyFiveMinWarnKey = key;
+    const mins = Math.max(1, Math.ceil(msUntil / 60000));
+    const signed = isTourneySignedUpToday();
+    showToast(
+      signed
+        ? `Tournament ${def.name} heat in ${mins} min — Compete from Events (join opens 2 min early)!`
+        : `Tournament ${def.name} heat in ${mins} min — sign up on Events to play!`,
+      5200,
+    );
+    return;
+  }
 }
 
 function winningTourneyEventKind() {
@@ -10670,15 +10710,24 @@ async function refreshTournamentCard() {
   }
   if (tourneyScheduleLine) {
     if (slot.slotKey) {
-      const mins = Math.max(0, Math.ceil((slot.end - Date.now()) / 60000));
-      tourneyScheduleLine.textContent = `${tourneySlotLabel(slot.slotKey)} heat LIVE — ${mins} min left`;
+      const now = Date.now();
+      const joinEnd = slot.joinEnd ?? slot.end + TOURNEY_JOIN_LATE_MS;
+      const minsLeft = Math.max(0, Math.ceil((joinEnd - now) / 60000));
+      if (now < slot.start) {
+        const minsToStart = Math.max(1, Math.ceil((slot.start - now) / 60000));
+        tourneyScheduleLine.textContent = `${tourneySlotLabel(slot.slotKey)} heat open early — official start in ${minsToStart} min`;
+      } else if (now < slot.end) {
+        tourneyScheduleLine.textContent = `${tourneySlotLabel(slot.slotKey)} heat LIVE — ${minsLeft} min left (incl. late join)`;
+      } else {
+        tourneyScheduleLine.textContent = `${tourneySlotLabel(slot.slotKey)} late join open — ${minsLeft} min left`;
+      }
     } else {
       tourneyScheduleLine.textContent = slot.nextLabel;
     }
   }
   if (tourneyPrizeLine) {
     tourneyPrizeLine.textContent =
-      "Top 3 of 35 win chests + gems · empty spots filled with random anglers · 11 AM, 4 PM & 8 PM";
+      "Top 3 of 35 win chests + gems · join each heat 2 min early or late · 11 AM, 4 PM & 8 PM";
   }
   if (btnTourneySignup) {
     btnTourneySignup.hidden = isTourneySignedUpToday();
@@ -10692,7 +10741,16 @@ async function refreshTournamentCard() {
   if (btnTourneyCompete) {
     btnTourneyCompete.hidden = !isTourneySignedUpToday();
     btnTourneyCompete.disabled = !slot.slotKey;
-    btnTourneyCompete.textContent = slot.slotKey ? "Compete in live heat" : "Heat opens soon";
+    const now = Date.now();
+    if (!slot.slotKey) {
+      btnTourneyCompete.textContent = "Heat opens soon";
+    } else if (now < slot.start) {
+      btnTourneyCompete.textContent = "Compete (early join)";
+    } else if (now >= slot.end) {
+      btnTourneyCompete.textContent = "Compete (late join)";
+    } else {
+      btnTourneyCompete.textContent = "Compete in live heat";
+    }
   }
   renderTournamentVoteButtons();
   renderTournamentLeaderboard();
@@ -26066,6 +26124,7 @@ function gameLoop(now) {
   }
 
   if (playing) {
+    if (gameLoopTick % 90 === 0) maybeWarnTourneyHeat(now);
     tickKraken(now, treasureMapRevealPaused ? 0 : dt);
     const isSurvivorRound = eventMinigameSession?.kind === "survivor";
     const left = roundEndAt - now;
