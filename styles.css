@@ -4393,6 +4393,37 @@ button.seagull-avatar:active {
   margin-bottom: 8px;
 }
 
+.tourney-bracket-panel {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(251, 191, 36, 0.28);
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.tourney-bracket-panel__title {
+  margin: 0 0 6px;
+  font-family: "Nunito", sans-serif;
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: #fde68a;
+}
+
+.tourney-bracket-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.tourney-bracket-list__row {
+  font-family: "Nunito", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: rgba(226, 232, 240, 0.82);
+}
+
 .tourney-vote-options {
   display: flex;
   flex-wrap: wrap;

@@ -7225,6 +7225,9 @@ function defaultMeta() {
     tourneyVoteKind: "",
     tourneySignedUpDayKey: "",
     tourneyVoteLockAnnouncedDayKey: "",
+    tourneyConsolationDayKey: "",
+    tourneyPodiumClaimDayKey: "",
+    tourneyPodiumRank: 0,
   };
 }
 
@@ -7317,6 +7320,9 @@ function loadMeta() {
       tourneySignedUpDayKey: typeof o.tourneySignedUpDayKey === "string" ? o.tourneySignedUpDayKey : "",
       tourneyVoteLockAnnouncedDayKey:
         typeof o.tourneyVoteLockAnnouncedDayKey === "string" ? o.tourneyVoteLockAnnouncedDayKey : "",
+      tourneyConsolationDayKey: typeof o.tourneyConsolationDayKey === "string" ? o.tourneyConsolationDayKey : "",
+      tourneyPodiumClaimDayKey: typeof o.tourneyPodiumClaimDayKey === "string" ? o.tourneyPodiumClaimDayKey : "",
+      tourneyPodiumRank: Math.max(0, Math.floor(Number(o.tourneyPodiumRank) || 0)),
     };
   } catch {
     return defaultMeta();
@@ -9910,6 +9916,23 @@ const TOURNEY_PRIZES = [
   { rank: 2, gems: 200, coins: 1000, chest: "rare", label: "2nd — Rare chest + 200 gems" },
   { rank: 3, gems: 100, coins: 500, chest: "common", label: "3rd — Common chest + 100 gems" },
 ];
+/** Seeds 33–35 (cut from the duel bracket) each receive this consolation. */
+const TOURNEY_BRACKET_CUT_COINS = 1000;
+const TOURNEY_BRACKET_SIZE = 32;
+const TOURNEY_BRACKET_ENTRIES_URL = `${SUPABASE_REST_URL}/tourney_bracket_entries`;
+const TOURNEY_BRACKET_MATCHES_URL = `${SUPABASE_REST_URL}/tourney_bracket_matches`;
+/** Classic 32-seed placement (pairs for R32 matches 0..15). */
+const TOURNEY_BRACKET_SEED_ORDER_32 = [
+  1, 32, 16, 17, 8, 25, 9, 24, 4, 29, 13, 20, 5, 28, 12, 21, 2, 31, 15, 18, 7, 26, 10, 23, 3, 30, 14, 19, 6, 27, 11, 22,
+];
+const TOURNEY_BRACKET_ROUNDS = [
+  { key: "r32", label: "Round of 32", slotKey: "morning", count: 16 },
+  { key: "r16", label: "Round of 16", slotKey: "afternoon", count: 8 },
+  { key: "qf", label: "Quarterfinals", slotKey: "afternoon", count: 4 },
+  { key: "sf", label: "Semifinals", slotKey: "evening", count: 2 },
+  { key: "final", label: "Final", slotKey: "evening", count: 1 },
+  { key: "bronze", label: "3rd place", slotKey: "evening", count: 1 },
+];
 let tourneyVoteCounts = {};
 let tourneySignupCount = 0;
 let tourneyLeaderboardRows = [];
@@ -9918,7 +9941,11 @@ let tourneyBackendMissing = false;
 let tourneySignupInFlight = false;
 /** Active tournament run — score submits on finish. */
 let tournamentRun = null;
+/** In-memory duel bracket for today (also mirrored in localStorage / Supabase). */
+let tourneyBracketState = null;
+let pendingBracketMatch = null;
 const TOURNEY_LOCAL_KEY = "reefRushTourneyLocal_v1";
+const TOURNEY_BRACKET_LOCAL_KEY = "reefRushTourneyBracket_v1";
 
 function getTourneyDayKey(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -9990,7 +10017,7 @@ function isTourneyBackendMissingError(status, bodyText = "") {
     /PGRST205/i.test(text) ||
     /Could not find the table/i.test(text) ||
     /relation .* does not exist/i.test(text) ||
-    /tourney_votes|tourney_signups|tourney_scores/i.test(text)
+    /tourney_votes|tourney_signups|tourney_scores|tourney_bracket/i.test(text)
   );
 }
 
@@ -10591,10 +10618,563 @@ function tourneyBestScoreForRun(sessionKind, localScore, extra = {}) {
   return Math.max(0, localScore);
 }
 
-async function finishTournamentRun(scorePts) {
+function isTourneyDuelBracketDay() {
+  return areTourneyVotesLocked() && winningTourneyEventKind() === "duel";
+}
+
+function loadTourneyBracketLocal(dayKey = getTourneyDayKey()) {
+  try {
+    const raw = localStorage.getItem(TOURNEY_BRACKET_LOCAL_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const day = parsed?.[dayKey];
+    return day && typeof day === "object" ? day : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveTourneyBracketLocal(dayKey, state) {
+  try {
+    const raw = localStorage.getItem(TOURNEY_BRACKET_LOCAL_KEY);
+    const all = raw ? JSON.parse(raw) : {};
+    const next = all && typeof all === "object" ? all : {};
+    next[dayKey] = state;
+    localStorage.setItem(TOURNEY_BRACKET_LOCAL_KEY, JSON.stringify(next));
+  } catch {
+    /* ignore */
+  }
+}
+
+function tourneyBracketEntryName(entry) {
+  if (!entry) return "Angler";
+  return entry.display_name || entry.initials || "Angler";
+}
+
+function findTourneyBracketEntry(clientId, state = tourneyBracketState) {
+  if (!state?.entries || !clientId) return null;
+  return state.entries.find((e) => e.client_id === clientId) || null;
+}
+
+function findTourneyBracketMatch(roundKey, matchIndex, state = tourneyBracketState) {
+  if (!state?.matches) return null;
+  return state.matches.find((m) => m.round_key === roundKey && m.match_index === matchIndex) || null;
+}
+
+function tourneyBracketPartyCode(dayKey, roundKey, matchIndex) {
+  const h = tourneyHash32(`${dayKey}|${roundKey}|${matchIndex}|bracket`);
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "T";
+  let x = h;
+  for (let i = 0; i < 5; i++) {
+    code += alphabet[x % alphabet.length];
+    x = Math.floor(x / alphabet.length) || 1;
+  }
+  return code;
+}
+
+function nextTourneyBracketRound(roundKey, matchIndex) {
+  if (roundKey === "r32") return { round_key: "r16", match_index: Math.floor(matchIndex / 2), slot: matchIndex % 2 === 0 ? "a" : "b" };
+  if (roundKey === "r16") return { round_key: "qf", match_index: Math.floor(matchIndex / 2), slot: matchIndex % 2 === 0 ? "a" : "b" };
+  if (roundKey === "qf") return { round_key: "sf", match_index: Math.floor(matchIndex / 2), slot: matchIndex % 2 === 0 ? "a" : "b" };
+  if (roundKey === "sf") return { round_key: "final", match_index: 0, slot: matchIndex % 2 === 0 ? "a" : "b" };
+  return null;
+}
+
+async function fetchTourneySignupRows(dayKey = getTourneyDayKey()) {
+  const localSignups = tourneyLocalDaySignups(dayKey);
+  const byId = new Map();
+  for (const row of localSignups) {
+    if (!row?.client_id) continue;
+    byId.set(row.client_id, {
+      client_id: row.client_id,
+      initials: row.initials || "AAA",
+      display_name: row.display_name || row.initials || "Angler",
+      created_at: row.created_at || "",
+    });
+  }
+  try {
+    const res = await fetch(
+      `${TOURNEY_SIGNUPS_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=client_id,initials,display_name,created_at&order=created_at.asc&limit=${TOURNEY_MAX_PLAYERS + 5}`,
+      { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS },
+    );
+    const bodyText = await res.text();
+    if (!res.ok) {
+      if (isTourneyBackendMissingError(res.status, bodyText)) tourneyBackendMissing = true;
+      throw new Error(`Tourney signup rows failed: ${res.status}`);
+    }
+    let rows = [];
+    try {
+      rows = JSON.parse(bodyText);
+    } catch {
+      rows = [];
+    }
+    if (!Array.isArray(rows)) rows = [];
+    for (const row of rows) {
+      if (!row?.client_id) continue;
+      byId.set(row.client_id, {
+        client_id: row.client_id,
+        initials: row.initials || "AAA",
+        display_name: row.display_name || row.initials || "Angler",
+        created_at: row.created_at || "",
+      });
+    }
+    tourneyRemoteReady = true;
+    tourneyBackendMissing = false;
+  } catch (err) {
+    console.warn(err);
+  }
+  if (isTourneySignedUpToday()) {
+    const me = getDuelClientId();
+    if (!byId.has(me)) {
+      const identity = tourneyPlayerIdentity();
+      byId.set(me, {
+        client_id: me,
+        initials: identity.initials,
+        display_name: identity.name || identity.initials,
+        created_at: new Date().toISOString(),
+      });
+    }
+  }
+  return [...byId.values()]
+    .sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)) || String(a.client_id).localeCompare(String(b.client_id)))
+    .slice(0, TOURNEY_MAX_PLAYERS);
+}
+
+function buildEmptyTourneyBracketMatches(dayKey) {
+  const matches = [];
+  for (const round of TOURNEY_BRACKET_ROUNDS) {
+    for (let i = 0; i < round.count; i++) {
+      matches.push({
+        day_key: dayKey,
+        round_key: round.key,
+        match_index: i,
+        slot_key: round.slotKey,
+        player_a_id: null,
+        player_b_id: null,
+        winner_id: null,
+        status: "pending",
+      });
+    }
+  }
+  return matches;
+}
+
+function buildTourneyBracketStateFromSignups(dayKey, signupRows) {
+  const humans = signupRows.slice(0, TOURNEY_MAX_PLAYERS);
+  const entries = [];
+  for (let i = 0; i < humans.length; i++) {
+    const row = humans[i];
+    entries.push({
+      client_id: row.client_id,
+      seed: i + 1,
+      initials: row.initials || "AAA",
+      display_name: row.display_name || row.initials || "Angler",
+      in_bracket: i < TOURNEY_BRACKET_SIZE,
+    });
+  }
+  const rng = tourneyComRng(tourneyHash32(`${dayKey}|bracket-coms`));
+  while (entries.filter((e) => e.in_bracket).length < TOURNEY_BRACKET_SIZE) {
+    const seed = entries.length + 1;
+    const part = COM_PLAYER_NAME_PARTS[Math.floor(rng() * COM_PLAYER_NAME_PARTS.length)] || "Reef";
+    const name = `${part} ${100 + Math.floor(rng() * 800)}`;
+    entries.push({
+      client_id: `${TOURNEY_COM_ID_PREFIX}${dayKey}-b${seed}`,
+      seed,
+      initials: String(name)
+        .replace(/[^A-Za-z]/g, "")
+        .slice(0, 3)
+        .toUpperCase() || "COM",
+      display_name: name,
+      in_bracket: true,
+    });
+  }
+  const bySeed = new Map(entries.filter((e) => e.in_bracket).map((e) => [e.seed, e]));
+  const matches = buildEmptyTourneyBracketMatches(dayKey);
+  for (let i = 0; i < 16; i++) {
+    const seedA = TOURNEY_BRACKET_SEED_ORDER_32[i * 2];
+    const seedB = TOURNEY_BRACKET_SEED_ORDER_32[i * 2 + 1];
+    const m = matches.find((row) => row.round_key === "r32" && row.match_index === i);
+    if (!m) continue;
+    m.player_a_id = bySeed.get(seedA)?.client_id || null;
+    m.player_b_id = bySeed.get(seedB)?.client_id || null;
+    m.status = m.player_a_id && m.player_b_id ? "ready" : "pending";
+  }
+  return { day_key: dayKey, seeded: true, entries, matches };
+}
+
+function persistTourneyBracketState(state) {
+  if (!state?.day_key) return;
+  tourneyBracketState = state;
+  saveTourneyBracketLocal(state.day_key, state);
+}
+
+async function pushTourneyBracketToServer(state) {
+  if (!state?.seeded) return;
+  try {
+    const entryRows = state.entries.map((e) => ({
+      day_key: state.day_key,
+      client_id: e.client_id,
+      seed: e.seed,
+      initials: e.initials,
+      display_name: e.display_name,
+      in_bracket: e.in_bracket,
+    }));
+    const matchRows = state.matches.map((m) => ({
+      day_key: state.day_key,
+      round_key: m.round_key,
+      match_index: m.match_index,
+      slot_key: m.slot_key,
+      player_a_id: m.player_a_id,
+      player_b_id: m.player_b_id,
+      winner_id: m.winner_id,
+      status: m.status,
+      updated_at: new Date().toISOString(),
+    }));
+    const entryRes = await fetch(TOURNEY_BRACKET_ENTRIES_URL, {
+      method: "POST",
+      headers: leaderboardHeaders({
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates,return=minimal",
+      }),
+      body: JSON.stringify(entryRows),
+    });
+    if (!entryRes.ok) {
+      const text = await entryRes.text().catch(() => "");
+      if (isTourneyBackendMissingError(entryRes.status, text)) return;
+    }
+    const matchRes = await fetch(TOURNEY_BRACKET_MATCHES_URL, {
+      method: "POST",
+      headers: leaderboardHeaders({
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates,return=minimal",
+      }),
+      body: JSON.stringify(matchRows),
+    });
+    if (!matchRes.ok) {
+      const text = await matchRes.text().catch(() => "");
+      if (isTourneyBackendMissingError(matchRes.status, text)) return;
+    }
+  } catch (err) {
+    console.warn(err);
+  }
+}
+
+async function fetchTourneyBracketFromServer(dayKey = getTourneyDayKey()) {
+  try {
+    const [entriesRes, matchesRes] = await Promise.all([
+      fetch(
+        `${TOURNEY_BRACKET_ENTRIES_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=*&order=seed.asc`,
+        { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS },
+      ),
+      fetch(
+        `${TOURNEY_BRACKET_MATCHES_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=*`,
+        { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS },
+      ),
+    ]);
+    if (!entriesRes.ok || !matchesRes.ok) {
+      const text = `${await entriesRes.text().catch(() => "")} ${await matchesRes.text().catch(() => "")}`;
+      if (isTourneyBackendMissingError(entriesRes.status, text) || isTourneyBackendMissingError(matchesRes.status, text)) {
+        return null;
+      }
+      return null;
+    }
+    const entries = await entriesRes.json();
+    const matches = await matchesRes.json();
+    if (!Array.isArray(entries) || !entries.length || !Array.isArray(matches) || !matches.length) return null;
+    return {
+      day_key: dayKey,
+      seeded: true,
+      entries: entries.map((e) => ({
+        client_id: e.client_id,
+        seed: e.seed,
+        initials: e.initials || "AAA",
+        display_name: e.display_name || e.initials || "Angler",
+        in_bracket: Boolean(e.in_bracket),
+      })),
+      matches: matches.map((m) => ({
+        day_key: dayKey,
+        round_key: m.round_key,
+        match_index: m.match_index,
+        slot_key: m.slot_key,
+        player_a_id: m.player_a_id || null,
+        player_b_id: m.player_b_id || null,
+        winner_id: m.winner_id || null,
+        status: m.status || "pending",
+      })),
+    };
+  } catch (err) {
+    console.warn(err);
+    return null;
+  }
+}
+
+function mergeTourneyBracketStates(local, remote) {
+  if (!remote?.seeded) return local;
+  if (!local?.seeded) return remote;
+  const byKey = new Map();
+  for (const m of local.matches || []) byKey.set(`${m.round_key}:${m.match_index}`, { ...m });
+  for (const m of remote.matches || []) {
+    const key = `${m.round_key}:${m.match_index}`;
+    const cur = byKey.get(key);
+    if (!cur) {
+      byKey.set(key, { ...m });
+      continue;
+    }
+    if (m.winner_id && !cur.winner_id) byKey.set(key, { ...cur, ...m, status: "done" });
+    else if (!cur.player_a_id && m.player_a_id) cur.player_a_id = m.player_a_id;
+    else if (!cur.player_b_id && m.player_b_id) cur.player_b_id = m.player_b_id;
+  }
+  return {
+    day_key: local.day_key || remote.day_key,
+    seeded: true,
+    entries: remote.entries?.length ? remote.entries : local.entries,
+    matches: [...byKey.values()],
+  };
+}
+
+function autoResolveTourneyComBracketMatches(state) {
+  if (!state?.matches) return state;
+  let changed = false;
+  const tryResolve = (m) => {
+    if (!m || m.winner_id || m.status === "done") return;
+    if (!m.player_a_id || !m.player_b_id) return;
+    const aCom = isTourneyComClientId(m.player_a_id);
+    const bCom = isTourneyComClientId(m.player_b_id);
+    if (!(aCom && bCom)) return;
+    const h = tourneyHash32(`${state.day_key}|${m.round_key}|${m.match_index}|auto`);
+    m.winner_id = h % 2 === 0 ? m.player_a_id : m.player_b_id;
+    m.status = "done";
+    changed = true;
+    advanceTourneyBracketWinner(state, m, m.winner_id);
+  };
+  for (const m of state.matches) tryResolve(m);
+  /* Second pass for newly filled COM rounds. */
+  if (changed) {
+    for (const m of state.matches) tryResolve(m);
+  }
+  return state;
+}
+
+function advanceTourneyBracketWinner(state, match, winnerId) {
+  if (!state || !match || !winnerId) return;
+  match.winner_id = winnerId;
+  match.status = "done";
+  if (match.round_key === "sf") {
+    const loserId = match.player_a_id === winnerId ? match.player_b_id : match.player_a_id;
+    const bronze = findTourneyBracketMatch("bronze", 0, state);
+    if (bronze && loserId) {
+      if (!bronze.player_a_id) bronze.player_a_id = loserId;
+      else if (!bronze.player_b_id && bronze.player_a_id !== loserId) bronze.player_b_id = loserId;
+      if (bronze.player_a_id && bronze.player_b_id && bronze.status === "pending") bronze.status = "ready";
+    }
+  }
+  const next = nextTourneyBracketRound(match.round_key, match.match_index);
+  if (!next) return;
+  const nxt = findTourneyBracketMatch(next.round_key, next.match_index, state);
+  if (!nxt) return;
+  if (next.slot === "a") nxt.player_a_id = winnerId;
+  else nxt.player_b_id = winnerId;
+  if (nxt.player_a_id && nxt.player_b_id && nxt.status !== "done") nxt.status = "ready";
+}
+
+function getMyTourneyBracketPlayableMatch(slotKey, state = tourneyBracketState) {
+  if (!state?.matches) return null;
+  const me = getDuelClientId();
+  const roundsForSlot = TOURNEY_BRACKET_ROUNDS.filter((r) => r.slotKey === slotKey).map((r) => r.key);
+  return (
+    state.matches.find((m) => {
+      if (!roundsForSlot.includes(m.round_key)) return false;
+      if (m.winner_id || m.status === "done") return false;
+      if (m.player_a_id !== me && m.player_b_id !== me) return false;
+      return Boolean(m.player_a_id && m.player_b_id);
+    }) || null
+  );
+}
+
+function getTourneyBracketPodium(state = tourneyBracketState) {
+  if (!state?.matches) return null;
+  const final = findTourneyBracketMatch("final", 0, state);
+  const bronze = findTourneyBracketMatch("bronze", 0, state);
+  if (!final?.winner_id) return null;
+  const second = final.player_a_id === final.winner_id ? final.player_b_id : final.player_a_id;
+  const third = bronze?.winner_id || null;
+  if (!second || !third) return null;
+  return { first: final.winner_id, second, third };
+}
+
+function claimTourneyBracketConsolationIfNeeded(state = tourneyBracketState) {
+  if (!state?.seeded) return false;
+  const dayKey = state.day_key || getTourneyDayKey();
+  if (gameMeta.tourneyConsolationDayKey === dayKey) return false;
+  const me = findTourneyBracketEntry(getDuelClientId(), state);
+  if (!me || me.in_bracket) return false;
+  gameMeta.tourneyConsolationDayKey = dayKey;
+  gameMeta.coins = (gameMeta.coins || 0) + TOURNEY_BRACKET_CUT_COINS;
+  saveMeta();
+  refreshCoinDisplays();
+  showToast(`Bracket cut (seed ${me.seed}) — here's ${TOURNEY_BRACKET_CUT_COINS.toLocaleString()} coins. Thanks for signing up!`, 4800);
+  return true;
+}
+
+function grantTourneyPodiumPrize(rank) {
+  const prize = TOURNEY_PRIZES.find((p) => p.rank === rank);
+  if (!prize) return;
+  const chest = typeof rollCrabBundles === "function" ? rollCrabBundles(prize.chest)[0] : null;
+  grantCrabReward({
+    coins: prize.coins + (chest?.coins || 0),
+    gems: prize.gems,
+    bait: chest?.bait || null,
+    rodId: chest?.rodId || null,
+    special: chest?.special || null,
+  });
+}
+
+function claimTourneyBracketPodiumIfNeeded(state = tourneyBracketState) {
+  if (!state?.seeded) return false;
+  const dayKey = state.day_key || getTourneyDayKey();
+  if (gameMeta.tourneyPodiumClaimDayKey === dayKey) return false;
+  const podium = getTourneyBracketPodium(state);
+  if (!podium) return false;
+  const me = getDuelClientId();
+  let rank = 0;
+  if (podium.first === me) rank = 1;
+  else if (podium.second === me) rank = 2;
+  else if (podium.third === me) rank = 3;
+  if (!rank) return false;
+  gameMeta.tourneyPodiumClaimDayKey = dayKey;
+  gameMeta.tourneyPodiumRank = rank;
+  saveMeta();
+  grantTourneyPodiumPrize(rank);
+  const prize = TOURNEY_PRIZES.find((p) => p.rank === rank);
+  showToast(`Tourney podium #${rank}! ${prize?.label || "Rewards unlocked."}`, 5200);
+  return true;
+}
+
+async function ensureTourneyBracketSeeded() {
+  if (!isTourneyDuelBracketDay()) return null;
+  const dayKey = getTourneyDayKey();
+  let local = loadTourneyBracketLocal(dayKey);
+  let remote = await fetchTourneyBracketFromServer(dayKey);
+  let state = mergeTourneyBracketStates(local, remote);
+  if (!state?.seeded) {
+    const signups = await fetchTourneySignupRows(dayKey);
+    state = buildTourneyBracketStateFromSignups(dayKey, signups);
+    await pushTourneyBracketToServer(state);
+  }
+  state = autoResolveTourneyComBracketMatches(state);
+  persistTourneyBracketState(state);
+  claimTourneyBracketConsolationIfNeeded(state);
+  claimTourneyBracketPodiumIfNeeded(state);
+  return state;
+}
+
+async function syncTourneyBracketMatchResult(match) {
+  if (!match) return;
+  try {
+    await fetch(
+      `${TOURNEY_BRACKET_MATCHES_URL}?day_key=eq.${encodeURIComponent(match.day_key)}&round_key=eq.${encodeURIComponent(match.round_key)}&match_index=eq.${match.match_index}`,
+      {
+        method: "PATCH",
+        headers: leaderboardHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
+        body: JSON.stringify({
+          player_a_id: match.player_a_id,
+          player_b_id: match.player_b_id,
+          winner_id: match.winner_id,
+          status: match.status,
+          updated_at: new Date().toISOString(),
+        }),
+      },
+    );
+  } catch (err) {
+    console.warn(err);
+  }
+}
+
+async function resolveTourneyBracketMatchFromDuel(run, playerScore, opponentScore) {
+  if (!run?.bracketMatch || !tourneyBracketState) return;
+  const match = findTourneyBracketMatch(run.bracketMatch.round_key, run.bracketMatch.match_index);
+  if (!match || match.winner_id) return;
+  const me = getDuelClientId();
+  const oppId = match.player_a_id === me ? match.player_b_id : match.player_a_id;
+  const won = playerScore > opponentScore;
+  const winnerId = won ? me : oppId;
+  if (!winnerId) return;
+  advanceTourneyBracketWinner(tourneyBracketState, match, winnerId);
+  autoResolveTourneyComBracketMatches(tourneyBracketState);
+  persistTourneyBracketState(tourneyBracketState);
+  await syncTourneyBracketMatchResult(match);
+  const nxtInfo = nextTourneyBracketRound(match.round_key, match.match_index);
+  if (nxtInfo) {
+    const next = findTourneyBracketMatch(nxtInfo.round_key, nxtInfo.match_index);
+    if (next) await syncTourneyBracketMatchResult(next);
+  }
+  const bronze = findTourneyBracketMatch("bronze", 0);
+  if (bronze) await syncTourneyBracketMatchResult(bronze);
+  claimTourneyBracketPodiumIfNeeded(tourneyBracketState);
+  pendingBracketMatch = null;
+  const roundLabel = TOURNEY_BRACKET_ROUNDS.find((r) => r.key === match.round_key)?.label || "Match";
+  if (won) showToast(`${roundLabel}: you advance!`, 3200);
+  else showToast(`${roundLabel}: eliminated — great fight.`, 3200);
+}
+
+function renderTourneyBracketPanel(state = tourneyBracketState) {
+  const panel = document.getElementById("tourneyBracketPanel");
+  const line = document.getElementById("tourneyBracketLine");
+  const list = document.getElementById("tourneyBracketList");
+  if (!panel) return;
+  if (!isTourneyDuelBracketDay() || !state?.seeded) {
+    panel.hidden = true;
+    return;
+  }
+  panel.hidden = false;
+  const me = findTourneyBracketEntry(getDuelClientId(), state);
+  const slot = getTourneySlotState();
+  const playable = slot.slotKey ? getMyTourneyBracketPlayableMatch(slot.slotKey, state) : null;
+  const podium = getTourneyBracketPodium(state);
+  if (line) {
+    if (me && !me.in_bracket) {
+      line.textContent = `You're seed ${me.seed} — cut from the 32. Consolation: ${TOURNEY_BRACKET_CUT_COINS.toLocaleString()} coins.`;
+    } else if (podium) {
+      const names = [podium.first, podium.second, podium.third].map((id) => tourneyBracketEntryName(findTourneyBracketEntry(id, state)));
+      line.textContent = `Podium: 🥇 ${names[0]} · 🥈 ${names[1]} · 🥉 ${names[2]}`;
+    } else if (playable) {
+      const oppId = playable.player_a_id === getDuelClientId() ? playable.player_b_id : playable.player_a_id;
+      const roundLabel = TOURNEY_BRACKET_ROUNDS.find((r) => r.key === playable.round_key)?.label || "Match";
+      line.textContent = `${roundLabel} ready vs ${tourneyBracketEntryName(findTourneyBracketEntry(oppId, state))} — tap Compete.`;
+    } else if (me?.in_bracket) {
+      line.textContent = `You're seed ${me.seed} in the duel bracket (32 players). Play your heat when your round is live.`;
+    } else {
+      line.textContent = "Duel bracket: top 32 play single-elim · cut seeds get coins.";
+    }
+  }
+  if (list) {
+    list.innerHTML = "";
+    const roundsToShow = slot.slotKey
+      ? TOURNEY_BRACKET_ROUNDS.filter((r) => r.slotKey === slot.slotKey)
+      : TOURNEY_BRACKET_ROUNDS.slice(0, 2);
+    for (const round of roundsToShow) {
+      const open = state.matches.filter((m) => m.round_key === round.key && m.status !== "done").length;
+      const done = state.matches.filter((m) => m.round_key === round.key && m.status === "done").length;
+      const li = document.createElement("li");
+      li.className = "tourney-bracket-list__row";
+      li.textContent = `${round.label} (${tourneySlotLabel(round.slotKey)}): ${done} done · ${open} open`;
+      list.appendChild(li);
+    }
+  }
+}
+
+async function finishTournamentRun(scorePts, duelMeta = null) {
   const run = tournamentRun;
   tournamentRun = null;
   if (!run) return;
+  if (run.eventKind === "duel" && run.bracketMatch) {
+    const opponentScore = Math.max(0, Math.floor(Number(duelMeta?.opponentScore) || 0));
+    const playerScore = Math.max(0, Math.floor(Number(scorePts) || 0));
+    await resolveTourneyBracketMatchFromDuel(run, playerScore, opponentScore);
+    refreshTournamentCard();
+    return;
+  }
   await submitTourneyScore(scorePts, run.slotKey, run.eventKind);
   await fetchTourneyLeaderboard(run.dayKey);
   applyTourneyComField(run.dayKey, run.slotKey, run.eventKind);
@@ -10628,6 +11208,33 @@ async function beginTournamentCompetition() {
   }
   await fetchTourneyVoteCounts();
   const eventKind = winningTourneyEventKind();
+  if (eventKind === "duel") {
+    const bracket = await ensureTourneyBracketSeeded();
+    const me = findTourneyBracketEntry(getDuelClientId(), bracket);
+    if (me && !me.in_bracket) {
+      claimTourneyBracketConsolationIfNeeded(bracket);
+      showToast(`You're seed ${me.seed} — cut from the bracket. Enjoy your ${TOURNEY_BRACKET_CUT_COINS.toLocaleString()} coins!`, 4200);
+      return;
+    }
+    const match = getMyTourneyBracketPlayableMatch(slot.slotKey, bracket);
+    if (!match) {
+      showToast("No bracket match for you in this heat — check back next round.", 3600);
+      renderTourneyBracketPanel(bracket);
+      return;
+    }
+    pendingBracketMatch = { round_key: match.round_key, match_index: match.match_index, day_key: getTourneyDayKey() };
+    tournamentRun = {
+      dayKey: getTourneyDayKey(),
+      slotKey: slot.slotKey,
+      eventKind: "duel",
+      bracketMatch: { ...pendingBracketMatch },
+    };
+    const oppId = match.player_a_id === getDuelClientId() ? match.player_b_id : match.player_a_id;
+    const roundLabel = TOURNEY_BRACKET_ROUNDS.find((r) => r.key === match.round_key)?.label || "Bracket match";
+    showToast(`${roundLabel} vs ${tourneyBracketEntryName(findTourneyBracketEntry(oppId, bracket))}!`, 3200);
+    openEventPrep("duel");
+    return;
+  }
   tournamentRun = { dayKey: getTourneyDayKey(), slotKey: slot.slotKey, eventKind };
   const comFill = tourneyComSignupFillCount();
   showToast(
@@ -10636,10 +11243,6 @@ async function beginTournamentCompetition() {
       : `Tournament heat: ${tourneyEventLabel(eventKind)}!`,
     3000,
   );
-  if (eventKind === "duel") {
-    openEventPrep("duel");
-    return;
-  }
   if (eventKind === "coop") {
     openEventPrep("coop");
     return;
@@ -10715,8 +11318,13 @@ async function refreshTournamentCard() {
   const eventKind = winningTourneyEventKind();
   const votesLocked = areTourneyVotesLocked();
   maybeAnnounceTourneyVoteLock();
+  if (isTourneyDuelBracketDay()) {
+    await ensureTourneyBracketSeeded();
+  }
   if (tourneyEventTitle) {
-    if (votesLocked) {
+    if (votesLocked && eventKind === "duel") {
+      tourneyEventTitle.textContent = "Today's event: Duel Fishing bracket (votes locked)";
+    } else if (votesLocked) {
       tourneyEventTitle.textContent = `Today's event: ${tourneyEventLabel(eventKind)} (votes locked)`;
     } else if (Object.values(tourneyVoteCounts).some((n) => n > 0)) {
       tourneyEventTitle.textContent = `Leading: ${tourneyEventLabel(eventKind)} — voting open until morning heat`;
@@ -10762,9 +11370,11 @@ async function refreshTournamentCard() {
     }
   }
   if (tourneyPrizeLine) {
-    tourneyPrizeLine.textContent =
-      "Top 3 of 35 win chests + gems · join each heat 2 min early or late · 11 AM, 4 PM & 8 PM";
+    tourneyPrizeLine.textContent = isTourneyDuelBracketDay()
+      ? "Duel bracket: top 32 play · seeds 33–35 get 1,000 coins · podium wins chests + gems"
+      : "Top 3 of 35 win chests + gems · join each heat 2 min early or late · 11 AM, 4 PM & 8 PM";
   }
+  renderTourneyBracketPanel(tourneyBracketState);
   if (btnTourneySignup) {
     btnTourneySignup.hidden = isTourneySignedUpToday();
     btnTourneySignup.disabled = tourneySignupCount >= TOURNEY_MAX_PLAYERS || tourneySignupInFlight;
@@ -10778,8 +11388,16 @@ async function refreshTournamentCard() {
     btnTourneyCompete.hidden = !isTourneySignedUpToday();
     btnTourneyCompete.disabled = !slot.slotKey;
     const now = Date.now();
+    const bracketPlayable =
+      isTourneyDuelBracketDay() && slot.slotKey
+        ? getMyTourneyBracketPlayableMatch(slot.slotKey, tourneyBracketState)
+        : null;
     if (!slot.slotKey) {
       btnTourneyCompete.textContent = "Heat opens soon";
+    } else if (isTourneyDuelBracketDay() && bracketPlayable) {
+      btnTourneyCompete.textContent = "Play bracket match";
+    } else if (isTourneyDuelBracketDay()) {
+      btnTourneyCompete.textContent = "Check bracket status";
     } else if (now < slot.start) {
       btnTourneyCompete.textContent = "Compete (early join)";
     } else if (now >= slot.end) {
@@ -12098,7 +12716,7 @@ function showPartyCodeSetupToast() {
   );
 }
 
-async function hostPartyCodeMatch(matchKind, roundMs, deadlineMs) {
+async function hostPartyCodeMatch(matchKind, roundMs, deadlineMs, options = {}) {
   const isCoop = matchKind === MATCH_KIND_COOP;
   partyWaitCancelRequested = false;
   if (!duelLobbyPartyCodeReady) {
@@ -12106,7 +12724,7 @@ async function hostPartyCodeMatch(matchKind, roundMs, deadlineMs) {
     throw new Error("PARTY_CODE_SCHEMA_MISSING");
   }
 
-  let code = generatePartyCode();
+  let code = options.partyCode ? normalizePartyCode(options.partyCode) : generatePartyCode();
   let created = null;
   for (let attempt = 0; attempt < 6; attempt++) {
     const reefId = isCoop ? pickMinigameReef("coop").id : pickRandomDuelReefId(duelLastReefId);
@@ -12117,7 +12735,8 @@ async function hostPartyCodeMatch(matchKind, roundMs, deadlineMs) {
       showPartyCodeSetupToast();
       throw new Error("PARTY_CODE_SCHEMA_MISSING");
     }
-    /* Collision or create failure — try a fresh code. */
+    /* Collision or create failure — try a fresh code (unless bracket fixed the code). */
+    if (options.partyCode) break;
     code = generatePartyCode();
     created = null;
   }
@@ -12639,8 +13258,60 @@ async function cancelCoopLobbyIfHost(matchId) {
   return cancelDuelLobbyIfHost(matchId);
 }
 
+async function resolveBracketDuelPlan(deadlineMs) {
+  const ref = pendingBracketMatch || tournamentRun?.bracketMatch;
+  if (!ref) throw new Error("No bracket match");
+  const match = findTourneyBracketMatch(ref.round_key, ref.match_index);
+  if (!match) throw new Error("Bracket match missing");
+  const me = getDuelClientId();
+  const oppId = match.player_a_id === me ? match.player_b_id : match.player_a_id;
+  const opp = findTourneyBracketEntry(oppId);
+  const reefId = pickRandomDuelReefId(duelLastReefId);
+
+  if (!oppId || isTourneyComClientId(oppId)) {
+    const plan = buildLocalComDuelPlan(reefId);
+    plan.opponentInitials = tourneyBracketEntryName(opp);
+    return plan;
+  }
+
+  const code = tourneyBracketPartyCode(ref.day_key || getTourneyDayKey(), match.round_key, match.match_index);
+  const iAmHost = me < oppId;
+  setDuelMatchmakingUi(true, iAmHost ? `Bracket code ${code} — waiting for rival…` : `Joining bracket code ${code}…`);
+
+  if (iAmHost) {
+    try {
+      return await hostPartyCodeMatch(MATCH_KIND_DUEL, DUEL_ROUND_MS, deadlineMs, { partyCode: code });
+    } catch (err) {
+      console.warn(err);
+      /* Rival no-show: play a stand-in COM and keep the bracket moving. */
+      showToast("Rival didn't connect — playing a stand-in angler.", 3200);
+      const plan = buildLocalComDuelPlan(reefId);
+      plan.opponentInitials = tourneyBracketEntryName(opp);
+      return plan;
+    }
+  }
+
+  const joinDeadline = deadlineMs;
+  while (Date.now() < joinDeadline) {
+    try {
+      const joined = await joinPartyCodeMatch(code, MATCH_KIND_DUEL);
+      if (joined?.plan) return joined.plan;
+    } catch {
+      /* lobby not up yet */
+    }
+    await duelSleep(DUEL_LOBBY_POLL_MS);
+  }
+  showToast("Couldn't find your rival's lobby — playing a stand-in angler.", 3200);
+  const plan = buildLocalComDuelPlan(reefId);
+  plan.opponentInitials = tourneyBracketEntryName(opp);
+  return plan;
+}
+
 async function resolveDuelMatchPlan(deadlineMs) {
   try {
+    if ((pendingBracketMatch || tournamentRun?.bracketMatch) && tournamentRun?.eventKind === "duel") {
+      return await resolveBracketDuelPlan(deadlineMs);
+    }
     if (pendingJoinPartyCode) {
       const joined = await joinPartyCodeMatch(pendingJoinPartyCode, MATCH_KIND_DUEL);
       pendingJoinPartyCode = null;
@@ -13936,7 +14607,9 @@ async function endDuelRoundAsync() {
     opponentScore = resolved.opponentScore;
   }
 
-  if (tournamentRun) void finishTournamentRun(playerScore);
+  if (tournamentRun) {
+    void finishTournamentRun(playerScore, { opponentScore, won: playerScore > opponentScore });
+  }
 
   duelSession = null;
   duelResultSettling = false;
@@ -18854,6 +19527,17 @@ function openEventPrep(kind) {
     if (eventPrepDetail) {
       eventPrepDetail.textContent = `Code ${pendingJoinPartyCode} — pick bait and a rod, then Cast off.`;
     }
+  } else if (pendingBracketMatch || tournamentRun?.bracketMatch) {
+    const ref = pendingBracketMatch || tournamentRun.bracketMatch;
+    const match = findTourneyBracketMatch(ref.round_key, ref.match_index);
+    const me = getDuelClientId();
+    const oppId = match ? (match.player_a_id === me ? match.player_b_id : match.player_a_id) : null;
+    const roundLabel = TOURNEY_BRACKET_ROUNDS.find((r) => r.key === ref.round_key)?.label || "Bracket match";
+    if (eventPrepEyebrow) eventPrepEyebrow.textContent = "Tourney bracket";
+    if (eventPrepTitle) eventPrepTitle.textContent = roundLabel;
+    if (eventPrepDetail) {
+      eventPrepDetail.textContent = `Vs ${tourneyBracketEntryName(findTourneyBracketEntry(oppId))} — pick bait and a rod, then Cast off.`;
+    }
   } else {
     if (eventPrepEyebrow) eventPrepEyebrow.textContent = copy.eyebrow;
     if (eventPrepTitle) eventPrepTitle.textContent = copy.title;
@@ -18872,6 +19556,10 @@ function closeEventPrep() {
   pendingEventPrepKind = null;
   pendingJoinPartyCode = null;
   pendingPartyIntent = "anyone";
+  if (tournamentRun?.bracketMatch) {
+    tournamentRun = null;
+    pendingBracketMatch = null;
+  }
   if (panelEventPrep) panelEventPrep.hidden = true;
   openEvents();
 }

@@ -23,7 +23,7 @@
       rel="stylesheet"
     />
     <link rel="canonical" href="https://juliette-jason.github.io/reef-rush/" />
-    <link rel="stylesheet" href="styles.css?v=2026-09-05-world-music-menus-1" />
+    <link rel="stylesheet" href="styles.css?v=2026-09-05-duel-bracket-1" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -1853,7 +1853,7 @@
                 <summary class="event-card__info" aria-label="About Fishing Tourney">
                   <span class="event-card__info-glyph" aria-hidden="true">i</span>
                 </summary>
-                <p class="event-card__blurb">Vote on today's event. Sign up for a spot — empty spots are filled with random anglers so heats always run. Compete at 11:00 AM, 4:00 PM, and 8:00 PM — top 3 win chests + gems.</p>
+                <p class="event-card__blurb">Vote on today's event. Sign up for a spot — empty spots are filled with random anglers. If Duel Fishing wins, the top 32 enter a single-elim bracket (seeds 33–35 get 1,000 coins). Other events use heat scores — top 3 win chests + gems.</p>
               </details>
             </div>
             <p id="tourneyEventTitle" class="event-card__reset">Vote for today's event</p>
@@ -1869,6 +1869,11 @@
             <summary class="tourney-vote-details__summary">Vote for today's event (closes before morning heat)</summary>
             <div id="tourneyVoteOptions" class="tourney-vote-options" role="group" aria-label="Vote for today's tournament event"></div>
           </details>
+          <div id="tourneyBracketPanel" class="tourney-bracket-panel" hidden>
+            <h4 class="tourney-bracket-panel__title">Duel bracket</h4>
+            <p id="tourneyBracketLine" class="event-card__hint">Bracket seeding locks with the morning heat.</p>
+            <ul id="tourneyBracketList" class="tourney-bracket-list" aria-label="Bracket rounds"></ul>
+          </div>
           <div class="leaderboard-block leaderboard-block--compact">
             <h4 class="leaderboard-block__title">Today's tourney board</h4>
             <ol id="tourneyLeaderboard" class="leaderboard leaderboard--daily" aria-label="Fishing Tourney standings"></ol>
@@ -2941,6 +2946,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-09-05-world-music-menus-1" defer></script>
+    <script src="game.js?v=2026-09-05-duel-bracket-1" defer></script>
   </body>
 </html>
