@@ -113,6 +113,38 @@ const SKULL_SHOALS_FISH_IDS = [
   "leviathan_skull",
 ];
 
+/** Shallow cay / mangrove schools — denser variety than the default adventure rotation. */
+const COMPASS_CAY_FISH_IDS = [
+  "northern_anchovy",
+  "pacific_sardine",
+  "atlantic_herring",
+  "chub_mackerel",
+  "european_sprat",
+  "barramundi",
+  "clown_anemonefish",
+  "moon_jellyfish",
+  "striped_bass",
+  "red_snapper",
+  "coral_trout_gbr",
+  "european_seabass",
+  "queen_angelfish",
+  "lined_seahorse",
+  "caribbean_lobster",
+  "common_cuttlefish",
+  "yellowfin_tuna",
+  "albacore_tuna",
+  "dolphinfish_mahi",
+  "yellowtail_amberjack",
+  "green_sea_turtle",
+  "reef_octopus",
+  "harbor_seal",
+  "giant_trevally",
+  "reef_manta",
+  "bottlenose_dolphin",
+  "great_barracuda",
+  "sea_otter",
+];
+
 const RODS = [
   {
     id: "bamboo",
@@ -2693,6 +2725,7 @@ function getActiveAdventureTheme() {
 
 /** Base reef gameplay (fish pool, spawns) — overrides index rotation when a voyage must not play like Mariana Trench. */
 const ADVENTURE_THEME_REEF_ID = {
+  "compass-cay": "caribbean",
   "lava-falls": "caribbean",
   "treasure-cove": "caribbean",
   "frost-fjord": "mediterranean",
@@ -8705,6 +8738,14 @@ function getReef() {
   if (themeId === "skull-shoals") {
     merged.weights = { common: 48, uncommon: 28, rare: 14, epic: 7, legendary: 3 };
     merged.fishSpeed = Math.max(lvl.fishSpeed * 1.42, 1.12);
+  }
+  if (themeId === "compass-cay") {
+    merged.fishPool = COMPASS_CAY_FISH_IDS.slice();
+    merged.maxFish = Math.min(22, Math.max(lvl.maxFish + 6, 20));
+    merged.spawnMin = Math.min(lvl.spawnMin, 150);
+    merged.spawnMax = Math.min(lvl.spawnMax, 520);
+    merged.weights = { common: 48, uncommon: 28, rare: 14, epic: 7, legendary: 3 };
+    merged.desc = `Busy cay shallows · packed schools · score ${lvl.passScore}+ to continue`;
   }
   if (themeId === "lava-falls") {
     merged.subtitle = "Volcanic shallows";
