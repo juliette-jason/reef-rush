@@ -7499,6 +7499,8 @@ function defaultMeta() {
     tourneyHeatVotes: {},
     tourneyActiveDayKey: "",
     tourneyScorePodiumClaimDayKey: "",
+    tourneyPlayedDayKey: "",
+    tourneyPlayedSlots: {},
   };
 }
 
@@ -7603,6 +7605,11 @@ function loadMeta() {
       tourneyActiveDayKey: typeof o.tourneyActiveDayKey === "string" ? o.tourneyActiveDayKey : "",
       tourneyScorePodiumClaimDayKey:
         typeof o.tourneyScorePodiumClaimDayKey === "string" ? o.tourneyScorePodiumClaimDayKey : "",
+      tourneyPlayedDayKey: typeof o.tourneyPlayedDayKey === "string" ? o.tourneyPlayedDayKey : "",
+      tourneyPlayedSlots:
+        o.tourneyPlayedSlots && typeof o.tourneyPlayedSlots === "object" && !Array.isArray(o.tourneyPlayedSlots)
+          ? { ...o.tourneyPlayedSlots }
+          : {},
     };
   } catch {
     return defaultMeta();
@@ -10394,6 +10401,10 @@ function ensureTourneyDayRollover() {
     gameMeta.tourneyHeatVoteDayKey = "";
     gameMeta.tourneyHeatVotes = {};
   }
+  if (gameMeta.tourneyPlayedDayKey !== dayKey) {
+    gameMeta.tourneyPlayedDayKey = dayKey;
+    gameMeta.tourneyPlayedSlots = {};
+  }
   saveMeta();
   tourneyBracketState = null;
   tourneyVoteCounts = {};
@@ -10815,6 +10826,22 @@ function isTourneySignedUpToday() {
 
 function hasTourneyVotedToday() {
   return gameMeta.tourneyVoteDayKey === getTourneyDayKey() && Boolean(gameMeta.tourneyVoteKind);
+}
+
+function hasPlayedTourneyHeat(slotKey, dayKey = getTourneyDayKey()) {
+  if (!slotKey) return false;
+  if (gameMeta.tourneyPlayedDayKey !== dayKey) return false;
+  return Boolean(gameMeta.tourneyPlayedSlots?.[slotKey]);
+}
+
+function markTourneyHeatPlayed(slotKey, dayKey = getTourneyDayKey()) {
+  if (!slotKey) return;
+  if (gameMeta.tourneyPlayedDayKey !== dayKey) {
+    gameMeta.tourneyPlayedDayKey = dayKey;
+    gameMeta.tourneyPlayedSlots = {};
+  }
+  gameMeta.tourneyPlayedSlots = { ...(gameMeta.tourneyPlayedSlots || {}), [slotKey]: true };
+  saveMeta();
 }
 
 function tourneyVoteBridgeSelectUrl(dayKey) {
@@ -12142,6 +12169,9 @@ async function finishTournamentRun(scorePts, duelMeta = null) {
   const run = tournamentRun;
   tournamentRun = null;
   if (!run) return;
+  if (run.slotKey && run.eventKind !== "duel") {
+    markTourneyHeatPlayed(run.slotKey, run.dayKey || getTourneyDayKey());
+  }
   if (run.eventKind === "duel" && run.bracketMatch) {
     const opponentScore = Math.max(0, Math.floor(Number(duelMeta?.opponentScore) || 0));
     const playerScore = Math.max(0, Math.floor(Number(scorePts) || 0));
@@ -12174,6 +12204,11 @@ async function beginTournamentCompetition() {
   await fetchTourneyVoteCounts();
   if (isTourneyMixedEventDay()) await fetchAllTourneyHeatVoteCounts();
   const eventKind = getTourneyEventForHeat(slot.slotKey);
+  if (eventKind !== "duel" && hasPlayedTourneyHeat(slot.slotKey)) {
+    showToast(`You already played the ${tourneySlotLabel(slot.slotKey)} heat — one run per heat.`, 3400);
+    refreshTournamentCard();
+    return;
+  }
   if (eventKind === "duel") {
     const bracket = await ensureTourneyBracketSeeded();
     const me = findTourneyBracketEntry(getDuelClientId(), bracket);
@@ -12451,25 +12486,38 @@ async function refreshTournamentCard() {
   }
   if (btnTourneyCompete) {
     btnTourneyCompete.hidden = !isTourneySignedUpToday();
-    btnTourneyCompete.disabled = !slot.slotKey || !areTourneyVotesLocked();
     const now = Date.now();
     const bracketPlayable =
       isTourneyDuelBracketDay() && slot.slotKey
         ? getMyTourneyBracketPlayableMatch(slot.slotKey, tourneyBracketState)
         : null;
+    const heatAlreadyPlayed =
+      Boolean(slot.slotKey) && !isTourneyDuelBracketDay() && hasPlayedTourneyHeat(slot.slotKey);
+    btnTourneyCompete.disabled =
+      !slot.slotKey || !areTourneyVotesLocked() || heatAlreadyPlayed || (isTourneyDuelBracketDay() && !bracketPlayable && Boolean(slot.slotKey));
     if (!areTourneyVotesLocked()) {
+      btnTourneyCompete.disabled = true;
       btnTourneyCompete.textContent = "Votes still open";
     } else if (!slot.slotKey) {
+      btnTourneyCompete.disabled = true;
       btnTourneyCompete.textContent = "Heat opens soon";
+    } else if (heatAlreadyPlayed) {
+      btnTourneyCompete.disabled = true;
+      btnTourneyCompete.textContent = "Already played this heat";
     } else if (isTourneyDuelBracketDay() && bracketPlayable) {
+      btnTourneyCompete.disabled = false;
       btnTourneyCompete.textContent = "Play bracket match";
     } else if (isTourneyDuelBracketDay()) {
-      btnTourneyCompete.textContent = "Check bracket status";
+      btnTourneyCompete.disabled = true;
+      btnTourneyCompete.textContent = "No match this heat";
     } else if (now < slot.start) {
+      btnTourneyCompete.disabled = false;
       btnTourneyCompete.textContent = "Compete (early join)";
     } else if (now >= slot.end) {
+      btnTourneyCompete.disabled = false;
       btnTourneyCompete.textContent = "Compete (late join)";
     } else {
+      btnTourneyCompete.disabled = false;
       btnTourneyCompete.textContent = "Compete in live heat";
     }
   }
@@ -20737,6 +20785,10 @@ function confirmEventPrepStart() {
   pendingEventPrepKind = null;
   if (panelEventPrep) panelEventPrep.hidden = true;
   appRoot?.classList.remove("app--events-mode");
+  /* Non-duel heats: one run per morning / afternoon / evening. Bracket days use match status instead. */
+  if (tournamentRun?.slotKey && tournamentRun.eventKind !== "duel") {
+    markTourneyHeatPlayed(tournamentRun.slotKey, tournamentRun.dayKey);
+  }
   syncEventPrepStartLabel();
   if (kind === "duel") {
     void startDuelFromEvents(true);
@@ -21092,11 +21144,22 @@ function endCrabTrapStageUi() {
 
 function quitCrabTrap() {
   if (!crabTrapSession) return;
-  const ok = window.confirm("Quit Crab Trap? Your ticket won't be refunded.");
+  const ok = window.confirm(
+    tournamentRun
+      ? "Quit this tourney heat? It counts as your one run for this time slot."
+      : "Quit Crab Trap? Your ticket won't be refunded.",
+  );
   if (!ok || !crabTrapSession) return;
   stopCrabTrapLoop();
+  const abandonedScore = Math.max(0, Math.floor(Number(crabTrapSession.score) || 0));
   crabTrapSession = null;
   endCrabTrapStageUi();
+  if (tournamentRun) {
+    void finishTournamentRun(abandonedScore);
+    showToast("Tourney heat used — see you next slot.", 3200);
+    openEvents();
+    return;
+  }
   returnToEventsFromCrab();
 }
 
