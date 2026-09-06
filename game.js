@@ -11144,12 +11144,13 @@ function isTourneyComClientId(clientId) {
 }
 
 function tourneyComScoreRange(eventKind) {
-  if (eventKind === "duel") return { min: 2200, max: 9800 };
-  if (eventKind === "coop") return { min: 3600, max: 12800 };
-  if (eventKind === "roulette") return { min: 1800, max: 8200 };
-  if (eventKind === "survivor") return { min: 400, max: 4200 };
-  if (eventKind === "crab") return { min: 4, max: 28 };
-  return { min: 2000, max: 9000 };
+  /* Soft field: strong human runs can take the podium, middling play still sits mid-pack. */
+  if (eventKind === "duel") return { min: 1600, max: 7000 };
+  if (eventKind === "coop") return { min: 2600, max: 9600 };
+  if (eventKind === "roulette") return { min: 1200, max: 4800 };
+  if (eventKind === "survivor") return { min: 280, max: 2100 };
+  if (eventKind === "crab") return { min: 3, max: 20 };
+  return { min: 1400, max: 5200 };
 }
 
 function buildTourneyComField(dayKey, realRows, eventKind, slotKey = "field") {
@@ -11175,8 +11176,9 @@ function buildTourneyComField(dayKey, realRows, eventKind, slotKey = "field") {
       if (!usedNames.has(name.toLowerCase())) break;
     }
     usedNames.add(name.toLowerCase());
+    /* Bias mid-low so fewer COMs pile at the ceiling; a few still stretch near max. */
     const t = rng();
-    const ease = t * t * (3 - 2 * t);
+    const ease = Math.pow(t, 1.45);
     const score = Math.floor(range.min + (range.max - range.min) * ease);
     fillers.push({
       client_id: `${TOURNEY_COM_ID_PREFIX}${dayKey}-${slotKey}-${i}`,
