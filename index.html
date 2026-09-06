@@ -23,7 +23,7 @@
       rel="stylesheet"
     />
     <link rel="canonical" href="https://juliette-jason.github.io/reef-rush/" />
-    <link rel="stylesheet" href="styles.css?v=2026-09-05-phone-info" />
+    <link rel="stylesheet" href="styles.css?v=2026-09-06-tourney-ready" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -304,6 +304,18 @@
             <p id="tourneyVoteRevealEvent" class="tourney-vote-reveal__event">Reef Roulette</p>
             <p id="tourneyVoteRevealDetail" class="tourney-vote-reveal__detail">The community picked this mode for all three heats.</p>
             <button type="button" id="btnTourneyVoteRevealDone" class="btn btn--primary tourney-vote-reveal__btn">Got it</button>
+          </div>
+        </div>
+        <div id="tourneyHeatReveal" class="tourney-vote-reveal tourney-heat-reveal" hidden aria-hidden="true">
+          <div class="tourney-vote-reveal__backdrop"></div>
+          <div class="tourney-vote-reveal__stage" role="dialog" aria-labelledby="tourneyHeatRevealTitle" aria-modal="true">
+            <p class="tourney-vote-reveal__badge" id="tourneyHeatRevealBadge">★ Tourney heat ★</p>
+            <h2 id="tourneyHeatRevealTitle" class="tourney-vote-reveal__title">You're playing</h2>
+            <p id="tourneyHeatRevealEvent" class="tourney-vote-reveal__event">Reef Roulette</p>
+            <p id="tourneyHeatRevealDetail" class="tourney-vote-reveal__detail">Get ready — the round timer starts only after you tap I am ready on the next screen.</p>
+            <button type="button" id="btnTourneyHeatRevealReady" class="btn btn--primary tourney-vote-reveal__btn" hidden>
+              Continue
+            </button>
           </div>
         </div>
         <div id="crabTrapStage" class="crab-trap-stage" hidden aria-hidden="true">
@@ -2968,6 +2980,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-09-05-phone-info" defer></script>
+    <script src="game.js?v=2026-09-06-tourney-ready" defer></script>
   </body>
 </html>

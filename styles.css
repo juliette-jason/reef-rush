@@ -4577,6 +4577,15 @@ button.seagull-avatar:active {
   min-width: 140px;
 }
 
+.tourney-heat-reveal .tourney-vote-reveal__event {
+  color: #fde68a;
+  text-shadow: 0 0 24px rgba(253, 230, 138, 0.4);
+}
+
+.tourney-heat-reveal .tourney-vote-reveal__btn[hidden] {
+  display: none !important;
+}
+
 @keyframes tourneyVotePulse {
   0%,
   100% {

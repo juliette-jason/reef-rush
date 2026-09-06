@@ -10598,6 +10598,87 @@ function endTourneyVoteReveal() {
   if (panelEvents && !panelEvents.hidden) void refreshTournamentCard();
 }
 
+/** Prep kind to open after the heat announce + I am ready. */
+let pendingTourneyHeatPrepKind = null;
+let tourneyHeatReadyTimer = 0;
+
+function clearTourneyHeatReadyTimer() {
+  if (tourneyHeatReadyTimer) {
+    window.clearTimeout(tourneyHeatReadyTimer);
+    tourneyHeatReadyTimer = 0;
+  }
+}
+
+function tourneyHeatDetailCopy(eventKind, slotKey, bracketLine = "") {
+  if (bracketLine) return bracketLine;
+  const slot = tourneySlotLabel(slotKey || getTourneySlotState().slotKey || "morning");
+  if (eventKind === "duel") {
+    return `${slot} heat — Duel bracket match. Continue to pick bait and a rod, then tap I am ready — the duel timer starts only then.`;
+  }
+  if (eventKind === "coop") {
+    return `${slot} heat — Co-op Haul. Continue to pick gear, then tap I am ready to start the haul timer.`;
+  }
+  if (eventKind === "crab") {
+    return `${slot} heat — Crab Trap. Continue to pick gear, then tap I am ready to start the trap timer.`;
+  }
+  if (eventKind === "survivor") {
+    return `${slot} heat — Kraken Survivor. Continue to pick gear, then tap I am ready to begin the hunt.`;
+  }
+  return `${slot} heat — ${tourneyEventLabel(eventKind)}. Continue to pick gear, then tap I am ready — the round timer starts only then.`;
+}
+
+function startTourneyHeatReveal({ eventKind, prepKind, slotKey, bracketLine = "" }) {
+  const reveal = document.getElementById("tourneyHeatReveal");
+  const badge = document.getElementById("tourneyHeatRevealBadge");
+  const title = document.getElementById("tourneyHeatRevealTitle");
+  const eventEl = document.getElementById("tourneyHeatRevealEvent");
+  const detail = document.getElementById("tourneyHeatRevealDetail");
+  const btn = document.getElementById("btnTourneyHeatRevealReady");
+  const label = tourneyEventLabel(eventKind);
+  pendingTourneyHeatPrepKind = prepKind || eventKind;
+  clearTourneyHeatReadyTimer();
+  if (badge) badge.textContent = "★ Tourney heat ★";
+  if (title) title.textContent = "You're playing";
+  if (eventEl) eventEl.textContent = label;
+  if (detail) detail.textContent = tourneyHeatDetailCopy(eventKind, slotKey, bracketLine);
+  if (btn) {
+    btn.hidden = true;
+    btn.textContent = "Continue";
+  }
+  if (!reveal) {
+    openEventPrep(pendingTourneyHeatPrepKind);
+    return;
+  }
+  endTourneyVoteReveal();
+  reveal.hidden = false;
+  reveal.setAttribute("aria-hidden", "false");
+  reveal.classList.remove("tourney-vote-reveal--active");
+  void reveal.offsetWidth;
+  reveal.classList.add("tourney-vote-reveal--active");
+  /* Let the heat game name land first, then offer Continue → gear → I am ready. */
+  tourneyHeatReadyTimer = window.setTimeout(() => {
+    tourneyHeatReadyTimer = 0;
+    if (!btn || reveal.hidden) return;
+    btn.hidden = false;
+    btn.focus();
+  }, 900);
+}
+
+function endTourneyHeatRevealToPrep() {
+  clearTourneyHeatReadyTimer();
+  const reveal = document.getElementById("tourneyHeatReveal");
+  const btn = document.getElementById("btnTourneyHeatRevealReady");
+  if (btn) btn.hidden = true;
+  if (reveal) {
+    reveal.classList.remove("tourney-vote-reveal--active");
+    reveal.hidden = true;
+    reveal.setAttribute("aria-hidden", "true");
+  }
+  const kind = pendingTourneyHeatPrepKind || tournamentRun?.eventKind || "roulette";
+  pendingTourneyHeatPrepKind = null;
+  openEventPrep(kind);
+}
+
 /** Once per heat: toast while fishing when the next tourney is ~5 minutes away. */
 let tourneyFiveMinWarnKey = "";
 function maybeWarnTourneyHeat(now = Date.now()) {
@@ -12116,27 +12197,26 @@ async function beginTournamentCompetition() {
     };
     const oppId = match.player_a_id === getDuelClientId() ? match.player_b_id : match.player_a_id;
     const roundLabel = TOURNEY_BRACKET_ROUNDS.find((r) => r.key === match.round_key)?.label || "Bracket match";
-    showToast(`${roundLabel} vs ${tourneyBracketEntryName(findTourneyBracketEntry(oppId, bracket))}!`, 3200);
-    openEventPrep("duel");
+    const vsLine = `${roundLabel} vs ${tourneyBracketEntryName(findTourneyBracketEntry(oppId, bracket))}. Continue to pick gear, then tap I am ready — the duel timer starts only then.`;
+    startTourneyHeatReveal({
+      eventKind: "duel",
+      prepKind: "duel",
+      slotKey: slot.slotKey,
+      bracketLine: vsLine,
+    });
     return;
   }
   tournamentRun = { dayKey: getTourneyDayKey(), slotKey: slot.slotKey, eventKind };
   const comFill = tourneyComSignupFillCount();
-  showToast(
-    comFill > 0
-      ? `Tournament heat: ${tourneyEventLabel(eventKind)}! Random anglers fill ${comFill} empty spots.`
-      : `Tournament heat: ${tourneyEventLabel(eventKind)}!`,
-    3000,
-  );
-  if (eventKind === "coop") {
-    openEventPrep("coop");
-    return;
+  if (comFill > 0) {
+    /* Soft note only — the heat reveal is the main announcement. */
+    console.info(`Tourney COM fill: ${comFill}`);
   }
-  if (eventKind === "crab") {
-    openEventPrep("crab");
-    return;
-  }
-  openEventPrep(eventKind);
+  startTourneyHeatReveal({
+    eventKind,
+    prepKind: eventKind === "coop" || eventKind === "crab" ? eventKind : eventKind,
+    slotKey: slot.slotKey,
+  });
 }
 
 function renderTournamentLeaderboard() {
@@ -20530,9 +20610,11 @@ function syncEventPrepStartLabel() {
   if (!label) return;
   if (tournamentRun) {
     label.textContent = "I am ready";
+    if (btnEventPrepStart) btnEventPrepStart.hidden = false;
     return;
   }
   label.textContent = "Cast off";
+  if (btnEventPrepStart) btnEventPrepStart.hidden = false;
 }
 
 function openEventPrep(kind) {
@@ -20565,16 +20647,14 @@ function openEventPrep(kind) {
     if (eventPrepEyebrow) eventPrepEyebrow.textContent = "Tourney bracket";
     if (eventPrepTitle) eventPrepTitle.textContent = roundLabel;
     if (eventPrepDetail) {
-      eventPrepDetail.textContent = `Vs ${tourneyBracketEntryName(findTourneyBracketEntry(oppId))} — pick bait and a rod, then tap I am ready.`;
+      eventPrepDetail.textContent = `Vs ${tourneyBracketEntryName(findTourneyBracketEntry(oppId))} — pick bait and a rod, then tap I am ready. The timer starts only then.`;
     }
   } else if (tourneyHeat) {
     if (eventPrepEyebrow) eventPrepEyebrow.textContent = `Tourney · ${tourneyEventLabel(kind)}`;
     if (eventPrepTitle) eventPrepTitle.textContent = "Ready your gear";
     if (eventPrepDetail) {
       eventPrepDetail.textContent =
-        kind === "crab"
-          ? "Pick bait and a rod, then tap I am ready to start this tourney heat."
-          : "Pick bait and a rod, then tap I am ready to play this tourney heat.";
+        "Pick bait and a rod, then tap I am ready. The heat timer does not start until you do.";
     }
   } else {
     if (eventPrepEyebrow) eventPrepEyebrow.textContent = copy.eyebrow;
@@ -20587,7 +20667,18 @@ function openEventPrep(kind) {
   buildBaitUI();
   buildRodUI();
   refreshEventPrepFriendsUI();
-  syncEventPrepStartLabel();
+  /* For tourney: show heat game name first, then reveal I am ready (timer still waits for the click). */
+  if (tourneyHeat && btnEventPrepStart) {
+    const label = btnEventPrepStart.querySelector(".btn--start__label");
+    if (label) label.textContent = "I am ready";
+    btnEventPrepStart.hidden = true;
+    window.setTimeout(() => {
+      if (!tournamentRun || !panelEventPrep || panelEventPrep.hidden) return;
+      btnEventPrepStart.hidden = false;
+    }, 700);
+  } else {
+    syncEventPrepStartLabel();
+  }
   if (musicEnabled) switchSceneMusic(startHomeMusic);
 }
 
@@ -28398,6 +28489,7 @@ btnAgain.addEventListener("click", () => {
 
 btnTreasureMapRevealDone?.addEventListener("click", endTreasureMapReveal);
 document.getElementById("btnTourneyVoteRevealDone")?.addEventListener("click", endTourneyVoteReveal);
+document.getElementById("btnTourneyHeatRevealReady")?.addEventListener("click", endTourneyHeatRevealToPrep);
 btnDailyPrizeContinue?.addEventListener("click", showDailyPrizeChestPhase);
 btnDailyPrizeChest?.addEventListener("click", () => {
   if (dailyPrizePhase === "chest") openDailyPrizeChest();
