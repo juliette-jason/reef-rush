@@ -13099,112 +13099,192 @@ const COM_FIRST_NAMES = [
   "Pat",
   "Jamie",
   "Robin",
+  "Ben",
+  "Chloe",
+  "Daniel",
+  "Elena",
+  "Frank",
+  "Grace",
+  "Henry",
+  "Isabel",
+  "Jack",
+  "Kate",
+  "Liam",
+  "Nora",
+  "Omar",
+  "Priya",
+  "Ryan",
+  "Sofia",
+  "Tom",
+  "Uma",
+  "Vince",
+  "Will",
+  "Amy",
+  "Brian",
+  "Carla",
+  "Diego",
+  "Emma",
+  "Gabe",
+  "Hannah",
+  "Ian",
+  "Jen",
+  "Kevin",
+  "Lucy",
+  "Marcus",
+  "Natalie",
+  "Oscar",
+  "Paula",
+  "Rachel",
+  "Steve",
+  "Tina",
+  "Victor",
+  "Wendy",
 ];
+
+const COM_LAST_NAMES = [
+  "Brooks",
+  "Carter",
+  "Diaz",
+  "Ellis",
+  "Foster",
+  "Garcia",
+  "Hayes",
+  "Iverson",
+  "Jones",
+  "Kim",
+  "Lopez",
+  "Moore",
+  "Nguyen",
+  "Ortiz",
+  "Patel",
+  "Quinn",
+  "Reed",
+  "Singh",
+  "Turner",
+  "Vasquez",
+  "Walsh",
+  "Young",
+  "Adams",
+  "Bennett",
+  "Collins",
+  "Davis",
+  "Edwards",
+  "Fisher",
+  "Green",
+  "Hall",
+  "Ingram",
+  "Johnson",
+  "Keller",
+  "Lee",
+  "Martin",
+  "Nelson",
+  "Owens",
+  "Perez",
+  "Rivera",
+  "Scott",
+  "Thomas",
+  "Underwood",
+  "Vargas",
+  "White",
+  "Xu",
+  "Yang",
+  "Zhang",
+  "Bailey",
+  "Cooper",
+  "Dixon",
+];
+
+const COM_MIDDLE_INITIALS = ["A", "B", "C", "D", "E", "J", "K", "L", "M", "R", "S", "T"];
 
 const COM_TITLES = [
   "Dominator",
-  "Reel Deal",
-  "Tide King",
-  "Tide Queen",
-  "Hook Boss",
-  "Catch King",
-  "Reef Ace",
-  "Salt Legend",
-  "Line Wizard",
-  "Bait Boss",
-  "Wave Rider",
-  "Deep Hauler",
-  "Lucky Cast",
-  "Net Master",
-  "Shore Shark",
-  "Kelp Kid",
-  "Moon Angler",
-  "Sunrise Fisher",
-  "Harbor Hero",
   "Quiet Storm",
+  "Lucky One",
+  "Night Owl",
+  "Early Bird",
+  "Local Legend",
+  "Weekend Warrior",
+  "Dark Horse",
+  "Comeback Kid",
+  "Steady Hand",
+  "Fast Learner",
+  "Old Pro",
+  "New Kid",
+  "Crowd Favorite",
+  "Underdog",
 ];
 
 const COM_NATURAL_HANDLES = [
   "the Dominator",
-  "Best Fisher Cam",
-  "Captain Catch",
-  "Just Here To Fish",
-  "Reel Quiet",
-  "Saltwater Sam",
-  "Mama Reef",
-  "Papa Pike",
-  "Little Marlin",
-  "Big Tide Energy",
-  "Catch of the Day",
+  "Best Cam",
+  "Just Maya",
+  "Big Leo Energy",
+  "Little Nina",
   "Not a Bot Promise",
   "Weekend Warrior",
-  "Early Bird Angler",
-  "Night Hook",
-  "Chill Cast",
-  "Lucky Lure",
-  "One More Cast",
-  "Fish Fear Me",
-  "Boat Snack",
-  "Dockside Dreamer",
-  "Tide Check",
-  "Coral Cowboy",
-  "Lagoon Lou",
-  "Harbor Hank",
-  "Breezy Bay",
-  "Soft Cast Steve",
-  "No Rush Nina",
-  "Patient Pat",
-  "Cast and Chill",
-  "Hook Line Sinker",
-  "Keep the Fish",
-  "Release King",
-  "Bait Beggar",
-  "Snack Between Casts",
-  "Rain or Shine Rod",
-  "Sunrise on the Dock",
-  "Foggy Morning Finn",
-  "Golden Hour Greta",
-  "Almost Legendary",
   "Trying My Best",
   "Local Legend",
-  "Neighborhood Net",
-  "Pier Pressure",
-  "Sea You Later",
-  "Shore Thing",
-  "Reel Talk",
-  "Fish Tales Only",
-  "Don't Spook Em",
-  "Quiet on the Bow",
+  "Almost Legendary",
+  "No Rush Nina",
+  "Patient Pat",
+  "Soft Spoken Steve",
+  "Quiet on Purpose",
+  "Here For Fun",
+  "Friendly Rival",
+  "Good Sport Gabe",
+  "Lucky Lucy",
+  "Steady Sam",
+  "Chill Chris",
+  "Speedy Sofia",
+  "Honest Henry",
+  "Kind Kate",
+  "Bold Brian",
+  "Calm Carla",
+  "Sharp Sarah",
+  "Cool Cole",
+  "Sunny Sofia",
+  "Mighty Marcus",
+  "Gentle Grace",
+  "Brave Beau",
+  "Witty Wren",
+  "Fancy Felix",
+  "Plain Jane Energy",
+  "Regular Ryan",
+  "Average Alex",
+  "Surprise Guest",
+  "Mystery Player",
+  "Name Pending",
+  "Call Me Cam",
 ];
 
 const COM_ROLE_PREFIXES = [
-  "Best Fisher",
-  "Top Angler",
+  "Best",
+  "Top",
   "Local",
-  "Captain",
   "Coach",
   "Uncle",
   "Aunt",
   "Cousin",
   "Neighbor",
-  "Dock",
   "Lucky",
   "Sneaky",
   "Chill",
   "Speedy",
   "Steady",
+  "Honest",
+  "Friendly",
 ];
 
 const COM_ROLE_SUFFIXES = [
   "the Dominator",
   "the Quiet One",
   "the Lucky One",
-  "from the Pier",
-  "from the Cove",
-  "with the Fancy Rod",
-  "on Night Shift",
+  "the Night Owl",
   "after Work",
-  "with Extra Bait",
+  "from Next Door",
+  "from Downtown",
+  "with the Good Luck",
+  "on a Hot Streak",
 ];
 
 /** @deprecated kept for any leftover references — prefer rollComPlayerNameFromRng */
@@ -13214,20 +13294,26 @@ function pickComNamePart(list, rng) {
   return list[Math.floor(rng() * list.length)] || list[0];
 }
 
-/** Natural nicknames that feel like real players, not generated codes. */
+/** Name-heavy handles that read like real people, with little theme filler. */
 function rollComPlayerNameFromRng(rng = Math.random) {
   const first = pickComNamePart(COM_FIRST_NAMES, rng);
+  let last = pickComNamePart(COM_LAST_NAMES, rng);
+  if (last.toLowerCase() === first.toLowerCase()) {
+    last = pickComNamePart(COM_LAST_NAMES, rng);
+  }
   const title = pickComNamePart(COM_TITLES, rng);
   const prefix = pickComNamePart(COM_ROLE_PREFIXES, rng);
   const suffix = pickComNamePart(COM_ROLE_SUFFIXES, rng);
+  const mid = pickComNamePart(COM_MIDDLE_INITIALS, rng);
   const roll = rng();
-  if (roll < 0.34) return pickComNamePart(COM_NATURAL_HANDLES, rng);
-  if (roll < 0.48) return `the ${title}`;
-  if (roll < 0.62) return `${prefix} ${first}`;
-  if (roll < 0.74) return `${first} ${suffix}`;
-  if (roll < 0.84) return `${first} the ${title}`;
-  if (roll < 0.92) return first;
-  return `${title} ${first}`;
+  if (roll < 0.34) return `${first} ${last}`;
+  if (roll < 0.46) return `${first} ${mid}. ${last}`;
+  if (roll < 0.58) return pickComNamePart(COM_NATURAL_HANDLES, rng);
+  if (roll < 0.68) return `${prefix} ${first}`;
+  if (roll < 0.78) return `${first} ${suffix}`;
+  if (roll < 0.86) return `${first} the ${title}`;
+  if (roll < 0.93) return first;
+  return `the ${title}`;
 }
 
 function rollUniqueComPlayerName(rng, usedNames, attempts = 28) {
@@ -13235,14 +13321,13 @@ function rollUniqueComPlayerName(rng, usedNames, attempts = 28) {
   for (let attempt = 0; attempt < attempts; attempt++) {
     let name = rollComPlayerNameFromRng(rng);
     if (attempt > 12) {
-      const first = pickComNamePart(COM_FIRST_NAMES, rng);
-      name = `${pickComNamePart(COM_ROLE_PREFIXES, rng)} ${first}`;
+      name = `${pickComNamePart(COM_FIRST_NAMES, rng)} ${pickComNamePart(COM_LAST_NAMES, rng)}`;
     } else if (attempt > 20) {
-      name = `${pickComNamePart(COM_FIRST_NAMES, rng)} ${pickComNamePart(COM_TITLES, rng)}`;
+      name = `${pickComNamePart(COM_ROLE_PREFIXES, rng)} ${pickComNamePart(COM_FIRST_NAMES, rng)}`;
     }
     if (!used.has(name.toLowerCase())) return name;
   }
-  return `${pickComNamePart(COM_FIRST_NAMES, rng)} ${pickComNamePart(COM_ROLE_SUFFIXES, rng)}`;
+  return `${pickComNamePart(COM_FIRST_NAMES, rng)} ${pickComNamePart(COM_LAST_NAMES, rng)}`;
 }
 
 function rollComPlayerName() {
