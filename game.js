@@ -13035,6 +13035,7 @@ function formatDuelInitials(value) {
 }
 
 const COM_FIRST_NAMES = [
+  "Cam",
   "Joey",
   "Maya",
   "Kai",
@@ -13077,7 +13078,6 @@ const COM_FIRST_NAMES = [
   "Jules",
   "Knox",
   "Lila",
-  "Maren",
   "Nico",
   "Olive",
   "Parker",
@@ -13085,81 +13085,126 @@ const COM_FIRST_NAMES = [
   "Remy",
   "Skye",
   "Tessa",
-  "Uma",
   "Vera",
   "Wren",
-  "Xander",
   "Yara",
   "Zane",
+  "Sam",
+  "Alex",
+  "Jordan",
+  "Casey",
+  "Morgan",
+  "Taylor",
+  "Chris",
+  "Pat",
+  "Jamie",
+  "Robin",
 ];
 
-const COM_ANIMALS = [
-  "Otter",
-  "Fox",
-  "Heron",
-  "Seal",
-  "Finch",
-  "Crab",
-  "Whale",
-  "Dove",
-  "Wolf",
-  "Hawk",
-  "Moth",
-  "Pike",
-  "Bass",
-  "Jay",
-  "Bear",
-  "Lynx",
-  "Puffin",
-  "Ray",
-  "Trout",
-  "Gull",
-  "Manta",
-  "Koi",
-  "Sparrow",
-  "Badger",
+const COM_TITLES = [
+  "Dominator",
+  "Reel Deal",
+  "Tide King",
+  "Tide Queen",
+  "Hook Boss",
+  "Catch King",
+  "Reef Ace",
+  "Salt Legend",
+  "Line Wizard",
+  "Bait Boss",
+  "Wave Rider",
+  "Deep Hauler",
+  "Lucky Cast",
+  "Net Master",
+  "Shore Shark",
+  "Kelp Kid",
+  "Moon Angler",
+  "Sunrise Fisher",
+  "Harbor Hero",
+  "Quiet Storm",
 ];
 
-const COM_NATURE_WORDS = [
-  "Reef",
-  "Tide",
-  "Coral",
-  "Salt",
-  "Cove",
-  "Drift",
-  "Harbor",
-  "Lagoon",
-  "Moss",
-  "Pearl",
-  "River",
-  "Shore",
-  "Spray",
-  "Storm",
-  "Sunrise",
-  "Wave",
-  "Willow",
-  "Ash",
-  "Cedar",
-  "Dune",
-  "Fog",
-  "Kelp",
-  "Marlin",
-  "Nebula",
+const COM_NATURAL_HANDLES = [
+  "the Dominator",
+  "Best Fisher Cam",
+  "Captain Catch",
+  "Just Here To Fish",
+  "Reel Quiet",
+  "Saltwater Sam",
+  "Mama Reef",
+  "Papa Pike",
+  "Little Marlin",
+  "Big Tide Energy",
+  "Catch of the Day",
+  "Not a Bot Promise",
+  "Weekend Warrior",
+  "Early Bird Angler",
+  "Night Hook",
+  "Chill Cast",
+  "Lucky Lure",
+  "One More Cast",
+  "Fish Fear Me",
+  "Boat Snack",
+  "Dockside Dreamer",
+  "Tide Check",
+  "Coral Cowboy",
+  "Lagoon Lou",
+  "Harbor Hank",
+  "Breezy Bay",
+  "Soft Cast Steve",
+  "No Rush Nina",
+  "Patient Pat",
+  "Cast and Chill",
+  "Hook Line Sinker",
+  "Keep the Fish",
+  "Release King",
+  "Bait Beggar",
+  "Snack Between Casts",
+  "Rain or Shine Rod",
+  "Sunrise on the Dock",
+  "Foggy Morning Finn",
+  "Golden Hour Greta",
+  "Almost Legendary",
+  "Trying My Best",
+  "Local Legend",
+  "Neighborhood Net",
+  "Pier Pressure",
+  "Sea You Later",
+  "Shore Thing",
+  "Reel Talk",
+  "Fish Tales Only",
+  "Don't Spook Em",
+  "Quiet on the Bow",
 ];
 
-const COM_HANDLE_TAILS = [
-  "Kid",
-  "Cast",
-  "Hooks",
-  "Line",
-  "Reel",
-  "Skip",
-  "Wander",
-  "Walker",
-  "Catch",
-  "Bloom",
-  "Spark",
-  "Glow",
+const COM_ROLE_PREFIXES = [
+  "Best Fisher",
+  "Top Angler",
+  "Local",
+  "Captain",
+  "Coach",
+  "Uncle",
+  "Aunt",
+  "Cousin",
+  "Neighbor",
+  "Dock",
+  "Lucky",
+  "Sneaky",
+  "Chill",
+  "Speedy",
+  "Steady",
+];
+
+const COM_ROLE_SUFFIXES = [
+  "the Dominator",
+  "the Quiet One",
+  "the Lucky One",
+  "from the Pier",
+  "from the Cove",
+  "with the Fancy Rod",
+  "on Night Shift",
+  "after Work",
+  "with Extra Bait",
 ];
 
 /** @deprecated kept for any leftover references — prefer rollComPlayerNameFromRng */
@@ -13169,36 +13214,35 @@ function pickComNamePart(list, rng) {
   return list[Math.floor(rng() * list.length)] || list[0];
 }
 
-/** Varied display names that read like real players (numbers only as a last resort). */
+/** Natural nicknames that feel like real players, not generated codes. */
 function rollComPlayerNameFromRng(rng = Math.random) {
   const first = pickComNamePart(COM_FIRST_NAMES, rng);
-  const animal = pickComNamePart(COM_ANIMALS, rng);
-  const nature = pickComNamePart(COM_NATURE_WORDS, rng);
-  const tail = pickComNamePart(COM_HANDLE_TAILS, rng);
+  const title = pickComNamePart(COM_TITLES, rng);
+  const prefix = pickComNamePart(COM_ROLE_PREFIXES, rng);
+  const suffix = pickComNamePart(COM_ROLE_SUFFIXES, rng);
   const roll = rng();
-  if (roll < 0.22) return first;
-  if (roll < 0.42) return `${first} ${animal}`;
-  if (roll < 0.6) return `${first} ${nature}`;
-  if (roll < 0.74) return `${nature}${tail}`;
-  if (roll < 0.86) return `${animal}${tail}`;
-  if (roll < 0.94) return `${nature} ${first}`;
-  return `${first} the ${animal}`;
+  if (roll < 0.34) return pickComNamePart(COM_NATURAL_HANDLES, rng);
+  if (roll < 0.48) return `the ${title}`;
+  if (roll < 0.62) return `${prefix} ${first}`;
+  if (roll < 0.74) return `${first} ${suffix}`;
+  if (roll < 0.84) return `${first} the ${title}`;
+  if (roll < 0.92) return first;
+  return `${title} ${first}`;
 }
 
-function rollUniqueComPlayerName(rng, usedNames, attempts = 24) {
+function rollUniqueComPlayerName(rng, usedNames, attempts = 28) {
   const used = usedNames instanceof Set ? usedNames : new Set();
   for (let attempt = 0; attempt < attempts; attempt++) {
     let name = rollComPlayerNameFromRng(rng);
-    if (attempt > 10) {
-      /* Rare soft uniqueness nudge — still looks like a handle, not "Maya 482". */
-      const soft = 2 + Math.floor(rng() * 28);
-      name = `${name}${soft}`;
-    } else if (attempt > 16) {
-      name = `${pickComNamePart(COM_FIRST_NAMES, rng)} ${pickComNamePart(COM_ANIMALS, rng)} ${2 + Math.floor(rng() * 9)}`;
+    if (attempt > 12) {
+      const first = pickComNamePart(COM_FIRST_NAMES, rng);
+      name = `${pickComNamePart(COM_ROLE_PREFIXES, rng)} ${first}`;
+    } else if (attempt > 20) {
+      name = `${pickComNamePart(COM_FIRST_NAMES, rng)} ${pickComNamePart(COM_TITLES, rng)}`;
     }
     if (!used.has(name.toLowerCase())) return name;
   }
-  return `${pickComNamePart(COM_FIRST_NAMES, rng)} ${pickComNamePart(COM_NATURE_WORDS, rng)}`;
+  return `${pickComNamePart(COM_FIRST_NAMES, rng)} ${pickComNamePart(COM_ROLE_SUFFIXES, rng)}`;
 }
 
 function rollComPlayerName() {
