@@ -11168,13 +11168,7 @@ function buildTourneyComField(dayKey, realRows, eventKind, slotKey = "field") {
   const fillers = [];
   const usedNames = new Set(reals.map((r) => String(r.display_name || r.initials || "").toLowerCase()));
   for (let i = 0; i < need; i++) {
-    let name = "";
-    for (let attempt = 0; attempt < 12; attempt++) {
-      const part = COM_PLAYER_NAME_PARTS[Math.floor(rng() * COM_PLAYER_NAME_PARTS.length)];
-      const num = 100 + Math.floor(rng() * 900);
-      name = `${part} ${num}`;
-      if (!usedNames.has(name.toLowerCase())) break;
-    }
+    const name = rollUniqueComPlayerName(rng, usedNames);
     usedNames.add(name.toLowerCase());
     /* Bias mid-low so fewer COMs pile at the ceiling; a few still stretch near max. */
     const t = rng();
@@ -11708,10 +11702,11 @@ function buildTourneyBracketStateFromSignups(dayKey, signupRows) {
     });
   }
   const rng = tourneyComRng(tourneyHash32(`${dayKey}|bracket-coms`));
+  const usedBracketNames = new Set(entries.map((e) => String(e.display_name || "").toLowerCase()));
   while (entries.filter((e) => e.in_bracket).length < TOURNEY_BRACKET_SIZE) {
     const seed = entries.length + 1;
-    const part = COM_PLAYER_NAME_PARTS[Math.floor(rng() * COM_PLAYER_NAME_PARTS.length)] || "Reef";
-    const name = `${part} ${100 + Math.floor(rng() * 800)}`;
+    const name = rollUniqueComPlayerName(rng, usedBracketNames);
+    usedBracketNames.add(name.toLowerCase());
     entries.push({
       client_id: `${TOURNEY_COM_ID_PREFIX}${dayKey}-b${seed}`,
       seed,
@@ -13039,43 +13034,175 @@ function formatDuelInitials(value) {
   return ini.length >= 1 ? ini : "";
 }
 
-const COM_PLAYER_NAME_PARTS = [
-  "joey",
-  "maya",
-  "kai",
-  "zoe",
-  "leo",
-  "nova",
-  "riley",
-  "finn",
-  "jade",
-  "cruz",
-  "abby",
-  "miles",
-  "lena",
-  "otto",
-  "rosa",
-  "theo",
-  "nina",
-  "evan",
-  "sage",
-  "arlo",
-  "mia",
-  "cole",
-  "ivy",
-  "dean",
-  "ruby",
-  "nate",
-  "sasha",
-  "owen",
-  "cleo",
-  "luke",
+const COM_FIRST_NAMES = [
+  "Joey",
+  "Maya",
+  "Kai",
+  "Zoe",
+  "Leo",
+  "Nova",
+  "Riley",
+  "Finn",
+  "Jade",
+  "Cruz",
+  "Abby",
+  "Miles",
+  "Lena",
+  "Otto",
+  "Rosa",
+  "Theo",
+  "Nina",
+  "Evan",
+  "Sage",
+  "Arlo",
+  "Mia",
+  "Cole",
+  "Ivy",
+  "Dean",
+  "Ruby",
+  "Nate",
+  "Sasha",
+  "Owen",
+  "Cleo",
+  "Luke",
+  "Ava",
+  "Beau",
+  "Cora",
+  "Drew",
+  "Elle",
+  "Felix",
+  "Greta",
+  "Hugo",
+  "Iris",
+  "Jules",
+  "Knox",
+  "Lila",
+  "Maren",
+  "Nico",
+  "Olive",
+  "Parker",
+  "Quinn",
+  "Remy",
+  "Skye",
+  "Tessa",
+  "Uma",
+  "Vera",
+  "Wren",
+  "Xander",
+  "Yara",
+  "Zane",
 ];
 
+const COM_ANIMALS = [
+  "Otter",
+  "Fox",
+  "Heron",
+  "Seal",
+  "Finch",
+  "Crab",
+  "Whale",
+  "Dove",
+  "Wolf",
+  "Hawk",
+  "Moth",
+  "Pike",
+  "Bass",
+  "Jay",
+  "Bear",
+  "Lynx",
+  "Puffin",
+  "Ray",
+  "Trout",
+  "Gull",
+  "Manta",
+  "Koi",
+  "Sparrow",
+  "Badger",
+];
+
+const COM_NATURE_WORDS = [
+  "Reef",
+  "Tide",
+  "Coral",
+  "Salt",
+  "Cove",
+  "Drift",
+  "Harbor",
+  "Lagoon",
+  "Moss",
+  "Pearl",
+  "River",
+  "Shore",
+  "Spray",
+  "Storm",
+  "Sunrise",
+  "Wave",
+  "Willow",
+  "Ash",
+  "Cedar",
+  "Dune",
+  "Fog",
+  "Kelp",
+  "Marlin",
+  "Nebula",
+];
+
+const COM_HANDLE_TAILS = [
+  "Kid",
+  "Cast",
+  "Hooks",
+  "Line",
+  "Reel",
+  "Skip",
+  "Wander",
+  "Walker",
+  "Catch",
+  "Bloom",
+  "Spark",
+  "Glow",
+];
+
+/** @deprecated kept for any leftover references — prefer rollComPlayerNameFromRng */
+const COM_PLAYER_NAME_PARTS = COM_FIRST_NAMES;
+
+function pickComNamePart(list, rng) {
+  return list[Math.floor(rng() * list.length)] || list[0];
+}
+
+/** Varied display names that read like real players (numbers only as a last resort). */
+function rollComPlayerNameFromRng(rng = Math.random) {
+  const first = pickComNamePart(COM_FIRST_NAMES, rng);
+  const animal = pickComNamePart(COM_ANIMALS, rng);
+  const nature = pickComNamePart(COM_NATURE_WORDS, rng);
+  const tail = pickComNamePart(COM_HANDLE_TAILS, rng);
+  const roll = rng();
+  if (roll < 0.22) return first;
+  if (roll < 0.42) return `${first} ${animal}`;
+  if (roll < 0.6) return `${first} ${nature}`;
+  if (roll < 0.74) return `${nature}${tail}`;
+  if (roll < 0.86) return `${animal}${tail}`;
+  if (roll < 0.94) return `${nature} ${first}`;
+  return `${first} the ${animal}`;
+}
+
+function rollUniqueComPlayerName(rng, usedNames, attempts = 24) {
+  const used = usedNames instanceof Set ? usedNames : new Set();
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    let name = rollComPlayerNameFromRng(rng);
+    if (attempt > 10) {
+      /* Rare soft uniqueness nudge — still looks like a handle, not "Maya 482". */
+      const soft = 2 + Math.floor(rng() * 28);
+      name = `${name}${soft}`;
+    } else if (attempt > 16) {
+      name = `${pickComNamePart(COM_FIRST_NAMES, rng)} ${pickComNamePart(COM_ANIMALS, rng)} ${2 + Math.floor(rng() * 9)}`;
+    }
+    if (!used.has(name.toLowerCase())) return name;
+  }
+  return `${pickComNamePart(COM_FIRST_NAMES, rng)} ${pickComNamePart(COM_NATURE_WORDS, rng)}`;
+}
+
 function rollComPlayerName() {
-  const part = COM_PLAYER_NAME_PARTS[Math.floor(Math.random() * COM_PLAYER_NAME_PARTS.length)];
-  const num = 100 + Math.floor(Math.random() * 900);
-  return `${part} ${num}`;
+  return rollComPlayerNameFromRng(Math.random);
 }
 
 function comGuestDisplayName(stored) {
