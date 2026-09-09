@@ -10503,6 +10503,19 @@ function tourneySlotLabel(slotKey) {
   return TOURNEY_SLOTS.find((s) => s.key === slotKey)?.name || "Heat";
 }
 
+function tourneySlotHeatTime(slotKey) {
+  const hour = TOURNEY_SLOTS.find((s) => s.key === slotKey)?.hour;
+  return hour == null ? "" : formatTourneyHeatTime(hour);
+}
+
+function tourneyBracketScheduleSummary() {
+  return (
+    `Round of 32 · ${tourneySlotHeatTime("morning")} · ` +
+    `R16 & Quarters · ${tourneySlotHeatTime("afternoon")} · ` +
+    `Semis, Final & 3rd · ${tourneySlotHeatTime("evening")}`
+  );
+}
+
 function tourneySlotWindows(day = new Date()) {
   const windows = {};
   for (const slot of TOURNEY_SLOTS) {
@@ -12097,11 +12110,12 @@ async function resolveTourneyBracketMatchFromDuel(run, playerScore, opponentScor
       const nextOppId = nextMatch.player_a_id === me ? nextMatch.player_b_id : nextMatch.player_a_id;
       const nextRound = TOURNEY_BRACKET_ROUNDS.find((r) => r.key === nextMatch.round_key);
       const heat = nextRound ? tourneySlotLabel(nextRound.slotKey) : "next";
+      const when = nextRound ? tourneySlotHeatTime(nextRound.slotKey) : "";
       const vsName = nextOppId
         ? tourneyBracketEntryName(findTourneyBracketEntry(nextOppId, tourneyBracketState))
         : "TBD";
       showToast(
-        `You advance! Your next duel: ${nextRound?.label || "next round"} vs ${vsName} (${heat} heat).`,
+        `You advance! Your next duel: ${nextRound?.label || "next round"} vs ${vsName} (${heat}${when ? ` · ${when}` : ""}).`,
         5600,
       );
     } else if (match.round_key === "final") {
@@ -12118,46 +12132,127 @@ async function resolveTourneyBracketMatchFromDuel(run, playerScore, opponentScor
 
 function renderTourneyBracketPanel(state = tourneyBracketState) {
   const panel = document.getElementById("tourneyBracketPanel");
+  const scheduleEl = document.getElementById("tourneyBracketSchedule");
   const line = document.getElementById("tourneyBracketLine");
   const list = document.getElementById("tourneyBracketList");
+  const matchesEl = document.getElementById("tourneyBracketMatches");
   if (!panel) return;
-  if (!isTourneyDuelBracketDay() || !state?.seeded || state.day_key !== getTourneyDayKey()) {
+  if (!isTourneyDuelBracketDay()) {
     panel.hidden = true;
     return;
   }
   panel.hidden = false;
-  const me = findTourneyBracketEntry(getDuelClientId(), state);
+  if (scheduleEl) scheduleEl.textContent = tourneyBracketScheduleSummary();
+  const seeded = Boolean(state?.seeded && state.day_key === getTourneyDayKey());
+  const me = seeded ? findTourneyBracketEntry(getDuelClientId(), state) : null;
   const slot = getTourneySlotState();
-  const playable = slot.slotKey ? getMyTourneyBracketPlayableMatch(slot.slotKey, state) : null;
-  const podium = getTourneyBracketPodium(state);
+  const playable = seeded && slot.slotKey ? getMyTourneyBracketPlayableMatch(slot.slotKey, state) : null;
+  const podium = seeded ? getTourneyBracketPodium(state) : null;
   if (line) {
-    if (me && !me.in_bracket) {
+    if (!seeded) {
+      line.textContent = "Duel Fishing bracket day — matchups seed with the morning heat. Times below.";
+    } else if (me && !me.in_bracket) {
       line.textContent = `You're seed ${me.seed} — cut from the 32. Consolation: ${TOURNEY_BRACKET_CUT_COINS.toLocaleString()} coins.`;
     } else if (podium) {
-      const names = [podium.first, podium.second, podium.third].map((id) => tourneyBracketEntryName(findTourneyBracketEntry(id, state)));
+      const names = [podium.first, podium.second, podium.third].map((id) =>
+        tourneyBracketEntryName(findTourneyBracketEntry(id, state)),
+      );
       line.textContent = `Podium: 🥇 ${names[0]} · 🥈 ${names[1]} · 🥉 ${names[2]}`;
     } else if (playable) {
       const oppId = playable.player_a_id === getDuelClientId() ? playable.player_b_id : playable.player_a_id;
       const roundLabel = TOURNEY_BRACKET_ROUNDS.find((r) => r.key === playable.round_key)?.label || "Match";
-      line.textContent = `${roundLabel} ready vs ${tourneyBracketEntryName(findTourneyBracketEntry(oppId, state))} — tap Compete.`;
+      const when = tourneySlotHeatTime(playable.slot_key || slot.slotKey);
+      line.textContent = `${roundLabel} ready vs ${tourneyBracketEntryName(findTourneyBracketEntry(oppId, state))}${when ? ` · ${when}` : ""} — tap Compete.`;
     } else if (me?.in_bracket) {
-      line.textContent = `You're seed ${me.seed} in the duel bracket (32 players). Play your heat when your round is live.`;
+      const next = getMyNextTourneyBracketMatch(state);
+      const nextRound = next ? TOURNEY_BRACKET_ROUNDS.find((r) => r.key === next.round_key) : null;
+      if (nextRound) {
+        line.textContent = `You're seed ${me.seed}. Next: ${nextRound.label} at ${tourneySlotHeatTime(nextRound.slotKey)}.`;
+      } else {
+        line.textContent = `You're seed ${me.seed} in the duel bracket. Play when your round's heat is live.`;
+      }
     } else {
       line.textContent = "Duel bracket: top 32 play single-elim · cut seeds get coins.";
     }
   }
   if (list) {
     list.innerHTML = "";
-    const roundsToShow = slot.slotKey
-      ? TOURNEY_BRACKET_ROUNDS.filter((r) => r.slotKey === slot.slotKey)
-      : TOURNEY_BRACKET_ROUNDS.slice(0, 2);
-    for (const round of roundsToShow) {
-      const open = state.matches.filter((m) => m.round_key === round.key && m.status !== "done").length;
-      const done = state.matches.filter((m) => m.round_key === round.key && m.status === "done").length;
+    for (const round of TOURNEY_BRACKET_ROUNDS) {
+      const when = tourneySlotHeatTime(round.slotKey);
       const li = document.createElement("li");
       li.className = "tourney-bracket-list__row";
-      li.textContent = `${round.label} (${tourneySlotLabel(round.slotKey)}): ${done} done · ${open} open`;
+      if (slot.slotKey && round.slotKey === slot.slotKey) li.classList.add("tourney-bracket-list__row--live");
+      if (!seeded) {
+        li.textContent = `${round.label} · ${tourneySlotLabel(round.slotKey)} · ${when}`;
+      } else {
+        const open = state.matches.filter((m) => m.round_key === round.key && m.status !== "done").length;
+        const done = state.matches.filter((m) => m.round_key === round.key && m.status === "done").length;
+        li.textContent = `${round.label} · ${when} — ${done} done · ${open} open`;
+      }
       list.appendChild(li);
+    }
+  }
+  if (matchesEl) {
+    matchesEl.innerHTML = "";
+    if (!seeded) return;
+    const meId = getDuelClientId();
+    const focusSlot =
+      slot.slotKey ||
+      TOURNEY_BRACKET_ROUNDS.find((r) =>
+        state.matches.some((m) => m.round_key === r.key && m.status !== "done" && (m.player_a_id || m.player_b_id)),
+      )?.slotKey ||
+      "morning";
+    const roundsToShow = TOURNEY_BRACKET_ROUNDS.filter((r) => r.slotKey === focusSlot);
+    const showRounds = roundsToShow.length ? roundsToShow : TOURNEY_BRACKET_ROUNDS.slice(0, 1);
+    for (const round of showRounds) {
+      const roundMatches = state.matches
+        .filter((m) => m.round_key === round.key)
+        .slice()
+        .sort((a, b) => a.match_index - b.match_index);
+      if (!roundMatches.length) continue;
+      const block = document.createElement("div");
+      block.className = "tourney-bracket-round";
+      const head = document.createElement("p");
+      head.className = "tourney-bracket-round__head";
+      head.textContent = `${round.label} · ${tourneySlotHeatTime(round.slotKey)}`;
+      block.appendChild(head);
+      const ul = document.createElement("ul");
+      ul.className = "tourney-bracket-round__list";
+      for (const match of roundMatches) {
+        const aName = match.player_a_id
+          ? tourneyBracketEntryName(findTourneyBracketEntry(match.player_a_id, state))
+          : "TBD";
+        const bName = match.player_b_id
+          ? tourneyBracketEntryName(findTourneyBracketEntry(match.player_b_id, state))
+          : "TBD";
+        const mine = match.player_a_id === meId || match.player_b_id === meId;
+        const li = document.createElement("li");
+        li.className = "tourney-bracket-match";
+        if (mine) li.classList.add("tourney-bracket-match--mine");
+        if (match.status === "done") li.classList.add("tourney-bracket-match--done");
+        const vs = document.createElement("span");
+        vs.className = "tourney-bracket-match__vs";
+        if (match.status === "done" && match.winner_id) {
+          const winnerName = tourneyBracketEntryName(findTourneyBracketEntry(match.winner_id, state));
+          vs.textContent = `${aName} vs ${bName} → ${winnerName}`;
+        } else {
+          vs.textContent = `${aName} vs ${bName}`;
+        }
+        const st = document.createElement("span");
+        st.className = "tourney-bracket-match__status";
+        st.textContent = mine
+          ? match.status === "done"
+            ? "yours · done"
+            : "your match"
+          : match.status === "done"
+            ? "done"
+            : "open";
+        li.appendChild(vs);
+        li.appendChild(st);
+        ul.appendChild(li);
+      }
+      block.appendChild(ul);
+      matchesEl.appendChild(block);
     }
   }
 }
@@ -12448,7 +12543,24 @@ async function refreshTournamentCard() {
     }
   }
   if (tourneyScheduleLine) {
-    if (slot.slotKey) {
+    if (isTourneyDuelBracketDay()) {
+      if (slot.slotKey) {
+        const now = Date.now();
+        const joinEnd = slot.joinEnd ?? slot.end + TOURNEY_JOIN_LATE_MS;
+        const minsLeft = Math.max(0, Math.ceil((joinEnd - now) / 60000));
+        const heatTime = tourneySlotHeatTime(slot.slotKey);
+        if (now < slot.start) {
+          const minsToStart = Math.max(1, Math.ceil((slot.start - now) / 60000));
+          tourneyScheduleLine.textContent = `Bracket heat ${tourneySlotLabel(slot.slotKey)} (${heatTime}) open early — starts in ${minsToStart} min`;
+        } else if (now < slot.end) {
+          tourneyScheduleLine.textContent = `Bracket heat LIVE · ${tourneySlotLabel(slot.slotKey)} (${heatTime}) — ${minsLeft} min left`;
+        } else {
+          tourneyScheduleLine.textContent = `Bracket late join · ${tourneySlotLabel(slot.slotKey)} (${heatTime}) — ${minsLeft} min left`;
+        }
+      } else {
+        tourneyScheduleLine.textContent = `${tourneyBracketScheduleSummary()} · ${slot.nextLabel}`;
+      }
+    } else if (slot.slotKey) {
       const now = Date.now();
       const joinEnd = slot.joinEnd ?? slot.end + TOURNEY_JOIN_LATE_MS;
       const minsLeft = Math.max(0, Math.ceil((joinEnd - now) / 60000));

@@ -4649,6 +4649,15 @@ button.seagull-avatar:active {
   color: #fde68a;
 }
 
+.tourney-bracket-panel__schedule {
+  margin: 0 0 8px;
+  font-family: "Nunito", sans-serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: rgba(253, 230, 138, 0.92);
+}
+
 .tourney-bracket-list {
   list-style: none;
   margin: 8px 0 0;
@@ -4662,6 +4671,80 @@ button.seagull-avatar:active {
   font-size: 0.78rem;
   font-weight: 700;
   color: rgba(226, 232, 240, 0.82);
+}
+
+.tourney-bracket-list__row--live {
+  color: #fde68a;
+}
+
+.tourney-bracket-matches {
+  margin-top: 10px;
+  max-height: 220px;
+  overflow: auto;
+  display: grid;
+  gap: 8px;
+  padding-right: 2px;
+}
+
+.tourney-bracket-round {
+  border-top: 1px solid rgba(148, 163, 184, 0.22);
+  padding-top: 6px;
+}
+
+.tourney-bracket-round__head {
+  margin: 0 0 4px;
+  font-family: "Nunito", sans-serif;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: rgba(186, 230, 253, 0.92);
+}
+
+.tourney-bracket-round__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.tourney-bracket-match {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: "Nunito", sans-serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: rgba(226, 232, 240, 0.88);
+}
+
+.tourney-bracket-match__vs {
+  flex: 1;
+  min-width: 0;
+}
+
+.tourney-bracket-match__status {
+  flex: 0 0 auto;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: rgba(148, 163, 184, 0.9);
+}
+
+.tourney-bracket-match--mine {
+  padding: 3px 6px;
+  border-radius: 8px;
+  background: rgba(251, 191, 36, 0.14);
+  color: #fef3c7;
+}
+
+.tourney-bracket-match--mine .tourney-bracket-match__status {
+  color: #fde68a;
+}
+
+.tourney-bracket-match--done {
+  opacity: 0.72;
 }
 
 .tourney-vote-options {
