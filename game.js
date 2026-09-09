@@ -10697,7 +10697,29 @@ function startTourneyHeatReveal({ eventKind, prepKind, slotKey, bracketLine = ""
   }, 900);
 }
 
-function endTourneyHeatRevealToPrep() {
+function showTourneyBracketOverlay({ continueToPrep = true } = {}) {
+  const overlay = document.getElementById("tourneyBracketOverlay");
+  const btn = document.getElementById("btnTourneyBracketContinue");
+  if (!overlay) {
+    if (continueToPrep) openEventPrep(pendingTourneyHeatPrepKind || tournamentRun?.eventKind || "duel");
+    return;
+  }
+  endTourneyVoteReveal();
+  endTourneyHeatRevealSilent();
+  renderTourneyBracketPanel(tourneyBracketState);
+  if (btn) {
+    btn.hidden = !continueToPrep;
+    btn.textContent = continueToPrep ? "Continue to bait" : "Back to Events";
+  }
+  overlay.hidden = false;
+  overlay.setAttribute("aria-hidden", "false");
+  overlay.dataset.continueToPrep = continueToPrep ? "1" : "0";
+  if (btn && continueToPrep) {
+    window.setTimeout(() => btn.focus(), 80);
+  }
+}
+
+function endTourneyHeatRevealSilent() {
   clearTourneyHeatReadyTimer();
   const reveal = document.getElementById("tourneyHeatReveal");
   const btn = document.getElementById("btnTourneyHeatRevealReady");
@@ -10707,7 +10729,38 @@ function endTourneyHeatRevealToPrep() {
     reveal.hidden = true;
     reveal.setAttribute("aria-hidden", "true");
   }
+}
+
+function endTourneyBracketOverlayToPrep() {
+  const overlay = document.getElementById("tourneyBracketOverlay");
+  const continueToPrep = overlay?.dataset.continueToPrep !== "0";
+  if (overlay) {
+    overlay.hidden = true;
+    overlay.setAttribute("aria-hidden", "true");
+  }
+  if (!continueToPrep) {
+    openEvents();
+    return;
+  }
+  const kind = pendingTourneyHeatPrepKind || tournamentRun?.eventKind || "duel";
+  pendingTourneyHeatPrepKind = null;
+  openEventPrep(kind);
+}
+
+function hideTourneyBracketOverlay() {
+  const overlay = document.getElementById("tourneyBracketOverlay");
+  if (!overlay) return;
+  overlay.hidden = true;
+  overlay.setAttribute("aria-hidden", "true");
+}
+
+function endTourneyHeatRevealToPrep() {
+  endTourneyHeatRevealSilent();
   const kind = pendingTourneyHeatPrepKind || tournamentRun?.eventKind || "roulette";
+  if (kind === "duel" && isTourneyDuelBracketDay()) {
+    showTourneyBracketOverlay({ continueToPrep: true });
+    return;
+  }
   pendingTourneyHeatPrepKind = null;
   openEventPrep(kind);
 }
@@ -12308,17 +12361,12 @@ function renderTourneyBracketTree(state, rootEl) {
 }
 
 function renderTourneyBracketPanel(state = tourneyBracketState) {
-  const panel = document.getElementById("tourneyBracketPanel");
+  const overlay = document.getElementById("tourneyBracketOverlay");
   const scheduleEl = document.getElementById("tourneyBracketSchedule");
   const line = document.getElementById("tourneyBracketLine");
   const list = document.getElementById("tourneyBracketList");
   const treeEl = document.getElementById("tourneyBracketTree");
-  if (!panel) return;
-  if (!isTourneyDuelBracketDay()) {
-    panel.hidden = true;
-    return;
-  }
-  panel.hidden = false;
+  if (!overlay && !treeEl) return;
   if (scheduleEl) scheduleEl.textContent = tourneyBracketScheduleSummary();
   const seeded = Boolean(state?.seeded && state.day_key === getTourneyDayKey());
   const me = seeded ? findTourneyBracketEntry(getDuelClientId(), state) : null;
@@ -12327,7 +12375,7 @@ function renderTourneyBracketPanel(state = tourneyBracketState) {
   const podium = seeded ? getTourneyBracketPodium(state) : null;
   if (line) {
     if (!seeded) {
-      line.textContent = "Duel Fishing bracket day — matchups seed with the morning heat. Scroll the bracket below.";
+      line.textContent = "Matchups seed with the morning heat. Scroll the bracket, then continue to pick bait.";
     } else if (me && !me.in_bracket) {
       line.textContent = `You're seed ${me.seed} — cut from the 32. Consolation: ${TOURNEY_BRACKET_CUT_COINS.toLocaleString()} coins.`;
     } else if (podium) {
@@ -12339,17 +12387,17 @@ function renderTourneyBracketPanel(state = tourneyBracketState) {
       const oppId = playable.player_a_id === getDuelClientId() ? playable.player_b_id : playable.player_a_id;
       const roundLabel = TOURNEY_BRACKET_ROUNDS.find((r) => r.key === playable.round_key)?.label || "Match";
       const when = tourneySlotHeatTime(playable.slot_key || slot.slotKey);
-      line.textContent = `${roundLabel} ready vs ${tourneyBracketEntryName(findTourneyBracketEntry(oppId, state))}${when ? ` · ${when}` : ""} — tap Compete.`;
+      line.textContent = `${roundLabel} vs ${tourneyBracketEntryName(findTourneyBracketEntry(oppId, state))}${when ? ` · ${when}` : ""} — continue to pick bait.`;
     } else if (me?.in_bracket) {
       const next = getMyNextTourneyBracketMatch(state);
       const nextRound = next ? TOURNEY_BRACKET_ROUNDS.find((r) => r.key === next.round_key) : null;
       if (nextRound) {
         line.textContent = `You're seed ${me.seed}. Next: ${nextRound.label} at ${tourneySlotHeatTime(nextRound.slotKey)}.`;
       } else {
-        line.textContent = `You're seed ${me.seed} in the duel bracket. Play when your round's heat is live.`;
+        line.textContent = `You're seed ${me.seed} in the duel bracket.`;
       }
     } else {
-      line.textContent = "Duel bracket: top 32 play single-elim · cut seeds get coins.";
+      line.textContent = "Top 32 play single-elim · cut seeds get coins.";
     }
   }
   if (list) {
@@ -12427,7 +12475,6 @@ async function beginTournamentCompetition() {
     const match = getMyTourneyBracketPlayableMatch(slot.slotKey, bracket);
     if (!match) {
       showToast("No bracket match for you in this heat — check back next round.", 3600);
-      renderTourneyBracketPanel(bracket);
       return;
     }
     pendingBracketMatch = { round_key: match.round_key, match_index: match.match_index, day_key: getTourneyDayKey() };
@@ -12437,15 +12484,14 @@ async function beginTournamentCompetition() {
       eventKind: "duel",
       bracketMatch: { ...pendingBracketMatch },
     };
+    pendingTourneyHeatPrepKind = "duel";
     const oppId = match.player_a_id === getDuelClientId() ? match.player_b_id : match.player_a_id;
     const roundLabel = TOURNEY_BRACKET_ROUNDS.find((r) => r.key === match.round_key)?.label || "Bracket match";
-    const vsLine = `${roundLabel} vs ${tourneyBracketEntryName(findTourneyBracketEntry(oppId, bracket))}. Continue to pick gear, then tap I am ready — the duel timer starts only then.`;
-    startTourneyHeatReveal({
-      eventKind: "duel",
-      prepKind: "duel",
-      slotKey: slot.slotKey,
-      bracketLine: vsLine,
-    });
+    showTourneyBracketOverlay({ continueToPrep: true });
+    const line = document.getElementById("tourneyBracketLine");
+    if (line) {
+      line.textContent = `${roundLabel} vs ${tourneyBracketEntryName(findTourneyBracketEntry(oppId, bracket))} — continue to pick bait, then I am ready.`;
+    }
     return;
   }
   tournamentRun = { dayKey: getTourneyDayKey(), slotKey: slot.slotKey, eventKind };
@@ -12698,7 +12744,8 @@ async function refreshTournamentCard() {
         ? "Mixed day: morning pick + heat votes · only final top 3 get chests (no heat chests)"
         : "Chests only for final top 3 — heat scores don't award chests";
   }
-  renderTourneyBracketPanel(tourneyBracketState);
+  const bracketOverlay = document.getElementById("tourneyBracketOverlay");
+  if (bracketOverlay && !bracketOverlay.hidden) renderTourneyBracketPanel(tourneyBracketState);
   if (btnTourneySignup) {
     btnTourneySignup.hidden = isTourneySignedUpToday();
     btnTourneySignup.disabled = tourneySignupCount >= TOURNEY_MAX_PLAYERS || tourneySignupInFlight;
@@ -29064,6 +29111,7 @@ btnAgain.addEventListener("click", () => {
 btnTreasureMapRevealDone?.addEventListener("click", endTreasureMapReveal);
 document.getElementById("btnTourneyVoteRevealDone")?.addEventListener("click", endTourneyVoteReveal);
 document.getElementById("btnTourneyHeatRevealReady")?.addEventListener("click", endTourneyHeatRevealToPrep);
+document.getElementById("btnTourneyBracketContinue")?.addEventListener("click", endTourneyBracketOverlayToPrep);
 btnDailyPrizeContinue?.addEventListener("click", showDailyPrizeChestPhase);
 btnDailyPrizeChest?.addEventListener("click", () => {
   if (dailyPrizePhase === "chest") openDailyPrizeChest();

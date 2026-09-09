@@ -23,7 +23,7 @@
       rel="stylesheet"
     />
     <link rel="canonical" href="https://juliette-jason.github.io/reef-rush/" />
-    <link rel="stylesheet" href="styles.css?v=2026-09-09-real-bracket" />
+    <link rel="stylesheet" href="styles.css?v=2026-09-09-bracket-overlay" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -315,6 +315,35 @@
             <p id="tourneyHeatRevealDetail" class="tourney-vote-reveal__detail">Get ready — the round timer starts only after you tap I am ready on the next screen.</p>
             <button type="button" id="btnTourneyHeatRevealReady" class="btn btn--primary tourney-vote-reveal__btn" hidden>
               Continue
+            </button>
+          </div>
+        </div>
+        <div id="tourneyBracketOverlay" class="tourney-bracket-overlay" hidden aria-hidden="true">
+          <div class="tourney-bracket-overlay__bg" aria-hidden="true">
+            <div class="ocean-bubbles ocean-bubbles--nested">
+              <span class="ocean-bubbles__bubble ocean-bubbles__bubble--1"></span>
+              <span class="ocean-bubbles__bubble ocean-bubbles__bubble--2"></span>
+              <span class="ocean-bubbles__bubble ocean-bubbles__bubble--3"></span>
+              <span class="ocean-bubbles__bubble ocean-bubbles__bubble--4"></span>
+              <span class="ocean-bubbles__bubble ocean-bubbles__bubble--5"></span>
+              <span class="ocean-bubbles__bubble ocean-bubbles__bubble--6"></span>
+              <span class="ocean-bubbles__bubble ocean-bubbles__bubble--7"></span>
+              <span class="ocean-bubbles__bubble ocean-bubbles__bubble--8"></span>
+              <span class="ocean-bubbles__bubble ocean-bubbles__bubble--9"></span>
+              <span class="ocean-bubbles__bubble ocean-bubbles__bubble--10"></span>
+            </div>
+          </div>
+          <div class="tourney-bracket-overlay__stage" role="dialog" aria-labelledby="tourneyBracketOverlayTitle" aria-modal="true">
+            <p class="tourney-bracket-overlay__badge">★ Duel bracket ★</p>
+            <h2 id="tourneyBracketOverlayTitle" class="tourney-bracket-overlay__title">Your bracket</h2>
+            <p id="tourneyBracketSchedule" class="tourney-bracket-overlay__schedule"></p>
+            <p id="tourneyBracketLine" class="tourney-bracket-overlay__line">Matchups seed with the morning heat.</p>
+            <ul id="tourneyBracketList" class="tourney-bracket-list" aria-label="Bracket round schedule"></ul>
+            <div id="tourneyBracketTreeWrap" class="tourney-bracket-tree-wrap">
+              <div id="tourneyBracketTree" class="tourney-bracket-tree" aria-label="Duel Fishing tournament bracket"></div>
+            </div>
+            <button type="button" id="btnTourneyBracketContinue" class="btn btn--primary tourney-bracket-overlay__btn">
+              Continue to bait
             </button>
           </div>
         </div>
@@ -1903,15 +1932,6 @@
             <p id="tourneyYourVoteLine" class="tourney-vote-block__yours" hidden></p>
             <div id="tourneyVoteOptions" class="tourney-vote-options" role="group" aria-label="Vote for today's tournament event"></div>
           </div>
-          <div id="tourneyBracketPanel" class="tourney-bracket-panel" hidden>
-            <h4 class="tourney-bracket-panel__title">Duel Fishing bracket</h4>
-            <p id="tourneyBracketSchedule" class="tourney-bracket-panel__schedule"></p>
-            <p id="tourneyBracketLine" class="event-card__hint">Bracket seeding locks with the morning heat.</p>
-            <ul id="tourneyBracketList" class="tourney-bracket-list" aria-label="Bracket round schedule"></ul>
-            <div id="tourneyBracketTreeWrap" class="tourney-bracket-tree-wrap">
-              <div id="tourneyBracketTree" class="tourney-bracket-tree" aria-label="Duel Fishing tournament bracket"></div>
-            </div>
-          </div>
           <div class="leaderboard-block leaderboard-block--compact">
             <h4 class="leaderboard-block__title">Today's tourney board</h4>
             <ol id="tourneyLeaderboard" class="leaderboard leaderboard--daily" aria-label="Fishing Tourney standings"></ol>
@@ -2984,6 +3004,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-09-09-real-bracket" defer></script>
+    <script src="game.js?v=2026-09-09-bracket-overlay" defer></script>
   </body>
 </html>
