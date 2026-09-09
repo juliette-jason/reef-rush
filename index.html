@@ -23,7 +23,7 @@
       rel="stylesheet"
     />
     <link rel="canonical" href="https://juliette-jason.github.io/reef-rush/" />
-    <link rel="stylesheet" href="styles.css?v=2026-09-09-fotd-start" />
+    <link rel="stylesheet" href="styles.css?v=2026-09-09-real-bracket" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -1908,7 +1908,9 @@
             <p id="tourneyBracketSchedule" class="tourney-bracket-panel__schedule"></p>
             <p id="tourneyBracketLine" class="event-card__hint">Bracket seeding locks with the morning heat.</p>
             <ul id="tourneyBracketList" class="tourney-bracket-list" aria-label="Bracket round schedule"></ul>
-            <div id="tourneyBracketMatches" class="tourney-bracket-matches" aria-label="Duel bracket matchups"></div>
+            <div id="tourneyBracketTreeWrap" class="tourney-bracket-tree-wrap">
+              <div id="tourneyBracketTree" class="tourney-bracket-tree" aria-label="Duel Fishing tournament bracket"></div>
+            </div>
           </div>
           <div class="leaderboard-block leaderboard-block--compact">
             <h4 class="leaderboard-block__title">Today's tourney board</h4>
@@ -2982,6 +2984,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-09-09-fotd-start" defer></script>
+    <script src="game.js?v=2026-09-09-real-bracket" defer></script>
   </body>
 </html>

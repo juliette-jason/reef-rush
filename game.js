@@ -12139,12 +12139,180 @@ async function resolveTourneyBracketMatchFromDuel(run, playerScore, opponentScor
   }
 }
 
+function tourneyBracketShortName(entry, fallback = "") {
+  const raw = tourneyBracketEntryName(entry);
+  const name = String(raw || fallback || "").trim();
+  if (!name) return "";
+  return name.length > 16 ? `${name.slice(0, 14)}…` : name;
+}
+
+function tourneyBracketMatchByKey(state, roundKey, matchIndex) {
+  return findTourneyBracketMatch(roundKey, matchIndex, state);
+}
+
+function createTourneyBracketSlotEl(state, playerId, { winnerId = null, meId = null } = {}) {
+  const el = document.createElement("div");
+  el.className = "tourney-bracket-slot";
+  const entry = playerId ? findTourneyBracketEntry(playerId, state) : null;
+  const label = tourneyBracketShortName(entry, "");
+  if (!label) {
+    el.classList.add("tourney-bracket-slot--empty");
+    el.textContent = " ";
+    return el;
+  }
+  el.textContent = label;
+  el.title = tourneyBracketEntryName(entry);
+  if (meId && playerId === meId) el.classList.add("tourney-bracket-slot--mine");
+  if (winnerId) {
+    if (playerId === winnerId) el.classList.add("tourney-bracket-slot--winner");
+    else el.classList.add("tourney-bracket-slot--loser");
+  }
+  return el;
+}
+
+function createTourneyBracketPairEl(state, roundKey, matchIndex, meId) {
+  const match = tourneyBracketMatchByKey(state, roundKey, matchIndex);
+  const pair = document.createElement("div");
+  pair.className = "tourney-bracket-pair";
+  const winnerId = match?.status === "done" ? match.winner_id : null;
+  pair.appendChild(createTourneyBracketSlotEl(state, match?.player_a_id || null, { winnerId, meId }));
+  pair.appendChild(createTourneyBracketSlotEl(state, match?.player_b_id || null, { winnerId, meId }));
+  if (match && (match.player_a_id === meId || match.player_b_id === meId)) {
+    pair.classList.add("tourney-bracket-pair--mine");
+  }
+  return pair;
+}
+
+function createTourneyBracketColEl(state, roundKey, matchIndexes, label, meId) {
+  const col = document.createElement("div");
+  col.className = "tourney-bracket-col";
+  const head = document.createElement("p");
+  head.className = "tourney-bracket-col__label";
+  head.textContent = label;
+  col.appendChild(head);
+  for (const idx of matchIndexes) {
+    col.appendChild(createTourneyBracketPairEl(state, roundKey, idx, meId));
+  }
+  return col;
+}
+
+function tourneyBracketMedalSvg() {
+  return (
+    '<svg class="tourney-bracket-medal" viewBox="0 0 24 32" aria-hidden="true">' +
+    '<path d="M7 2 L12 10 L17 2" fill="none" stroke="#1d4ed8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<path d="M8 2 H16" fill="none" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round"/>' +
+    '<circle cx="12" cy="18" r="8" fill="#f59e0b" stroke="#b45309" stroke-width="1.4"/>' +
+    '<circle cx="12" cy="18" r="4.2" fill="#fde68a"/>' +
+    "</svg>"
+  );
+}
+
+function renderTourneyBracketTree(state, rootEl) {
+  if (!rootEl) return;
+  rootEl.innerHTML = "";
+  const seeded = Boolean(state?.seeded && state.day_key === getTourneyDayKey());
+  const meId = getDuelClientId();
+
+  const banner = document.createElement("div");
+  banner.className = "tourney-bracket-tree__banner";
+  banner.innerHTML =
+    '<span class="tourney-bracket-tree__banner-line" aria-hidden="true"></span>' +
+    '<p class="tourney-bracket-tree__banner-title">Duel Fishing</p>' +
+    '<span class="tourney-bracket-tree__banner-line" aria-hidden="true"></span>';
+  rootEl.appendChild(banner);
+
+  const body = document.createElement("div");
+  body.className = "tourney-bracket-tree__body";
+
+  const left = document.createElement("div");
+  left.className = "tourney-bracket-side tourney-bracket-side--left";
+  left.appendChild(
+    createTourneyBracketColEl(state, "r32", [0, 1, 2, 3, 4, 5, 6, 7], `R32 · ${tourneySlotHeatTime("morning")}`, meId),
+  );
+  left.appendChild(
+    createTourneyBracketColEl(state, "r16", [0, 1, 2, 3], `R16 · ${tourneySlotHeatTime("afternoon")}`, meId),
+  );
+  left.appendChild(createTourneyBracketColEl(state, "qf", [0, 1], `QF · ${tourneySlotHeatTime("afternoon")}`, meId));
+  left.appendChild(createTourneyBracketColEl(state, "sf", [0], `SF · ${tourneySlotHeatTime("evening")}`, meId));
+
+  const center = document.createElement("div");
+  center.className = "tourney-bracket-center";
+  const finalBox = document.createElement("div");
+  finalBox.className = "tourney-bracket-final";
+  const finalMatch = seeded ? tourneyBracketMatchByKey(state, "final", 0) : null;
+  const finalWinner = finalMatch?.status === "done" ? finalMatch.winner_id : null;
+  finalBox.appendChild(
+    createTourneyBracketSlotEl(state, finalMatch?.player_a_id || null, { winnerId: finalWinner, meId }),
+  );
+  finalBox.appendChild(
+    createTourneyBracketSlotEl(state, finalMatch?.player_b_id || null, { winnerId: finalWinner, meId }),
+  );
+  center.appendChild(finalBox);
+
+  const champion = document.createElement("div");
+  champion.className = "tourney-bracket-champion";
+  const rules = document.createElement("div");
+  rules.className = "tourney-bracket-champion__rules";
+  rules.insertAdjacentHTML("beforeend", tourneyBracketMedalSvg());
+  const copy = document.createElement("div");
+  copy.className = "tourney-bracket-champion__copy";
+  const champLabel = document.createElement("p");
+  champLabel.className = "tourney-bracket-champion__label";
+  champLabel.textContent = "Champion";
+  copy.appendChild(champLabel);
+  if (finalWinner) {
+    const champName = document.createElement("p");
+    champName.className = "tourney-bracket-champion__name";
+    champName.textContent = tourneyBracketShortName(findTourneyBracketEntry(finalWinner, state), "Champion");
+    champName.title = tourneyBracketEntryName(findTourneyBracketEntry(finalWinner, state));
+    copy.appendChild(champName);
+  }
+  rules.appendChild(copy);
+  rules.insertAdjacentHTML("beforeend", tourneyBracketMedalSvg());
+  champion.appendChild(rules);
+  center.appendChild(champion);
+
+  const right = document.createElement("div");
+  right.className = "tourney-bracket-side tourney-bracket-side--right";
+  /* DOM order with direction:rtl places R32 on the far right. */
+  right.appendChild(
+    createTourneyBracketColEl(state, "r32", [8, 9, 10, 11, 12, 13, 14, 15], `R32 · ${tourneySlotHeatTime("morning")}`, meId),
+  );
+  right.appendChild(
+    createTourneyBracketColEl(state, "r16", [4, 5, 6, 7], `R16 · ${tourneySlotHeatTime("afternoon")}`, meId),
+  );
+  right.appendChild(createTourneyBracketColEl(state, "qf", [2, 3], `QF · ${tourneySlotHeatTime("afternoon")}`, meId));
+  right.appendChild(createTourneyBracketColEl(state, "sf", [1], `SF · ${tourneySlotHeatTime("evening")}`, meId));
+
+  body.appendChild(left);
+  body.appendChild(center);
+  body.appendChild(right);
+  rootEl.appendChild(body);
+
+  const bronze = document.createElement("div");
+  bronze.className = "tourney-bracket-bronze";
+  const bronzeLabel = document.createElement("span");
+  bronzeLabel.className = "tourney-bracket-bronze__label";
+  bronzeLabel.textContent = "3rd place";
+  bronze.appendChild(bronzeLabel);
+  const bronzeMatch = seeded ? tourneyBracketMatchByKey(state, "bronze", 0) : null;
+  const bronzeWinner = bronzeMatch?.status === "done" ? bronzeMatch.winner_id : null;
+  bronze.appendChild(
+    createTourneyBracketSlotEl(state, bronzeMatch?.player_a_id || null, { winnerId: bronzeWinner, meId }),
+  );
+  bronze.appendChild(document.createTextNode("vs"));
+  bronze.appendChild(
+    createTourneyBracketSlotEl(state, bronzeMatch?.player_b_id || null, { winnerId: bronzeWinner, meId }),
+  );
+  rootEl.appendChild(bronze);
+}
+
 function renderTourneyBracketPanel(state = tourneyBracketState) {
   const panel = document.getElementById("tourneyBracketPanel");
   const scheduleEl = document.getElementById("tourneyBracketSchedule");
   const line = document.getElementById("tourneyBracketLine");
   const list = document.getElementById("tourneyBracketList");
-  const matchesEl = document.getElementById("tourneyBracketMatches");
+  const treeEl = document.getElementById("tourneyBracketTree");
   if (!panel) return;
   if (!isTourneyDuelBracketDay()) {
     panel.hidden = true;
@@ -12159,7 +12327,7 @@ function renderTourneyBracketPanel(state = tourneyBracketState) {
   const podium = seeded ? getTourneyBracketPodium(state) : null;
   if (line) {
     if (!seeded) {
-      line.textContent = "Duel Fishing bracket day — matchups seed with the morning heat. Times below.";
+      line.textContent = "Duel Fishing bracket day — matchups seed with the morning heat. Scroll the bracket below.";
     } else if (me && !me.in_bracket) {
       line.textContent = `You're seed ${me.seed} — cut from the 32. Consolation: ${TOURNEY_BRACKET_CUT_COINS.toLocaleString()} coins.`;
     } else if (podium) {
@@ -12201,69 +12369,7 @@ function renderTourneyBracketPanel(state = tourneyBracketState) {
       list.appendChild(li);
     }
   }
-  if (matchesEl) {
-    matchesEl.innerHTML = "";
-    if (!seeded) return;
-    const meId = getDuelClientId();
-    const focusSlot =
-      slot.slotKey ||
-      TOURNEY_BRACKET_ROUNDS.find((r) =>
-        state.matches.some((m) => m.round_key === r.key && m.status !== "done" && (m.player_a_id || m.player_b_id)),
-      )?.slotKey ||
-      "morning";
-    const roundsToShow = TOURNEY_BRACKET_ROUNDS.filter((r) => r.slotKey === focusSlot);
-    const showRounds = roundsToShow.length ? roundsToShow : TOURNEY_BRACKET_ROUNDS.slice(0, 1);
-    for (const round of showRounds) {
-      const roundMatches = state.matches
-        .filter((m) => m.round_key === round.key)
-        .slice()
-        .sort((a, b) => a.match_index - b.match_index);
-      if (!roundMatches.length) continue;
-      const block = document.createElement("div");
-      block.className = "tourney-bracket-round";
-      const head = document.createElement("p");
-      head.className = "tourney-bracket-round__head";
-      head.textContent = `${round.label} · ${tourneySlotHeatTime(round.slotKey)}`;
-      block.appendChild(head);
-      const ul = document.createElement("ul");
-      ul.className = "tourney-bracket-round__list";
-      for (const match of roundMatches) {
-        const aName = match.player_a_id
-          ? tourneyBracketEntryName(findTourneyBracketEntry(match.player_a_id, state))
-          : "TBD";
-        const bName = match.player_b_id
-          ? tourneyBracketEntryName(findTourneyBracketEntry(match.player_b_id, state))
-          : "TBD";
-        const mine = match.player_a_id === meId || match.player_b_id === meId;
-        const li = document.createElement("li");
-        li.className = "tourney-bracket-match";
-        if (mine) li.classList.add("tourney-bracket-match--mine");
-        if (match.status === "done") li.classList.add("tourney-bracket-match--done");
-        const vs = document.createElement("span");
-        vs.className = "tourney-bracket-match__vs";
-        if (match.status === "done" && match.winner_id) {
-          const winnerName = tourneyBracketEntryName(findTourneyBracketEntry(match.winner_id, state));
-          vs.textContent = `${aName} vs ${bName} → ${winnerName}`;
-        } else {
-          vs.textContent = `${aName} vs ${bName}`;
-        }
-        const st = document.createElement("span");
-        st.className = "tourney-bracket-match__status";
-        st.textContent = mine
-          ? match.status === "done"
-            ? "yours · done"
-            : "your match"
-          : match.status === "done"
-            ? "done"
-            : "open";
-        li.appendChild(vs);
-        li.appendChild(st);
-        ul.appendChild(li);
-      }
-      block.appendChild(ul);
-      matchesEl.appendChild(block);
-    }
-  }
+  renderTourneyBracketTree(seeded ? state : null, treeEl);
 }
 
 async function finishTournamentRun(scorePts, duelMeta = null) {
