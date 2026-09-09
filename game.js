@@ -10241,11 +10241,20 @@ function endDailyPrizeCelebration() {
   syncHomeLaunchButtons();
 }
 
-function startDailyPrizeCelebration(prize) {
-  if (!prize || dailyPrizeCelebrationActive || treasureMapRevealPaused || playing) return;
+function startDailyPrizeCelebration(prize, { force = false } = {}) {
+  if (!prize || dailyPrizeCelebrationActive || playing) return;
   if (isSplashScreenActive()) return;
-  if (mapSeagullGuide && !mapSeagullGuide.hidden && mapSeagullMode === "howto") return;
-  if (!isHomeScreenActive()) return;
+  if (force) {
+    if (mapSeagullGuide && !mapSeagullGuide.hidden) {
+      if (mapSeagullMode === "howto") markIntroSeen();
+      if (mapSeagullMode === "shop") markSeagullShopHintSeen();
+      hideMapSeagullGuide();
+    }
+  } else {
+    if (treasureMapRevealPaused) return;
+    if (mapSeagullGuide && !mapSeagullGuide.hidden && mapSeagullMode === "howto") return;
+    if (!isHomeScreenActive()) return;
+  }
   ensureDailyPrizeBundle(prize);
   saveMeta();
   dailyPrizeCelebrationActive = true;
@@ -23116,7 +23125,33 @@ function initBubbles() {
 }
 
 function startRound() {
-  deferDailyPrizeCelebration();
+  /* Home Start: claim Fisher of the Day first, then fish. */
+  if (dailyPrizeCelebrationActive) return;
+  if (adventureSession || crabTrapSession || duelSession || eventMinigameSession) {
+    beginFishingRoundFromHomeStart();
+    return;
+  }
+  const yesterday = getPreviousDailyDayKey();
+  const alreadyChecked = gameMeta.dailyPrizeCheckedDay === yesterday;
+  if (alreadyChecked && !gameMeta.pendingDailyPrizeCelebration) {
+    beginFishingRoundFromHomeStart();
+    return;
+  }
+  if (alreadyChecked && gameMeta.pendingDailyPrizeCelebration) {
+    startDailyPrizeCelebration(gameMeta.pendingDailyPrizeCelebration, { force: true });
+    return;
+  }
+  void processDailyPrizePayouts().then(() => {
+    if (playing || dailyPrizeCelebrationActive || adventureSession || duelSession || eventMinigameSession) return;
+    if (gameMeta.pendingDailyPrizeCelebration) {
+      startDailyPrizeCelebration(gameMeta.pendingDailyPrizeCelebration, { force: true });
+      return;
+    }
+    beginFishingRoundFromHomeStart();
+  });
+}
+
+function beginFishingRoundFromHomeStart() {
   setStartMoreOptionsOpen(false);
   if (mapSeagullMode === "howto") {
     markIntroSeen();
