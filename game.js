@@ -21374,6 +21374,10 @@ function openEventPrep(kind) {
   hideAllPanels();
   if (panelEventPrep) panelEventPrep.hidden = false;
   appRoot?.classList.add("app--events-mode");
+  if (!eventKindAllowsKrakenSpray(kind) && gameMeta.selectedBaitId === KRAKEN_SPRAY_BAIT_ID) {
+    gameMeta.selectedBaitId = "standard";
+    saveMeta();
+  }
   buildBaitUI();
   buildRodUI();
   refreshEventPrepFriendsUI();
