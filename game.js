@@ -23,12 +23,14 @@ function redirectToReefRushLiveIfNeeded() {
     return;
   }
   /*
-   * Keep juliette-jason.github.io/reef-rush/ working until reefrush.io DNS is set.
-   * Only rewrite bare-user or wrong-path hits on the old host.
+   * Keep juliette-jason.github.io/reef-rush/ working until reefrush.io DNS is live.
+   * Wrong paths on the old host still go to /reef-rush/ (not the custom domain yet).
    */
   if (host === REEF_RUSH_LEGACY_HOST) {
     if (location.pathname === "/" || !location.pathname.startsWith("/reef-rush")) {
-      location.replace(`${REEF_RUSH_LIVE_URL}${location.search}${location.hash}`);
+      location.replace(
+        `https://${REEF_RUSH_LEGACY_HOST}/reef-rush/${location.search}${location.hash}`
+      );
     }
   }
 }
