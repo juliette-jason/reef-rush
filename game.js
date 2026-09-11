@@ -9153,8 +9153,8 @@ const FEEDBACK_SCREENSHOT_MAX_BYTES = 5 * 1024 * 1024;
 const FEEDBACK_SCREENSHOT_MAX_EDGE = 1280;
 const ADMIN_STATS_UNLOCK_KEY = "reefRushAdminUnlocked_v1";
 const ADMIN_STATS_DEVICE_KEY = "reefRushAdminDevice_v1";
-/** One-time unlock on this browser: open the game with ?reefadmin=reef-rush-dev */
-const ADMIN_STATS_UNLOCK_CODE = "reef-rush-dev";
+/** Settings → Enter code (also works as ?reefadmin=12c9). */
+const ADMIN_STATS_UNLOCK_CODE = "12c9";
 const PLAY_EVENT_KINDS = {
   duel: "Duel Fishing",
   coop: "Co-op Haul",
@@ -17111,6 +17111,7 @@ const feedbackStatus = document.getElementById("feedbackStatus");
 const startSettingsAdmin = document.getElementById("startSettingsAdmin");
 const adminStatsUsers = document.getElementById("adminStatsUsers");
 const adminStatsPopular = document.getElementById("adminStatsPopular");
+const btnAdminCode = document.getElementById("btnAdminCode");
 const btnStartSettings = document.getElementById("btnStartSettings");
 const homeCorner = document.getElementById("homeCorner");
 const startSettingsMenu = document.getElementById("startSettingsMenu");
@@ -29519,19 +29520,45 @@ function tryConsumeAdminUnlockFromUrl() {
     /* ignore */
   }
   if (typed === ADMIN_STATS_UNLOCK_CODE || typed === "1") {
-    setAdminStatsUnlocked(true);
-    showToast("Private stats unlocked on this device only.", 3200);
-    syncAdminSettingsUi();
-    void refreshAdminStats();
+    unlockAdminStatsWithToast();
   } else {
     showToast("Wrong admin link.", 1800);
   }
 }
 
+function unlockAdminStatsWithToast() {
+  setAdminStatsUnlocked(true);
+  showToast("Player stats unlocked on this device.", 2800);
+  syncAdminSettingsUi();
+  void refreshAdminStats();
+}
+
+function promptAdminStatsCode() {
+  if (isAdminStatsUnlocked()) {
+    syncAdminSettingsUi();
+    void refreshAdminStats();
+    return;
+  }
+  let typed = "";
+  try {
+    typed = window.prompt("Enter code for player stats:", "") || "";
+  } catch {
+    showToast("Couldn’t open the code box on this browser.", 2200);
+    return;
+  }
+  const code = String(typed).trim().toLowerCase();
+  if (!code) return;
+  if (code === ADMIN_STATS_UNLOCK_CODE) {
+    unlockAdminStatsWithToast();
+  } else {
+    showToast("That code isn’t right.", 2000);
+  }
+}
+
 function syncAdminSettingsUi() {
-  if (!startSettingsAdmin) return;
-  /* Always show on every device that opens Settings. */
-  startSettingsAdmin.hidden = false;
+  const unlocked = isAdminStatsUnlocked();
+  if (startSettingsAdmin) startSettingsAdmin.hidden = !unlocked;
+  if (btnAdminCode) btnAdminCode.hidden = unlocked;
 }
 
 function playEventLabel(kind) {
@@ -29566,6 +29593,7 @@ async function recordGamePlayEvent(eventKind) {
 }
 
 async function refreshAdminStats() {
+  if (!isAdminStatsUnlocked()) return;
   if (adminStatsUsers) adminStatsUsers.textContent = "Players: loading…";
   if (adminStatsPopular) adminStatsPopular.textContent = "Most popular minigame: loading…";
   try {
@@ -29858,7 +29886,7 @@ function setStartSettingsOpen(open) {
   btnStartSettings.setAttribute("aria-expanded", open ? "true" : "false");
   if (open) {
     syncAdminSettingsUi();
-    void refreshAdminStats();
+    if (isAdminStatsUnlocked()) void refreshAdminStats();
   }
 }
 
@@ -29866,6 +29894,12 @@ btnStartSettings?.addEventListener("click", (e) => {
   e.stopPropagation();
   const open = btnStartSettings.getAttribute("aria-expanded") !== "true";
   setStartSettingsOpen(open);
+});
+
+btnAdminCode?.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  promptAdminStatsCode();
 });
 
 btnSendFeedback?.addEventListener("click", (e) => {
