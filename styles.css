@@ -3180,14 +3180,18 @@ button.seagull-avatar:active {
 
 .friend-picker--party {
   display: grid;
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
   width: 100%;
-  margin: 0 auto;
+  margin: 0;
   justify-items: stretch;
+  box-sizing: border-box;
 }
 
 .friend-picker__mode {
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .friend-picker__mode[aria-pressed="true"] {
@@ -6456,6 +6460,19 @@ button.seagull-avatar:active {
 
 .event-prep-friends .adventure-prep__card {
   width: 100%;
+  box-sizing: border-box;
+}
+
+.event-prep-friends .rods__grid,
+.panel--event-prep .rods__grid:not(.rods__grid--reefs) {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 420px) {
+  .friend-picker--party {
+    grid-template-columns: 1fr;
+  }
 }
 
 .profile-friends-empty {
@@ -10083,11 +10100,13 @@ button.seagull-avatar:active {
   gap: 10px;
   width: min(520px, 100%);
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .adventure-prep__card {
   margin: 0;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .panel--adventure-prep .rod-option__desc {
@@ -10205,19 +10224,21 @@ button.seagull-avatar:active {
 .adventure-prep__actions {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 8px;
   width: min(520px, 100%);
   margin: 6px auto 0;
+  box-sizing: border-box;
 }
 
 .adventure-prep__actions .btn--start {
   width: 100%;
-  max-width: 320px;
+  max-width: none;
 }
 
 .adventure-prep__actions .btn--secondary {
-  min-width: min(220px, 80vw);
+  width: 100%;
+  min-width: 0;
 }
 
 .panel--adventure-result .panel__headline {
