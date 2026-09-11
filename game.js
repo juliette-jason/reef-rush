@@ -2,28 +2,38 @@
  * Reef Rush — responsive canvas fishing game
  */
 
-const REEF_RUSH_LIVE_ORIGIN = "https://juliette-jason.github.io";
-const REEF_RUSH_LIVE_URL = `${REEF_RUSH_LIVE_ORIGIN}/reef-rush/`;
+const REEF_RUSH_LIVE_ORIGIN = "https://reefrush.io";
+const REEF_RUSH_LIVE_URL = `${REEF_RUSH_LIVE_ORIGIN}/`;
+const REEF_RUSH_LEGACY_HOST = "juliette-jason.github.io";
+const REEF_RUSH_CUSTOM_HOSTS = new Set(["reefrush.io", "www.reefrush.io"]);
 
-if (typeof location !== "undefined" && location.hostname === "julietta-jason.github.io") {
-  location.replace(`${REEF_RUSH_LIVE_URL}${location.search}${location.hash}`);
+/** Send typo / old GitHub Pages paths to the custom domain once DNS is live. */
+function redirectToReefRushLiveIfNeeded() {
+  if (typeof location === "undefined") return;
+  const host = location.hostname;
+  if (REEF_RUSH_CUSTOM_HOSTS.has(host)) {
+    if (host === "www.reefrush.io") {
+      location.replace(`${REEF_RUSH_LIVE_URL}${location.search}${location.hash}`);
+    }
+    return;
+  }
+  /* Typo host always bounce to the live game. */
+  if (host === "julietta-jason.github.io") {
+    location.replace(`${REEF_RUSH_LIVE_URL}${location.search}${location.hash}`);
+    return;
+  }
+  /*
+   * Keep juliette-jason.github.io/reef-rush/ working until reefrush.io DNS is set.
+   * Only rewrite bare-user or wrong-path hits on the old host.
+   */
+  if (host === REEF_RUSH_LEGACY_HOST) {
+    if (location.pathname === "/" || !location.pathname.startsWith("/reef-rush")) {
+      location.replace(`${REEF_RUSH_LIVE_URL}${location.search}${location.hash}`);
+    }
+  }
 }
 
-if (
-  typeof location !== "undefined" &&
-  location.hostname === "juliette-jason.github.io" &&
-  location.pathname === "/"
-) {
-  location.replace(`${REEF_RUSH_LIVE_URL}${location.search}${location.hash}`);
-}
-
-if (
-  typeof location !== "undefined" &&
-  location.hostname === "juliette-jason.github.io" &&
-  !location.pathname.startsWith("/reef-rush")
-) {
-  location.replace(`${REEF_RUSH_LIVE_URL}${location.search}${location.hash}`);
-}
+redirectToReefRushLiveIfNeeded();
 
 // --- Sea creatures: rarity, size tier, palette (splash-screen realism) ---
 const RARITY = {
@@ -9515,7 +9525,9 @@ function isLocalDevHost() {
 function isReefRushLiveSite() {
   if (typeof location === "undefined") return false;
   if (isLocalDevHost()) return true;
-  return location.hostname === "juliette-jason.github.io" && location.pathname.startsWith("/reef-rush");
+  const host = location.hostname;
+  if (REEF_RUSH_CUSTOM_HOSTS.has(host)) return true;
+  return host === REEF_RUSH_LEGACY_HOST && location.pathname.startsWith("/reef-rush");
 }
 
 function onlineDuelEnvironmentIssue() {

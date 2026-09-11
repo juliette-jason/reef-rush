@@ -1,5 +1,28 @@
 # reef-rush
 
+**Live game:** [https://reefrush.io/](https://reefrush.io/)  
+(Legacy: `https://juliette-jason.github.io/reef-rush/` until DNS cuts over.)
+
+## Custom domain (`reefrush.io`)
+
+1. **Buy** `reefrush.io` at a registrar (Namecheap, Google Domains/Squarespace, Cloudflare, etc.) if you don’t own it yet.
+2. At the registrar, add these DNS records for GitHub Pages:
+
+| Type | Name | Value |
+| --- | --- | --- |
+| A | `@` | `185.199.108.153` |
+| A | `@` | `185.199.109.153` |
+| A | `@` | `185.199.110.153` |
+| A | `@` | `185.199.111.153` |
+| AAAA | `@` | `2606:50c0:8000::153` |
+| AAAA | `@` | `2606:50c0:8001::153` |
+| AAAA | `@` | `2606:50c0:8002::153` |
+| AAAA | `@` | `2606:50c0:8003::153` |
+| CNAME | `www` | `juliette-jason.github.io` |
+
+3. In GitHub → **Settings → Pages**, set Custom domain to `reefrush.io` and enable **Enforce HTTPS** (after DNS propagates).
+4. Wait for DNS (often 5–60 minutes). Then open https://reefrush.io/
+
 ## Friend party codes (no sign-in)
 
 Play Duel or Co-op with a friend using an auto-generated code — no accounts.
