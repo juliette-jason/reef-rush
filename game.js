@@ -17111,7 +17111,6 @@ const feedbackStatus = document.getElementById("feedbackStatus");
 const startSettingsAdmin = document.getElementById("startSettingsAdmin");
 const adminStatsUsers = document.getElementById("adminStatsUsers");
 const adminStatsPopular = document.getElementById("adminStatsPopular");
-const btnAdminCode = document.getElementById("btnAdminCode");
 const btnStartSettings = document.getElementById("btnStartSettings");
 const homeCorner = document.getElementById("homeCorner");
 const startSettingsMenu = document.getElementById("startSettingsMenu");
@@ -29533,32 +29532,9 @@ function unlockAdminStatsWithToast() {
   void refreshAdminStats();
 }
 
-function promptAdminStatsCode() {
-  if (isAdminStatsUnlocked()) {
-    syncAdminSettingsUi();
-    void refreshAdminStats();
-    return;
-  }
-  let typed = "";
-  try {
-    typed = window.prompt("Enter code for player stats:", "") || "";
-  } catch {
-    showToast("Couldn’t open the code box on this browser.", 2200);
-    return;
-  }
-  const code = String(typed).trim().toLowerCase();
-  if (!code) return;
-  if (code === ADMIN_STATS_UNLOCK_CODE) {
-    unlockAdminStatsWithToast();
-  } else {
-    showToast("That code isn’t right.", 2000);
-  }
-}
-
 function syncAdminSettingsUi() {
-  const unlocked = isAdminStatsUnlocked();
-  if (startSettingsAdmin) startSettingsAdmin.hidden = !unlocked;
-  if (btnAdminCode) btnAdminCode.hidden = unlocked;
+  if (!startSettingsAdmin) return;
+  startSettingsAdmin.hidden = !isAdminStatsUnlocked();
 }
 
 function playEventLabel(kind) {
