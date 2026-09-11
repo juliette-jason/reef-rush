@@ -9122,6 +9122,8 @@ const SUPABASE_URL = "https://htnpfzjhicyzkqfgyhuu.supabase.co";
 const GAME_FEEDBACK_URL = `${SUPABASE_REST_URL}/game_feedback`;
 const GAME_PLAY_EVENTS_URL = `${SUPABASE_REST_URL}/game_play_events`;
 const ADMIN_STATS_UNLOCK_KEY = "reefRushAdminUnlocked_v1";
+const ADMIN_STATS_DEVICE_KEY = "reefRushAdminDevice_v1";
+/** One-time unlock on this browser: open the game with ?reefadmin=reef-rush-dev */
 const ADMIN_STATS_UNLOCK_CODE = "reef-rush-dev";
 const PLAY_EVENT_KINDS = {
   duel: "Duel Fishing",
@@ -29247,7 +29249,16 @@ btnResetProgress?.addEventListener("click", () => {
 
 function isAdminStatsUnlocked() {
   try {
-    return localStorage.getItem(ADMIN_STATS_UNLOCK_KEY) === "yes";
+    if (localStorage.getItem(ADMIN_STATS_UNLOCK_KEY) !== "yes") return false;
+    const me = getDuelClientId();
+    if (!me) return false;
+    let bound = localStorage.getItem(ADMIN_STATS_DEVICE_KEY);
+    if (!bound) {
+      // Older unlocks: pin to this device now so other browsers stay locked out.
+      localStorage.setItem(ADMIN_STATS_DEVICE_KEY, me);
+      return true;
+    }
+    return bound === me;
   } catch {
     return false;
   }
@@ -29255,24 +29266,43 @@ function isAdminStatsUnlocked() {
 
 function setAdminStatsUnlocked(on) {
   try {
-    if (on) localStorage.setItem(ADMIN_STATS_UNLOCK_KEY, "yes");
-    else localStorage.removeItem(ADMIN_STATS_UNLOCK_KEY);
+    if (on) {
+      localStorage.setItem(ADMIN_STATS_UNLOCK_KEY, "yes");
+      localStorage.setItem(ADMIN_STATS_DEVICE_KEY, getDuelClientId());
+    } else {
+      localStorage.removeItem(ADMIN_STATS_UNLOCK_KEY);
+      localStorage.removeItem(ADMIN_STATS_DEVICE_KEY);
+    }
   } catch {
     /* ignore */
   }
 }
 
-function promptAdminUnlock() {
-  const typed = window.prompt("Enter developer code for stats:");
-  if (typed == null) return;
-  if (String(typed).trim().toLowerCase() === ADMIN_STATS_UNLOCK_CODE) {
+/** Secret URL unlock — binds player/minigame stats to this device only. */
+function tryConsumeAdminUnlockFromUrl() {
+  let params;
+  try {
+    params = new URLSearchParams(location.search);
+  } catch {
+    return;
+  }
+  if (!params.has("reefadmin")) return;
+  const typed = String(params.get("reefadmin") || "").trim().toLowerCase();
+  params.delete("reefadmin");
+  const qs = params.toString();
+  const next = `${location.pathname}${qs ? `?${qs}` : ""}${location.hash || ""}`;
+  try {
+    history.replaceState({}, "", next);
+  } catch {
+    /* ignore */
+  }
+  if (typed === ADMIN_STATS_UNLOCK_CODE || typed === "1") {
     setAdminStatsUnlocked(true);
-    showToast("Dev stats unlocked in Settings.", 2800);
+    showToast("Private stats unlocked on this device only.", 3200);
     syncAdminSettingsUi();
     void refreshAdminStats();
-    setStartSettingsOpen(true);
   } else {
-    showToast("Wrong code.", 1800);
+    showToast("Wrong admin link.", 1800);
   }
 }
 
@@ -29436,14 +29466,6 @@ function setStartSettingsOpen(open) {
 let settingsGearClickTimes = [];
 btnStartSettings?.addEventListener("click", (e) => {
   e.stopPropagation();
-  const now = Date.now();
-  settingsGearClickTimes = settingsGearClickTimes.filter((t) => now - t < 1400);
-  settingsGearClickTimes.push(now);
-  if (settingsGearClickTimes.length >= 5) {
-    settingsGearClickTimes = [];
-    promptAdminUnlock();
-    return;
-  }
   const open = btnStartSettings.getAttribute("aria-expanded") !== "true";
   setStartSettingsOpen(open);
 });
@@ -29455,6 +29477,7 @@ btnFeedbackCancel?.addEventListener("click", closeFeedbackOverlay);
 btnFeedbackSend?.addEventListener("click", () => void submitGameFeedback());
 feedbackOverlay?.querySelector(".feedback-overlay__backdrop")?.addEventListener("click", closeFeedbackOverlay);
 
+tryConsumeAdminUnlockFromUrl();
 syncAdminSettingsUi();
 
 function setStartMoreOptionsOpen(open) {
