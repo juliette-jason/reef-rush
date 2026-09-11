@@ -23,7 +23,7 @@
       rel="stylesheet"
     />
     <link rel="canonical" href="https://juliette-jason.github.io/reef-rush/" />
-    <link rel="stylesheet" href="styles.css?v=2026-09-11-tourney-art" />
+    <link rel="stylesheet" href="styles.css?v=2026-09-11-duel-info" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -2103,6 +2103,9 @@
                   <span class="event-card__info-text">Info</span>
                 </summary>
                 <div class="event-card__blurb event-card__blurb--stack">
+                  <p id="duelEventTickets" class="event-card__tickets event-card__tickets--info">
+                    5 free daily · win prize today: a catch stamp · extra tickets in shop (700 coins)
+                  </p>
                   <p id="duelEventMatchup" class="event-card__matchup">Spend 1 ticket for a 1-minute head-to-head. Match a real player, or face a random rival if nobody’s waiting.</p>
                   <p id="duelEventReef" class="event-card__reef-pick">Random reef each duel · use a friend code to play together · watch live duels below</p>
                 </div>
@@ -2111,7 +2114,6 @@
             <p class="event-card__reset">1 minute</p>
           </header>
           <p id="duelEventUnavailable" class="event-card__unavailable" hidden>On phones you see only your side — rival score stays in the HUD.</p>
-          <p id="duelEventTickets" class="event-card__tickets">Tickets: 5</p>
           <div id="duelLobbyCountdown" class="duel-lobby-countdown" hidden aria-hidden="true">
             <p class="duel-lobby-countdown__label" id="duelLobbyCountdownLabel">Trying to find a rival</p>
             <p class="duel-lobby-countdown__time" id="duelLobbyCountdownValue" aria-live="polite">25</p>
@@ -3127,6 +3129,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-09-11-tourney-art" defer></script>
+    <script src="game.js?v=2026-09-11-duel-info" defer></script>
   </body>
 </html>
