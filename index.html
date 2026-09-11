@@ -23,7 +23,7 @@
       rel="stylesheet"
     />
     <link rel="canonical" href="https://juliette-jason.github.io/reef-rush/" />
-    <link rel="stylesheet" href="styles.css?v=2026-09-11-feedback-us" />
+    <link rel="stylesheet" href="styles.css?v=2026-09-11-feedback-send" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -209,7 +209,6 @@
           </div>
           <div class="events-ocean__reflection"></div>
         </div>
-        <div id="toast" class="toast" hidden></div>
         <div id="treasureMapReveal" class="treasure-map-reveal" hidden aria-hidden="true">
           <div class="treasure-map-reveal__backdrop"></div>
           <div class="treasure-map-reveal__stage" role="dialog" aria-labelledby="treasureMapRevealTitle" aria-modal="true">
@@ -395,11 +394,14 @@
             </span>
           </p>
           <div class="feedback-overlay__actions">
+            <p id="feedbackStatus" class="feedback-overlay__status" hidden aria-live="polite"></p>
             <button type="button" id="btnFeedbackSend" class="btn btn--primary">Send</button>
             <button type="button" id="btnFeedbackCancel" class="btn btn--secondary">Cancel</button>
           </div>
         </div>
       </div>
+
+      <div id="toast" class="toast" hidden></div>
 
       <p class="hint" id="controlHint">Laptop: aim left/right, Enter casts · Phone: drag left/right, tap to cast</p>
 
@@ -3043,6 +3045,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-09-11-feedback-us" defer></script>
+    <script src="game.js?v=2026-09-11-feedback-send" defer></script>
   </body>
 </html>

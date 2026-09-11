@@ -17045,6 +17045,7 @@ const feedbackOverlay = document.getElementById("feedbackOverlay");
 const feedbackMessage = document.getElementById("feedbackMessage");
 const btnFeedbackSend = document.getElementById("btnFeedbackSend");
 const btnFeedbackCancel = document.getElementById("btnFeedbackCancel");
+const feedbackStatus = document.getElementById("feedbackStatus");
 const startSettingsAdmin = document.getElementById("startSettingsAdmin");
 const adminStatsUsers = document.getElementById("adminStatsUsers");
 const adminStatsPopular = document.getElementById("adminStatsPopular");
@@ -29395,10 +29396,23 @@ async function refreshAdminStats() {
   }
 }
 
+function setFeedbackStatus(text = "") {
+  if (!feedbackStatus) return;
+  const msg = String(text || "").trim();
+  if (!msg) {
+    feedbackStatus.hidden = true;
+    feedbackStatus.textContent = "";
+    return;
+  }
+  feedbackStatus.hidden = false;
+  feedbackStatus.textContent = msg;
+}
+
 function openFeedbackOverlay() {
   setStartSettingsOpen(false);
   if (!feedbackOverlay) return;
   if (feedbackMessage) feedbackMessage.value = "";
+  setFeedbackStatus("");
   feedbackOverlay.hidden = false;
   feedbackOverlay.setAttribute("aria-hidden", "false");
   window.setTimeout(() => {
@@ -29414,15 +29428,43 @@ function closeFeedbackOverlay() {
   if (!feedbackOverlay) return;
   feedbackOverlay.hidden = true;
   feedbackOverlay.setAttribute("aria-hidden", "true");
+  setFeedbackStatus("");
+}
+
+let feedbackSubmitLock = false;
+let lastFeedbackSubmitAt = 0;
+
+function requestSubmitGameFeedback(e) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  const now = Date.now();
+  if (now - lastFeedbackSubmitAt < 700) return;
+  lastFeedbackSubmitAt = now;
+  try {
+    feedbackMessage?.blur();
+  } catch {
+    /* ignore */
+  }
+  void submitGameFeedback();
 }
 
 async function submitGameFeedback() {
+  if (feedbackSubmitLock) return;
   const message = String(feedbackMessage?.value || "").trim();
   if (message.length < 3) {
-    showToast("Write a little more so I can help.", 2400);
+    const tip = "Write a little more so we can help.";
+    setFeedbackStatus(tip);
+    showToast(tip, 2400);
     return;
   }
-  if (!assertKidSafeText(message, "feedback")) return;
+  if (!assertKidSafeText(message, "feedback")) {
+    setFeedbackStatus("Please keep feedback friendly — kids play this game.");
+    return;
+  }
+  feedbackSubmitLock = true;
+  setFeedbackStatus("");
   if (btnFeedbackSend) btnFeedbackSend.disabled = true;
   try {
     const payload = {
@@ -29442,19 +29484,23 @@ async function submitGameFeedback() {
     });
     const text = await res.text().catch(() => "");
     if (!res.ok) {
+      let tip = "Couldn’t send right now — try again later.";
       if (/game_feedback|PGRST205|schema cache/i.test(text) || res.status === 404) {
-        showToast("Feedback table isn’t set up yet — run supabase/game_feedback.sql in Supabase.", 5200);
-      } else {
-        showToast("Couldn’t send right now — try again later.", 2800);
+        tip = "Feedback table isn’t set up yet — run supabase/game_feedback.sql in Supabase.";
       }
+      setFeedbackStatus(tip);
+      showToast(tip, tip.length > 60 ? 5200 : 2800);
       return;
     }
     closeFeedbackOverlay();
     showToast("Thanks! Your note was sent.", 3200);
   } catch (err) {
     console.warn(err);
-    showToast("Couldn’t send right now — check your connection.", 2800);
+    const tip = "Couldn’t send right now — check your connection.";
+    setFeedbackStatus(tip);
+    showToast(tip, 2800);
   } finally {
+    feedbackSubmitLock = false;
     if (btnFeedbackSend) btnFeedbackSend.disabled = false;
   }
 }
@@ -29481,7 +29527,14 @@ btnSendFeedback?.addEventListener("click", (e) => {
   openFeedbackOverlay();
 });
 btnFeedbackCancel?.addEventListener("click", closeFeedbackOverlay);
-btnFeedbackSend?.addEventListener("click", () => void submitGameFeedback());
+btnFeedbackSend?.addEventListener("click", requestSubmitGameFeedback);
+btnFeedbackSend?.addEventListener(
+  "touchend",
+  (e) => {
+    requestSubmitGameFeedback(e);
+  },
+  { passive: false },
+);
 feedbackOverlay?.querySelector(".feedback-overlay__backdrop")?.addEventListener("click", closeFeedbackOverlay);
 feedbackOverlay?.querySelector(".feedback-overlay__stage")?.addEventListener("click", (e) => {
   e.stopPropagation();
