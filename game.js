@@ -9116,6 +9116,17 @@ const LEADERBOARD_MAX = 10;
 const LEADERBOARD_FETCH_LIMIT = 80;
 const SUPABASE_REST_URL = "https://htnpfzjhicyzkqfgyhuu.supabase.co/rest/v1";
 const SUPABASE_URL = "https://htnpfzjhicyzkqfgyhuu.supabase.co";
+const GAME_FEEDBACK_URL = `${SUPABASE_REST_URL}/game_feedback`;
+const GAME_PLAY_EVENTS_URL = `${SUPABASE_REST_URL}/game_play_events`;
+const ADMIN_STATS_UNLOCK_KEY = "reefRushAdminUnlocked_v1";
+const ADMIN_STATS_UNLOCK_CODE = "reef-rush-dev";
+const PLAY_EVENT_KINDS = {
+  duel: "Duel Fishing",
+  coop: "Co-op Haul",
+  roulette: "Reef Roulette",
+  survivor: "Kraken Survivor",
+  crab: "Crab Trap",
+};
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_SARvsULPYyIUImdhXMjQUQ_T6RtwvZM";
 const LEADERBOARD_TABLE_URL = `${SUPABASE_REST_URL}/leaderboard`;
 let leaderboardRows = [];
@@ -16265,6 +16276,7 @@ async function startDuelFromEvents(fromPrep = false) {
   }
 
   /* Don't probe-and-bounce here — Cast off must enter matchmaking (or COM). */
+  void recordGamePlayEvent("duel");
   hideDuelHud();
   appRoot?.classList.remove("app--events-mode");
   const isFriendHost = pendingPartyIntent === "friend" && !pendingJoinPartyCode;
@@ -16881,6 +16893,14 @@ const btnMapSeagullDone = document.getElementById("btnMapSeagullDone");
 let mapSeagullMode = null;
 let mapSeagullFlyTimer = 0;
 const btnResetProgress = document.getElementById("btnResetProgress");
+const btnSendFeedback = document.getElementById("btnSendFeedback");
+const feedbackOverlay = document.getElementById("feedbackOverlay");
+const feedbackMessage = document.getElementById("feedbackMessage");
+const btnFeedbackSend = document.getElementById("btnFeedbackSend");
+const btnFeedbackCancel = document.getElementById("btnFeedbackCancel");
+const startSettingsAdmin = document.getElementById("startSettingsAdmin");
+const adminStatsUsers = document.getElementById("adminStatsUsers");
+const adminStatsPopular = document.getElementById("adminStatsPopular");
 const btnStartSettings = document.getElementById("btnStartSettings");
 const homeCorner = document.getElementById("homeCorner");
 const startSettingsMenu = document.getElementById("startSettingsMenu");
@@ -21216,6 +21236,7 @@ async function startCoopFromEvents(fromPrep = false) {
     return;
   }
 
+  void recordGamePlayEvent("coop");
   appRoot?.classList.remove("app--events-mode");
   const isFriendHost = pendingPartyIntent === "friend" && !pendingJoinPartyCode;
   const isPartyJoin = Boolean(pendingJoinPartyCode);
@@ -21535,6 +21556,7 @@ function beginEventMinigame(kind, fromPrep = false) {
       2800
     );
   }
+  void recordGamePlayEvent(kind);
   startRound();
 }
 
@@ -21747,6 +21769,7 @@ function startCrabTrap() {
     showToast("No tickets — visit the shop", 2200);
     return;
   }
+  void recordGamePlayEvent("crab");
   refreshCrabTrapEventCard();
   hideAllPanels();
   if (panelCrabReward) panelCrabReward.hidden = true;
@@ -28883,6 +28906,11 @@ canvas.addEventListener("touchcancel", () => {
 });
 
 window.addEventListener("keydown", (e) => {
+  if (feedbackOverlay && !feedbackOverlay.hidden && e.key === "Escape") {
+    e.preventDefault();
+    closeFeedbackOverlay();
+    return;
+  }
   if (dailyPrizeCelebrationActive && dailyPrizeReveal && !dailyPrizeReveal.hidden && (e.key === "Enter" || e.key === " " || e.key === "Escape")) {
     const tag = e.target?.tagName;
     if (tag !== "INPUT" && tag !== "TEXTAREA") {
@@ -29067,11 +29095,216 @@ btnResetProgress?.addEventListener("click", () => {
   resetProgress();
 });
 
+function isAdminStatsUnlocked() {
+  try {
+    return localStorage.getItem(ADMIN_STATS_UNLOCK_KEY) === "yes";
+  } catch {
+    return false;
+  }
+}
+
+function setAdminStatsUnlocked(on) {
+  try {
+    if (on) localStorage.setItem(ADMIN_STATS_UNLOCK_KEY, "yes");
+    else localStorage.removeItem(ADMIN_STATS_UNLOCK_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+function promptAdminUnlock() {
+  const typed = window.prompt("Enter developer code for stats:");
+  if (typed == null) return;
+  if (String(typed).trim().toLowerCase() === ADMIN_STATS_UNLOCK_CODE) {
+    setAdminStatsUnlocked(true);
+    showToast("Dev stats unlocked in Settings.", 2800);
+    syncAdminSettingsUi();
+    void refreshAdminStats();
+    setStartSettingsOpen(true);
+  } else {
+    showToast("Wrong code.", 1800);
+  }
+}
+
+function syncAdminSettingsUi() {
+  if (!startSettingsAdmin) return;
+  startSettingsAdmin.hidden = !isAdminStatsUnlocked();
+}
+
+function playEventLabel(kind) {
+  return PLAY_EVENT_KINDS[kind] || kind || "Unknown";
+}
+
+async function recordGamePlayEvent(eventKind) {
+  if (!eventKind || !PLAY_EVENT_KINDS[eventKind]) return;
+  try {
+    const payload = {
+      client_id: getDuelClientId(),
+      event_kind: eventKind,
+      day_key: getDailyDayKey(),
+    };
+    const res = await fetch(GAME_PLAY_EVENTS_URL, {
+      method: "POST",
+      headers: leaderboardHeaders({
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      }),
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      if (/game_play_events|PGRST205|schema cache/i.test(text) || res.status === 404) {
+        console.info("Play events table missing — run supabase/game_play_events.sql");
+      }
+    }
+  } catch (err) {
+    console.warn(err);
+  }
+}
+
+async function refreshAdminStats() {
+  if (!isAdminStatsUnlocked()) return;
+  if (adminStatsUsers) adminStatsUsers.textContent = "Users: loading…";
+  if (adminStatsPopular) adminStatsPopular.textContent = "Top minigame: loading…";
+  try {
+    const res = await fetch(
+      `${GAME_PLAY_EVENTS_URL}?select=client_id,event_kind&limit=5000`,
+      { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS },
+    );
+    const text = await res.text();
+    if (!res.ok) {
+      if (/game_play_events|PGRST205|schema cache/i.test(text) || res.status === 404) {
+        if (adminStatsUsers) adminStatsUsers.textContent = "Users: run game_play_events.sql";
+        if (adminStatsPopular) adminStatsPopular.textContent = "Top minigame: —";
+        return;
+      }
+      throw new Error(text || `Stats failed: ${res.status}`);
+    }
+    let rows = [];
+    try {
+      rows = JSON.parse(text);
+    } catch {
+      rows = [];
+    }
+    if (!Array.isArray(rows)) rows = [];
+    const users = new Set(rows.map((r) => String(r.client_id || "")).filter(Boolean));
+    const counts = {};
+    for (const row of rows) {
+      const kind = String(row.event_kind || "");
+      if (!kind) continue;
+      counts[kind] = (counts[kind] || 0) + 1;
+    }
+    let topKind = "";
+    let topCount = 0;
+    for (const [kind, n] of Object.entries(counts)) {
+      if (n > topCount) {
+        topKind = kind;
+        topCount = n;
+      }
+    }
+    if (adminStatsUsers) adminStatsUsers.textContent = `Users: ${users.size.toLocaleString()}`;
+    if (adminStatsPopular) {
+      adminStatsPopular.textContent = topKind
+        ? `Top minigame: ${playEventLabel(topKind)} (${topCount})`
+        : "Top minigame: no plays yet";
+    }
+  } catch (err) {
+    console.warn(err);
+    if (adminStatsUsers) adminStatsUsers.textContent = "Users: couldn’t load";
+    if (adminStatsPopular) adminStatsPopular.textContent = "Top minigame: couldn’t load";
+  }
+}
+
+function openFeedbackOverlay() {
+  setStartSettingsOpen(false);
+  if (!feedbackOverlay) return;
+  if (feedbackMessage) feedbackMessage.value = "";
+  feedbackOverlay.hidden = false;
+  feedbackOverlay.setAttribute("aria-hidden", "false");
+  window.setTimeout(() => feedbackMessage?.focus(), 60);
+}
+
+function closeFeedbackOverlay() {
+  if (!feedbackOverlay) return;
+  feedbackOverlay.hidden = true;
+  feedbackOverlay.setAttribute("aria-hidden", "true");
+}
+
+async function submitGameFeedback() {
+  const message = String(feedbackMessage?.value || "").trim();
+  if (message.length < 3) {
+    showToast("Write a little more so I can help.", 2400);
+    return;
+  }
+  if (btnFeedbackSend) btnFeedbackSend.disabled = true;
+  try {
+    const payload = {
+      message: message.slice(0, 2000),
+      kind: /bug|crash|broken|error/i.test(message) ? "bug" : "feedback",
+      client_id: getDuelClientId(),
+      player_name: String(gameMeta.playerName || gameMeta.playerInitials || "").slice(0, 80),
+      user_agent: String(navigator.userAgent || "").slice(0, 240),
+    };
+    const res = await fetch(GAME_FEEDBACK_URL, {
+      method: "POST",
+      headers: leaderboardHeaders({
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      }),
+      body: JSON.stringify(payload),
+    });
+    const text = await res.text().catch(() => "");
+    if (!res.ok) {
+      if (/game_feedback|PGRST205|schema cache/i.test(text) || res.status === 404) {
+        showToast("Feedback table isn’t set up yet — run supabase/game_feedback.sql in Supabase.", 5200);
+      } else {
+        showToast("Couldn’t send right now — try again later.", 2800);
+      }
+      return;
+    }
+    closeFeedbackOverlay();
+    showToast("Thanks! Your note was sent.", 3200);
+  } catch (err) {
+    console.warn(err);
+    showToast("Couldn’t send right now — check your connection.", 2800);
+  } finally {
+    if (btnFeedbackSend) btnFeedbackSend.disabled = false;
+  }
+}
+
 function setStartSettingsOpen(open) {
   if (!btnStartSettings || !startSettingsMenu) return;
   startSettingsMenu.hidden = !open;
   btnStartSettings.setAttribute("aria-expanded", open ? "true" : "false");
+  if (open) {
+    syncAdminSettingsUi();
+    if (isAdminStatsUnlocked()) void refreshAdminStats();
+  }
 }
+
+let settingsGearClickTimes = [];
+btnStartSettings?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  const now = Date.now();
+  settingsGearClickTimes = settingsGearClickTimes.filter((t) => now - t < 1400);
+  settingsGearClickTimes.push(now);
+  if (settingsGearClickTimes.length >= 5) {
+    settingsGearClickTimes = [];
+    promptAdminUnlock();
+    return;
+  }
+  const open = btnStartSettings.getAttribute("aria-expanded") !== "true";
+  setStartSettingsOpen(open);
+});
+
+btnSendFeedback?.addEventListener("click", () => {
+  openFeedbackOverlay();
+});
+btnFeedbackCancel?.addEventListener("click", closeFeedbackOverlay);
+btnFeedbackSend?.addEventListener("click", () => void submitGameFeedback());
+feedbackOverlay?.querySelector(".feedback-overlay__backdrop")?.addEventListener("click", closeFeedbackOverlay);
+
+syncAdminSettingsUi();
 
 function setStartMoreOptionsOpen(open) {
   /* Phone launch buttons stay visible under Start Game; no sheet to toggle. */
@@ -29082,12 +29315,6 @@ function setStartMoreOptionsOpen(open) {
 function isStartMoreOptionsOpen() {
   return false;
 }
-
-btnStartSettings?.addEventListener("click", (e) => {
-  e.stopPropagation();
-  const open = btnStartSettings.getAttribute("aria-expanded") !== "true";
-  setStartSettingsOpen(open);
-});
 
 document.addEventListener("pointerdown", (e) => {
   if (btnStartSettings && startSettingsMenu && !startSettingsMenu.hidden) {

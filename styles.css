@@ -1984,7 +1984,8 @@ body {
 .panel--start .btn--help,
 .panel--start .btn--reset,
 .panel--start .btn--shop,
-.panel--start .btn--music {
+.panel--start .btn--music,
+.panel--start .btn--feedback {
   width: 100%;
   padding: 9px 14px;
   font-size: 0.82rem;
@@ -1992,6 +1993,141 @@ body {
   border-radius: 999px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(8, 28, 48, 0.55));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.panel--start .btn--feedback {
+  color: #bae6fd;
+  border-color: rgba(125, 211, 252, 0.45);
+}
+
+.start-settings__admin {
+  margin-top: 4px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(253, 230, 138, 0.35);
+  background: rgba(8, 47, 73, 0.72);
+}
+
+.start-settings__admin[hidden] {
+  display: none !important;
+}
+
+.start-settings__admin-title {
+  margin: 0 0 4px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fde68a;
+}
+
+.start-settings__admin-line {
+  margin: 0;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: rgba(226, 232, 240, 0.92);
+  line-height: 1.35;
+}
+
+.feedback-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: grid;
+  place-items: center;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+}
+
+.feedback-overlay[hidden] {
+  display: none !important;
+}
+
+.feedback-overlay__backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 30%, rgba(12, 74, 110, 0.55), rgba(2, 6, 23, 0.92));
+}
+
+.feedback-overlay__stage {
+  position: relative;
+  z-index: 1;
+  width: min(420px, 100%);
+  padding: 22px 18px 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(125, 211, 252, 0.4);
+  background: linear-gradient(165deg, #0c4a6e 0%, #0f172a 55%, #082f49 100%);
+  text-align: left;
+  box-shadow: 0 18px 48px rgba(2, 18, 32, 0.5);
+}
+
+.feedback-overlay__badge {
+  margin: 0 0 4px;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fde68a;
+}
+
+.feedback-overlay__title {
+  margin: 0 0 6px;
+  text-align: center;
+  font-family: "Nunito", sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #e0f2fe;
+}
+
+.feedback-overlay__lede {
+  margin: 0 0 12px;
+  text-align: center;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: rgba(186, 230, 253, 0.9);
+  line-height: 1.35;
+}
+
+.feedback-overlay__label {
+  display: block;
+  margin: 0 0 4px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(253, 230, 138, 0.9);
+}
+
+.feedback-overlay__input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 120px;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  background: rgba(8, 47, 73, 0.7);
+  color: #f8fafc;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.4;
+  resize: vertical;
+}
+
+.feedback-overlay__input:focus {
+  outline: 2px solid rgba(125, 211, 252, 0.55);
+  outline-offset: 1px;
+}
+
+.feedback-overlay__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.feedback-overlay__actions .btn {
+  width: 100%;
 }
 
 .panel--start .btn--reset {

@@ -23,7 +23,7 @@
       rel="stylesheet"
     />
     <link rel="canonical" href="https://juliette-jason.github.io/reef-rush/" />
-    <link rel="stylesheet" href="styles.css?v=2026-09-11-prep-align" />
+    <link rel="stylesheet" href="styles.css?v=2026-09-11-feedback" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -316,6 +316,26 @@
             <button type="button" id="btnTourneyHeatRevealReady" class="btn btn--primary tourney-vote-reveal__btn" hidden>
               Continue
             </button>
+          </div>
+        </div>
+        <div id="feedbackOverlay" class="feedback-overlay" hidden aria-hidden="true">
+          <div class="feedback-overlay__backdrop"></div>
+          <div class="feedback-overlay__stage" role="dialog" aria-labelledby="feedbackTitle" aria-modal="true">
+            <p class="feedback-overlay__badge">★ Reef Rush ★</p>
+            <h2 id="feedbackTitle" class="feedback-overlay__title">Send bug / feedback</h2>
+            <p class="feedback-overlay__lede">Tell Juliette what broke, what confused you, or what you’d love next.</p>
+            <label class="feedback-overlay__label" for="feedbackMessage">Your message</label>
+            <textarea
+              id="feedbackMessage"
+              class="feedback-overlay__input"
+              rows="5"
+              maxlength="2000"
+              placeholder="Example: Crab Trap crashed when I quit, or I’d love a night reef…"
+            ></textarea>
+            <div class="feedback-overlay__actions">
+              <button type="button" id="btnFeedbackSend" class="btn btn--primary">Send</button>
+              <button type="button" id="btnFeedbackCancel" class="btn btn--secondary">Cancel</button>
+            </div>
           </div>
         </div>
         <div id="tourneyBracketOverlay" class="tourney-bracket-overlay" hidden aria-hidden="true">
@@ -684,7 +704,13 @@
               <div id="startSettingsMenu" class="start-settings__menu" hidden>
                 <button type="button" id="btnOpenIntro" class="btn btn--secondary btn--help">How to play</button>
                 <button type="button" id="btnToggleMusic" class="btn btn--secondary btn--music" aria-pressed="false">Music</button>
+                <button type="button" id="btnSendFeedback" class="btn btn--secondary btn--feedback">Send bug / feedback</button>
                 <button type="button" id="btnResetProgress" class="btn btn--secondary btn--reset">Reset progress</button>
+                <div id="startSettingsAdmin" class="start-settings__admin" hidden>
+                  <p class="start-settings__admin-title">Dev stats</p>
+                  <p id="adminStatsUsers" class="start-settings__admin-line">Users: …</p>
+                  <p id="adminStatsPopular" class="start-settings__admin-line">Top minigame: …</p>
+                </div>
               </div>
             </div>
           </div>
@@ -3004,6 +3030,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-09-11-prep-align" defer></script>
+    <script src="game.js?v=2026-09-11-feedback" defer></script>
   </body>
 </html>
