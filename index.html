@@ -23,7 +23,7 @@
       rel="stylesheet"
     />
     <link rel="canonical" href="https://reef-rush.com/" />
-    <link rel="stylesheet" href="styles.css?v=2026-09-11-admin-code-gone" />
+    <link rel="stylesheet" href="styles.css?v=2026-09-11-starfall-maps" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -1694,16 +1694,247 @@
               <div class="adventure-chart__nodes" data-section="mermaid"></div>
             </article>
 
+            <article class="adventure-chart adventure-chart--starfall" data-section="starfall" hidden>
+              <svg class="adventure-chart__art" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+              <defs>
+                <linearGradient id="sfParchment" x1="8%" y1="0%" x2="92%" y2="100%">
+                  <stop offset="0%" stop-color="#e8e4f0" />
+                  <stop offset="40%" stop-color="#d4d0e4" />
+                  <stop offset="100%" stop-color="#c0bcd8" />
+                </linearGradient>
+                <linearGradient id="sfLand" x1="20%" y1="0%" x2="80%" y2="100%">
+                  <stop offset="0%" stop-color="#d8d0c0" />
+                  <stop offset="100%" stop-color="#a8a090" />
+                </linearGradient>
+                <linearGradient id="sfOcean" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#a8b8e0" />
+                  <stop offset="55%" stop-color="#6878b8" />
+                  <stop offset="100%" stop-color="#485898" />
+                </linearGradient>
+                <filter id="sfGrain" x="-8%" y="-8%" width="116%" height="116%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" result="noise" />
+                  <feColorMatrix type="saturate" values="0" in="noise" result="gray" />
+                  <feComponentTransfer in="gray" result="grain">
+                    <feFuncA type="linear" slope="0.34" />
+                  </feComponentTransfer>
+                  <feBlend in="SourceGraphic" in2="grain" mode="multiply" />
+                </filter>
+                <clipPath id="sfTorn">
+                  <path d="M14 32 L48 10 L110 22 L180 8 L260 18 L340 6 L420 16 L500 7 L580 18 L660 8 L730 20 L786 36 L796 90 L800 180 L794 280 L798 380 L792 470 L786 548 L720 592 L620 584 L520 596 L420 586 L320 594 L220 584 L120 592 L28 560 L6 480 L10 360 L4 240 L12 130 L8 60 Z" />
+                </clipPath>
+              </defs>
+              <g clip-path="url(#sfTorn)" filter="url(#sfGrain)">
+                <rect width="800" height="600" fill="url(#sfParchment)" />
+                <path fill="url(#sfOcean)" opacity="0.38" d="M0 0 H800 V600 H0 Z" />
+                <g class="adv-map-lands">
+                  <path fill="url(#sfLand)" stroke="#3a4060" stroke-width="1.4" d="M80 400 L100 340 Q160 300 210 340 L230 410 Q190 470 120 450 Z" />
+                  <path fill="url(#sfLand)" stroke="#3a4060" stroke-width="1.4" d="M260 200 L300 130 Q380 100 440 160 L420 240 Q350 270 270 250 Z" />
+                  <path fill="url(#sfLand)" stroke="#3a4060" stroke-width="1.4" d="M500 140 L560 90 Q640 80 700 140 L680 210 Q600 230 520 200 Z" />
+                  <path fill="url(#sfLand)" stroke="#3a4060" stroke-width="1.4" d="M500 390 L570 340 Q670 330 740 390 L720 460 Q640 480 540 450 Z" />
+                </g>
+                <g class="adv-map-doodles" pointer-events="none">
+                  <g transform="translate(700 100) scale(0.75)" opacity="0.9">
+                    <circle cx="0" cy="0" r="46" fill="#efe8f4" stroke="#2a2840" stroke-width="1.4" />
+                    <path d="M0 -38 L8 0 L0 38 L-8 0 Z" fill="#2a2840" />
+                    <path d="M-38 0 L0 -8 L38 0 L0 8 Z" fill="#4a4868" />
+                    <circle cx="0" cy="0" r="5" fill="#f0e090" stroke="#2a2840" stroke-width="0.8" />
+                    <text x="0" y="-52" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="13" fill="#2a2840">N</text>
+                  </g>
+                  <g transform="translate(150 380)" opacity="0.88">
+                    <circle cx="0" cy="0" r="3" fill="#ffe890"/>
+                    <circle cx="10" cy="-8" r="2" fill="#ffe890"/>
+                    <circle cx="-8" cy="10" r="2.5" fill="#ffe890"/>
+                    <text x="-34" y="36" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#2a3050" font-style="italic">Dusk Harbor</text>
+                  </g>
+                  <g transform="translate(380 170)" opacity="0.86">
+                    <path d="M0 -10 L3 0 L0 10 L-3 0 Z" fill="#ffe890"/>
+                    <text x="-28" y="30" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#2a3050" font-style="italic">Comet Drift</text>
+                  </g>
+                  <g transform="translate(620 400)" opacity="0.92">
+                    <path d="M-10 -2 L0 -16 L10 -2 L4 10 L-4 10 Z" fill="#ffe890" stroke="#c8a040" stroke-width="0.8"/>
+                    <text x="-36" y="36" font-family="'IM Fell English SC', Georgia, serif" font-size="12" fill="#3a3060">Crown of Stars</text>
+                  </g>
+                  <g transform="translate(40 28)" opacity="0.94">
+                    <rect x="0" y="0" width="230" height="58" rx="4" fill="#efe8f4" stroke="#2a2840" stroke-width="1.6"/>
+                    <rect x="5" y="5" width="220" height="48" rx="2" fill="none" stroke="#2a2840" stroke-width="0.7" opacity="0.55"/>
+                    <text x="115" y="26" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="20" fill="#2a2038">Starfall Seas</text>
+                    <text x="115" y="44" text-anchor="middle" font-family="'IM Fell English', Georgia, serif" font-size="11" font-style="italic" fill="#4a4060">Where meteors kiss the tide</text>
+                  </g>
+                </g>
+                <path class="adventure-map-edge" fill="none" stroke="#586898" stroke-width="3.2" opacity="0.5" d="M14 32 L48 10 L110 22 L180 8 L260 18 L340 6 L420 16 L500 7 L580 18 L660 8 L730 20 L786 36 L796 90 L800 180 L794 280 L798 380 L792 470 L786 548 L720 592 L620 584 L520 596 L420 586 L320 594 L220 584 L120 592 L28 560 L6 480 L10 360 L4 240 L12 130 L8 60 Z" />
+              </g>
+            </svg>
+              <svg class="adventure-chart__trail" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                <path id="adventureMapTrail-starfall" class="adventure-map-trail" fill="none" d="" />
+                <path id="adventureMapTrailReveal-starfall" class="adventure-map-trail adventure-map-trail--reveal" fill="none" d="" />
+              </svg>
+              <div class="adventure-chart__nodes" data-section="starfall"></div>
+            </article>
+
+            <article class="adventure-chart adventure-chart--dragonwake" data-section="dragonwake" hidden>
+              <svg class="adventure-chart__art" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+              <defs>
+                <linearGradient id="dwParchment" x1="8%" y1="0%" x2="92%" y2="100%">
+                  <stop offset="0%" stop-color="#f0e4d8" />
+                  <stop offset="40%" stop-color="#e4d0b8" />
+                  <stop offset="100%" stop-color="#d8bc98" />
+                </linearGradient>
+                <linearGradient id="dwLand" x1="20%" y1="0%" x2="80%" y2="100%">
+                  <stop offset="0%" stop-color="#e8c8a0" />
+                  <stop offset="100%" stop-color="#c89868" />
+                </linearGradient>
+                <linearGradient id="dwOcean" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#e8c0a0" />
+                  <stop offset="55%" stop-color="#c87858" />
+                  <stop offset="100%" stop-color="#a85840" />
+                </linearGradient>
+                <filter id="dwGrain" x="-8%" y="-8%" width="116%" height="116%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" result="noise" />
+                  <feColorMatrix type="saturate" values="0" in="noise" result="gray" />
+                  <feComponentTransfer in="gray" result="grain">
+                    <feFuncA type="linear" slope="0.34" />
+                  </feComponentTransfer>
+                  <feBlend in="SourceGraphic" in2="grain" mode="multiply" />
+                </filter>
+                <clipPath id="dwTorn">
+                  <path d="M14 32 L48 10 L110 22 L180 8 L260 18 L340 6 L420 16 L500 7 L580 18 L660 8 L730 20 L786 36 L796 90 L800 180 L794 280 L798 380 L792 470 L786 548 L720 592 L620 584 L520 596 L420 586 L320 594 L220 584 L120 592 L28 560 L6 480 L10 360 L4 240 L12 130 L8 60 Z" />
+                </clipPath>
+              </defs>
+              <g clip-path="url(#dwTorn)" filter="url(#dwGrain)">
+                <rect width="800" height="600" fill="url(#dwParchment)" />
+                <path fill="url(#dwOcean)" opacity="0.34" d="M0 0 H800 V600 H0 Z" />
+                <g class="adv-map-lands">
+                  <path fill="url(#dwLand)" stroke="#6a4030" stroke-width="1.4" d="M70 410 L95 350 Q150 310 200 350 L220 420 Q180 480 110 460 Z" />
+                  <path fill="url(#dwLand)" stroke="#6a4030" stroke-width="1.4" d="M250 210 L285 140 Q370 105 430 165 L410 250 Q340 285 265 255 Z" />
+                  <path fill="url(#dwLand)" stroke="#6a4030" stroke-width="1.4" d="M490 150 L555 95 Q640 85 700 150 L675 225 Q595 250 510 210 Z" />
+                  <path fill="url(#dwLand)" stroke="#6a4030" stroke-width="1.4" d="M510 385 L580 330 Q685 315 745 385 L720 460 Q635 485 530 445 Z" />
+                </g>
+                <g class="adv-map-doodles" pointer-events="none">
+                  <g transform="translate(700 100) scale(0.75)" opacity="0.9">
+                    <circle cx="0" cy="0" r="46" fill="#f4e8d8" stroke="#4a2818" stroke-width="1.4" />
+                    <path d="M0 -38 L8 0 L0 38 L-8 0 Z" fill="#4a2818" />
+                    <path d="M-38 0 L0 -8 L38 0 L0 8 Z" fill="#6a4028" />
+                    <circle cx="0" cy="0" r="5" fill="#e85830" stroke="#4a2818" stroke-width="0.8" />
+                    <text x="0" y="-52" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="13" fill="#4a2818">N</text>
+                  </g>
+                  <g transform="translate(155 385)" opacity="0.88">
+                    <path d="M-6 12 Q0 -4 6 12 Q0 18 -6 12" fill="#e87040" stroke="#6a4030" stroke-width="0.7"/>
+                    <text x="-30" y="40" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#4a2818" font-style="italic">Ember Cove</text>
+                  </g>
+                  <g transform="translate(370 175)" opacity="0.86">
+                    <path d="M-8 10 L0 -12 L8 10 Z" fill="#c05030" stroke="#6a4030" stroke-width="0.7"/>
+                    <text x="-34" y="34" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#4a2818" font-style="italic">Ash Spire</text>
+                  </g>
+                  <g transform="translate(620 400)" opacity="0.92">
+                    <path d="M-12 8 L0 -18 L12 8 Q0 16 -12 8" fill="#e85830" stroke="#ffe090" stroke-width="0.9"/>
+                    <text x="-40" y="36" font-family="'IM Fell English SC', Georgia, serif" font-size="12" fill="#6a2010">Dragonwake Crown</text>
+                  </g>
+                  <g transform="translate(40 28)" opacity="0.94">
+                    <rect x="0" y="0" width="250" height="58" rx="4" fill="#f4e8d8" stroke="#4a2818" stroke-width="1.6"/>
+                    <rect x="5" y="5" width="240" height="48" rx="2" fill="none" stroke="#4a2818" stroke-width="0.7" opacity="0.55"/>
+                    <text x="125" y="26" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="19" fill="#3a1808">Dragonwake Isles</text>
+                    <text x="125" y="44" text-anchor="middle" font-family="'IM Fell English', Georgia, serif" font-size="11" font-style="italic" fill="#6a4028">Where the dragons first woke</text>
+                  </g>
+                </g>
+                <path class="adventure-map-edge" fill="none" stroke="#a86848" stroke-width="3.2" opacity="0.5" d="M14 32 L48 10 L110 22 L180 8 L260 18 L340 6 L420 16 L500 7 L580 18 L660 8 L730 20 L786 36 L796 90 L800 180 L794 280 L798 380 L792 470 L786 548 L720 592 L620 584 L520 596 L420 586 L320 594 L220 584 L120 592 L28 560 L6 480 L10 360 L4 240 L12 130 L8 60 Z" />
+              </g>
+            </svg>
+              <svg class="adventure-chart__trail" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                <path id="adventureMapTrail-dragonwake" class="adventure-map-trail" fill="none" d="" />
+                <path id="adventureMapTrailReveal-dragonwake" class="adventure-map-trail adventure-map-trail--reveal" fill="none" d="" />
+              </svg>
+              <div class="adventure-chart__nodes" data-section="dragonwake"></div>
+            </article>
+
+            <article class="adventure-chart adventure-chart--mangrove" data-section="mangrove" hidden>
+              <svg class="adventure-chart__art" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+              <defs>
+                <linearGradient id="mgParchment" x1="8%" y1="0%" x2="92%" y2="100%">
+                  <stop offset="0%" stop-color="#e4ecd8" />
+                  <stop offset="40%" stop-color="#d0dcb8" />
+                  <stop offset="100%" stop-color="#b8c898" />
+                </linearGradient>
+                <linearGradient id="mgLand" x1="20%" y1="0%" x2="80%" y2="100%">
+                  <stop offset="0%" stop-color="#c8d8a0" />
+                  <stop offset="100%" stop-color="#98b070" />
+                </linearGradient>
+                <linearGradient id="mgOcean" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#b8d8c0" />
+                  <stop offset="55%" stop-color="#78b088" />
+                  <stop offset="100%" stop-color="#589068" />
+                </linearGradient>
+                <filter id="mgGrain" x="-8%" y="-8%" width="116%" height="116%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" result="noise" />
+                  <feColorMatrix type="saturate" values="0" in="noise" result="gray" />
+                  <feComponentTransfer in="gray" result="grain">
+                    <feFuncA type="linear" slope="0.34" />
+                  </feComponentTransfer>
+                  <feBlend in="SourceGraphic" in2="grain" mode="multiply" />
+                </filter>
+                <clipPath id="mgTorn">
+                  <path d="M14 32 L48 10 L110 22 L180 8 L260 18 L340 6 L420 16 L500 7 L580 18 L660 8 L730 20 L786 36 L796 90 L800 180 L794 280 L798 380 L792 470 L786 548 L720 592 L620 584 L520 596 L420 586 L320 594 L220 584 L120 592 L28 560 L6 480 L10 360 L4 240 L12 130 L8 60 Z" />
+                </clipPath>
+              </defs>
+              <g clip-path="url(#mgTorn)" filter="url(#mgGrain)">
+                <rect width="800" height="600" fill="url(#mgParchment)" />
+                <path fill="url(#mgOcean)" opacity="0.34" d="M0 0 H800 V600 H0 Z" />
+                <g class="adv-map-lands">
+                  <path fill="url(#mgLand)" stroke="#3a5840" stroke-width="1.4" d="M75 415 L95 355 Q155 315 205 355 L225 425 Q185 485 115 465 Z" />
+                  <path fill="url(#mgLand)" stroke="#3a5840" stroke-width="1.4" d="M255 215 L290 145 Q375 110 435 170 L415 255 Q345 290 270 260 Z" />
+                  <path fill="url(#mgLand)" stroke="#3a5840" stroke-width="1.4" d="M485 155 L550 100 Q635 90 695 155 L670 230 Q590 255 505 215 Z" />
+                  <path fill="url(#mgLand)" stroke="#3a5840" stroke-width="1.4" d="M505 390 L575 335 Q680 320 740 390 L715 465 Q630 490 525 450 Z" />
+                </g>
+                <g class="adv-map-doodles" pointer-events="none">
+                  <g transform="translate(700 100) scale(0.75)" opacity="0.9">
+                    <circle cx="0" cy="0" r="46" fill="#e8f0d8" stroke="#2a4028" stroke-width="1.4" />
+                    <path d="M0 -38 L8 0 L0 38 L-8 0 Z" fill="#2a4028" />
+                    <path d="M-38 0 L0 -8 L38 0 L0 8 Z" fill="#4a6840" />
+                    <circle cx="0" cy="0" r="5" fill="#68a050" stroke="#2a4028" stroke-width="0.8" />
+                    <text x="0" y="-52" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="13" fill="#2a4028">N</text>
+                  </g>
+                  <g transform="translate(150 385)" opacity="0.88">
+                    <path d="M-4 14 L-4 -6 Q0 -14 4 -6 L4 14" fill="none" stroke="#3a5840" stroke-width="1.2"/>
+                    <ellipse cx="0" cy="-8" rx="10" ry="6" fill="#68a050" opacity="0.85"/>
+                    <text x="-40" y="40" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#2a4028" font-style="italic">Rootwater Bend</text>
+                  </g>
+                  <g transform="translate(365 175)" opacity="0.86">
+                    <path d="M-10 8 Q0 -10 10 8 Q0 14 -10 8" fill="#78b068" stroke="#3a5840" stroke-width="0.7"/>
+                    <text x="-36" y="34" font-family="'IM Fell English', Georgia, serif" font-size="10" fill="#2a4028" font-style="italic">Canopy Reach</text>
+                  </g>
+                  <g transform="translate(620 400)" opacity="0.92">
+                    <path d="M-14 10 L0 -16 L14 10 Q0 18 -14 10" fill="#589048" stroke="#c8e090" stroke-width="0.9"/>
+                    <text x="-36" y="36" font-family="'IM Fell English SC', Georgia, serif" font-size="12" fill="#1a4020">Kingdom Heart</text>
+                  </g>
+                  <g transform="translate(40 28)" opacity="0.94">
+                    <rect x="0" y="0" width="260" height="58" rx="4" fill="#e8f0d8" stroke="#2a4028" stroke-width="1.6"/>
+                    <rect x="5" y="5" width="250" height="48" rx="2" fill="none" stroke="#2a4028" stroke-width="0.7" opacity="0.55"/>
+                    <text x="130" y="26" text-anchor="middle" font-family="'IM Fell English SC', Georgia, serif" font-size="18" fill="#1a3018">Mangrove Kingdom</text>
+                    <text x="130" y="44" text-anchor="middle" font-family="'IM Fell English', Georgia, serif" font-size="11" font-style="italic" fill="#3a5840">Roots that rule the river</text>
+                  </g>
+                </g>
+                <path class="adventure-map-edge" fill="none" stroke="#589068" stroke-width="3.2" opacity="0.5" d="M14 32 L48 10 L110 22 L180 8 L260 18 L340 6 L420 16 L500 7 L580 18 L660 8 L730 20 L786 36 L796 90 L800 180 L794 280 L798 380 L792 470 L786 548 L720 592 L620 584 L520 596 L420 586 L320 594 L220 584 L120 592 L28 560 L6 480 L10 360 L4 240 L12 130 L8 60 Z" />
+              </g>
+            </svg>
+              <svg class="adventure-chart__trail" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                <path id="adventureMapTrail-mangrove" class="adventure-map-trail" fill="none" d="" />
+                <path id="adventureMapTrailReveal-mangrove" class="adventure-map-trail adventure-map-trail--reveal" fill="none" d="" />
+              </svg>
+              <div class="adventure-chart__nodes" data-section="mangrove"></div>
+            </article>
+
           </div>
         </div>
         <header class="adventure-map-header">
           <h2 class="adventure-map-title">Pirate's Chart</h2>
           <p id="adventureMapHere" class="adventure-map-here"></p>
-          <p id="adventureMapBanner" class="adventure-map-banner" hidden>Chart the course — Pirates Path, then Gold Quest, Frozen Sea, The Lost City, and Mermaid Coast!</p>
+          <p id="adventureMapBanner" class="adventure-map-banner" hidden>Chart the course — sail every sea from Pirates Path to Mangrove Kingdom!</p>
           <p id="adventureMapBonusBanner" class="adventure-map-bonus-banner" hidden>Gold Quest — conquer Treasure Cove to unlock</p>
           <p id="adventureMapIceBanner" class="adventure-map-ice-banner" hidden>Frozen Sea — clear Legend's Gate to unlock</p>
           <p id="adventureMapLostCityBanner" class="adventure-map-lost-city-banner" hidden>The Lost City — clear Aurora Reach to unlock</p>
           <p id="adventureMapMermaidBanner" class="adventure-map-mermaid-banner" hidden>Mermaid Coast — clear Throne of Atlantis to unlock</p>
+          <p id="adventureMapStarfallBanner" class="adventure-map-starfall-banner" hidden>Starfall Seas — clear Mermaid Crown to unlock</p>
+          <p id="adventureMapDragonwakeBanner" class="adventure-map-dragonwake-banner" hidden>Dragonwake Isles — clear Crown of Stars to unlock</p>
+          <p id="adventureMapMangroveBanner" class="adventure-map-mangrove-banner" hidden>Mangrove Kingdom — clear Dragonwake Crown to unlock</p>
         </header>
         <button type="button" id="btnAdventureBack" class="btn btn--secondary adventure-map-back">
           <span class="adventure-map-back__label">← Back to home</span>
@@ -3129,6 +3360,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-09-11-admin-code-gone" defer></script>
+    <script src="game.js?v=2026-09-11-starfall-maps" defer></script>
   </body>
 </html>

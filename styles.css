@@ -9455,6 +9455,21 @@ button.seagull-avatar:active {
   filter: drop-shadow(0 1px 0.5px rgba(80, 40, 70, 0.35));
 }
 
+.adventure-chart--starfall .adventure-map-trail {
+  stroke: #98a0e0;
+  filter: drop-shadow(0 1px 0.5px rgba(40, 40, 90, 0.4));
+}
+
+.adventure-chart--dragonwake .adventure-map-trail {
+  stroke: #e07848;
+  filter: drop-shadow(0 1px 0.5px rgba(90, 40, 20, 0.4));
+}
+
+.adventure-chart--mangrove .adventure-map-trail {
+  stroke: #68a058;
+  filter: drop-shadow(0 1px 0.5px rgba(30, 60, 30, 0.4));
+}
+
 .adventure-chart--revealing .adventure-map-node--section-reveal {
   animation: adventureMapNodeSectionReveal 0.75s cubic-bezier(0.34, 1.4, 0.64, 1) both;
 }
@@ -9749,6 +9764,117 @@ button.seagull-avatar:active {
   50% {
     box-shadow:
       0 8px 28px rgba(255, 180, 210, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    transform: scale(1.03);
+  }
+}
+
+.adventure-map-starfall-banner,
+.adventure-map-dragonwake-banner,
+.adventure-map-mangrove-banner {
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: none;
+  z-index: 40;
+  width: 100%;
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 0.72rem;
+  text-align: center;
+  pointer-events: none;
+}
+
+.adventure-map-starfall-banner {
+  background: linear-gradient(180deg, rgba(240, 236, 255, 0.98), rgba(120, 130, 200, 0.92));
+  border: 2px solid #7880c0;
+  color: #1a2048;
+  box-shadow:
+    0 6px 18px rgba(60, 50, 120, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.adventure-map-dragonwake-banner {
+  background: linear-gradient(180deg, rgba(255, 236, 220, 0.98), rgba(220, 120, 70, 0.92));
+  border: 2px solid #c86840;
+  color: #4a2010;
+  box-shadow:
+    0 6px 18px rgba(140, 60, 30, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.adventure-map-mangrove-banner {
+  background: linear-gradient(180deg, rgba(236, 248, 220, 0.98), rgba(120, 180, 100, 0.92));
+  border: 2px solid #68a050;
+  color: #1a4020;
+  box-shadow:
+    0 6px 18px rgba(40, 90, 40, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.adventure-map-starfall-banner[hidden],
+.adventure-map-dragonwake-banner[hidden],
+.adventure-map-mangrove-banner[hidden] {
+  display: none;
+}
+
+.adventure-map-starfall-banner--reveal {
+  animation: adventureStarfallBannerPulse 1.8s ease-in-out infinite;
+}
+
+.adventure-map-dragonwake-banner--reveal {
+  animation: adventureDragonwakeBannerPulse 1.8s ease-in-out infinite;
+}
+
+.adventure-map-mangrove-banner--reveal {
+  animation: adventureMangroveBannerPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes adventureStarfallBannerPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 6px 18px rgba(60, 50, 120, 0.32),
+      inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow:
+      0 8px 28px rgba(200, 190, 255, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    transform: scale(1.03);
+  }
+}
+
+@keyframes adventureDragonwakeBannerPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 6px 18px rgba(140, 60, 30, 0.32),
+      inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow:
+      0 8px 28px rgba(255, 160, 90, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    transform: scale(1.03);
+  }
+}
+
+@keyframes adventureMangroveBannerPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 6px 18px rgba(40, 90, 40, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow:
+      0 8px 28px rgba(160, 220, 120, 0.5),
       inset 0 1px 0 rgba(255, 255, 255, 0.75);
     transform: scale(1.03);
   }
@@ -10074,6 +10200,21 @@ button.seagull-avatar:active {
 .adventure-map-node--mermaid .adventure-map-node__pin {
   background: radial-gradient(circle at 35% 30%, #fff0f6, #e8c0d0 45%, #78c0c8);
   border-color: #5a7890;
+}
+
+.adventure-map-node--starfall .adventure-map-node__pin {
+  background: radial-gradient(circle at 35% 30%, #f4f0ff, #c8c0e8 45%, #7880c0);
+  border-color: #505888;
+}
+
+.adventure-map-node--dragonwake .adventure-map-node__pin {
+  background: radial-gradient(circle at 35% 30%, #fff0e0, #e8b088 45%, #c87048);
+  border-color: #8a4828;
+}
+
+.adventure-map-node--mangrove .adventure-map-node__pin {
+  background: radial-gradient(circle at 35% 30%, #f0f8e0, #b8d890 45%, #689858);
+  border-color: #3a6840;
 }
 
 .adventure-map-node--bonus .adventure-map-node__bonus-lock {

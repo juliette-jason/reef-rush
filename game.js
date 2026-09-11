@@ -2264,12 +2264,18 @@ const ADVENTURE_BONUS_LEVEL_COUNT = 7;
 const ADVENTURE_ICE_LEVEL_COUNT = 5;
 const ADVENTURE_LOST_CITY_LEVEL_COUNT = 5;
 const ADVENTURE_MERMAID_LEVEL_COUNT = 10;
+const ADVENTURE_STARFALL_LEVEL_COUNT = 10;
+const ADVENTURE_DRAGONWAKE_LEVEL_COUNT = 10;
+const ADVENTURE_MANGROVE_LEVEL_COUNT = 10;
 const ADVENTURE_LEVEL_COUNT =
   ADVENTURE_MAIN_LEVEL_COUNT +
   ADVENTURE_BONUS_LEVEL_COUNT +
   ADVENTURE_ICE_LEVEL_COUNT +
   ADVENTURE_LOST_CITY_LEVEL_COUNT +
-  ADVENTURE_MERMAID_LEVEL_COUNT;
+  ADVENTURE_MERMAID_LEVEL_COUNT +
+  ADVENTURE_STARFALL_LEVEL_COUNT +
+  ADVENTURE_DRAGONWAKE_LEVEL_COUNT +
+  ADVENTURE_MANGROVE_LEVEL_COUNT;
 /** Index of Treasure Cove (level 15) — clearing it unlocks bonus voyages. */
 const TREASURE_COVE_INDEX = ADVENTURE_MAIN_LEVEL_COUNT - 1;
 /** Index of Legend's Gate (last Gold Quest voyage) — clearing it unlocks ice voyages. */
@@ -2277,12 +2283,21 @@ const LEGENDS_GATE_INDEX = ADVENTURE_MAIN_LEVEL_COUNT + ADVENTURE_BONUS_LEVEL_CO
 const ADVENTURE_ICE_START_INDEX = ADVENTURE_MAIN_LEVEL_COUNT + ADVENTURE_BONUS_LEVEL_COUNT;
 const ADVENTURE_LOST_CITY_START_INDEX = ADVENTURE_ICE_START_INDEX + ADVENTURE_ICE_LEVEL_COUNT;
 const ADVENTURE_MERMAID_START_INDEX = ADVENTURE_LOST_CITY_START_INDEX + ADVENTURE_LOST_CITY_LEVEL_COUNT;
+const ADVENTURE_STARFALL_START_INDEX = ADVENTURE_MERMAID_START_INDEX + ADVENTURE_MERMAID_LEVEL_COUNT;
+const ADVENTURE_DRAGONWAKE_START_INDEX = ADVENTURE_STARFALL_START_INDEX + ADVENTURE_STARFALL_LEVEL_COUNT;
+const ADVENTURE_MANGROVE_START_INDEX = ADVENTURE_DRAGONWAKE_START_INDEX + ADVENTURE_DRAGONWAKE_LEVEL_COUNT;
 /** Index of Aurora Reach — clearing it unlocks The Lost City. */
 const AURORA_REACH_INDEX = ADVENTURE_LOST_CITY_START_INDEX - 1;
 /** Index of Throne of Atlantis — clearing it unlocks Mermaid Coast. */
 const THRONE_OF_ATLANTIS_INDEX = ADVENTURE_MERMAID_START_INDEX - 1;
+/** Index of Mermaid Crown — clearing it unlocks Starfall Seas. */
+const MERMAID_CROWN_INDEX = ADVENTURE_STARFALL_START_INDEX - 1;
+/** Index of Crown of Stars — clearing it unlocks Dragonwake Isles. */
+const CROWN_OF_STARS_INDEX = ADVENTURE_DRAGONWAKE_START_INDEX - 1;
+/** Index of Dragonwake Crown — clearing it unlocks Mangrove Kingdom. */
+const DRAGONWAKE_CROWN_INDEX = ADVENTURE_MANGROVE_START_INDEX - 1;
 /** Bump when inserting voyages mid-chart so saved progress can remapped. */
-const ADVENTURE_MAP_CONTENT_REV = 5;
+const ADVENTURE_MAP_CONTENT_REV = 6;
 /** Ice start index before Middle Passage / Kraken's Grotto were added to Gold Quest. */
 const ADVENTURE_PREV_ICE_START_FOR_REV1 = 20;
 
@@ -2291,6 +2306,9 @@ const ADVENTURE_SECTION_GOLD_QUEST = "Gold Quest";
 const ADVENTURE_SECTION_FROZEN_SEA = "Frozen Sea";
 const ADVENTURE_SECTION_LOST_CITY = "The Lost City";
 const ADVENTURE_SECTION_MERMAID_COAST = "Mermaid Coast";
+const ADVENTURE_SECTION_STARFALL_SEAS = "Starfall Seas";
+const ADVENTURE_SECTION_DRAGONWAKE_ISLES = "Dragonwake Isles";
+const ADVENTURE_SECTION_MANGROVE_KINGDOM = "Mangrove Kingdom";
 /** +0.7s per Pirates Path voyage so later main levels keep a little more clock. */
 const ADVENTURE_LEVEL_TIME_BONUS_MS = 700;
 /** +0.55s per voyage from Gold Quest through Mermaid Coast — keep the ramp modest. */
@@ -2315,7 +2333,7 @@ const TREASURE_CINEMATIC_HOLD_MS = 1800;
 /** Logical chart size for trail SVG coords (matches adventure-chart__art viewBox). */
 const ADVENTURE_MAP_SVG_WIDTH = 800;
 const ADVENTURE_MAP_SVG_HEIGHT = 600;
-const ADVENTURE_MAP_SECTION_IDS = ["pirates", "gold", "ice", "lost-city", "mermaid"];
+const ADVENTURE_MAP_SECTION_IDS = ["pirates", "gold", "ice", "lost-city", "mermaid", "starfall", "dragonwake", "mangrove"];
 
 /** Section metadata — each themed voyage lives on its own landscape chart. */
 const ADVENTURE_MAP_SECTIONS = {
@@ -2347,11 +2365,32 @@ const ADVENTURE_MAP_SECTIONS = {
     id: "mermaid",
     label: ADVENTURE_SECTION_MERMAID_COAST,
     startIndex: ADVENTURE_MERMAID_START_INDEX,
+    endIndex: ADVENTURE_STARFALL_START_INDEX - 1,
+  },
+  starfall: {
+    id: "starfall",
+    label: ADVENTURE_SECTION_STARFALL_SEAS,
+    startIndex: ADVENTURE_STARFALL_START_INDEX,
+    endIndex: ADVENTURE_DRAGONWAKE_START_INDEX - 1,
+  },
+  dragonwake: {
+    id: "dragonwake",
+    label: ADVENTURE_SECTION_DRAGONWAKE_ISLES,
+    startIndex: ADVENTURE_DRAGONWAKE_START_INDEX,
+    endIndex: ADVENTURE_MANGROVE_START_INDEX - 1,
+  },
+  mangrove: {
+    id: "mangrove",
+    label: ADVENTURE_SECTION_MANGROVE_KINGDOM,
+    startIndex: ADVENTURE_MANGROVE_START_INDEX,
     endIndex: ADVENTURE_LEVEL_COUNT - 1,
   },
 };
 
 function adventureSectionIdForIndex(i) {
+  if (i >= ADVENTURE_MANGROVE_START_INDEX) return "mangrove";
+  if (i >= ADVENTURE_DRAGONWAKE_START_INDEX) return "dragonwake";
+  if (i >= ADVENTURE_STARFALL_START_INDEX) return "starfall";
   if (i >= ADVENTURE_MERMAID_START_INDEX) return "mermaid";
   if (i >= ADVENTURE_LOST_CITY_START_INDEX) return "lost-city";
   if (i >= ADVENTURE_ICE_START_INDEX) return "ice";
@@ -2364,6 +2403,9 @@ function isAdventureSectionUnlocked(sectionId) {
   if (sectionId === "ice") return isAdventureIceUnlocked();
   if (sectionId === "lost-city") return isAdventureLostCityUnlocked();
   if (sectionId === "mermaid") return isAdventureMermaidCoastUnlocked();
+  if (sectionId === "starfall") return isAdventureStarfallSeasUnlocked();
+  if (sectionId === "dragonwake") return isAdventureDragonwakeIslesUnlocked();
+  if (sectionId === "mangrove") return isAdventureMangroveKingdomUnlocked();
   return sectionId === "pirates";
 }
 
@@ -2421,12 +2463,51 @@ function buildAdventureMapNodeLayout() {
     { x: 34, y: 62 },
     { x: 58, y: 44 },
   ];
+  const starfall = [
+    { x: 12, y: 80 },
+    { x: 24, y: 58 },
+    { x: 40, y: 34 },
+    { x: 58, y: 18 },
+    { x: 74, y: 28 },
+    { x: 86, y: 50 },
+    { x: 70, y: 68 },
+    { x: 48, y: 82 },
+    { x: 30, y: 64 },
+    { x: 56, y: 46 },
+  ];
+  const dragonwake = [
+    { x: 14, y: 76 },
+    { x: 26, y: 54 },
+    { x: 42, y: 30 },
+    { x: 60, y: 16 },
+    { x: 78, y: 32 },
+    { x: 88, y: 54 },
+    { x: 72, y: 72 },
+    { x: 50, y: 84 },
+    { x: 32, y: 66 },
+    { x: 58, y: 48 },
+  ];
+  const mangrove = [
+    { x: 10, y: 74 },
+    { x: 22, y: 50 },
+    { x: 38, y: 26 },
+    { x: 56, y: 14 },
+    { x: 74, y: 26 },
+    { x: 88, y: 46 },
+    { x: 76, y: 68 },
+    { x: 54, y: 82 },
+    { x: 34, y: 70 },
+    { x: 52, y: 44 },
+  ];
   return [
     ...pirates.map((p) => ({ ...p, section: "pirates" })),
     ...gold.map((p) => ({ ...p, section: "gold" })),
     ...ice.map((p) => ({ ...p, section: "ice" })),
     ...lostCity.map((p) => ({ ...p, section: "lost-city" })),
     ...mermaid.map((p) => ({ ...p, section: "mermaid" })),
+    ...starfall.map((p) => ({ ...p, section: "starfall" })),
+    ...dragonwake.map((p) => ({ ...p, section: "dragonwake" })),
+    ...mangrove.map((p) => ({ ...p, section: "mangrove" })),
   ];
 }
 
@@ -2476,6 +2557,36 @@ const ADVENTURE_MAP_PLACES = [
   "Shellsong Reach",
   "Glimmer Depths",
   "Mermaid Crown",
+  "Dusk Harbor",
+  "Lantern Shoals",
+  "Comet Drift",
+  "Moonbridge Narrows",
+  "Starfish Orchard",
+  "Nightingale Deep",
+  "Aurora Mirror",
+  "Constellation Cay",
+  "Meteor Pool",
+  "Crown of Stars",
+  "Ember Cove",
+  "Scale Shoals",
+  "Wyrm Strait",
+  "Glassfire Bay",
+  "Cinder Atoll",
+  "Roar Depths",
+  "Ashen Reach",
+  "Emberpeak Sound",
+  "Drake's Rest",
+  "Dragonwake Crown",
+  "Rootwater Bend",
+  "Firefly Creek",
+  "Canopy Narrows",
+  "Mossback Lagoon",
+  "Heron Haven",
+  "Cypress Maze",
+  "Glowbug Bend",
+  "Tidal Grove",
+  "Mangrove Gate",
+  "Kingdom Heart",
 ];
 
 /** Visual theme slug per voyage — matches ADVENTURE_MAP_PLACES order. */
@@ -2522,12 +2633,60 @@ const ADVENTURE_LEVEL_THEMES = [
   "shellsong-reach",
   "glimmer-depths",
   "mermaid-crown",
+  "dusk-harbor",
+  "lantern-shoals",
+  "comet-drift",
+  "moonbridge-narrows",
+  "starfish-orchard",
+  "nightingale-deep",
+  "aurora-mirror",
+  "constellation-cay",
+  "meteor-pool",
+  "crown-of-stars",
+  "ember-cove",
+  "scale-shoals",
+  "wyrm-strait",
+  "glassfire-bay",
+  "cinder-atoll",
+  "roar-depths",
+  "ashen-reach",
+  "emberpeak-sound",
+  "drakes-rest",
+  "dragonwake-crown",
+  "rootwater-bend",
+  "firefly-creek",
+  "canopy-narrows",
+  "mossback-lagoon",
+  "heron-haven",
+  "cypress-maze",
+  "glowbug-bend",
+  "tidal-grove",
+  "mangrove-gate",
+  "kingdom-heart",
 ];
 
-const ADVENTURE_MERMAID_THEMES = new Set(ADVENTURE_LEVEL_THEMES.slice(ADVENTURE_MERMAID_START_INDEX));
+const ADVENTURE_MERMAID_THEMES = new Set(
+  ADVENTURE_LEVEL_THEMES.slice(ADVENTURE_MERMAID_START_INDEX, ADVENTURE_STARFALL_START_INDEX),
+);
+const ADVENTURE_STARFALL_THEMES = new Set(
+  ADVENTURE_LEVEL_THEMES.slice(ADVENTURE_STARFALL_START_INDEX, ADVENTURE_DRAGONWAKE_START_INDEX),
+);
+const ADVENTURE_DRAGONWAKE_THEMES = new Set(
+  ADVENTURE_LEVEL_THEMES.slice(ADVENTURE_DRAGONWAKE_START_INDEX, ADVENTURE_MANGROVE_START_INDEX),
+);
+const ADVENTURE_MANGROVE_THEMES = new Set(ADVENTURE_LEVEL_THEMES.slice(ADVENTURE_MANGROVE_START_INDEX));
 
 function isMermaidCoastTheme(themeId) {
   return ADVENTURE_MERMAID_THEMES.has(themeId);
+}
+function isStarfallSeasTheme(themeId) {
+  return ADVENTURE_STARFALL_THEMES.has(themeId);
+}
+function isDragonwakeIslesTheme(themeId) {
+  return ADVENTURE_DRAGONWAKE_THEMES.has(themeId);
+}
+function isMangroveKingdomTheme(themeId) {
+  return ADVENTURE_MANGROVE_THEMES.has(themeId);
 }
 
 function adventureMapSceneSvg(themeId, idSuffix = "") {
@@ -2962,6 +3121,216 @@ function adventureMapSceneSvg(themeId, idSuffix = "") {
       <path d="M28 22 L32 12 L36 20 L40 12 L44 22" fill="none" stroke="#ffe090" stroke-width="1.4" stroke-linecap="round"/>
       <circle cx="36" cy="14" r="2.2" fill="#ffe878"/>
     </svg>`,
+    "dusk-harbor": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#1a2848"/>
+      <circle cx="54" cy="14" r="5" fill="#c4b5fd" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#c4b5fd" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "lantern-shoals": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#1a2848"/>
+      <circle cx="54" cy="14" r="5" fill="#c4b5fd" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#c4b5fd" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "comet-drift": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#1a2848"/>
+      <circle cx="54" cy="14" r="5" fill="#c4b5fd" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#c4b5fd" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "moonbridge-narrows": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#1a2848"/>
+      <circle cx="54" cy="14" r="5" fill="#c4b5fd" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#c4b5fd" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "starfish-orchard": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#1a2848"/>
+      <circle cx="54" cy="14" r="5" fill="#c4b5fd" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#c4b5fd" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "nightingale-deep": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#1a2848"/>
+      <circle cx="54" cy="14" r="5" fill="#c4b5fd" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#c4b5fd" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "aurora-mirror": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#1a2848"/>
+      <circle cx="54" cy="14" r="5" fill="#c4b5fd" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#c4b5fd" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "constellation-cay": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#1a2848"/>
+      <circle cx="54" cy="14" r="5" fill="#c4b5fd" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#c4b5fd" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "meteor-pool": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#1a2848"/>
+      <circle cx="54" cy="14" r="5" fill="#c4b5fd" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#c4b5fd" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "crown-of-stars": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#1a2848"/>
+      <circle cx="54" cy="14" r="5" fill="#c4b5fd" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#c4b5fd" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "ember-cove": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#5a2418"/>
+      <circle cx="54" cy="14" r="5" fill="#fb923c" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#fb923c" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "scale-shoals": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#5a2418"/>
+      <circle cx="54" cy="14" r="5" fill="#fb923c" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#fb923c" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "wyrm-strait": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#5a2418"/>
+      <circle cx="54" cy="14" r="5" fill="#fb923c" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#fb923c" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "glassfire-bay": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#5a2418"/>
+      <circle cx="54" cy="14" r="5" fill="#fb923c" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#fb923c" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "cinder-atoll": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#5a2418"/>
+      <circle cx="54" cy="14" r="5" fill="#fb923c" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#fb923c" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "roar-depths": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#5a2418"/>
+      <circle cx="54" cy="14" r="5" fill="#fb923c" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#fb923c" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "ashen-reach": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#5a2418"/>
+      <circle cx="54" cy="14" r="5" fill="#fb923c" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#fb923c" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "emberpeak-sound": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#5a2418"/>
+      <circle cx="54" cy="14" r="5" fill="#fb923c" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#fb923c" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "drakes-rest": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#5a2418"/>
+      <circle cx="54" cy="14" r="5" fill="#fb923c" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#fb923c" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "dragonwake-crown": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#5a2418"/>
+      <circle cx="54" cy="14" r="5" fill="#fb923c" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#fb923c" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "rootwater-bend": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#1a3a28"/>
+      <circle cx="54" cy="14" r="5" fill="#86efac" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#86efac" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "firefly-creek": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#1a3a28"/>
+      <circle cx="54" cy="14" r="5" fill="#86efac" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#86efac" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "canopy-narrows": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#1a3a28"/>
+      <circle cx="54" cy="14" r="5" fill="#86efac" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#86efac" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "mossback-lagoon": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#1a3a28"/>
+      <circle cx="54" cy="14" r="5" fill="#86efac" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#86efac" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "heron-haven": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#1a3a28"/>
+      <circle cx="54" cy="14" r="5" fill="#86efac" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#86efac" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "cypress-maze": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#1a3a28"/>
+      <circle cx="54" cy="14" r="5" fill="#86efac" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#86efac" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "glowbug-bend": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#1a3a28"/>
+      <circle cx="54" cy="14" r="5" fill="#86efac" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#86efac" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "tidal-grove": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#1a3a28"/>
+      <circle cx="54" cy="14" r="5" fill="#86efac" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#86efac" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "mangrove-gate": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#1a3a28"/>
+      <circle cx="54" cy="14" r="5" fill="#86efac" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#86efac" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
+    "kingdom-heart": `<svg class="adventure-map-node__scene" viewBox="0 0 72 52" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="72" height="52" fill="#1a3a28"/>
+      <circle cx="54" cy="14" r="5" fill="#86efac" opacity="0.75"/>
+      <circle cx="20" cy="18" r="1.4" fill="#fff8e7" opacity="0.85"/>
+      <circle cx="34" cy="12" r="1" fill="#fff" opacity="0.7"/>
+      <path d="M8 42 Q36 34 64 42" fill="none" stroke="#86efac" stroke-width="1.2" opacity="0.55"/>
+    </svg>`,
   };
   return scenes[themeId] || scenes["skull-shoals"];
 }
@@ -3039,6 +3408,36 @@ const ADVENTURE_THEME_REEF_ID = {
   "shellsong-reach": "mediterranean",
   "glimmer-depths": "japan_kuroshio",
   "mermaid-crown": "caribbean",
+  "dusk-harbor": "mediterranean",
+  "lantern-shoals": "caribbean",
+  "comet-drift": "australia",
+  "moonbridge-narrows": "mediterranean",
+  "starfish-orchard": "caribbean",
+  "nightingale-deep": "japan_kuroshio",
+  "aurora-mirror": "mediterranean",
+  "constellation-cay": "caribbean",
+  "meteor-pool": "australia",
+  "crown-of-stars": "mediterranean",
+  "ember-cove": "caribbean",
+  "scale-shoals": "australia",
+  "wyrm-strait": "japan_kuroshio",
+  "glassfire-bay": "caribbean",
+  "cinder-atoll": "australia",
+  "roar-depths": "japan_kuroshio",
+  "ashen-reach": "caribbean",
+  "emberpeak-sound": "australia",
+  "drakes-rest": "mediterranean",
+  "dragonwake-crown": "caribbean",
+  "rootwater-bend": "australia",
+  "firefly-creek": "caribbean",
+  "canopy-narrows": "australia",
+  "mossback-lagoon": "mediterranean",
+  "heron-haven": "caribbean",
+  "cypress-maze": "australia",
+  "glowbug-bend": "mediterranean",
+  "tidal-grove": "caribbean",
+  "mangrove-gate": "australia",
+  "kingdom-heart": "caribbean",
 };
 
 function isSkullShoalsPlay() {
@@ -3264,6 +3663,246 @@ const ADVENTURE_PLAY_ATMOSPHERE = {
       [1, "rgba(8, 45, 65, 0.34)"],
     ],
     effect: "mermaid-crown",
+  },
+  "dusk-harbor": {
+    stops: [
+      [0, "rgba(180, 170, 255, 0.12)"],
+      [0.45, "rgba(60, 80, 160, 0.14)"],
+      [1, "rgba(10, 16, 40, 0.3)"],
+    ],
+    effect: "dusk-harbor",
+  },
+  "lantern-shoals": {
+    stops: [
+      [0, "rgba(180, 170, 255, 0.12)"],
+      [0.45, "rgba(60, 80, 160, 0.14)"],
+      [1, "rgba(10, 16, 40, 0.3)"],
+    ],
+    effect: "lantern-shoals",
+  },
+  "comet-drift": {
+    stops: [
+      [0, "rgba(180, 170, 255, 0.12)"],
+      [0.45, "rgba(60, 80, 160, 0.14)"],
+      [1, "rgba(10, 16, 40, 0.3)"],
+    ],
+    effect: "comet-drift",
+  },
+  "moonbridge-narrows": {
+    stops: [
+      [0, "rgba(180, 170, 255, 0.12)"],
+      [0.45, "rgba(60, 80, 160, 0.14)"],
+      [1, "rgba(10, 16, 40, 0.3)"],
+    ],
+    effect: "moonbridge-narrows",
+  },
+  "starfish-orchard": {
+    stops: [
+      [0, "rgba(180, 170, 255, 0.12)"],
+      [0.45, "rgba(60, 80, 160, 0.14)"],
+      [1, "rgba(10, 16, 40, 0.3)"],
+    ],
+    effect: "starfish-orchard",
+  },
+  "nightingale-deep": {
+    stops: [
+      [0, "rgba(180, 170, 255, 0.12)"],
+      [0.45, "rgba(60, 80, 160, 0.14)"],
+      [1, "rgba(10, 16, 40, 0.3)"],
+    ],
+    effect: "nightingale-deep",
+  },
+  "aurora-mirror": {
+    stops: [
+      [0, "rgba(180, 170, 255, 0.12)"],
+      [0.45, "rgba(60, 80, 160, 0.14)"],
+      [1, "rgba(10, 16, 40, 0.3)"],
+    ],
+    effect: "aurora-mirror",
+  },
+  "constellation-cay": {
+    stops: [
+      [0, "rgba(180, 170, 255, 0.12)"],
+      [0.45, "rgba(60, 80, 160, 0.14)"],
+      [1, "rgba(10, 16, 40, 0.3)"],
+    ],
+    effect: "constellation-cay",
+  },
+  "meteor-pool": {
+    stops: [
+      [0, "rgba(180, 170, 255, 0.12)"],
+      [0.45, "rgba(60, 80, 160, 0.14)"],
+      [1, "rgba(10, 16, 40, 0.3)"],
+    ],
+    effect: "meteor-pool",
+  },
+  "crown-of-stars": {
+    stops: [
+      [0, "rgba(180, 170, 255, 0.12)"],
+      [0.45, "rgba(60, 80, 160, 0.14)"],
+      [1, "rgba(10, 16, 40, 0.3)"],
+    ],
+    effect: "crown-of-stars",
+  },
+  "ember-cove": {
+    stops: [
+      [0, "rgba(255, 160, 80, 0.12)"],
+      [0.45, "rgba(200, 70, 40, 0.12)"],
+      [1, "rgba(40, 12, 8, 0.32)"],
+    ],
+    effect: "ember-cove",
+  },
+  "scale-shoals": {
+    stops: [
+      [0, "rgba(255, 160, 80, 0.12)"],
+      [0.45, "rgba(200, 70, 40, 0.12)"],
+      [1, "rgba(40, 12, 8, 0.32)"],
+    ],
+    effect: "scale-shoals",
+  },
+  "wyrm-strait": {
+    stops: [
+      [0, "rgba(255, 160, 80, 0.12)"],
+      [0.45, "rgba(200, 70, 40, 0.12)"],
+      [1, "rgba(40, 12, 8, 0.32)"],
+    ],
+    effect: "wyrm-strait",
+  },
+  "glassfire-bay": {
+    stops: [
+      [0, "rgba(255, 160, 80, 0.12)"],
+      [0.45, "rgba(200, 70, 40, 0.12)"],
+      [1, "rgba(40, 12, 8, 0.32)"],
+    ],
+    effect: "glassfire-bay",
+  },
+  "cinder-atoll": {
+    stops: [
+      [0, "rgba(255, 160, 80, 0.12)"],
+      [0.45, "rgba(200, 70, 40, 0.12)"],
+      [1, "rgba(40, 12, 8, 0.32)"],
+    ],
+    effect: "cinder-atoll",
+  },
+  "roar-depths": {
+    stops: [
+      [0, "rgba(255, 160, 80, 0.12)"],
+      [0.45, "rgba(200, 70, 40, 0.12)"],
+      [1, "rgba(40, 12, 8, 0.32)"],
+    ],
+    effect: "roar-depths",
+  },
+  "ashen-reach": {
+    stops: [
+      [0, "rgba(255, 160, 80, 0.12)"],
+      [0.45, "rgba(200, 70, 40, 0.12)"],
+      [1, "rgba(40, 12, 8, 0.32)"],
+    ],
+    effect: "ashen-reach",
+  },
+  "emberpeak-sound": {
+    stops: [
+      [0, "rgba(255, 160, 80, 0.12)"],
+      [0.45, "rgba(200, 70, 40, 0.12)"],
+      [1, "rgba(40, 12, 8, 0.32)"],
+    ],
+    effect: "emberpeak-sound",
+  },
+  "drakes-rest": {
+    stops: [
+      [0, "rgba(255, 160, 80, 0.12)"],
+      [0.45, "rgba(200, 70, 40, 0.12)"],
+      [1, "rgba(40, 12, 8, 0.32)"],
+    ],
+    effect: "drakes-rest",
+  },
+  "dragonwake-crown": {
+    stops: [
+      [0, "rgba(255, 160, 80, 0.12)"],
+      [0.45, "rgba(200, 70, 40, 0.12)"],
+      [1, "rgba(40, 12, 8, 0.32)"],
+    ],
+    effect: "dragonwake-crown",
+  },
+  "rootwater-bend": {
+    stops: [
+      [0, "rgba(140, 220, 160, 0.1)"],
+      [0.45, "rgba(40, 110, 70, 0.14)"],
+      [1, "rgba(8, 36, 22, 0.3)"],
+    ],
+    effect: "rootwater-bend",
+  },
+  "firefly-creek": {
+    stops: [
+      [0, "rgba(140, 220, 160, 0.1)"],
+      [0.45, "rgba(40, 110, 70, 0.14)"],
+      [1, "rgba(8, 36, 22, 0.3)"],
+    ],
+    effect: "firefly-creek",
+  },
+  "canopy-narrows": {
+    stops: [
+      [0, "rgba(140, 220, 160, 0.1)"],
+      [0.45, "rgba(40, 110, 70, 0.14)"],
+      [1, "rgba(8, 36, 22, 0.3)"],
+    ],
+    effect: "canopy-narrows",
+  },
+  "mossback-lagoon": {
+    stops: [
+      [0, "rgba(140, 220, 160, 0.1)"],
+      [0.45, "rgba(40, 110, 70, 0.14)"],
+      [1, "rgba(8, 36, 22, 0.3)"],
+    ],
+    effect: "mossback-lagoon",
+  },
+  "heron-haven": {
+    stops: [
+      [0, "rgba(140, 220, 160, 0.1)"],
+      [0.45, "rgba(40, 110, 70, 0.14)"],
+      [1, "rgba(8, 36, 22, 0.3)"],
+    ],
+    effect: "heron-haven",
+  },
+  "cypress-maze": {
+    stops: [
+      [0, "rgba(140, 220, 160, 0.1)"],
+      [0.45, "rgba(40, 110, 70, 0.14)"],
+      [1, "rgba(8, 36, 22, 0.3)"],
+    ],
+    effect: "cypress-maze",
+  },
+  "glowbug-bend": {
+    stops: [
+      [0, "rgba(140, 220, 160, 0.1)"],
+      [0.45, "rgba(40, 110, 70, 0.14)"],
+      [1, "rgba(8, 36, 22, 0.3)"],
+    ],
+    effect: "glowbug-bend",
+  },
+  "tidal-grove": {
+    stops: [
+      [0, "rgba(140, 220, 160, 0.1)"],
+      [0.45, "rgba(40, 110, 70, 0.14)"],
+      [1, "rgba(8, 36, 22, 0.3)"],
+    ],
+    effect: "tidal-grove",
+  },
+  "mangrove-gate": {
+    stops: [
+      [0, "rgba(140, 220, 160, 0.1)"],
+      [0.45, "rgba(40, 110, 70, 0.14)"],
+      [1, "rgba(8, 36, 22, 0.3)"],
+    ],
+    effect: "mangrove-gate",
+  },
+  "kingdom-heart": {
+    stops: [
+      [0, "rgba(140, 220, 160, 0.1)"],
+      [0.45, "rgba(40, 110, 70, 0.14)"],
+      [1, "rgba(8, 36, 22, 0.3)"],
+    ],
+    effect: "kingdom-heart",
   },
 };
 
@@ -3551,6 +4190,246 @@ const ADVENTURE_THEME_SAND = {
     ],
     speck: "rgba(255, 230, 180, 0.32)",
   },
+  "dusk-harbor": {
+    stops: [
+      [0, "rgba(160, 170, 220, 0)"],
+      [0.4, "rgba(80, 90, 140, 0.24)"],
+      [1, "rgba(30, 35, 70, 0.52)"],
+    ],
+    speck: "rgba(220, 210, 255, 0.28)",
+  },
+  "lantern-shoals": {
+    stops: [
+      [0, "rgba(160, 170, 220, 0)"],
+      [0.4, "rgba(80, 90, 140, 0.24)"],
+      [1, "rgba(30, 35, 70, 0.52)"],
+    ],
+    speck: "rgba(220, 210, 255, 0.28)",
+  },
+  "comet-drift": {
+    stops: [
+      [0, "rgba(160, 170, 220, 0)"],
+      [0.4, "rgba(80, 90, 140, 0.24)"],
+      [1, "rgba(30, 35, 70, 0.52)"],
+    ],
+    speck: "rgba(220, 210, 255, 0.28)",
+  },
+  "moonbridge-narrows": {
+    stops: [
+      [0, "rgba(160, 170, 220, 0)"],
+      [0.4, "rgba(80, 90, 140, 0.24)"],
+      [1, "rgba(30, 35, 70, 0.52)"],
+    ],
+    speck: "rgba(220, 210, 255, 0.28)",
+  },
+  "starfish-orchard": {
+    stops: [
+      [0, "rgba(160, 170, 220, 0)"],
+      [0.4, "rgba(80, 90, 140, 0.24)"],
+      [1, "rgba(30, 35, 70, 0.52)"],
+    ],
+    speck: "rgba(220, 210, 255, 0.28)",
+  },
+  "nightingale-deep": {
+    stops: [
+      [0, "rgba(160, 170, 220, 0)"],
+      [0.4, "rgba(80, 90, 140, 0.24)"],
+      [1, "rgba(30, 35, 70, 0.52)"],
+    ],
+    speck: "rgba(220, 210, 255, 0.28)",
+  },
+  "aurora-mirror": {
+    stops: [
+      [0, "rgba(160, 170, 220, 0)"],
+      [0.4, "rgba(80, 90, 140, 0.24)"],
+      [1, "rgba(30, 35, 70, 0.52)"],
+    ],
+    speck: "rgba(220, 210, 255, 0.28)",
+  },
+  "constellation-cay": {
+    stops: [
+      [0, "rgba(160, 170, 220, 0)"],
+      [0.4, "rgba(80, 90, 140, 0.24)"],
+      [1, "rgba(30, 35, 70, 0.52)"],
+    ],
+    speck: "rgba(220, 210, 255, 0.28)",
+  },
+  "meteor-pool": {
+    stops: [
+      [0, "rgba(160, 170, 220, 0)"],
+      [0.4, "rgba(80, 90, 140, 0.24)"],
+      [1, "rgba(30, 35, 70, 0.52)"],
+    ],
+    speck: "rgba(220, 210, 255, 0.28)",
+  },
+  "crown-of-stars": {
+    stops: [
+      [0, "rgba(160, 170, 220, 0)"],
+      [0.4, "rgba(80, 90, 140, 0.24)"],
+      [1, "rgba(30, 35, 70, 0.52)"],
+    ],
+    speck: "rgba(220, 210, 255, 0.28)",
+  },
+  "ember-cove": {
+    stops: [
+      [0, "rgba(255, 180, 100, 0)"],
+      [0.4, "rgba(180, 90, 50, 0.24)"],
+      [1, "rgba(80, 30, 18, 0.52)"],
+    ],
+    speck: "rgba(255, 200, 120, 0.28)",
+  },
+  "scale-shoals": {
+    stops: [
+      [0, "rgba(255, 180, 100, 0)"],
+      [0.4, "rgba(180, 90, 50, 0.24)"],
+      [1, "rgba(80, 30, 18, 0.52)"],
+    ],
+    speck: "rgba(255, 200, 120, 0.28)",
+  },
+  "wyrm-strait": {
+    stops: [
+      [0, "rgba(255, 180, 100, 0)"],
+      [0.4, "rgba(180, 90, 50, 0.24)"],
+      [1, "rgba(80, 30, 18, 0.52)"],
+    ],
+    speck: "rgba(255, 200, 120, 0.28)",
+  },
+  "glassfire-bay": {
+    stops: [
+      [0, "rgba(255, 180, 100, 0)"],
+      [0.4, "rgba(180, 90, 50, 0.24)"],
+      [1, "rgba(80, 30, 18, 0.52)"],
+    ],
+    speck: "rgba(255, 200, 120, 0.28)",
+  },
+  "cinder-atoll": {
+    stops: [
+      [0, "rgba(255, 180, 100, 0)"],
+      [0.4, "rgba(180, 90, 50, 0.24)"],
+      [1, "rgba(80, 30, 18, 0.52)"],
+    ],
+    speck: "rgba(255, 200, 120, 0.28)",
+  },
+  "roar-depths": {
+    stops: [
+      [0, "rgba(255, 180, 100, 0)"],
+      [0.4, "rgba(180, 90, 50, 0.24)"],
+      [1, "rgba(80, 30, 18, 0.52)"],
+    ],
+    speck: "rgba(255, 200, 120, 0.28)",
+  },
+  "ashen-reach": {
+    stops: [
+      [0, "rgba(255, 180, 100, 0)"],
+      [0.4, "rgba(180, 90, 50, 0.24)"],
+      [1, "rgba(80, 30, 18, 0.52)"],
+    ],
+    speck: "rgba(255, 200, 120, 0.28)",
+  },
+  "emberpeak-sound": {
+    stops: [
+      [0, "rgba(255, 180, 100, 0)"],
+      [0.4, "rgba(180, 90, 50, 0.24)"],
+      [1, "rgba(80, 30, 18, 0.52)"],
+    ],
+    speck: "rgba(255, 200, 120, 0.28)",
+  },
+  "drakes-rest": {
+    stops: [
+      [0, "rgba(255, 180, 100, 0)"],
+      [0.4, "rgba(180, 90, 50, 0.24)"],
+      [1, "rgba(80, 30, 18, 0.52)"],
+    ],
+    speck: "rgba(255, 200, 120, 0.28)",
+  },
+  "dragonwake-crown": {
+    stops: [
+      [0, "rgba(255, 180, 100, 0)"],
+      [0.4, "rgba(180, 90, 50, 0.24)"],
+      [1, "rgba(80, 30, 18, 0.52)"],
+    ],
+    speck: "rgba(255, 200, 120, 0.28)",
+  },
+  "rootwater-bend": {
+    stops: [
+      [0, "rgba(160, 210, 150, 0)"],
+      [0.4, "rgba(70, 120, 80, 0.24)"],
+      [1, "rgba(30, 55, 35, 0.52)"],
+    ],
+    speck: "rgba(180, 240, 170, 0.26)",
+  },
+  "firefly-creek": {
+    stops: [
+      [0, "rgba(160, 210, 150, 0)"],
+      [0.4, "rgba(70, 120, 80, 0.24)"],
+      [1, "rgba(30, 55, 35, 0.52)"],
+    ],
+    speck: "rgba(180, 240, 170, 0.26)",
+  },
+  "canopy-narrows": {
+    stops: [
+      [0, "rgba(160, 210, 150, 0)"],
+      [0.4, "rgba(70, 120, 80, 0.24)"],
+      [1, "rgba(30, 55, 35, 0.52)"],
+    ],
+    speck: "rgba(180, 240, 170, 0.26)",
+  },
+  "mossback-lagoon": {
+    stops: [
+      [0, "rgba(160, 210, 150, 0)"],
+      [0.4, "rgba(70, 120, 80, 0.24)"],
+      [1, "rgba(30, 55, 35, 0.52)"],
+    ],
+    speck: "rgba(180, 240, 170, 0.26)",
+  },
+  "heron-haven": {
+    stops: [
+      [0, "rgba(160, 210, 150, 0)"],
+      [0.4, "rgba(70, 120, 80, 0.24)"],
+      [1, "rgba(30, 55, 35, 0.52)"],
+    ],
+    speck: "rgba(180, 240, 170, 0.26)",
+  },
+  "cypress-maze": {
+    stops: [
+      [0, "rgba(160, 210, 150, 0)"],
+      [0.4, "rgba(70, 120, 80, 0.24)"],
+      [1, "rgba(30, 55, 35, 0.52)"],
+    ],
+    speck: "rgba(180, 240, 170, 0.26)",
+  },
+  "glowbug-bend": {
+    stops: [
+      [0, "rgba(160, 210, 150, 0)"],
+      [0.4, "rgba(70, 120, 80, 0.24)"],
+      [1, "rgba(30, 55, 35, 0.52)"],
+    ],
+    speck: "rgba(180, 240, 170, 0.26)",
+  },
+  "tidal-grove": {
+    stops: [
+      [0, "rgba(160, 210, 150, 0)"],
+      [0.4, "rgba(70, 120, 80, 0.24)"],
+      [1, "rgba(30, 55, 35, 0.52)"],
+    ],
+    speck: "rgba(180, 240, 170, 0.26)",
+  },
+  "mangrove-gate": {
+    stops: [
+      [0, "rgba(160, 210, 150, 0)"],
+      [0.4, "rgba(70, 120, 80, 0.24)"],
+      [1, "rgba(30, 55, 35, 0.52)"],
+    ],
+    speck: "rgba(180, 240, 170, 0.26)",
+  },
+  "kingdom-heart": {
+    stops: [
+      [0, "rgba(160, 210, 150, 0)"],
+      [0.4, "rgba(70, 120, 80, 0.24)"],
+      [1, "rgba(30, 55, 35, 0.52)"],
+    ],
+    speck: "rgba(180, 240, 170, 0.26)",
+  },
 };
 
 /** Water column palette overrides while on a voyage. */
@@ -3764,6 +4643,186 @@ const ADVENTURE_THEME_REEF_OVERRIDES = {
     shaft: ["rgba(255, 210, 230, 0.2)", "rgba(255, 220, 150, 0)"],
     silhouette: "rgba(15, 50, 65, 0.52)",
     bubble: "rgba(255, 220, 235, 0.3)",
+  },
+  "dusk-harbor": {
+    gradient: ["#2a3558", "#1e2748", "#141c38", "#0a1028"],
+    shaft: ["rgba(180, 170, 255, 0.14)", "rgba(180, 170, 255, 0)"],
+    silhouette: "rgba(8, 12, 28, 0.55)",
+    bubble: "rgba(200, 190, 255, 0.22)",
+  },
+  "lantern-shoals": {
+    gradient: ["#2a3558", "#1e2748", "#141c38", "#0a1028"],
+    shaft: ["rgba(180, 170, 255, 0.14)", "rgba(180, 170, 255, 0)"],
+    silhouette: "rgba(8, 12, 28, 0.55)",
+    bubble: "rgba(200, 190, 255, 0.22)",
+  },
+  "comet-drift": {
+    gradient: ["#2a3558", "#1e2748", "#141c38", "#0a1028"],
+    shaft: ["rgba(180, 170, 255, 0.14)", "rgba(180, 170, 255, 0)"],
+    silhouette: "rgba(8, 12, 28, 0.55)",
+    bubble: "rgba(200, 190, 255, 0.22)",
+  },
+  "moonbridge-narrows": {
+    gradient: ["#2a3558", "#1e2748", "#141c38", "#0a1028"],
+    shaft: ["rgba(180, 170, 255, 0.14)", "rgba(180, 170, 255, 0)"],
+    silhouette: "rgba(8, 12, 28, 0.55)",
+    bubble: "rgba(200, 190, 255, 0.22)",
+  },
+  "starfish-orchard": {
+    gradient: ["#2a3558", "#1e2748", "#141c38", "#0a1028"],
+    shaft: ["rgba(180, 170, 255, 0.14)", "rgba(180, 170, 255, 0)"],
+    silhouette: "rgba(8, 12, 28, 0.55)",
+    bubble: "rgba(200, 190, 255, 0.22)",
+  },
+  "nightingale-deep": {
+    gradient: ["#2a3558", "#1e2748", "#141c38", "#0a1028"],
+    shaft: ["rgba(180, 170, 255, 0.14)", "rgba(180, 170, 255, 0)"],
+    silhouette: "rgba(8, 12, 28, 0.55)",
+    bubble: "rgba(200, 190, 255, 0.22)",
+  },
+  "aurora-mirror": {
+    gradient: ["#2a3558", "#1e2748", "#141c38", "#0a1028"],
+    shaft: ["rgba(180, 170, 255, 0.14)", "rgba(180, 170, 255, 0)"],
+    silhouette: "rgba(8, 12, 28, 0.55)",
+    bubble: "rgba(200, 190, 255, 0.22)",
+  },
+  "constellation-cay": {
+    gradient: ["#2a3558", "#1e2748", "#141c38", "#0a1028"],
+    shaft: ["rgba(180, 170, 255, 0.14)", "rgba(180, 170, 255, 0)"],
+    silhouette: "rgba(8, 12, 28, 0.55)",
+    bubble: "rgba(200, 190, 255, 0.22)",
+  },
+  "meteor-pool": {
+    gradient: ["#2a3558", "#1e2748", "#141c38", "#0a1028"],
+    shaft: ["rgba(180, 170, 255, 0.14)", "rgba(180, 170, 255, 0)"],
+    silhouette: "rgba(8, 12, 28, 0.55)",
+    bubble: "rgba(200, 190, 255, 0.22)",
+  },
+  "crown-of-stars": {
+    gradient: ["#2a3558", "#1e2748", "#141c38", "#0a1028"],
+    shaft: ["rgba(180, 170, 255, 0.14)", "rgba(180, 170, 255, 0)"],
+    silhouette: "rgba(8, 12, 28, 0.55)",
+    bubble: "rgba(200, 190, 255, 0.22)",
+  },
+  "ember-cove": {
+    gradient: ["#8a3a22", "#6a2818", "#4a1810", "#2a0c08"],
+    shaft: ["rgba(255, 160, 70, 0.16)", "rgba(255, 120, 40, 0)"],
+    silhouette: "rgba(40, 10, 6, 0.55)",
+    bubble: "rgba(255, 180, 100, 0.24)",
+  },
+  "scale-shoals": {
+    gradient: ["#8a3a22", "#6a2818", "#4a1810", "#2a0c08"],
+    shaft: ["rgba(255, 160, 70, 0.16)", "rgba(255, 120, 40, 0)"],
+    silhouette: "rgba(40, 10, 6, 0.55)",
+    bubble: "rgba(255, 180, 100, 0.24)",
+  },
+  "wyrm-strait": {
+    gradient: ["#8a3a22", "#6a2818", "#4a1810", "#2a0c08"],
+    shaft: ["rgba(255, 160, 70, 0.16)", "rgba(255, 120, 40, 0)"],
+    silhouette: "rgba(40, 10, 6, 0.55)",
+    bubble: "rgba(255, 180, 100, 0.24)",
+  },
+  "glassfire-bay": {
+    gradient: ["#8a3a22", "#6a2818", "#4a1810", "#2a0c08"],
+    shaft: ["rgba(255, 160, 70, 0.16)", "rgba(255, 120, 40, 0)"],
+    silhouette: "rgba(40, 10, 6, 0.55)",
+    bubble: "rgba(255, 180, 100, 0.24)",
+  },
+  "cinder-atoll": {
+    gradient: ["#8a3a22", "#6a2818", "#4a1810", "#2a0c08"],
+    shaft: ["rgba(255, 160, 70, 0.16)", "rgba(255, 120, 40, 0)"],
+    silhouette: "rgba(40, 10, 6, 0.55)",
+    bubble: "rgba(255, 180, 100, 0.24)",
+  },
+  "roar-depths": {
+    gradient: ["#8a3a22", "#6a2818", "#4a1810", "#2a0c08"],
+    shaft: ["rgba(255, 160, 70, 0.16)", "rgba(255, 120, 40, 0)"],
+    silhouette: "rgba(40, 10, 6, 0.55)",
+    bubble: "rgba(255, 180, 100, 0.24)",
+  },
+  "ashen-reach": {
+    gradient: ["#8a3a22", "#6a2818", "#4a1810", "#2a0c08"],
+    shaft: ["rgba(255, 160, 70, 0.16)", "rgba(255, 120, 40, 0)"],
+    silhouette: "rgba(40, 10, 6, 0.55)",
+    bubble: "rgba(255, 180, 100, 0.24)",
+  },
+  "emberpeak-sound": {
+    gradient: ["#8a3a22", "#6a2818", "#4a1810", "#2a0c08"],
+    shaft: ["rgba(255, 160, 70, 0.16)", "rgba(255, 120, 40, 0)"],
+    silhouette: "rgba(40, 10, 6, 0.55)",
+    bubble: "rgba(255, 180, 100, 0.24)",
+  },
+  "drakes-rest": {
+    gradient: ["#8a3a22", "#6a2818", "#4a1810", "#2a0c08"],
+    shaft: ["rgba(255, 160, 70, 0.16)", "rgba(255, 120, 40, 0)"],
+    silhouette: "rgba(40, 10, 6, 0.55)",
+    bubble: "rgba(255, 180, 100, 0.24)",
+  },
+  "dragonwake-crown": {
+    gradient: ["#8a3a22", "#6a2818", "#4a1810", "#2a0c08"],
+    shaft: ["rgba(255, 160, 70, 0.16)", "rgba(255, 120, 40, 0)"],
+    silhouette: "rgba(40, 10, 6, 0.55)",
+    bubble: "rgba(255, 180, 100, 0.24)",
+  },
+  "rootwater-bend": {
+    gradient: ["#2a5a40", "#1e4832", "#143624", "#0a2418"],
+    shaft: ["rgba(140, 220, 160, 0.12)", "rgba(140, 220, 160, 0)"],
+    silhouette: "rgba(8, 28, 16, 0.55)",
+    bubble: "rgba(160, 230, 170, 0.22)",
+  },
+  "firefly-creek": {
+    gradient: ["#2a5a40", "#1e4832", "#143624", "#0a2418"],
+    shaft: ["rgba(140, 220, 160, 0.12)", "rgba(140, 220, 160, 0)"],
+    silhouette: "rgba(8, 28, 16, 0.55)",
+    bubble: "rgba(160, 230, 170, 0.22)",
+  },
+  "canopy-narrows": {
+    gradient: ["#2a5a40", "#1e4832", "#143624", "#0a2418"],
+    shaft: ["rgba(140, 220, 160, 0.12)", "rgba(140, 220, 160, 0)"],
+    silhouette: "rgba(8, 28, 16, 0.55)",
+    bubble: "rgba(160, 230, 170, 0.22)",
+  },
+  "mossback-lagoon": {
+    gradient: ["#2a5a40", "#1e4832", "#143624", "#0a2418"],
+    shaft: ["rgba(140, 220, 160, 0.12)", "rgba(140, 220, 160, 0)"],
+    silhouette: "rgba(8, 28, 16, 0.55)",
+    bubble: "rgba(160, 230, 170, 0.22)",
+  },
+  "heron-haven": {
+    gradient: ["#2a5a40", "#1e4832", "#143624", "#0a2418"],
+    shaft: ["rgba(140, 220, 160, 0.12)", "rgba(140, 220, 160, 0)"],
+    silhouette: "rgba(8, 28, 16, 0.55)",
+    bubble: "rgba(160, 230, 170, 0.22)",
+  },
+  "cypress-maze": {
+    gradient: ["#2a5a40", "#1e4832", "#143624", "#0a2418"],
+    shaft: ["rgba(140, 220, 160, 0.12)", "rgba(140, 220, 160, 0)"],
+    silhouette: "rgba(8, 28, 16, 0.55)",
+    bubble: "rgba(160, 230, 170, 0.22)",
+  },
+  "glowbug-bend": {
+    gradient: ["#2a5a40", "#1e4832", "#143624", "#0a2418"],
+    shaft: ["rgba(140, 220, 160, 0.12)", "rgba(140, 220, 160, 0)"],
+    silhouette: "rgba(8, 28, 16, 0.55)",
+    bubble: "rgba(160, 230, 170, 0.22)",
+  },
+  "tidal-grove": {
+    gradient: ["#2a5a40", "#1e4832", "#143624", "#0a2418"],
+    shaft: ["rgba(140, 220, 160, 0.12)", "rgba(140, 220, 160, 0)"],
+    silhouette: "rgba(8, 28, 16, 0.55)",
+    bubble: "rgba(160, 230, 170, 0.22)",
+  },
+  "mangrove-gate": {
+    gradient: ["#2a5a40", "#1e4832", "#143624", "#0a2418"],
+    shaft: ["rgba(140, 220, 160, 0.12)", "rgba(140, 220, 160, 0)"],
+    silhouette: "rgba(8, 28, 16, 0.55)",
+    bubble: "rgba(160, 230, 170, 0.22)",
+  },
+  "kingdom-heart": {
+    gradient: ["#2a5a40", "#1e4832", "#143624", "#0a2418"],
+    shaft: ["rgba(140, 220, 160, 0.12)", "rgba(140, 220, 160, 0)"],
+    silhouette: "rgba(8, 28, 16, 0.55)",
+    bubble: "rgba(160, 230, 170, 0.22)",
   },
 };
 
@@ -5779,6 +6838,36 @@ const ADVENTURE_THEME_BED_DRAW = {
   "shellsong-reach": drawShellsongReachBed,
   "glimmer-depths": drawGlimmerDepthsBed,
   "mermaid-crown": drawMermaidCrownBed,
+  "dusk-harbor": drawStarfallSeasBed,
+  "lantern-shoals": drawStarfallSeasBed,
+  "comet-drift": drawStarfallSeasBed,
+  "moonbridge-narrows": drawStarfallSeasBed,
+  "starfish-orchard": drawStarfallSeasBed,
+  "nightingale-deep": drawStarfallSeasBed,
+  "aurora-mirror": drawStarfallSeasBed,
+  "constellation-cay": drawStarfallSeasBed,
+  "meteor-pool": drawStarfallSeasBed,
+  "crown-of-stars": drawStarfallSeasBed,
+  "ember-cove": drawDragonwakeIslesBed,
+  "scale-shoals": drawDragonwakeIslesBed,
+  "wyrm-strait": drawDragonwakeIslesBed,
+  "glassfire-bay": drawDragonwakeIslesBed,
+  "cinder-atoll": drawDragonwakeIslesBed,
+  "roar-depths": drawDragonwakeIslesBed,
+  "ashen-reach": drawDragonwakeIslesBed,
+  "emberpeak-sound": drawDragonwakeIslesBed,
+  "drakes-rest": drawDragonwakeIslesBed,
+  "dragonwake-crown": drawDragonwakeIslesBed,
+  "rootwater-bend": drawMangroveKingdomBed,
+  "firefly-creek": drawMangroveKingdomBed,
+  "canopy-narrows": drawMangroveKingdomBed,
+  "mossback-lagoon": drawMangroveKingdomBed,
+  "heron-haven": drawMangroveKingdomBed,
+  "cypress-maze": drawMangroveKingdomBed,
+  "glowbug-bend": drawMangroveKingdomBed,
+  "tidal-grove": drawMangroveKingdomBed,
+  "mangrove-gate": drawMangroveKingdomBed,
+  "kingdom-heart": drawMangroveKingdomBed,
 };
 
 function drawAdventureThemeBed(themeId) {
@@ -6191,6 +7280,91 @@ function drawShellsongReachBed() { drawMermaidCoastBed("shellsong-reach"); }
 function drawGlimmerDepthsBed() { drawMermaidCoastBed("glimmer-depths"); }
 function drawMermaidCrownBed() { drawMermaidCoastBed("mermaid-crown"); }
 
+function drawStarfallSeasBed() {
+  const themeId = adventureSession ? getAdventureLevelTheme(adventureSession.levelIndex) : "";
+  const sandTop = h - dpr * 92;
+  const base = sandTop + dpr * 8;
+  ctx.fillStyle = "rgba(60, 70, 120, 0.28)";
+  ctx.beginPath();
+  ctx.ellipse(w * 0.5, base + dpr * 4, w * 0.42, dpr * 14, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(200, 190, 255, 0.35)";
+  for (let i = 0; i < perfN(10); i++) {
+    const sx = w * (0.12 + ((i * 79) % 760) / 1000);
+    const sy = sandTop + dpr * (8 + (i % 5) * 8);
+    ctx.beginPath();
+    ctx.arc(sx, sy, dpr * (0.8 + (i % 3) * 0.4), 0, Math.PI * 2);
+    ctx.fill();
+  }
+  if (themeId === "crown-of-stars" || !themeId) {
+    ctx.fillStyle = "rgba(255, 230, 160, 0.4)";
+    ctx.beginPath();
+    ctx.moveTo(w * 0.44, base - dpr * 20);
+    ctx.lineTo(w * 0.5, base - dpr * 42);
+    ctx.lineTo(w * 0.56, base - dpr * 20);
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+function drawDragonwakeIslesBed() {
+  const themeId = adventureSession ? getAdventureLevelTheme(adventureSession.levelIndex) : "";
+  const sandTop = h - dpr * 92;
+  const base = sandTop + dpr * 8;
+  ctx.fillStyle = "rgba(160, 70, 30, 0.28)";
+  ctx.beginPath();
+  ctx.ellipse(w * 0.5, base + dpr * 4, w * 0.44, dpr * 15, 0, 0, Math.PI * 2);
+  ctx.fill();
+  for (let i = 0; i < 4; i++) {
+    const x = w * (0.18 + i * 0.2);
+    ctx.fillStyle = i % 2 ? "rgba(255, 120, 40, 0.35)" : "rgba(80, 30, 20, 0.45)";
+    ctx.beginPath();
+    ctx.moveTo(x, base + dpr * 4);
+    ctx.lineTo(x - dpr * 10, base - dpr * (18 + i * 4));
+    ctx.lineTo(x + dpr * 10, base - dpr * (14 + i * 3));
+    ctx.closePath();
+    ctx.fill();
+  }
+  if (themeId === "dragonwake-crown" || !themeId) {
+    ctx.strokeStyle = "rgba(255, 180, 80, 0.45)";
+    ctx.lineWidth = dpr * 2;
+    ctx.beginPath();
+    ctx.moveTo(w * 0.35, base - dpr * 8);
+    ctx.quadraticCurveTo(w * 0.5, base - dpr * 40, w * 0.68, base - dpr * 12);
+    ctx.stroke();
+  }
+}
+function drawMangroveKingdomBed() {
+  const themeId = adventureSession ? getAdventureLevelTheme(adventureSession.levelIndex) : "";
+  const sandTop = h - dpr * 92;
+  const base = sandTop + dpr * 8;
+  ctx.fillStyle = "rgba(40, 90, 55, 0.3)";
+  ctx.beginPath();
+  ctx.ellipse(w * 0.5, base + dpr * 4, w * 0.46, dpr * 14, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(30, 70, 40, 0.5)";
+  ctx.lineWidth = dpr * 2.2;
+  ctx.lineCap = "round";
+  for (let i = 0; i < 6; i++) {
+    const x = w * (0.12 + i * 0.14);
+    ctx.beginPath();
+    ctx.moveTo(x, base + dpr * 6);
+    ctx.quadraticCurveTo(x + dpr * 8, base - dpr * 28, x - dpr * 4, base - dpr * 55);
+    ctx.stroke();
+  }
+  ctx.fillStyle = "rgba(180, 255, 160, 0.28)";
+  for (let i = 0; i < perfN(8); i++) {
+    ctx.beginPath();
+    ctx.arc(w * (0.15 + ((i * 67) % 700) / 1000), sandTop + dpr * (6 + (i % 4) * 7), dpr * 1.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  if (themeId === "kingdom-heart" || !themeId) {
+    ctx.fillStyle = "rgba(120, 200, 140, 0.4)";
+    ctx.beginPath();
+    ctx.ellipse(w * 0.5, base - dpr * 28, dpr * 22, dpr * 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
 /**
  * Mermaid Coast water-column FX — Neverland lagoon cliffs, soft falls, sun glitter.
  */
@@ -6314,6 +7488,145 @@ function drawAdventureMermaidCoastEffect(now, themeId) {
       ctx.fill();
     }
   }
+}
+
+function drawAdventureStarfallSeasEffect(now, themeId) {
+  const t = now * 0.001;
+  const wh = h - waterTop;
+  const wash = ctx.createLinearGradient(0, waterTop, 0, h);
+  wash.addColorStop(0, "rgba(120, 130, 220, 0.08)");
+  wash.addColorStop(1, "rgba(20, 24, 60, 0.1)");
+  ctx.fillStyle = wash;
+  ctx.fillRect(0, waterTop, w, wh);
+  ctx.fillStyle = "rgba(255, 245, 210, 0.45)";
+  for (let i = 0; i < perfN(14); i++) {
+    const bx = ((i * 131 + Math.floor(t * 8)) % 1000) / 1000 * w;
+    const by = waterTop + wh * (0.12 + ((i * 71) % 500) / 1000);
+    const tw = 0.5 + 0.5 * Math.sin(t * 3 + i);
+    ctx.globalAlpha = 0.25 + tw * 0.45;
+    ctx.beginPath();
+    ctx.arc(bx, by, dpr * (0.7 + (i % 3) * 0.35), 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  if (themeId === "comet-drift" || themeId === "meteor-pool" || themeId === "crown-of-stars") {
+    ctx.strokeStyle = "rgba(255, 220, 160, 0.35)";
+    ctx.lineWidth = dpr * 1.4;
+    const cx = ((Math.floor(t * 40) % 1200) / 1200) * w * 1.2 - w * 0.1;
+    ctx.beginPath();
+    ctx.moveTo(cx, waterTop + wh * 0.2);
+    ctx.lineTo(cx - dpr * 40, waterTop + wh * 0.35);
+    ctx.stroke();
+  }
+}
+
+function drawAdventureDragonwakeIslesEffect(now, themeId) {
+  const t = now * 0.001;
+  const wh = h - waterTop;
+  const wash = ctx.createLinearGradient(0, waterTop, 0, h);
+  wash.addColorStop(0, "rgba(255, 140, 60, 0.08)");
+  wash.addColorStop(1, "rgba(80, 20, 10, 0.12)");
+  ctx.fillStyle = wash;
+  ctx.fillRect(0, waterTop, w, wh);
+  ctx.fillStyle = "rgba(255, 100, 40, 0.18)";
+  for (let i = 0; i < perfN(6); i++) {
+    const bx = w * (0.15 + ((i * 47 + Math.floor(t * 5)) % 700) / 1000);
+    const by = waterTop + wh * (0.55 + (i % 3) * 0.1);
+    ctx.beginPath();
+    ctx.arc(bx, by, dpr * (3 + (i % 3)), 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.strokeStyle = "rgba(255, 180, 80, 0.12)";
+  ctx.lineWidth = dpr * 3;
+  ctx.beginPath();
+  ctx.moveTo(-w * 0.05, waterTop + wh * 0.5);
+  ctx.quadraticCurveTo(w * 0.4, waterTop + wh * (0.35 + Math.sin(t) * 0.04), w * 1.05, waterTop + wh * 0.55);
+  ctx.stroke();
+}
+
+function drawAdventureMangroveKingdomEffect(now, themeId) {
+  const t = now * 0.001;
+  const wh = h - waterTop;
+  const wash = ctx.createLinearGradient(0, waterTop, 0, h);
+  wash.addColorStop(0, "rgba(100, 180, 120, 0.07)");
+  wash.addColorStop(1, "rgba(20, 50, 30, 0.1)");
+  ctx.fillStyle = wash;
+  ctx.fillRect(0, waterTop, w, wh);
+  ctx.strokeStyle = "rgba(30, 70, 40, 0.2)";
+  ctx.lineWidth = dpr * 2;
+  for (let i = 0; i < 5; i++) {
+    const x = w * (0.1 + i * 0.18);
+    ctx.beginPath();
+    ctx.moveTo(x, h);
+    ctx.quadraticCurveTo(x + Math.sin(t + i) * dpr * 8, waterTop + wh * 0.55, x, waterTop + wh * 0.25);
+    ctx.stroke();
+  }
+  ctx.fillStyle = "rgba(200, 255, 150, 0.35)";
+  for (let i = 0; i < perfN(10); i++) {
+    const bx = ((i * 97 + Math.floor(t * 12)) % 1000) / 1000 * w;
+    const by = waterTop + wh * (0.2 + ((i * 53) % 500) / 1000);
+    ctx.beginPath();
+    ctx.arc(bx, by, dpr * (0.9 + (i % 2) * 0.4), 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawVagueStarfallSilhouette(now) {
+  if (!adventureSession) return;
+  const t = now * 0.001;
+  const wh = h - waterTop;
+  ctx.save();
+  ctx.globalAlpha = 0.22 + Math.sin(t * 1.2) * 0.06;
+  ctx.fillStyle = "rgba(220, 210, 255, 0.9)";
+  const x = w * (0.2 + (Math.sin(t * 0.35) * 0.5 + 0.5) * 0.6);
+  const y = waterTop + wh * 0.42;
+  ctx.beginPath();
+  ctx.ellipse(x, y, dpr * 28, dpr * 10, -0.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255, 245, 200, 0.8)";
+  ctx.beginPath();
+  ctx.arc(x + dpr * 18, y - dpr * 4, dpr * 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawVagueDragonSilhouette(now) {
+  if (!adventureSession) return;
+  const t = now * 0.001;
+  const wh = h - waterTop;
+  const x = w * (0.15 + ((t * 0.04) % 1) * 0.9);
+  const y = waterTop + wh * (0.5 + Math.sin(t * 0.8) * 0.05);
+  ctx.save();
+  ctx.globalAlpha = 0.16;
+  ctx.fillStyle = "rgba(40, 10, 6, 0.95)";
+  ctx.beginPath();
+  ctx.ellipse(x, y, dpr * 46, dpr * 12, 0.05, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(x + dpr * 40, y);
+  ctx.quadraticCurveTo(x + dpr * 70, y - dpr * 18, x + dpr * 55, y + dpr * 6);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255, 160, 60, 0.55)";
+  ctx.beginPath();
+  ctx.arc(x + dpr * 30, y - dpr * 2, dpr * 2.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawVagueMangroveSilhouette(now) {
+  if (!adventureSession) return;
+  const t = now * 0.001;
+  const wh = h - waterTop;
+  ctx.save();
+  ctx.globalAlpha = 0.18;
+  ctx.fillStyle = "rgba(20, 50, 30, 0.9)";
+  for (let i = 0; i < 3; i++) {
+    const x = w * (0.2 + i * 0.28 + Math.sin(t * 0.5 + i) * 0.02);
+    ctx.beginPath();
+    ctx.ellipse(x, waterTop + wh * 0.62, dpr * 16, dpr * 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
 }
 
 /** Neverland lagoon mermaid looks — hair, shells, tails, skin. */
@@ -7325,6 +8638,36 @@ const ADVENTURE_THEME_EFFECT_DRAW = {
   "shellsong-reach": (now) => drawAdventureMermaidCoastEffect(now, "shellsong-reach"),
   "glimmer-depths": (now) => drawAdventureMermaidCoastEffect(now, "glimmer-depths"),
   "mermaid-crown": (now) => drawAdventureMermaidCoastEffect(now, "mermaid-crown"),
+  "dusk-harbor": (now) => drawAdventureStarfallSeasEffect(now, "dusk-harbor"),
+  "lantern-shoals": (now) => drawAdventureStarfallSeasEffect(now, "lantern-shoals"),
+  "comet-drift": (now) => drawAdventureStarfallSeasEffect(now, "comet-drift"),
+  "moonbridge-narrows": (now) => drawAdventureStarfallSeasEffect(now, "moonbridge-narrows"),
+  "starfish-orchard": (now) => drawAdventureStarfallSeasEffect(now, "starfish-orchard"),
+  "nightingale-deep": (now) => drawAdventureStarfallSeasEffect(now, "nightingale-deep"),
+  "aurora-mirror": (now) => drawAdventureStarfallSeasEffect(now, "aurora-mirror"),
+  "constellation-cay": (now) => drawAdventureStarfallSeasEffect(now, "constellation-cay"),
+  "meteor-pool": (now) => drawAdventureStarfallSeasEffect(now, "meteor-pool"),
+  "crown-of-stars": (now) => drawAdventureStarfallSeasEffect(now, "crown-of-stars"),
+  "ember-cove": (now) => drawAdventureDragonwakeIslesEffect(now, "ember-cove"),
+  "scale-shoals": (now) => drawAdventureDragonwakeIslesEffect(now, "scale-shoals"),
+  "wyrm-strait": (now) => drawAdventureDragonwakeIslesEffect(now, "wyrm-strait"),
+  "glassfire-bay": (now) => drawAdventureDragonwakeIslesEffect(now, "glassfire-bay"),
+  "cinder-atoll": (now) => drawAdventureDragonwakeIslesEffect(now, "cinder-atoll"),
+  "roar-depths": (now) => drawAdventureDragonwakeIslesEffect(now, "roar-depths"),
+  "ashen-reach": (now) => drawAdventureDragonwakeIslesEffect(now, "ashen-reach"),
+  "emberpeak-sound": (now) => drawAdventureDragonwakeIslesEffect(now, "emberpeak-sound"),
+  "drakes-rest": (now) => drawAdventureDragonwakeIslesEffect(now, "drakes-rest"),
+  "dragonwake-crown": (now) => drawAdventureDragonwakeIslesEffect(now, "dragonwake-crown"),
+  "rootwater-bend": (now) => drawAdventureMangroveKingdomEffect(now, "rootwater-bend"),
+  "firefly-creek": (now) => drawAdventureMangroveKingdomEffect(now, "firefly-creek"),
+  "canopy-narrows": (now) => drawAdventureMangroveKingdomEffect(now, "canopy-narrows"),
+  "mossback-lagoon": (now) => drawAdventureMangroveKingdomEffect(now, "mossback-lagoon"),
+  "heron-haven": (now) => drawAdventureMangroveKingdomEffect(now, "heron-haven"),
+  "cypress-maze": (now) => drawAdventureMangroveKingdomEffect(now, "cypress-maze"),
+  "glowbug-bend": (now) => drawAdventureMangroveKingdomEffect(now, "glowbug-bend"),
+  "tidal-grove": (now) => drawAdventureMangroveKingdomEffect(now, "tidal-grove"),
+  "mangrove-gate": (now) => drawAdventureMangroveKingdomEffect(now, "mangrove-gate"),
+  "kingdom-heart": (now) => drawAdventureMangroveKingdomEffect(now, "kingdom-heart"),
 };
 
 const ADVENTURE_BONUS_THEME_BASE = {
@@ -7436,9 +8779,21 @@ function adventurePassScoreForIndex(i) {
     const lostI = i - ADVENTURE_LOST_CITY_START_INDEX;
     return 10500 + Math.round((lostI * (11800 - 10500)) / Math.max(1, ADVENTURE_LOST_CITY_LEVEL_COUNT - 1));
   }
-  const merI = i - ADVENTURE_MERMAID_START_INDEX;
-  /* Harder than Lost City — kraken hauls should not breeze the chart. */
-  return 14200 + Math.round((merI * (16800 - 14200)) / Math.max(1, ADVENTURE_MERMAID_LEVEL_COUNT - 1));
+  if (i < ADVENTURE_STARFALL_START_INDEX) {
+    const merI = i - ADVENTURE_MERMAID_START_INDEX;
+    return 14200 + Math.round((merI * (16800 - 14200)) / Math.max(1, ADVENTURE_MERMAID_LEVEL_COUNT - 1));
+  }
+  if (i < ADVENTURE_DRAGONWAKE_START_INDEX) {
+    const sfI = i - ADVENTURE_STARFALL_START_INDEX;
+    /* Mid challenge — a bit under Mermaid peak so the new charts feel fair. */
+    return 14500 + Math.round((sfI * (16000 - 14500)) / Math.max(1, ADVENTURE_STARFALL_LEVEL_COUNT - 1));
+  }
+  if (i < ADVENTURE_MANGROVE_START_INDEX) {
+    const dwI = i - ADVENTURE_DRAGONWAKE_START_INDEX;
+    return 15000 + Math.round((dwI * (16500 - 15000)) / Math.max(1, ADVENTURE_DRAGONWAKE_LEVEL_COUNT - 1));
+  }
+  const mgI = i - ADVENTURE_MANGROVE_START_INDEX;
+  return 15200 + Math.round((mgI * (16800 - 15200)) / Math.max(1, ADVENTURE_MANGROVE_LEVEL_COUNT - 1));
 }
 
 function drawAdventureThemeOverlayInner(now) {
@@ -7454,6 +8809,15 @@ function drawAdventureThemeOverlayInner(now) {
     } catch (err) {
       console.warn("Mermaid glimpse draw failed", err);
     }
+  }
+  if (isStarfallSeasTheme(themeId)) {
+    try { drawVagueStarfallSilhouette(now); } catch (err) { console.warn(err); }
+  }
+  if (isDragonwakeIslesTheme(themeId)) {
+    try { drawVagueDragonSilhouette(now); } catch (err) { console.warn(err); }
+  }
+  if (isMangroveKingdomTheme(themeId)) {
+    try { drawVagueMangroveSilhouette(now); } catch (err) { console.warn(err); }
   }
 
   const g = ctx.createLinearGradient(0, waterTop, 0, h);
@@ -7541,6 +8905,9 @@ function defaultMeta() {
     pendingIceVoyagesCelebration: false,
     pendingLostCityCelebration: false,
     pendingMermaidCoastCelebration: false,
+    pendingStarfallSeasCelebration: false,
+    pendingDragonwakeIslesCelebration: false,
+    pendingMangroveKingdomCelebration: false,
     pendingDailyPrizeCelebration: null,
     playerInitials: "",
     playerName: "",
@@ -7636,6 +9003,9 @@ function loadMeta() {
       pendingIceVoyagesCelebration: Boolean(o.pendingIceVoyagesCelebration),
       pendingLostCityCelebration: Boolean(o.pendingLostCityCelebration),
       pendingMermaidCoastCelebration: Boolean(o.pendingMermaidCoastCelebration),
+      pendingStarfallSeasCelebration: Boolean(o.pendingStarfallSeasCelebration),
+      pendingDragonwakeIslesCelebration: Boolean(o.pendingDragonwakeIslesCelebration),
+      pendingMangroveKingdomCelebration: Boolean(o.pendingMangroveKingdomCelebration),
       pendingDailyPrizeCelebration: normalizePendingDailyPrizeCelebration(o.pendingDailyPrizeCelebration),
       playerInitials: (() => {
         const ini = String(o.playerInitials || "")
@@ -8952,53 +10322,66 @@ function buildAdventureLevels() {
     const isBonus = i >= ADVENTURE_MAIN_LEVEL_COUNT && i < ADVENTURE_ICE_START_INDEX;
     const isIce = i >= ADVENTURE_ICE_START_INDEX && i < ADVENTURE_LOST_CITY_START_INDEX;
     const isLostCity = i >= ADVENTURE_LOST_CITY_START_INDEX && i < ADVENTURE_MERMAID_START_INDEX;
-    const isMermaid = i >= ADVENTURE_MERMAID_START_INDEX;
+    const isMermaid = i >= ADVENTURE_MERMAID_START_INDEX && i < ADVENTURE_STARFALL_START_INDEX;
+    const isStarfall = i >= ADVENTURE_STARFALL_START_INDEX && i < ADVENTURE_DRAGONWAKE_START_INDEX;
+    const isDragonwake = i >= ADVENTURE_DRAGONWAKE_START_INDEX && i < ADVENTURE_MANGROVE_START_INDEX;
+    const isMangrove = i >= ADVENTURE_MANGROVE_START_INDEX;
+    const lateChapter = isMermaid || isStarfall || isDragonwake || isMangrove;
     levels.push({
       level: i + 1,
       id: `adv_${i + 1}`,
       name: ADVENTURE_MAP_PLACES[i] || `Voyage ${i + 1}`,
-      subtitle: isMermaid
-        ? `${ADVENTURE_SECTION_MERMAID_COAST} · ${reef.name}`
-        : isLostCity
-          ? `${ADVENTURE_SECTION_LOST_CITY} · ${reef.name}`
-          : isIce
-            ? `${ADVENTURE_SECTION_FROZEN_SEA} · ${reef.name}`
-            : isBonus
-              ? `${ADVENTURE_SECTION_GOLD_QUEST} · ${reef.name}`
-              : `${ADVENTURE_SECTION_PIRATES_PATH} · ${reef.name}`,
+      subtitle: isMangrove
+        ? `${ADVENTURE_SECTION_MANGROVE_KINGDOM} · ${reef.name}`
+        : isDragonwake
+          ? `${ADVENTURE_SECTION_DRAGONWAKE_ISLES} · ${reef.name}`
+          : isStarfall
+            ? `${ADVENTURE_SECTION_STARFALL_SEAS} · ${reef.name}`
+            : isMermaid
+              ? `${ADVENTURE_SECTION_MERMAID_COAST} · ${reef.name}`
+              : isLostCity
+                ? `${ADVENTURE_SECTION_LOST_CITY} · ${reef.name}`
+                : isIce
+                  ? `${ADVENTURE_SECTION_FROZEN_SEA} · ${reef.name}`
+                  : isBonus
+                    ? `${ADVENTURE_SECTION_GOLD_QUEST} · ${reef.name}`
+                    : `${ADVENTURE_SECTION_PIRATES_PATH} · ${reef.name}`,
       mapPlace: ADVENTURE_MAP_PLACES[i] || `Isle ${i + 1}`,
       reefId: reef.id,
       isBonus,
       isIce,
       isLostCity,
       isMermaid,
+      isStarfall,
+      isDragonwake,
+      isMangrove,
       passScore: adventurePassScoreForIndex(i),
       roundMs:
         Math.max(
-          isMermaid ? 42_000 : isLostCity ? 46_000 : isIce ? 47_000 : isBonus ? 44_000 : 46_000,
-          reef.roundMs - tier * 2200 - i * 420,
+          lateChapter ? 43_000 : isLostCity ? 46_000 : isIce ? 47_000 : isBonus ? 44_000 : 46_000,
+          reef.roundMs - tier * 2200 - Math.min(i, 41) * 420,
         ) + adventureLevelTimeBonusMs(i),
       spawnMin: Math.max(
-        isMermaid ? 115 : isLostCity ? 140 : isIce ? 150 : isBonus ? 165 : 185,
-        Math.min(400, reef.spawnMin - i * 12),
+        lateChapter ? 120 : isLostCity ? 140 : isIce ? 150 : isBonus ? 165 : 185,
+        Math.min(400, reef.spawnMin - Math.min(i, 41) * 12),
       ),
       spawnMax: Math.max(
-        isMermaid ? 280 : isLostCity ? 340 : isIce ? 360 : isBonus ? 390 : 430,
+        lateChapter ? 300 : isLostCity ? 340 : isIce ? 360 : isBonus ? 390 : 430,
         Math.min(1500, reef.spawnMax - i * 30),
       ),
       maxFish: Math.min(
-        isMermaid ? 24 : isLostCity ? 21 : isIce ? 20 : isBonus ? 19 : 18,
-        reef.maxFish + Math.floor(i / 2.4),
+        lateChapter ? 23 : isLostCity ? 21 : isIce ? 20 : isBonus ? 19 : 18,
+        reef.maxFish + Math.floor(Math.min(i, 41) / 2.4),
       ),
       fishSpeed: Math.max(
         0.96,
         reef.fishSpeed *
-          (1.12 + i * 0.02) *
-          (isMermaid ? 0.92 : isLostCity ? 0.82 : isIce ? 0.84 : isBonus ? 0.94 : 1),
+          (1.12 + Math.min(i, 41) * 0.02) *
+          (lateChapter ? 0.9 : isLostCity ? 0.82 : isIce ? 0.84 : isBonus ? 0.94 : 1),
       ),
       rareRollMult: Math.max(
-        isMermaid ? 0.58 : isLostCity || isIce ? 0.66 : 0.55,
-        reef.rareRollMult * (0.97 - i * 0.009),
+        lateChapter ? 0.6 : isLostCity || isIce ? 0.66 : 0.55,
+        reef.rareRollMult * (0.97 - Math.min(i, 41) * 0.009),
       ),
     });
   }
@@ -9023,6 +10406,9 @@ function isAdventureLevelPlayable(levelNum) {
   if (levelNum > ADVENTURE_ICE_START_INDEX && highest < ADVENTURE_ICE_START_INDEX) return false;
   if (levelNum > ADVENTURE_LOST_CITY_START_INDEX && highest < ADVENTURE_LOST_CITY_START_INDEX) return false;
   if (levelNum > ADVENTURE_MERMAID_START_INDEX && highest < ADVENTURE_MERMAID_START_INDEX) return false;
+  if (levelNum > ADVENTURE_STARFALL_START_INDEX && highest < ADVENTURE_STARFALL_START_INDEX) return false;
+  if (levelNum > ADVENTURE_DRAGONWAKE_START_INDEX && highest < ADVENTURE_DRAGONWAKE_START_INDEX) return false;
+  if (levelNum > ADVENTURE_MANGROVE_START_INDEX && highest < ADVENTURE_MANGROVE_START_INDEX) return false;
   return levelNum <= highest + 1;
 }
 
@@ -9040,6 +10426,15 @@ function isAdventureLostCityUnlocked() {
 
 function isAdventureMermaidCoastUnlocked() {
   return (gameMeta.adventureHighestLevel || 0) >= ADVENTURE_MERMAID_START_INDEX;
+}
+function isAdventureStarfallSeasUnlocked() {
+  return (gameMeta.adventureHighestLevel || 0) >= ADVENTURE_STARFALL_START_INDEX;
+}
+function isAdventureDragonwakeIslesUnlocked() {
+  return (gameMeta.adventureHighestLevel || 0) >= ADVENTURE_DRAGONWAKE_START_INDEX;
+}
+function isAdventureMangroveKingdomUnlocked() {
+  return (gameMeta.adventureHighestLevel || 0) >= ADVENTURE_MANGROVE_START_INDEX;
 }
 
 function getAdventureLevel(index) {
@@ -17166,6 +18561,9 @@ const adventureMapBonusBanner = document.getElementById("adventureMapBonusBanner
 const adventureMapIceBanner = document.getElementById("adventureMapIceBanner");
 const adventureMapLostCityBanner = document.getElementById("adventureMapLostCityBanner");
 const adventureMapMermaidBanner = document.getElementById("adventureMapMermaidBanner");
+const adventureMapStarfallBanner = document.getElementById("adventureMapStarfallBanner");
+const adventureMapDragonwakeBanner = document.getElementById("adventureMapDragonwakeBanner");
+const adventureMapMangroveBanner = document.getElementById("adventureMapMangroveBanner");
 const adventureFailTheme = document.getElementById("adventureFailTheme");
 
 let selectedRod = RODS[0];
@@ -18135,6 +19533,9 @@ function runAdventureMapSectionReveal(kind) {
     if (kind === "gold") clearBonusVoyagesMapCelebration();
     else if (kind === "ice") clearIceVoyagesMapCelebration();
     else if (kind === "mermaid") clearMermaidCoastMapCelebration();
+    else if (kind === "starfall") clearStarfallSeasMapCelebration();
+    else if (kind === "dragonwake") clearDragonwakeIslesMapCelebration();
+    else if (kind === "mangrove") clearMangroveKingdomMapCelebration();
     else clearLostCityMapCelebration();
     return;
   }
@@ -18154,6 +19555,9 @@ function runAdventureMapSectionReveal(kind) {
     if (kind === "gold") clearBonusVoyagesMapCelebration();
     else if (kind === "ice") clearIceVoyagesMapCelebration();
     else if (kind === "mermaid") clearMermaidCoastMapCelebration();
+    else if (kind === "starfall") clearStarfallSeasMapCelebration();
+    else if (kind === "dragonwake") clearDragonwakeIslesMapCelebration();
+    else if (kind === "mangrove") clearMangroveKingdomMapCelebration();
     else clearLostCityMapCelebration();
   }, 3600);
 }
@@ -18362,6 +19766,9 @@ let adventureMapUiBonusRevealed = null;
 let adventureMapUiIceRevealed = null;
 let adventureMapUiLostCityRevealed = null;
 let adventureMapUiMermaidRevealed = null;
+let adventureMapUiStarfallRevealed = null;
+let adventureMapUiDragonwakeRevealed = null;
+let adventureMapUiMangroveRevealed = null;
 
 function syncAdventureMapNodeStates() {
   if (!adventureLevelList) return;
@@ -18390,6 +19797,9 @@ function buildAdventureLevelUI(force = false) {
   const iceRevealed = isAdventureIceUnlocked();
   const lostCityRevealed = isAdventureLostCityUnlocked();
   const mermaidRevealed = isAdventureMermaidCoastUnlocked();
+  const starfallRevealed = isAdventureStarfallSeasUnlocked();
+  const dragonwakeRevealed = isAdventureDragonwakeIslesUnlocked();
+  const mangroveRevealed = isAdventureMangroveKingdomUnlocked();
   const visibleCount = adventureMapVisibleLevelCount();
   const existingNodes = adventureLevelList.querySelectorAll(".adventure-map-node").length;
   if (
@@ -18399,6 +19809,9 @@ function buildAdventureLevelUI(force = false) {
     adventureMapUiIceRevealed === iceRevealed &&
     adventureMapUiLostCityRevealed === lostCityRevealed &&
     adventureMapUiMermaidRevealed === mermaidRevealed &&
+    adventureMapUiStarfallRevealed === starfallRevealed &&
+    adventureMapUiDragonwakeRevealed === dragonwakeRevealed &&
+    adventureMapUiMangroveRevealed === mangroveRevealed &&
     existingNodes === visibleCount
   ) {
     syncAdventureMapNodeStates();
@@ -18414,6 +19827,9 @@ function buildAdventureLevelUI(force = false) {
   adventureMapUiIceRevealed = iceRevealed;
   adventureMapUiLostCityRevealed = lostCityRevealed;
   adventureMapUiMermaidRevealed = mermaidRevealed;
+  adventureMapUiStarfallRevealed = starfallRevealed;
+  adventureMapUiDragonwakeRevealed = dragonwakeRevealed;
+  adventureMapUiMangroveRevealed = mangroveRevealed;
   adventureLevelList.querySelectorAll(".adventure-chart__nodes").forEach((el) => {
     el.innerHTML = "";
   });
@@ -18436,7 +19852,10 @@ function buildAdventureLevelUI(force = false) {
     const isBonus = i >= ADVENTURE_MAIN_LEVEL_COUNT && i < ADVENTURE_ICE_START_INDEX;
     const isIce = i >= ADVENTURE_ICE_START_INDEX && i < ADVENTURE_LOST_CITY_START_INDEX;
     const isLostCity = i >= ADVENTURE_LOST_CITY_START_INDEX && i < ADVENTURE_MERMAID_START_INDEX;
-    const isMermaid = i >= ADVENTURE_MERMAID_START_INDEX;
+    const isMermaid = i >= ADVENTURE_MERMAID_START_INDEX && i < ADVENTURE_STARFALL_START_INDEX;
+    const isStarfall = i >= ADVENTURE_STARFALL_START_INDEX && i < ADVENTURE_DRAGONWAKE_START_INDEX;
+    const isDragonwake = i >= ADVENTURE_DRAGONWAKE_START_INDEX && i < ADVENTURE_MANGROVE_START_INDEX;
+    const isMangrove = i >= ADVENTURE_MANGROVE_START_INDEX;
     const isUltimateFinale = i === ADVENTURE_LEVEL_COUNT - 1;
     const themeId = getAdventureLevelTheme(i);
     const b = document.createElement("button");
@@ -18451,38 +19870,59 @@ function buildAdventureLevelUI(force = false) {
     if (isIce) b.classList.add("adventure-map-node--ice");
     if (isLostCity) b.classList.add("adventure-map-node--lost-city");
     if (isMermaid) b.classList.add("adventure-map-node--mermaid");
+    if (isStarfall) b.classList.add("adventure-map-node--starfall");
+    if (isDragonwake) b.classList.add("adventure-map-node--dragonwake");
+    if (isMangrove) b.classList.add("adventure-map-node--mangrove");
     if (isUltimateFinale) b.classList.add("adventure-map-node--bonus-finale");
     if (isIce && i === AURORA_REACH_INDEX) b.classList.add("adventure-map-node--ice-finale");
     if (isLostCity && i === THRONE_OF_ATLANTIS_INDEX) b.classList.add("adventure-map-node--lost-city-finale");
-    if (isMermaid && isUltimateFinale) b.classList.add("adventure-map-node--mermaid-finale");
+    if (isMermaid && i === MERMAID_CROWN_INDEX) b.classList.add("adventure-map-node--mermaid-finale");
+    if (isStarfall && i === CROWN_OF_STARS_INDEX) b.classList.add("adventure-map-node--starfall-finale");
+    if (isDragonwake && i === DRAGONWAKE_CROWN_INDEX) b.classList.add("adventure-map-node--dragonwake-finale");
+    if (isMangrove && isUltimateFinale) b.classList.add("adventure-map-node--mangrove-finale");
     b.disabled = !playable;
     b.style.left = `${layout.x}%`;
     b.style.top = `${layout.y}%`;
-    const sectionName = isMermaid
-      ? ADVENTURE_SECTION_MERMAID_COAST
-      : isLostCity
-        ? ADVENTURE_SECTION_LOST_CITY
-        : isIce
-          ? ADVENTURE_SECTION_FROZEN_SEA
-          : isBonus
-            ? ADVENTURE_SECTION_GOLD_QUEST
-            : ADVENTURE_SECTION_PIRATES_PATH;
+    const sectionName = isMangrove
+      ? ADVENTURE_SECTION_MANGROVE_KINGDOM
+      : isDragonwake
+        ? ADVENTURE_SECTION_DRAGONWAKE_ISLES
+        : isStarfall
+          ? ADVENTURE_SECTION_STARFALL_SEAS
+          : isMermaid
+            ? ADVENTURE_SECTION_MERMAID_COAST
+            : isLostCity
+              ? ADVENTURE_SECTION_LOST_CITY
+              : isIce
+                ? ADVENTURE_SECTION_FROZEN_SEA
+                : isBonus
+                  ? ADVENTURE_SECTION_GOLD_QUEST
+                  : ADVENTURE_SECTION_PIRATES_PATH;
     b.title = `${lvl.name} — ${sectionName} · pass ${getAdventurePassScore(i)}`;
     b.dataset.levelIndex = String(i);
-    b.dataset.section = isMermaid
-      ? "mermaid"
-      : isLostCity
-        ? "lost-city"
-        : isIce
-          ? "ice"
-          : isBonus
-            ? "gold"
-            : "pirates";
+    b.dataset.section = isMangrove
+      ? "mangrove"
+      : isDragonwake
+        ? "dragonwake"
+        : isStarfall
+          ? "starfall"
+          : isMermaid
+            ? "mermaid"
+            : isLostCity
+              ? "lost-city"
+              : isIce
+                ? "ice"
+                : isBonus
+                  ? "gold"
+                  : "pirates";
     const showTreasureX =
       isTreasureCoveFinale ||
       isUltimateFinale ||
       (isIce && i === AURORA_REACH_INDEX) ||
-      i === THRONE_OF_ATLANTIS_INDEX;
+      i === THRONE_OF_ATLANTIS_INDEX ||
+      i === MERMAID_CROWN_INDEX ||
+      i === CROWN_OF_STARS_INDEX ||
+      i === DRAGONWAKE_CROWN_INDEX;
     b.innerHTML = `
       <span class="adventure-map-node__mark" aria-hidden="true">
         <span class="adventure-map-node__pin">
@@ -18525,7 +19965,13 @@ function buildAdventureLevelUI(force = false) {
   });
   if (adventureMapBanner) {
     adventureMapBanner.hidden = !isAdventureUnlocked();
-    if (mermaidRevealed) {
+    if (mangroveRevealed) {
+      adventureMapBanner.textContent = `Chart the course — ${ADVENTURE_SECTION_MANGROVE_KINGDOM} unlocked!`;
+    } else if (dragonwakeRevealed) {
+      adventureMapBanner.textContent = `Chart the course — ${ADVENTURE_SECTION_DRAGONWAKE_ISLES} unlocked!`;
+    } else if (starfallRevealed) {
+      adventureMapBanner.textContent = `Chart the course — ${ADVENTURE_SECTION_STARFALL_SEAS} unlocked!`;
+    } else if (mermaidRevealed) {
       adventureMapBanner.textContent = `Chart the course — ${ADVENTURE_SECTION_MERMAID_COAST} unlocked!`;
     } else if (lostCityRevealed) {
       adventureMapBanner.textContent = `Chart the course — ${ADVENTURE_SECTION_LOST_CITY} unlocked!`;
@@ -18534,7 +19980,7 @@ function buildAdventureLevelUI(force = false) {
     } else if (bonusRevealed) {
       adventureMapBanner.textContent = `Chart the course — ${ADVENTURE_SECTION_GOLD_QUEST} unlocked beyond Pirates Path!`;
     } else {
-      adventureMapBanner.textContent = `Chart the course — ${ADVENTURE_SECTION_PIRATES_PATH}, then ${ADVENTURE_SECTION_GOLD_QUEST}, ${ADVENTURE_SECTION_FROZEN_SEA}, ${ADVENTURE_SECTION_LOST_CITY}, and ${ADVENTURE_SECTION_MERMAID_COAST}!`;
+      adventureMapBanner.textContent = `Chart the course — ${ADVENTURE_SECTION_PIRATES_PATH} through ${ADVENTURE_SECTION_MANGROVE_KINGDOM}!`;
     }
   }
   if (adventureMapBonusBanner) {
@@ -18585,6 +20031,42 @@ function buildAdventureLevelUI(force = false) {
       Boolean(gameMeta.pendingMermaidCoastCelebration),
     );
   }
+  if (adventureMapStarfallBanner) {
+    const show =
+      (isAdventureStarfallSeasUnlocked() || gameMeta.pendingStarfallSeasCelebration) && isAdventureUnlocked();
+    adventureMapStarfallBanner.hidden = !show;
+    adventureMapStarfallBanner.textContent = starfallRevealed
+      ? `${ADVENTURE_SECTION_STARFALL_SEAS} — night voyages beyond Mermaid Crown`
+      : `${ADVENTURE_SECTION_STARFALL_SEAS} — clear Mermaid Crown to unlock`;
+    adventureMapStarfallBanner.classList.toggle(
+      "adventure-map-starfall-banner--reveal",
+      Boolean(gameMeta.pendingStarfallSeasCelebration),
+    );
+  }
+  if (adventureMapDragonwakeBanner) {
+    const show =
+      (isAdventureDragonwakeIslesUnlocked() || gameMeta.pendingDragonwakeIslesCelebration) && isAdventureUnlocked();
+    adventureMapDragonwakeBanner.hidden = !show;
+    adventureMapDragonwakeBanner.textContent = dragonwakeRevealed
+      ? `${ADVENTURE_SECTION_DRAGONWAKE_ISLES} — ember voyages beyond the stars`
+      : `${ADVENTURE_SECTION_DRAGONWAKE_ISLES} — clear Crown of Stars to unlock`;
+    adventureMapDragonwakeBanner.classList.toggle(
+      "adventure-map-dragonwake-banner--reveal",
+      Boolean(gameMeta.pendingDragonwakeIslesCelebration),
+    );
+  }
+  if (adventureMapMangroveBanner) {
+    const show =
+      (isAdventureMangroveKingdomUnlocked() || gameMeta.pendingMangroveKingdomCelebration) && isAdventureUnlocked();
+    adventureMapMangroveBanner.hidden = !show;
+    adventureMapMangroveBanner.textContent = mangroveRevealed
+      ? `${ADVENTURE_SECTION_MANGROVE_KINGDOM} — green river voyages beyond dragonfire`
+      : `${ADVENTURE_SECTION_MANGROVE_KINGDOM} — clear Dragonwake Crown to unlock`;
+    adventureMapMangroveBanner.classList.toggle(
+      "adventure-map-mangrove-banner--reveal",
+      Boolean(gameMeta.pendingMangroveKingdomCelebration),
+    );
+  }
 }
 
 function clearBonusVoyagesMapCelebration() {
@@ -18612,6 +20094,24 @@ function clearMermaidCoastMapCelebration() {
   if (adventureMapMermaidBanner) {
     adventureMapMermaidBanner.classList.remove("adventure-map-mermaid-banner--reveal");
   }
+}
+function clearStarfallSeasMapCelebration() {
+  if (!gameMeta.pendingStarfallSeasCelebration) return;
+  gameMeta.pendingStarfallSeasCelebration = false;
+  saveMeta();
+  adventureMapStarfallBanner?.classList.remove("adventure-map-starfall-banner--reveal");
+}
+function clearDragonwakeIslesMapCelebration() {
+  if (!gameMeta.pendingDragonwakeIslesCelebration) return;
+  gameMeta.pendingDragonwakeIslesCelebration = false;
+  saveMeta();
+  adventureMapDragonwakeBanner?.classList.remove("adventure-map-dragonwake-banner--reveal");
+}
+function clearMangroveKingdomMapCelebration() {
+  if (!gameMeta.pendingMangroveKingdomCelebration) return;
+  gameMeta.pendingMangroveKingdomCelebration = false;
+  saveMeta();
+  adventureMapMangroveBanner?.classList.remove("adventure-map-mangrove-banner--reveal");
 }
 
 function clearIceVoyagesMapCelebration() {
@@ -18644,6 +20144,15 @@ function openAdventureHub() {
   } else if (gameMeta.pendingIceVoyagesCelebration) {
     showToast(`${ADVENTURE_SECTION_FROZEN_SEA} unlocked! A new chart is unfurled.`, 4200);
     window.requestAnimationFrame(() => runAdventureMapSectionReveal("ice"));
+  } else if (gameMeta.pendingMangroveKingdomCelebration) {
+    showToast(`${ADVENTURE_SECTION_MANGROVE_KINGDOM} unlocked! A new chart is unfurled.`, 4200);
+    window.requestAnimationFrame(() => runAdventureMapSectionReveal("mangrove"));
+  } else if (gameMeta.pendingDragonwakeIslesCelebration) {
+    showToast(`${ADVENTURE_SECTION_DRAGONWAKE_ISLES} unlocked! A new chart is unfurled.`, 4200);
+    window.requestAnimationFrame(() => runAdventureMapSectionReveal("dragonwake"));
+  } else if (gameMeta.pendingStarfallSeasCelebration) {
+    showToast(`${ADVENTURE_SECTION_STARFALL_SEAS} unlocked! A new chart is unfurled.`, 4200);
+    window.requestAnimationFrame(() => runAdventureMapSectionReveal("starfall"));
   } else if (gameMeta.pendingMermaidCoastCelebration) {
     showToast(`${ADVENTURE_SECTION_MERMAID_COAST} unlocked! A new chart is unfurled.`, 4200);
     window.requestAnimationFrame(() => runAdventureMapSectionReveal("mermaid"));
@@ -18698,6 +20207,9 @@ function startAdventureLevel(levelIndex) {
 }
 
 function adventurePrepSectionLabel(lvl) {
+  if (lvl.isMangrove) return ADVENTURE_SECTION_MANGROVE_KINGDOM;
+  if (lvl.isDragonwake) return ADVENTURE_SECTION_DRAGONWAKE_ISLES;
+  if (lvl.isStarfall) return ADVENTURE_SECTION_STARFALL_SEAS;
   if (lvl.isMermaid) return ADVENTURE_SECTION_MERMAID_COAST;
   if (lvl.isLostCity) return ADVENTURE_SECTION_LOST_CITY;
   if (lvl.isIce) return ADVENTURE_SECTION_FROZEN_SEA;
@@ -18802,12 +20314,18 @@ function endAdventureRound() {
   const clearedLegendsGate = passed && levelIndex === LEGENDS_GATE_INDEX;
   const clearedAuroraReach = passed && levelIndex === AURORA_REACH_INDEX;
   const clearedThroneOfAtlantis = passed && levelIndex === THRONE_OF_ATLANTIS_INDEX;
+  const clearedMermaidCrown = passed && levelIndex === MERMAID_CROWN_INDEX;
+  const clearedCrownOfStars = passed && levelIndex === CROWN_OF_STARS_INDEX;
+  const clearedDragonwakeCrown = passed && levelIndex === DRAGONWAKE_CROWN_INDEX;
   if (passed) {
     gameMeta.adventureHighestLevel = Math.max(gameMeta.adventureHighestLevel || 0, lvl.level);
     if (clearedTreasureCove) gameMeta.pendingBonusVoyagesCelebration = true;
     if (clearedLegendsGate) gameMeta.pendingIceVoyagesCelebration = true;
     if (clearedAuroraReach) gameMeta.pendingLostCityCelebration = true;
     if (clearedThroneOfAtlantis) gameMeta.pendingMermaidCoastCelebration = true;
+    if (clearedMermaidCrown) gameMeta.pendingStarfallSeasCelebration = true;
+    if (clearedCrownOfStars) gameMeta.pendingDragonwakeIslesCelebration = true;
+    if (clearedDragonwakeCrown) gameMeta.pendingMangroveKingdomCelebration = true;
     saveMeta();
     adventureMapUiProgress = -1;
     pendingAdventureTrailReveal = true;
@@ -18843,7 +20361,13 @@ function endAdventureRound() {
             ? "Aurora Reach cleared!"
             : clearedThroneOfAtlantis
               ? "Throne of Atlantis cleared!"
-              : `Level ${lvl.level} cleared!`;
+              : clearedMermaidCrown
+                ? "Mermaid Crown cleared!"
+                : clearedCrownOfStars
+                  ? "Crown of Stars cleared!"
+                  : clearedDragonwakeCrown
+                    ? "Dragonwake Crown cleared!"
+                    : `Level ${lvl.level} cleared!`;
     }
     if (adventureWinScore) {
       adventureWinScore.textContent = clearedTreasureCove
@@ -18854,7 +20378,13 @@ function endAdventureRound() {
             ? `You scored ${score} (needed ${passScore}). ${ADVENTURE_SECTION_LOST_CITY} voyages now appear on the map!`
             : clearedThroneOfAtlantis
               ? `You scored ${score} (needed ${passScore}). ${ADVENTURE_SECTION_MERMAID_COAST} voyages now appear on the map!`
-              : `You scored ${score} (needed ${passScore}).`;
+              : clearedMermaidCrown
+                ? `You scored ${score} (needed ${passScore}). ${ADVENTURE_SECTION_STARFALL_SEAS} voyages now appear on the map!`
+                : clearedCrownOfStars
+                  ? `You scored ${score} (needed ${passScore}). ${ADVENTURE_SECTION_DRAGONWAKE_ISLES} voyages now appear on the map!`
+                  : clearedDragonwakeCrown
+                    ? `You scored ${score} (needed ${passScore}). ${ADVENTURE_SECTION_MANGROVE_KINGDOM} voyages now appear on the map!`
+                    : `You scored ${score} (needed ${passScore}).`;
     }
     if (adventureWinTreasureCelebrate) {
       adventureWinTreasureCelebrate.hidden = !clearedTreasureCove;
@@ -18877,9 +20407,15 @@ function endAdventureRound() {
             ? `Start ${ADVENTURE_SECTION_LOST_CITY} voyage 1`
             : clearedThroneOfAtlantis
               ? `Start ${ADVENTURE_SECTION_MERMAID_COAST} voyage 1`
-              : hasNext
-                ? `Start level ${lvl.level + 1}`
-                : "Back to map";
+              : clearedMermaidCrown
+                ? `Start ${ADVENTURE_SECTION_STARFALL_SEAS} voyage 1`
+                : clearedCrownOfStars
+                  ? `Start ${ADVENTURE_SECTION_DRAGONWAKE_ISLES} voyage 1`
+                  : clearedDragonwakeCrown
+                    ? `Start ${ADVENTURE_SECTION_MANGROVE_KINGDOM} voyage 1`
+                    : hasNext
+                      ? `Start level ${lvl.level + 1}`
+                      : "Back to map";
     }
     if (panelAdventureWin) panelAdventureWin.hidden = false;
   } else {
@@ -21234,6 +22770,9 @@ function showAdventureWinForLevel(levelIndex, scoreForCopy) {
   const clearedLegendsGate = levelIndex === LEGENDS_GATE_INDEX;
   const clearedAuroraReach = levelIndex === AURORA_REACH_INDEX;
   const clearedThroneOfAtlantis = levelIndex === THRONE_OF_ATLANTIS_INDEX;
+  const clearedMermaidCrown = levelIndex === MERMAID_CROWN_INDEX;
+  const clearedCrownOfStars = levelIndex === CROWN_OF_STARS_INDEX;
+  const clearedDragonwakeCrown = levelIndex === DRAGONWAKE_CROWN_INDEX;
   if (clearedTreasureCove) playTreasureCoveVictorySound();
   fillAdventureResultTheme(adventureWinTheme, levelIndex);
   if (adventureFailTheme) adventureFailTheme.hidden = true;
@@ -21246,7 +22785,13 @@ function showAdventureWinForLevel(levelIndex, scoreForCopy) {
           ? "Aurora Reach cleared!"
           : clearedThroneOfAtlantis
             ? "Throne of Atlantis cleared!"
-            : `Level ${lvl.level} cleared!`;
+            : clearedMermaidCrown
+              ? "Mermaid Crown cleared!"
+              : clearedCrownOfStars
+                ? "Crown of Stars cleared!"
+                : clearedDragonwakeCrown
+                  ? "Dragonwake Crown cleared!"
+                  : `Level ${lvl.level} cleared!`;
   }
   if (adventureWinScore) {
     adventureWinScore.textContent = clearedTreasureCove
@@ -21257,7 +22802,13 @@ function showAdventureWinForLevel(levelIndex, scoreForCopy) {
           ? `Skip Rope cleared Aurora Reach (score ${scoreForCopy}). ${ADVENTURE_SECTION_LOST_CITY} voyages now appear on the map!`
           : clearedThroneOfAtlantis
             ? `Skip Rope cleared the throne (score ${scoreForCopy}). ${ADVENTURE_SECTION_MERMAID_COAST} voyages now appear on the map!`
-            : `Adventure Skip Rope cleared level ${lvl.level} (score ${scoreForCopy}).`;
+            : clearedMermaidCrown
+              ? `Skip Rope cleared Mermaid Crown (score ${scoreForCopy}). ${ADVENTURE_SECTION_STARFALL_SEAS} voyages now appear on the map!`
+              : clearedCrownOfStars
+                ? `Skip Rope cleared Crown of Stars (score ${scoreForCopy}). ${ADVENTURE_SECTION_DRAGONWAKE_ISLES} voyages now appear on the map!`
+                : clearedDragonwakeCrown
+                  ? `Skip Rope cleared Dragonwake Crown (score ${scoreForCopy}). ${ADVENTURE_SECTION_MANGROVE_KINGDOM} voyages now appear on the map!`
+                  : `Adventure Skip Rope cleared level ${lvl.level} (score ${scoreForCopy}).`;
   }
   if (adventureWinTreasureCelebrate) {
     adventureWinTreasureCelebrate.hidden = !clearedTreasureCove;
@@ -21280,9 +22831,15 @@ function showAdventureWinForLevel(levelIndex, scoreForCopy) {
           ? `Start ${ADVENTURE_SECTION_LOST_CITY} voyage 1`
           : clearedThroneOfAtlantis
             ? `Start ${ADVENTURE_SECTION_MERMAID_COAST} voyage 1`
-            : hasNext
-              ? `Start level ${lvl.level + 1}`
-              : "Back to map";
+            : clearedMermaidCrown
+              ? `Start ${ADVENTURE_SECTION_STARFALL_SEAS} voyage 1`
+              : clearedCrownOfStars
+                ? `Start ${ADVENTURE_SECTION_DRAGONWAKE_ISLES} voyage 1`
+                : clearedDragonwakeCrown
+                  ? `Start ${ADVENTURE_SECTION_MANGROVE_KINGDOM} voyage 1`
+                  : hasNext
+                    ? `Start level ${lvl.level + 1}`
+                    : "Back to map";
   }
   if (panelAdventureFail) panelAdventureFail.hidden = true;
   if (panelAdventureWin) panelAdventureWin.hidden = false;
@@ -21302,11 +22859,17 @@ function useAdventureSkipRope() {
   const clearedLegendsGate = levelIndex === LEGENDS_GATE_INDEX;
   const clearedAuroraReach = levelIndex === AURORA_REACH_INDEX;
   const clearedThroneOfAtlantis = levelIndex === THRONE_OF_ATLANTIS_INDEX;
+  const clearedMermaidCrown = levelIndex === MERMAID_CROWN_INDEX;
+  const clearedCrownOfStars = levelIndex === CROWN_OF_STARS_INDEX;
+  const clearedDragonwakeCrown = levelIndex === DRAGONWAKE_CROWN_INDEX;
   gameMeta.adventureHighestLevel = Math.max(gameMeta.adventureHighestLevel || 0, lvl.level);
   if (clearedTreasureCove) gameMeta.pendingBonusVoyagesCelebration = true;
   if (clearedLegendsGate) gameMeta.pendingIceVoyagesCelebration = true;
   if (clearedAuroraReach) gameMeta.pendingLostCityCelebration = true;
   if (clearedThroneOfAtlantis) gameMeta.pendingMermaidCoastCelebration = true;
+  if (clearedMermaidCrown) gameMeta.pendingStarfallSeasCelebration = true;
+  if (clearedCrownOfStars) gameMeta.pendingDragonwakeIslesCelebration = true;
+  if (clearedDragonwakeCrown) gameMeta.pendingMangroveKingdomCelebration = true;
   saveMeta();
   adventureMapUiProgress = -1;
   pendingAdventureTrailReveal = true;
