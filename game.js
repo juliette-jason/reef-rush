@@ -7990,7 +7990,34 @@ function normalizeSelectedBaitId() {
   if (getBaitCount(spec.id) <= 0) {
     gameMeta.selectedBaitId = "standard";
     saveMeta();
+    return;
   }
+  if (spec.id === KRAKEN_SPRAY_BAIT_ID && !krakenSprayAllowedInCurrentBaitUi()) {
+    gameMeta.selectedBaitId = "standard";
+    saveMeta();
+  }
+}
+
+/** Modes with no kraken threat (or survivor, where spray would break the mode). */
+function eventKindAllowsKrakenSpray(kind) {
+  if (!kind) return true;
+  return kind !== "duel" && kind !== "crab" && kind !== "survivor";
+}
+
+function krakenSprayAllowedInCurrentBaitUi() {
+  if (panelEventPrep && !panelEventPrep.hidden) {
+    return eventKindAllowsKrakenSpray(pendingEventPrepKind);
+  }
+  return true;
+}
+
+function krakenSprayAllowedForPlay() {
+  if (duelSession) return false;
+  if (crabTrapSession) return false;
+  if (eventMinigameSession?.kind === "survivor" || eventMinigameSession?.kind === "crab") return false;
+  if (tournamentRun && !eventKindAllowsKrakenSpray(tournamentRun.eventKind)) return false;
+  if (pendingEventPrepKind && !eventKindAllowsKrakenSpray(pendingEventPrepKind)) return false;
+  return true;
 }
 
 function coinsAwardedForScore(scorePts) {
@@ -19991,8 +20018,10 @@ function baitChoiceRoots() {
 
 function fillBaitChoices(root) {
   root.innerHTML = "";
+  const sprayOk = root === eventPrepBait ? eventKindAllowsKrakenSpray(pendingEventPrepKind) : true;
   for (const b of BAITS) {
     if (b.shopHidden && getBaitCount(b.id) <= 0) continue;
+    if (b.id === KRAKEN_SPRAY_BAIT_ID && !sprayOk) continue;
     const stock = b.consumesOnRound ? getBaitCount(b.id) : null;
     const dis = Boolean(b.consumesOnRound && stock <= 0);
     const btn = document.createElement("button");
@@ -23422,14 +23451,19 @@ function beginFishingRoundFromHomeStart() {
   syncMusicMasterGain();
   startHomeWaves();
   normalizeSelectedBaitId();
-  const chosen = baitSpecById(gameMeta.selectedBaitId);
+  let chosen = baitSpecById(gameMeta.selectedBaitId);
   let roundKrakenSpray = false;
+  if (chosen.id === KRAKEN_SPRAY_BAIT_ID && !krakenSprayAllowedForPlay()) {
+    chosen = baitSpecById("standard");
+    gameMeta.selectedBaitId = "standard";
+    saveMeta();
+  }
   if (chosen.consumesOnRound) {
     const left = getBaitCount(chosen.id);
     if (left > 0) {
       gameMeta.baitCounts[chosen.id] = left - 1;
       saveMeta();
-      roundKrakenSpray = Boolean(chosen.repelsKraken);
+      roundKrakenSpray = Boolean(chosen.repelsKraken) && krakenSprayAllowedForPlay();
       roundBait = {
         catchRadiusMult: chosen.catchRadiusMult,
         rareAssistAdd: chosen.rareAssistAdd,
@@ -23484,9 +23518,13 @@ function beginFishingRoundFromHomeStart() {
   playing = true;
   const spawnFrac = 0.18 + Math.random() * 0.52;
   const isSurvivor = eventMinigameSession?.kind === "survivor";
+  const isDuel = Boolean(duelSession);
   if (isSurvivor) {
     // Kraken Survivor ignores spray — the beast keeps coming.
     scheduleSurvivorKraken(roundStart);
+  } else if (isDuel) {
+    /* Duel fishing has no kraken threat. */
+    clearKrakens();
   } else if (roundKrakenSpray) {
     clearKrakens();
     showToast("Kraken spray — no kraken this round!", 2400);
