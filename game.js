@@ -29530,7 +29530,8 @@ function tryConsumeAdminUnlockFromUrl() {
 
 function syncAdminSettingsUi() {
   if (!startSettingsAdmin) return;
-  startSettingsAdmin.hidden = !isAdminStatsUnlocked();
+  /* Always show on every device that opens Settings. */
+  startSettingsAdmin.hidden = false;
 }
 
 function playEventLabel(kind) {
@@ -29565,9 +29566,8 @@ async function recordGamePlayEvent(eventKind) {
 }
 
 async function refreshAdminStats() {
-  if (!isAdminStatsUnlocked()) return;
-  if (adminStatsUsers) adminStatsUsers.textContent = "Users: loading…";
-  if (adminStatsPopular) adminStatsPopular.textContent = "Top minigame: loading…";
+  if (adminStatsUsers) adminStatsUsers.textContent = "Players: loading…";
+  if (adminStatsPopular) adminStatsPopular.textContent = "Most popular minigame: loading…";
   try {
     const res = await fetch(
       `${GAME_PLAY_EVENTS_URL}?select=client_id,event_kind&limit=5000`,
@@ -29576,8 +29576,8 @@ async function refreshAdminStats() {
     const text = await res.text();
     if (!res.ok) {
       if (/game_play_events|PGRST205|schema cache/i.test(text) || res.status === 404) {
-        if (adminStatsUsers) adminStatsUsers.textContent = "Users: run game_play_events.sql";
-        if (adminStatsPopular) adminStatsPopular.textContent = "Top minigame: —";
+        if (adminStatsUsers) adminStatsUsers.textContent = "Players: run game_play_events.sql in Supabase";
+        if (adminStatsPopular) adminStatsPopular.textContent = "Most popular minigame: —";
         return;
       }
       throw new Error(text || `Stats failed: ${res.status}`);
@@ -29604,16 +29604,16 @@ async function refreshAdminStats() {
         topCount = n;
       }
     }
-    if (adminStatsUsers) adminStatsUsers.textContent = `Users: ${users.size.toLocaleString()}`;
+    if (adminStatsUsers) adminStatsUsers.textContent = `Players: ${users.size.toLocaleString()}`;
     if (adminStatsPopular) {
       adminStatsPopular.textContent = topKind
-        ? `Top minigame: ${playEventLabel(topKind)} (${topCount})`
-        : "Top minigame: no plays yet";
+        ? `Most popular minigame: ${playEventLabel(topKind)} (${topCount.toLocaleString()} plays)`
+        : "Most popular minigame: no plays yet";
     }
   } catch (err) {
     console.warn(err);
-    if (adminStatsUsers) adminStatsUsers.textContent = "Users: couldn’t load";
-    if (adminStatsPopular) adminStatsPopular.textContent = "Top minigame: couldn’t load";
+    if (adminStatsUsers) adminStatsUsers.textContent = "Players: couldn’t load";
+    if (adminStatsPopular) adminStatsPopular.textContent = "Most popular minigame: couldn’t load";
   }
 }
 
@@ -29858,7 +29858,7 @@ function setStartSettingsOpen(open) {
   btnStartSettings.setAttribute("aria-expanded", open ? "true" : "false");
   if (open) {
     syncAdminSettingsUi();
-    if (isAdminStatsUnlocked()) void refreshAdminStats();
+    void refreshAdminStats();
   }
 }
 
