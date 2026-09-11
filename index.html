@@ -23,7 +23,7 @@
       rel="stylesheet"
     />
     <link rel="canonical" href="https://juliette-jason.github.io/reef-rush/" />
-    <link rel="stylesheet" href="styles.css?v=2026-09-11-feedback-send" />
+    <link rel="stylesheet" href="styles.css?v=2026-09-11-feedback-shot" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -381,18 +381,38 @@
             maxlength="2000"
             placeholder="Example: Crab Trap crashed when I quit, or I’d love a night reef…"
           ></textarea>
-          <p class="feedback-overlay__shot-tip" role="note">
-            <span class="feedback-overlay__shot-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
-                <rect x="3" y="6" width="18" height="14" rx="3" stroke="currentColor" stroke-width="1.8" />
-                <circle cx="12" cy="13" r="3.4" stroke="currentColor" stroke-width="1.8" />
-                <path d="M8.5 6.2 9.4 4.4h5.2l.9 1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </span>
-            <span class="feedback-overlay__shot-copy">
-              Send a screenshot if you can — it makes bugs much easier to fix.
-            </span>
-          </p>
+          <div class="feedback-overlay__shot">
+            <p class="feedback-overlay__shot-tip" role="note">
+              <span class="feedback-overlay__shot-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                  <rect x="3" y="6" width="18" height="14" rx="3" stroke="currentColor" stroke-width="1.8" />
+                  <circle cx="12" cy="13" r="3.4" stroke="currentColor" stroke-width="1.8" />
+                  <path d="M8.5 6.2 9.4 4.4h5.2l.9 1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+              <span class="feedback-overlay__shot-copy">
+                Add a screenshot if you can — it makes bugs much easier to fix.
+              </span>
+            </p>
+            <input
+              id="feedbackScreenshotInput"
+              class="feedback-overlay__file"
+              type="file"
+              accept="image/*"
+            />
+            <div class="feedback-overlay__shot-row">
+              <button type="button" id="btnFeedbackPickShot" class="btn btn--secondary feedback-overlay__pick">
+                Add screenshot
+              </button>
+              <button type="button" id="btnFeedbackClearShot" class="btn btn--secondary feedback-overlay__clear" hidden>
+                Remove
+              </button>
+            </div>
+            <div id="feedbackShotPreviewWrap" class="feedback-overlay__preview-wrap" hidden>
+              <img id="feedbackShotPreview" class="feedback-overlay__preview" alt="Screenshot preview" />
+              <p id="feedbackShotName" class="feedback-overlay__shot-name"></p>
+            </div>
+          </div>
           <div class="feedback-overlay__actions">
             <p id="feedbackStatus" class="feedback-overlay__status" hidden aria-live="polite"></p>
             <button type="button" id="btnFeedbackSend" class="btn btn--primary">Send</button>
@@ -3045,6 +3065,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-09-11-feedback-send" defer></script>
+    <script src="game.js?v=2026-09-11-feedback-shot" defer></script>
   </body>
 </html>

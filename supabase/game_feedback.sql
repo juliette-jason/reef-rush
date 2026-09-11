@@ -7,7 +7,8 @@ create table if not exists public.game_feedback (
   kind text not null default 'feedback',
   client_id text not null default '',
   player_name text not null default '',
-  user_agent text not null default ''
+  user_agent text not null default '',
+  screenshot_url text not null default ''
 );
 
 create index if not exists game_feedback_created_idx
@@ -28,3 +29,7 @@ create policy "game_feedback_anon_select"
   for select
   to anon, authenticated
   using (true);
+
+-- Optional screenshots: also run game_feedback_screenshots.sql (adds column + storage bucket).
+alter table public.game_feedback
+  add column if not exists screenshot_url text not null default '';

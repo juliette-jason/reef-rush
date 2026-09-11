@@ -9121,6 +9121,9 @@ const SUPABASE_REST_URL = "https://htnpfzjhicyzkqfgyhuu.supabase.co/rest/v1";
 const SUPABASE_URL = "https://htnpfzjhicyzkqfgyhuu.supabase.co";
 const GAME_FEEDBACK_URL = `${SUPABASE_REST_URL}/game_feedback`;
 const GAME_PLAY_EVENTS_URL = `${SUPABASE_REST_URL}/game_play_events`;
+const FEEDBACK_SCREENSHOT_BUCKET = "feedback-screenshots";
+const FEEDBACK_SCREENSHOT_MAX_BYTES = 5 * 1024 * 1024;
+const FEEDBACK_SCREENSHOT_MAX_EDGE = 1280;
 const ADMIN_STATS_UNLOCK_KEY = "reefRushAdminUnlocked_v1";
 const ADMIN_STATS_DEVICE_KEY = "reefRushAdminDevice_v1";
 /** One-time unlock on this browser: open the game with ?reefadmin=reef-rush-dev */
@@ -17043,6 +17046,12 @@ const btnResetProgress = document.getElementById("btnResetProgress");
 const btnSendFeedback = document.getElementById("btnSendFeedback");
 const feedbackOverlay = document.getElementById("feedbackOverlay");
 const feedbackMessage = document.getElementById("feedbackMessage");
+const feedbackScreenshotInput = document.getElementById("feedbackScreenshotInput");
+const btnFeedbackPickShot = document.getElementById("btnFeedbackPickShot");
+const btnFeedbackClearShot = document.getElementById("btnFeedbackClearShot");
+const feedbackShotPreviewWrap = document.getElementById("feedbackShotPreviewWrap");
+const feedbackShotPreview = document.getElementById("feedbackShotPreview");
+const feedbackShotName = document.getElementById("feedbackShotName");
 const btnFeedbackSend = document.getElementById("btnFeedbackSend");
 const btnFeedbackCancel = document.getElementById("btnFeedbackCancel");
 const feedbackStatus = document.getElementById("feedbackStatus");
@@ -29396,22 +29405,129 @@ async function refreshAdminStats() {
   }
 }
 
-function setFeedbackStatus(text = "") {
+function setFeedbackStatus(text = "", tone = "error") {
   if (!feedbackStatus) return;
   const msg = String(text || "").trim();
   if (!msg) {
     feedbackStatus.hidden = true;
     feedbackStatus.textContent = "";
+    feedbackStatus.classList.remove("feedback-overlay__status--info");
     return;
   }
   feedbackStatus.hidden = false;
   feedbackStatus.textContent = msg;
+  feedbackStatus.classList.toggle("feedback-overlay__status--info", tone === "info");
+}
+
+let feedbackScreenshotFile = null;
+let feedbackScreenshotPreviewUrl = "";
+
+function clearFeedbackScreenshot() {
+  feedbackScreenshotFile = null;
+  if (feedbackScreenshotPreviewUrl) {
+    try {
+      URL.revokeObjectURL(feedbackScreenshotPreviewUrl);
+    } catch {
+      /* ignore */
+    }
+  }
+  feedbackScreenshotPreviewUrl = "";
+  if (feedbackScreenshotInput) feedbackScreenshotInput.value = "";
+  if (feedbackShotPreview) feedbackShotPreview.removeAttribute("src");
+  if (feedbackShotPreviewWrap) feedbackShotPreviewWrap.hidden = true;
+  if (feedbackShotName) feedbackShotName.textContent = "";
+  if (btnFeedbackClearShot) btnFeedbackClearShot.hidden = true;
+  if (btnFeedbackPickShot) btnFeedbackPickShot.textContent = "Add screenshot";
+}
+
+function syncFeedbackScreenshotPreview(file) {
+  clearFeedbackScreenshot();
+  if (!file) return;
+  feedbackScreenshotFile = file;
+  feedbackScreenshotPreviewUrl = URL.createObjectURL(file);
+  if (feedbackShotPreview) feedbackShotPreview.src = feedbackScreenshotPreviewUrl;
+  if (feedbackShotPreviewWrap) feedbackShotPreviewWrap.hidden = false;
+  if (feedbackShotName) {
+    const kb = Math.max(1, Math.round(file.size / 1024));
+    feedbackShotName.textContent = `${file.name || "screenshot"} · ${kb} KB`;
+  }
+  if (btnFeedbackClearShot) btnFeedbackClearShot.hidden = false;
+  if (btnFeedbackPickShot) btnFeedbackPickShot.textContent = "Change screenshot";
+}
+
+async function prepareFeedbackScreenshotBlob(file) {
+  if (!file) return null;
+  if (!String(file.type || "").startsWith("image/")) {
+    throw new Error("Please choose a photo or screenshot.");
+  }
+  if (file.size > FEEDBACK_SCREENSHOT_MAX_BYTES * 2) {
+    throw new Error("That image is too large — try a smaller screenshot.");
+  }
+
+  const bitmap = await createImageBitmap(file).catch(() => null);
+  if (!bitmap) {
+    if (file.size > FEEDBACK_SCREENSHOT_MAX_BYTES) {
+      throw new Error("That image is too large — try a smaller screenshot.");
+    }
+    return file;
+  }
+
+  try {
+    const scale = Math.min(1, FEEDBACK_SCREENSHOT_MAX_EDGE / Math.max(bitmap.width, bitmap.height));
+    const width = Math.max(1, Math.round(bitmap.width * scale));
+    const height = Math.max(1, Math.round(bitmap.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return file;
+    ctx.drawImage(bitmap, 0, 0, width, height);
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.78));
+    if (!blob) return file;
+    if (blob.size > FEEDBACK_SCREENSHOT_MAX_BYTES) {
+      throw new Error("That image is still too large — try a smaller screenshot.");
+    }
+    return blob;
+  } finally {
+    try {
+      bitmap.close();
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
+async function uploadFeedbackScreenshot(file) {
+  const blob = await prepareFeedbackScreenshotBlob(file);
+  if (!blob) return "";
+  const clientId = String(getDuelClientId() || "anon")
+    .replace(/[^a-zA-Z0-9_-]/g, "")
+    .slice(0, 40) || "anon";
+  const path = `${clientId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+  const uploadUrl = `${SUPABASE_URL}/storage/v1/object/${FEEDBACK_SCREENSHOT_BUCKET}/${path}`;
+  const res = await fetch(uploadUrl, {
+    method: "POST",
+    headers: leaderboardHeaders({
+      "Content-Type": blob.type || "image/jpeg",
+      "x-upsert": "false",
+    }),
+    body: blob,
+  });
+  const text = await res.text().catch(() => "");
+  if (!res.ok) {
+    if (/Bucket not found|row-level security|storage/i.test(text) || res.status === 404) {
+      throw new Error("Screenshot storage isn’t set up yet — run supabase/game_feedback_screenshots.sql");
+    }
+    throw new Error("Couldn’t upload screenshot — try again or send without one.");
+  }
+  return `${SUPABASE_URL}/storage/v1/object/public/${FEEDBACK_SCREENSHOT_BUCKET}/${path}`;
 }
 
 function openFeedbackOverlay() {
   setStartSettingsOpen(false);
   if (!feedbackOverlay) return;
   if (feedbackMessage) feedbackMessage.value = "";
+  clearFeedbackScreenshot();
   setFeedbackStatus("");
   feedbackOverlay.hidden = false;
   feedbackOverlay.setAttribute("aria-hidden", "false");
@@ -29429,6 +29545,7 @@ function closeFeedbackOverlay() {
   feedbackOverlay.hidden = true;
   feedbackOverlay.setAttribute("aria-hidden", "true");
   setFeedbackStatus("");
+  clearFeedbackScreenshot();
 }
 
 let feedbackSubmitLock = false;
@@ -29464,15 +29581,28 @@ async function submitGameFeedback() {
     return;
   }
   feedbackSubmitLock = true;
-  setFeedbackStatus("");
+  setFeedbackStatus(feedbackScreenshotFile ? "Uploading screenshot…" : "", "info");
   if (btnFeedbackSend) btnFeedbackSend.disabled = true;
   try {
+    let screenshotUrl = "";
+    if (feedbackScreenshotFile) {
+      try {
+        screenshotUrl = await uploadFeedbackScreenshot(feedbackScreenshotFile);
+      } catch (err) {
+        const tip = err?.message || "Couldn’t upload screenshot.";
+        setFeedbackStatus(tip);
+        showToast(tip, 4200);
+        return;
+      }
+      setFeedbackStatus("Sending…", "info");
+    }
     const payload = {
       message: message.slice(0, 2000),
       kind: /bug|crash|broken|error/i.test(message) ? "bug" : "feedback",
       client_id: getDuelClientId(),
       player_name: String(gameMeta.playerName || gameMeta.playerInitials || "").slice(0, 80),
       user_agent: String(navigator.userAgent || "").slice(0, 240),
+      screenshot_url: screenshotUrl,
     };
     const res = await fetch(GAME_FEEDBACK_URL, {
       method: "POST",
@@ -29485,7 +29615,9 @@ async function submitGameFeedback() {
     const text = await res.text().catch(() => "");
     if (!res.ok) {
       let tip = "Couldn’t send right now — try again later.";
-      if (/game_feedback|PGRST205|schema cache/i.test(text) || res.status === 404) {
+      if (/screenshot_url|PGRST204/i.test(text)) {
+        tip = "Screenshot column missing — run supabase/game_feedback_screenshots.sql in Supabase.";
+      } else if (/game_feedback|PGRST205|schema cache/i.test(text) || res.status === 404) {
         tip = "Feedback table isn’t set up yet — run supabase/game_feedback.sql in Supabase.";
       }
       setFeedbackStatus(tip);
@@ -29493,7 +29625,10 @@ async function submitGameFeedback() {
       return;
     }
     closeFeedbackOverlay();
-    showToast("Thanks! Your note was sent.", 3200);
+    showToast(
+      screenshotUrl ? "Thanks! Your note and screenshot were sent." : "Thanks! Your note was sent.",
+      3400,
+    );
   } catch (err) {
     console.warn(err);
     const tip = "Couldn’t send right now — check your connection.";
@@ -29535,6 +29670,31 @@ btnFeedbackSend?.addEventListener(
   },
   { passive: false },
 );
+btnFeedbackPickShot?.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  feedbackScreenshotInput?.click();
+});
+btnFeedbackClearShot?.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  clearFeedbackScreenshot();
+});
+feedbackScreenshotInput?.addEventListener("change", () => {
+  const file = feedbackScreenshotInput.files?.[0] || null;
+  if (!file) {
+    clearFeedbackScreenshot();
+    return;
+  }
+  if (!String(file.type || "").startsWith("image/")) {
+    clearFeedbackScreenshot();
+    setFeedbackStatus("Please choose a photo or screenshot.");
+    showToast("Please choose a photo or screenshot.", 2600);
+    return;
+  }
+  syncFeedbackScreenshotPreview(file);
+  setFeedbackStatus("");
+});
 feedbackOverlay?.querySelector(".feedback-overlay__backdrop")?.addEventListener("click", closeFeedbackOverlay);
 feedbackOverlay?.querySelector(".feedback-overlay__stage")?.addEventListener("click", (e) => {
   e.stopPropagation();
