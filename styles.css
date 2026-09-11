@@ -4709,6 +4709,21 @@ button.seagull-avatar:active {
   margin: 0;
 }
 
+.tourney-card-copy__live {
+  margin: 0 0 6px;
+  font-family: "Nunito", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1.35;
+  color: #fde68a;
+}
+
+.tourney-card-copy__live:last-of-type {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(125, 211, 252, 0.22);
+}
+
 .tourney-card-copy__lead {
   margin: 0 0 8px;
   font-family: "Nunito", sans-serif;
