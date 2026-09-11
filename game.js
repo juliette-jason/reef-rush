@@ -2,17 +2,17 @@
  * Reef Rush — responsive canvas fishing game
  */
 
-const REEF_RUSH_LIVE_ORIGIN = "https://reefrush.io";
+const REEF_RUSH_LIVE_ORIGIN = "https://reef-rush.com";
 const REEF_RUSH_LIVE_URL = `${REEF_RUSH_LIVE_ORIGIN}/`;
 const REEF_RUSH_LEGACY_HOST = "juliette-jason.github.io";
-const REEF_RUSH_CUSTOM_HOSTS = new Set(["reefrush.io", "www.reefrush.io"]);
+const REEF_RUSH_CUSTOM_HOSTS = new Set(["reef-rush.com", "www.reef-rush.com"]);
 
 /** Send typo / old GitHub Pages paths to the custom domain once DNS is live. */
 function redirectToReefRushLiveIfNeeded() {
   if (typeof location === "undefined") return;
   const host = location.hostname;
   if (REEF_RUSH_CUSTOM_HOSTS.has(host)) {
-    if (host === "www.reefrush.io") {
+    if (host === "www.reef-rush.com") {
       location.replace(`${REEF_RUSH_LIVE_URL}${location.search}${location.hash}`);
     }
     return;
@@ -23,7 +23,7 @@ function redirectToReefRushLiveIfNeeded() {
     return;
   }
   /*
-   * Keep juliette-jason.github.io/reef-rush/ working until reefrush.io DNS is live.
+   * Keep juliette-jason.github.io/reef-rush/ working until reef-rush.com DNS is live.
    * Wrong paths on the old host still go to /reef-rush/ (not the custom domain yet).
    */
   if (host === REEF_RUSH_LEGACY_HOST) {

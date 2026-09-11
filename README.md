@@ -1,11 +1,11 @@
 # reef-rush
 
-**Live game:** [https://reefrush.io/](https://reefrush.io/)  
+**Live game:** [https://reef-rush.com/](https://reef-rush.com/)  
 (Legacy: `https://juliette-jason.github.io/reef-rush/` until DNS cuts over.)
 
-## Custom domain (`reefrush.io`)
+## Custom domain (`reef-rush.com`)
 
-1. **Buy** `reefrush.io` at a registrar (Namecheap, Google Domains/Squarespace, Cloudflare, etc.) if you don’t own it yet.
+1. **Buy** `reef-rush.com` at a registrar (Namecheap, Google Domains/Squarespace, Cloudflare, etc.) if you don’t own it yet.
 2. At the registrar, add these DNS records for GitHub Pages:
 
 | Type | Name | Value |
@@ -20,8 +20,8 @@
 | AAAA | `@` | `2606:50c0:8003::153` |
 | CNAME | `www` | `juliette-jason.github.io` |
 
-3. In GitHub → **Settings → Pages**, set Custom domain to `reefrush.io` and enable **Enforce HTTPS** (after DNS propagates).
-4. Wait for DNS (often 5–60 minutes). Then open https://reefrush.io/
+3. In GitHub → **Settings → Pages**, set Custom domain to `reef-rush.com` and enable **Enforce HTTPS** (after DNS propagates).
+4. Wait for DNS (often 5–60 minutes). Then open https://reef-rush.com/
 
 ## Friend party codes (no sign-in)
 
