@@ -23,7 +23,7 @@
       rel="stylesheet"
     />
     <link rel="canonical" href="https://juliette-jason.github.io/reef-rush/" />
-    <link rel="stylesheet" href="styles.css?v=2026-09-11-feedback-shot" />
+    <link rel="stylesheet" href="styles.css?v=2026-09-11-safety-pack" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -56,8 +56,8 @@
             class="seagull-avatar seagull-avatar--hud"
             data-companion-avatar
             role="img"
-            aria-label="My sea pal"
-            title="My sea pal"
+            aria-label="My sea pal — open My Profile to change outfit"
+            title="My sea pal — tap after a round to change outfits in My Profile"
           ></div>
         </div>
         <div id="adventurePlayTheme" class="adventure-play-theme" hidden>
@@ -362,7 +362,7 @@
               <span class="crab-trap-stage__stat-label">Time</span>
               <span id="crabTrapTime" class="crab-trap-stage__stat-value">1:00</span>
             </div>
-            <button type="button" id="btnCrabQuit" class="crab-trap-stage__quit" aria-label="Quit Crab Trap">✕</button>
+            <button type="button" id="btnCrabQuit" class="crab-trap-stage__quit" aria-label="Quit Crab Trap and return to Events" title="Quit Crab Trap">✕</button>
           </div>
         </div>
       </div>
@@ -716,8 +716,8 @@
               id="seagullAvatarStart"
               class="seagull-avatar seagull-avatar--start"
               data-companion-avatar
-              aria-label="Pick a sea pal in My Profile"
-              title="Pick a sea pal"
+              aria-label="Sea pal — open My Profile to change outfit"
+              title="Sea pal — tap to open My Profile and pick an outfit"
             ></button>
             <div class="start-settings">
               <button
@@ -726,8 +726,8 @@
                 class="start-settings__toggle"
                 aria-expanded="false"
                 aria-controls="startSettingsMenu"
-                aria-label="Settings"
-                title="Settings"
+                aria-label="Settings — music, how to play, and feedback"
+                title="Settings — music, how to play, and feedback"
               >
                 <svg class="start-settings__icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
                   <path
@@ -737,6 +737,7 @@
                 </svg>
               </button>
               <div id="startSettingsMenu" class="start-settings__menu" hidden>
+                <p class="start-settings__safety">Made for kids · no chat · no real money</p>
                 <button type="button" id="btnOpenIntro" class="btn btn--secondary btn--help">How to play</button>
                 <button type="button" id="btnToggleMusic" class="btn btn--secondary btn--music" aria-pressed="false">Music</button>
                 <button type="button" id="btnSendFeedback" class="btn btn--secondary btn--feedback">Send bug / feedback</button>
@@ -905,7 +906,7 @@
       <div id="homeLaunchDock" class="home-launch-dock" hidden>
         <p id="adventureUnlockHint" class="adventure-launch__hint" hidden>Treasure chests: 0 / 20</p>
         <nav id="homeLaunchStack" class="home-launch-stack" aria-label="Main destinations">
-          <button type="button" id="btnWorldAdventures" class="world-launch" data-tab="world" aria-label="World Adventures">
+          <button type="button" id="btnWorldAdventures" class="world-launch" data-tab="world" aria-label="World Adventures — pick a reef to fish" title="World — pick a reef on the map">
             <span class="world-launch__glyph" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
                 <circle cx="12" cy="12" r="8.5" fill="#38bdf8" stroke="#0369a1" stroke-width="1.2"/>
@@ -913,9 +914,12 @@
                 <path d="M5.2 8.2h13.6M5.2 15.8h13.6" stroke="#bae6fd" stroke-width="1" opacity="0.85"/>
               </svg>
             </span>
-            <span class="world-launch__label">World</span>
+            <span class="world-launch__copy">
+              <span class="world-launch__label">World</span>
+              <span class="world-launch__hint">Pick a reef</span>
+            </span>
           </button>
-          <button type="button" id="btnShopLaunch" class="shop-launch" data-tab="shop" aria-label="Fishing shop">
+          <button type="button" id="btnShopLaunch" class="shop-launch" data-tab="shop" aria-label="Fishing shop — bait, rods, tickets, and outfits" title="Shop — spend coins and gems">
             <span class="shop-launch__glyph" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
                 <ellipse cx="8.5" cy="16.2" rx="4.2" ry="3.4" fill="#f59e0b" stroke="#92400e" stroke-width="1"/>
@@ -929,9 +933,12 @@
                 <circle cx="16.2" cy="6.4" r="1.5" fill="#ffe08a" stroke="#b45309" stroke-width="0.8"/>
               </svg>
             </span>
-            <span class="shop-launch__label">Shop</span>
+            <span class="shop-launch__copy">
+              <span class="shop-launch__label">Shop</span>
+              <span class="shop-launch__hint">Bait &amp; gear</span>
+            </span>
           </button>
-          <button type="button" id="btnAdventureMode" class="adventure-launch" data-tab="adventure" aria-label="Adventure Mode">
+          <button type="button" id="btnAdventureMode" class="adventure-launch" data-tab="adventure" aria-label="Adventure Mode — voyage charts and goals" title="Adventure — unlock charts with treasure chests">
             <span id="adventureLock" class="adventure-launch__lock" aria-hidden="true"></span>
             <span class="adventure-launch__glyph" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
@@ -949,9 +956,12 @@
                 <circle cx="17.6" cy="18.4" r="1.35" fill="#f8fafc" stroke="#1c1917" stroke-width="0.85"/>
               </svg>
             </span>
-            <span class="adventure-launch__label">Adventure</span>
+            <span class="adventure-launch__copy">
+              <span class="adventure-launch__label">Adventure</span>
+              <span class="adventure-launch__hint">Voyage charts</span>
+            </span>
           </button>
-          <button type="button" id="btnEvents" class="events-launch" data-tab="events" aria-label="Events">
+          <button type="button" id="btnEvents" class="events-launch" data-tab="events" aria-label="Events — duels, minigames, boards, and tourney" title="Events — duels, minigames, and daily boards">
             <span class="events-launch__glyph" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
                 <path d="M5 8.5c0-2.4 3.1-4.5 7-4.5s7 2.1 7 4.5-3.1 4.5-7 4.5S5 10.9 5 8.5Z" fill="#7dd3fc" stroke="#0369a1" stroke-width="1.1"/>
@@ -959,9 +969,12 @@
                 <path d="M8.2 10.2c1.1.7 2.4 1.1 3.8 1.1s2.7-.4 3.8-1.1" stroke="#e0f2fe" stroke-width="1.2" stroke-linecap="round"/>
               </svg>
             </span>
-            <span class="events-launch__label">Events</span>
+            <span class="events-launch__copy">
+              <span class="events-launch__label">Events</span>
+              <span class="events-launch__hint">Duels &amp; more</span>
+            </span>
           </button>
-          <button type="button" id="btnCollectables" class="collectables-launch" data-tab="collectables" aria-label="My Loot">
+          <button type="button" id="btnCollectables" class="collectables-launch" data-tab="collectables" aria-label="My Loot — sea pals, rings, stamps, and chest items" title="My Loot — outfits, stamps, and chest items">
             <span class="collectables-launch__glyph" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
                 <path d="M4.5 11.5h15v7.2a1.8 1.8 0 0 1-1.8 1.8H6.3a1.8 1.8 0 0 1-1.8-1.8v-7.2Z" fill="#b45309" stroke="#78350f" stroke-width="1.1"/>
@@ -972,7 +985,10 @@
                 <circle cx="12" cy="14.8" r="0.7" fill="#78350f"/>
               </svg>
             </span>
-            <span class="collectables-launch__label">My Loot</span>
+            <span class="collectables-launch__copy">
+              <span class="collectables-launch__label">My Loot</span>
+              <span class="collectables-launch__hint">Pals &amp; stamps</span>
+            </span>
           </button>
         </nav>
       </div>
@@ -1710,8 +1726,8 @@
           <span class="adventure-map-back__label">← Back to home</span>
         </button>
         <nav id="adventureMapPager" class="adventure-map-pager" hidden>
-          <button type="button" id="btnAdventureMapPrev" class="adventure-map-pager__btn" aria-label="Previous map">‹</button>
-          <button type="button" id="btnAdventureMapNext" class="adventure-map-pager__btn" aria-label="Next map">›</button>
+          <button type="button" id="btnAdventureMapPrev" class="adventure-map-pager__btn" aria-label="Previous adventure map" title="Previous map">‹</button>
+          <button type="button" id="btnAdventureMapNext" class="adventure-map-pager__btn" aria-label="Next adventure map" title="Next map">›</button>
         </nav>
       </section>
 
@@ -1859,8 +1875,9 @@
               <details class="event-card__about">
                 <summary class="event-card__info" aria-label="About Top 10 global scores">
                   <span class="event-card__info-glyph" aria-hidden="true">i</span>
+                  <span class="event-card__info-text">Info</span>
                 </summary>
-                <p class="event-card__blurb">All-time best reef scores.</p>
+                <p class="event-card__blurb">All-time best reef scores from around the world. Beat a top-10 run to save your name on the board.</p>
               </details>
             </div>
             <p class="event-card__reset">All-time</p>
@@ -1924,8 +1941,9 @@
               <details class="event-card__about">
                 <summary class="event-card__info" aria-label="About Fisher of the Day">
                   <span class="event-card__info-glyph" aria-hidden="true">i</span>
+                  <span class="event-card__info-text">Info</span>
                 </summary>
-                <p class="event-card__blurb">Best score today. Top 3: legendary, rare, common chests. 1st also gets Magnet Rod.</p>
+                <p class="event-card__blurb">Best score today across reefs. Top 3 win legendary, rare, or common chests the next day. 1st also gets a Magnet Rod day.</p>
               </details>
             </div>
             <p id="dailyEventReset" class="event-card__reset">Resets tonight</p>
@@ -1964,6 +1982,7 @@
               <details class="event-card__about">
                 <summary class="event-card__info" aria-label="About Fishing Tourney">
                   <span class="event-card__info-glyph" aria-hidden="true">i</span>
+                  <span class="event-card__info-text">Info</span>
                 </summary>
                 <div class="event-card__blurb event-card__blurb--stack tourney-card-copy">
                   <p class="tourney-card-copy__lead">
@@ -2053,10 +2072,11 @@
               <details class="event-card__about">
                 <summary class="event-card__info" aria-label="About Duel Fishing">
                   <span class="event-card__info-glyph" aria-hidden="true">i</span>
+                  <span class="event-card__info-text">Info</span>
                 </summary>
                 <div class="event-card__blurb event-card__blurb--stack">
-                  <p id="duelEventMatchup" class="event-card__matchup">Enter the lobby — match a real player, or face a random rival if nobody's waiting.</p>
-                  <p id="duelEventReef" class="event-card__reef-pick">Random reef each duel · 1:00 round · solo fallback</p>
+                  <p id="duelEventMatchup" class="event-card__matchup">Spend 1 ticket for a 1-minute head-to-head. Match a real player, or face a random rival if nobody’s waiting.</p>
+                  <p id="duelEventReef" class="event-card__reef-pick">Random reef each duel · use a friend code to play together · watch live duels below</p>
                 </div>
               </details>
             </div>
@@ -2172,8 +2192,9 @@
               <details class="event-card__about">
                 <summary class="event-card__info" aria-label="About Daily Catch">
                   <span class="event-card__info-glyph" aria-hidden="true">i</span>
+                  <span class="event-card__info-text">Info</span>
                 </summary>
-                <p class="event-card__blurb">Hit today's catch goal, then claim that fish's stamp.</p>
+                <p class="event-card__blurb">Each day has a catch goal (a target fish). Catch enough during any reef round, then claim that fish’s stamp in Events.</p>
               </details>
             </div>
             <p id="dailyCatchReset" class="event-card__reset">Resets tonight</p>
@@ -2263,8 +2284,9 @@
               <details class="event-card__about">
                 <summary class="event-card__info" aria-label="About Crab Trap">
                   <span class="event-card__info-glyph" aria-hidden="true">i</span>
+                  <span class="event-card__info-text">Info</span>
                 </summary>
-                <p class="event-card__blurb">60 seconds · 1 ticket · open a chest.</p>
+                <p class="event-card__blurb">60-second arcade mode: tap to drop lobster cages on crabs. Costs 1 ticket. Finish to open a reward chest.</p>
               </details>
             </div>
             <p class="event-card__reset">60 seconds</p>
@@ -2348,8 +2370,9 @@
               <details class="event-card__about">
                 <summary class="event-card__info" aria-label="About Reef Roulette">
                   <span class="event-card__info-glyph" aria-hidden="true">i</span>
+                  <span class="event-card__info-text">Info</span>
                 </summary>
-                <p class="event-card__blurb">Uncharted reef · 45s · chest by score.</p>
+                <p class="event-card__blurb">Spin a wild uncharted reef for 45 seconds. Costs 1 ticket. Bigger scores unlock better chests.</p>
               </details>
             </div>
             <p class="event-card__reset">45 seconds</p>
@@ -2443,10 +2466,11 @@
               <details class="event-card__about">
                 <summary class="event-card__info" aria-label="About Co-op Haul">
                   <span class="event-card__info-glyph" aria-hidden="true">i</span>
+                  <span class="event-card__info-text">Info</span>
                 </summary>
                 <div class="event-card__blurb event-card__blurb--stack">
-                  <p id="coopEventMatchup" class="event-card__matchup">Enter the lobby — match a real partner, or team with a random angler if nobody's waiting.</p>
-                  <p id="coopEventReef" class="event-card__reef-pick">Random reef each haul · 50 seconds · solo fallback</p>
+                  <p id="coopEventMatchup" class="event-card__matchup">Team up for a shared 50-second haul. Match a real partner, use a friend code, or get a random angler if nobody’s waiting.</p>
+                  <p id="coopEventReef" class="event-card__reef-pick">Random reef each haul · 1 ticket · scores add together</p>
                 </div>
               </details>
             </div>
@@ -2568,8 +2592,9 @@
               <details class="event-card__about">
                 <summary class="event-card__info" aria-label="About Kraken Survivor">
                   <span class="event-card__info-glyph" aria-hidden="true">i</span>
+                  <span class="event-card__info-text">Info</span>
                 </summary>
-                <p class="event-card__blurb">Fish until you hook a kraken · faster schools · big screens can spawn a swarm.</p>
+                <p class="event-card__blurb">Fish as long as you can on a fast reef. The round ends when you hook a kraken — score big before that. Costs 1 ticket.</p>
               </details>
             </div>
             <p class="event-card__reset">Until the kraken</p>
@@ -2684,7 +2709,7 @@
             spellcheck="false"
           />
         </label>
-        <p id="profileNameHint" class="profile-name__hint">Shown on all leaderboards. Play with friends using a party code on Events — no sign-in.</p>
+        <p id="profileNameHint" class="profile-name__hint">Shown on all leaderboards. Keep it friendly — rude names aren’t allowed. Play with friends using a party code on Events — no sign-in.</p>
 
         <section class="wardrobe-stage profile-wardrobe" aria-label="Sea pal collection">
           <div class="wardrobe-stage__head">
@@ -3050,14 +3075,23 @@
         <div class="intro-card">
           <h3>How to Play</h3>
           <ul class="intro-list">
-            <li>Aim left/right, cast with Enter (or tap).</li>
-            <li>Space / tap near fish to snag them.</li>
-            <li>Don't hook the kraken.</li>
-            <li>Score coins for the shop.</li>
+            <li><strong>Laptop:</strong> aim left/right, Enter to cast, Space to snag near the hook.</li>
+            <li><strong>Phone:</strong> drag to aim, tap or swipe down to cast, tap near fish to snag.</li>
+            <li>Don’t hook the kraken — it ends the round.</li>
+            <li>Score becomes coins for the Fishing shop.</li>
+            <li>Rarer fish (Common → Legendary) are worth more points.</li>
           </ul>
-          <h3>Catch Rarity</h3>
-          <p class="intro-rarity">
-            Common → Legendary. Rarer catches score more.
+          <h3>World · Shop · Adventure · Events</h3>
+          <ul class="intro-list">
+            <li><strong>World</strong> — pick a reef on the map, then choose bait and a rod.</li>
+            <li><strong>Shop</strong> — spend coins and gems on bait, rods, tickets, and outfits.</li>
+            <li><strong>Adventure</strong> — unlock voyage charts by collecting treasure chests, then complete goals.</li>
+            <li><strong>Events</strong> — Duels, Co-op, Crab Trap, Roulette, Survivor, Daily Catch, Tourney, and boards.</li>
+            <li><strong>My Loot</strong> — sea pals, rings, chest items, and catch stamps.</li>
+          </ul>
+          <h3>For parents</h3>
+          <p class="intro-rarity intro-rarity--safety">
+            Made for kids · no open chat · no real-money purchases · names and messages are filtered.
           </p>
         </div>
         <button type="button" id="btnIntroDone" class="btn btn--primary">Got it</button>
@@ -3065,6 +3099,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-09-11-feedback-shot" defer></script>
+    <script src="game.js?v=2026-09-11-safety-pack" defer></script>
   </body>
 </html>

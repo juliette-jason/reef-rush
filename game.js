@@ -9276,7 +9276,7 @@ function textFailsKidSafeFilter(value) {
 
 function kidSafeRejectToast(kind = "text") {
   if (kind === "name") {
-    showToast("Please pick a friendlier name — kids play Reef Rush.", 3400);
+    showToast("This name isn’t allowed — pick a friendlier one. Kids play Reef Rush.", 3800);
     return;
   }
   if (kind === "feedback") {
@@ -9294,14 +9294,26 @@ function assertKidSafeText(value, kind = "text") {
   return true;
 }
 
+function safeLeaderboardInitials(value) {
+  const ini = String(value || "")
+    .toUpperCase()
+    .replace(/[^A-Z]/g, "")
+    .slice(0, 3);
+  if (!ini) return "";
+  if (textFailsKidSafeFilter(ini)) return "";
+  return ini;
+}
+
 function leaderboardDisplayName(entry) {
   const name = parseLeaderboardName(entry?.name || entry?.display_name || entry?.displayName);
   if (name) return name;
-  return entry?.initials || "???";
+  const ini = safeLeaderboardInitials(entry?.initials);
+  if (ini) return ini;
+  return "Angler";
 }
 
 function getLeaderboardPlayerLabel() {
-  return parseLeaderboardName(gameMeta.playerName) || gameMeta.playerInitials || "";
+  return parseLeaderboardName(gameMeta.playerName) || safeLeaderboardInitials(gameMeta.playerInitials) || "";
 }
 
 function resolveScorePlayerIdentity(rawValue = "") {
@@ -9309,13 +9321,11 @@ function resolveScorePlayerIdentity(rawValue = "") {
   const profileName = parseLeaderboardName(gameMeta.playerName);
   const name = typedName || profileName;
   const fromName = initialsFromPlayerName(name);
-  const typedIni = String(rawValue || "")
-    .toUpperCase()
-    .replace(/[^A-Z]/g, "")
-    .slice(0, 3);
-  const initials = fromName || typedIni || gameMeta.playerInitials || initialsFromPlayerName(name) || "AAA";
+  const typedIni = safeLeaderboardInitials(rawValue);
+  const profileIni = safeLeaderboardInitials(gameMeta.playerInitials);
+  const initials = safeLeaderboardInitials(fromName) || typedIni || profileIni || "AAA";
   return {
-    initials: String(initials).toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3) || "AAA",
+    initials: initials || "AAA",
     name: name || "",
   };
 }
@@ -9337,7 +9347,7 @@ function normalizeLeaderboardRows(rows) {
   if (!Array.isArray(rows)) return [];
   const parsed = rows
     .map((e) => ({
-      initials: String(e.initials || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3),
+      initials: safeLeaderboardInitials(e.initials) || "???",
       name: parseLeaderboardName(e.name || e.display_name || e.displayName),
       score: Math.max(0, Math.floor(Number(e.score) || 0)),
       reefId: e.reefId || e.reef_id || "",
@@ -9882,19 +9892,21 @@ function normalizeDailyLeaderboardRows(rows) {
   if (!Array.isArray(rows)) return [];
   const bestByIni = new Map();
   for (const raw of rows) {
-    const initials = String(raw.initials || "").toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3);
+    const initials = safeLeaderboardInitials(raw.initials) || "???";
     const entry = {
       initials,
-      name: parseLeaderboardName(raw.name || raw.display_name || raw.displayName) || initials,
+      name: parseLeaderboardName(raw.name || raw.display_name || raw.displayName) || (initials === "???" ? "" : initials),
       score: Math.max(0, Math.floor(Number(raw.score) || 0)),
       reefId: raw.reefId || raw.reef_id || "",
       at: raw.at || raw.created_at || "",
       dayKey: raw.dayKey || raw.day_key || getDailyDayKey(),
     };
-    if (!entry.initials || entry.score <= 0) continue;
-    const prev = bestByIni.get(entry.initials);
+    if ((!entry.initials || entry.initials === "???") && !entry.name) continue;
+    if (entry.score <= 0) continue;
+    const key = entry.initials === "???" ? `n:${entry.name}` : entry.initials;
+    const prev = bestByIni.get(key);
     if (!prev || entry.score > prev.score || (entry.score === prev.score && String(entry.at) < String(prev.at))) {
-      bestByIni.set(entry.initials, entry);
+      bestByIni.set(key, entry);
     } else if (prev && !prev.name && entry.name) {
       prev.name = entry.name;
     }
@@ -12761,9 +12773,21 @@ function renderTournamentLeaderboard() {
     if (row.is_com || isTourneyComClientId(row.client_id)) li.classList.add("leaderboard__row--com");
     const rank = idx + 1;
     const medal = rank <= 3 ? ["🥇", "🥈", "🥉"][rank - 1] : `${rank}.`;
-    const label = row.display_name || row.initials;
-    const suffix = row.is_com || isTourneyComClientId(row.client_id) ? "" : "";
-    li.innerHTML = `<span class="leaderboard__rank">${medal}</span><span class="leaderboard__name">${label}${suffix}</span><span class="leaderboard__score">${Number(row.score || 0).toLocaleString()}</span>`;
+    const label = leaderboardDisplayName({
+      name: row.display_name,
+      display_name: row.display_name,
+      initials: row.initials,
+    });
+    const rankEl = document.createElement("span");
+    rankEl.className = "leaderboard__rank";
+    rankEl.textContent = medal;
+    const nameEl = document.createElement("span");
+    nameEl.className = "leaderboard__name";
+    nameEl.textContent = label;
+    const scoreEl = document.createElement("span");
+    scoreEl.className = "leaderboard__score";
+    scoreEl.textContent = Number(row.score || 0).toLocaleString();
+    li.append(rankEl, nameEl, scoreEl);
     tourneyLeaderboard.appendChild(li);
   });
 }
@@ -17325,6 +17349,7 @@ function fillMapSeagullHowto() {
       <ul>
         <li>Aim · cast · snag fish near the hook.</li>
         <li>Avoid the kraken.</li>
+        <li>Shop · Events · Adventure are on the bottom bar.</li>
       </ul>
     `;
   }
@@ -17734,6 +17759,119 @@ function showHomePanel() {
   void processDailyPrizePayouts().then(() => {
     window.setTimeout(tryStartDailyPrizeCelebration, 500);
   });
+}
+
+let recoverToSafeHomeLock = false;
+
+function isRiskyPlaySurfaceActive() {
+  if (playing || duelSession || eventMinigameSession || crabTrapSession || adventureSession) return true;
+  if (duelMatchmakingActive || coopMatchmakingActive) return true;
+  if (!appRoot) return false;
+  return (
+    appRoot.classList.contains("app--playing") ||
+    appRoot.classList.contains("app--matchup") ||
+    appRoot.classList.contains("app--crab-trap") ||
+    appRoot.classList.contains("app--duel") ||
+    appRoot.classList.contains("app--adventure-play")
+  );
+}
+
+/** Bounce out of a broken minigame / playfield instead of leaving a black screen. */
+function recoverToSafeHome(reason = "") {
+  if (recoverToSafeHomeLock) return;
+  recoverToSafeHomeLock = true;
+  try {
+    console.warn("Recovering to home", reason || "");
+    playing = false;
+    duelSession = null;
+    eventMinigameSession = null;
+    adventureSession = null;
+    tournamentRun = null;
+    pendingBracketMatch = null;
+    if (crabTrapSession?.rafId) {
+      try {
+        cancelAnimationFrame(crabTrapSession.rafId);
+      } catch {
+        /* ignore */
+      }
+    }
+    crabTrapSession = null;
+    duelMatchmakingActive = false;
+    coopMatchmakingActive = false;
+    duelLobbyMatchId = null;
+    coopLobbyMatchId = null;
+    try {
+      setDuelMatchmakingUi?.(false);
+    } catch {
+      /* ignore */
+    }
+    try {
+      setCoopMatchmakingUi?.(false);
+    } catch {
+      /* ignore */
+    }
+    try {
+      hideOnlineMatchup?.();
+    } catch {
+      /* ignore */
+    }
+    if (crabTrapStage) {
+      crabTrapStage.hidden = true;
+      crabTrapStage.setAttribute("aria-hidden", "true");
+    }
+    appRoot?.classList.remove(
+      "app--playing",
+      "app--matchup",
+      "app--crab-trap",
+      "app--duel",
+      "app--duel-solo",
+      "app--adventure-play",
+      "app--events-mode",
+    );
+    try {
+      clearAdventurePlayThemeClasses?.();
+    } catch {
+      /* ignore */
+    }
+    try {
+      clearPlayfieldCanvas?.();
+    } catch {
+      /* ignore */
+    }
+    try {
+      stopEventsMusic?.();
+    } catch {
+      /* ignore */
+    }
+    hideMenuPanelsOnly({ clearMatchup: true });
+    if (panelStart) panelStart.hidden = false;
+    updateAdventureLaunchUI();
+    syncHomeLaunchButtons();
+    if (musicEnabled) {
+      try {
+        switchSceneMusic(startHomeMusic);
+      } catch {
+        /* ignore */
+      }
+    }
+    showToast("Something went wrong — back at home. Try again!", 4200);
+  } catch (err) {
+    console.warn(err);
+  } finally {
+    window.setTimeout(() => {
+      recoverToSafeHomeLock = false;
+    }, 1200);
+  }
+}
+
+function withPlayRecovery(label, fn) {
+  try {
+    return fn();
+  } catch (err) {
+    console.warn(label, err);
+    recoverToSafeHome(label);
+    return undefined;
+  }
 }
 
 function isSplashScreenActive() {
@@ -20934,12 +21072,16 @@ function saveProfileNameFromInput() {
   const raw = String(profileNameInput?.value || "").replace(/\s+/g, " ").trim().slice(0, 16);
   if (raw && !assertKidSafeText(raw, "name")) {
     if (profileNameInput) profileNameInput.value = gameMeta.playerName || "";
+    if (profileNameHint) {
+      profileNameHint.textContent = "This name isn’t allowed — try another friendlier name.";
+    }
     return;
   }
   const name = parsePlayerName(raw);
   gameMeta.playerName = name;
   const derived = initialsFromPlayerName(name);
-  if (derived) gameMeta.playerInitials = derived;
+  if (derived && !textFailsKidSafeFilter(derived)) gameMeta.playerInitials = derived;
+  else if (derived && textFailsKidSafeFilter(derived)) gameMeta.playerInitials = "";
   saveMeta();
   if (profileNameInput) profileNameInput.value = name;
   updateProfileNameHint();
@@ -21664,6 +21806,7 @@ function confirmEventPrepStart() {
 }
 
 function beginEventMinigame(kind, fromPrep = false) {
+  return withPlayRecovery("beginEventMinigame", () => {
   if (kind === "coop") {
     if (!fromPrep) {
       openEventPrep("coop");
@@ -21720,6 +21863,7 @@ function beginEventMinigame(kind, fromPrep = false) {
   }
   void recordGamePlayEvent(kind);
   startRound();
+  });
 }
 
 function showEventMinigameReward({ source, title, summaryHtml, scorePts, tier, tourneyComplete = false }) {
@@ -21922,6 +22066,7 @@ function buildCrabTrapDecor() {
 }
 
 function startCrabTrap() {
+  try {
   if (!crabTrapCanvas || !crabTrapCtx) return;
   if (!tournamentRun && getDuelTicketCount() <= 0) {
     showToast("No tickets — visit the shop", 2200);
@@ -21976,6 +22121,10 @@ function startCrabTrap() {
     crabTrapSession.rafId = requestAnimationFrame(crabTrapLoop);
   };
   window.requestAnimationFrame(kick);
+  } catch (err) {
+    console.warn("startCrabTrap", err);
+    recoverToSafeHome("startCrabTrap");
+  }
 }
 
 function stopCrabTrapLoop() {
@@ -30065,3 +30214,14 @@ if (isSplashScreenActive()) {
   deferStartupWork();
 }
 requestAnimationFrame(gameLoop);
+
+window.addEventListener("error", (event) => {
+  if (!isRiskyPlaySurfaceActive()) return;
+  console.warn("Play error", event?.error || event?.message || event);
+  recoverToSafeHome("window.error");
+});
+window.addEventListener("unhandledrejection", (event) => {
+  if (!isRiskyPlaySurfaceActive()) return;
+  console.warn("Play rejection", event?.reason || event);
+  recoverToSafeHome("unhandledrejection");
+});
