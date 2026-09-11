@@ -2242,6 +2242,12 @@ body {
   display: none !important;
 }
 
+.feedback-overlay__status--info {
+  border-color: rgba(125, 211, 252, 0.4);
+  background: rgba(8, 47, 73, 0.65);
+  color: #bae6fd;
+}
+
 .feedback-overlay__actions .btn {
   width: 100%;
   min-height: 44px;
