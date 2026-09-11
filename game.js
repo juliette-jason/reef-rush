@@ -23508,13 +23508,7 @@ function playCrabChestSound() {
 }
 
 function updateStartButtonSubtext() {
-  if (!btnStartSub) return;
-  const r = getReef();
-  const sec = Math.ceil(r.roundMs / 1000);
-  const m = Math.floor(sec / 60);
-  const s = sec % 60;
-  const timeStr = `${m}:${s.toString().padStart(2, "0")}`;
-  btnStartSub.textContent = `${timeStr} on ${r.name} (${r.difficulty}) · tap to play`;
+  /* Start button stays "Start Game" only — reef details live on the map caption. */
 }
 
 const MAP_CHART_W = 200;

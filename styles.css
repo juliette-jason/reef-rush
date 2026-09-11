@@ -1981,19 +1981,6 @@ body {
   display: none;
 }
 
-.start-settings__safety {
-  margin: 0 0 2px;
-  padding: 6px 8px;
-  border-radius: 10px;
-  border: 1px solid rgba(167, 243, 208, 0.35);
-  background: rgba(6, 78, 59, 0.35);
-  color: #a7f3d0;
-  font-size: 0.68rem;
-  font-weight: 800;
-  line-height: 1.3;
-  text-align: center;
-}
-
 .panel--start .btn--help,
 .panel--start .btn--reset,
 .panel--start .btn--shop,
