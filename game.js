@@ -856,27 +856,73 @@ function rollCatchStampPrize() {
 function rollSpecialChestPrize(tier) {
   const roll = Math.random();
   tier = normalizeChestTier(tier);
-  // Catch stamps target ~1 per 12 chests; better tiers still drop more often.
+  /* Catch stamps drop more often so albums fill without endless grinding. */
   if (tier === "legendary") {
-    if (roll < 0.035) return { kind: "adventure_skip_rope", qty: 1 };
-    if (roll < 0.12) return { kind: "golden_net", qty: 1 };
-    if (roll < 0.22) return { kind: "mystery_reef", qty: 1 };
-    if (roll < 0.4) return rollCatchStampPrize();
-    if (roll < 0.5) return { kind: "double_haul", qty: 1 };
-    if (roll < 0.66) return { kind: "lucky_lure", qty: 1 };
+    if (roll < 0.03) return { kind: "adventure_skip_rope", qty: 1 };
+    if (roll < 0.1) return { kind: "golden_net", qty: 1 };
+    if (roll < 0.18) return { kind: "mystery_reef", qty: 1 };
+    if (roll < 0.5) return rollCatchStampPrize();
+    if (roll < 0.58) return { kind: "double_haul", qty: 1 };
+    if (roll < 0.72) return { kind: "lucky_lure", qty: 1 };
     return null;
   }
   if (tier === "rare") {
-    if (roll < 0.12) return rollCatchStampPrize();
-    if (roll < 0.24) return { kind: "lucky_lure", qty: 1 };
-    if (roll < 0.34) return { kind: "double_haul", qty: 1 };
-    if (roll < 0.4) return { kind: "mystery_reef", qty: 1 };
-    if (roll < 0.44) return { kind: "golden_net", qty: 1 };
+    if (roll < 0.28) return rollCatchStampPrize();
+    if (roll < 0.4) return { kind: "lucky_lure", qty: 1 };
+    if (roll < 0.5) return { kind: "double_haul", qty: 1 };
+    if (roll < 0.56) return { kind: "mystery_reef", qty: 1 };
+    if (roll < 0.6) return { kind: "golden_net", qty: 1 };
     return null;
   }
   if (roll < 0.06) return { kind: "lucky_lure", qty: 1 };
-  if (roll < 0.14) return rollCatchStampPrize();
+  if (roll < 0.28) return rollCatchStampPrize();
   return null;
+}
+
+function grantCatchStamp(speciesId, { consolCoins = 180 } = {}) {
+  const spec = FISH_SPECIES.find((s) => s.id === speciesId);
+  if (!spec) {
+    if (consolCoins) {
+      gameMeta.coins += consolCoins;
+      saveMeta();
+      refreshCoinDisplays();
+    }
+    return { granted: false, consolCoins, name: "", speciesId: "" };
+  }
+  if (hasCatchStamp(spec.id)) {
+    if (consolCoins) {
+      gameMeta.coins += consolCoins;
+      saveMeta();
+      refreshCoinDisplays();
+    }
+    return { granted: false, consolCoins, name: spec.name, speciesId: spec.id };
+  }
+  if (!Array.isArray(gameMeta.catchStamps)) gameMeta.catchStamps = [];
+  gameMeta.catchStamps.push(spec.id);
+  saveMeta();
+  refreshCollectablesUI();
+  return { granted: true, consolCoins: 0, name: spec.name, speciesId: spec.id };
+}
+
+function grantSeaPalPrize({ consolCoins = 250 } = {}) {
+  const owned = new Set(normalizeOwnedClothes(gameMeta.ownedClothes));
+  const pool = COMPANION_DEFS.filter((c) => !c.starter && !owned.has(c.id));
+  if (!pool.length) {
+    if (consolCoins) {
+      gameMeta.coins += consolCoins;
+      saveMeta();
+      refreshCoinDisplays();
+    }
+    return { granted: false, consolCoins, name: "" };
+  }
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  if (!Array.isArray(gameMeta.ownedClothes)) gameMeta.ownedClothes = normalizeOwnedClothes([]);
+  gameMeta.ownedClothes.push(pick.id);
+  gameMeta.equippedClothes = pick.id;
+  saveMeta();
+  syncSeagullOutfit();
+  refreshCollectablesUI();
+  return { granted: true, consolCoins: 0, name: pick.name, id: pick.id };
 }
 
 
@@ -7773,16 +7819,16 @@ function normalizePendingDailyPrizeCelebration(raw) {
 
 /** Daily Catch challenge pool — targets take a few reef rounds, not one lucky haul. */
 const DAILY_CATCH_POOL = [
-  { morph: "jellyfish", label: "Moon Jellyfish", count: 24 },
-  { morph: "clownfish", label: "Clown Anemonefish", count: 22 },
-  { morph: "silverside", label: "silverside fish", count: 34 },
-  { morph: "mackerel", label: "Chub Mackerel", count: 20 },
-  { morph: "barramundi", label: "Barramundi", count: 20 },
-  { morph: "angelfish", label: "Queen Angelfish", count: 16 },
-  { morph: "seahorse", label: "Lined Seahorse", count: 14 },
-  { morph: "lobster", label: "Caribbean Spiny Lobster", count: 14 },
-  { morph: "cuttlefish", label: "Common Cuttlefish", count: 14 },
-  { morph: "snapper", label: "snapper", count: 16 },
+  { morph: "jellyfish", label: "Moon Jellyfish", count: 24, speciesId: "moon_jellyfish" },
+  { morph: "clownfish", label: "Clown Anemonefish", count: 22, speciesId: "clown_anemonefish" },
+  { morph: "silverside", label: "silverside fish", count: 34, speciesId: "northern_anchovy" },
+  { morph: "mackerel", label: "Chub Mackerel", count: 20, speciesId: "chub_mackerel" },
+  { morph: "barramundi", label: "Barramundi", count: 20, speciesId: "barramundi" },
+  { morph: "angelfish", label: "Queen Angelfish", count: 16, speciesId: "queen_angelfish" },
+  { morph: "seahorse", label: "Lined Seahorse", count: 14, speciesId: "lined_seahorse" },
+  { morph: "lobster", label: "Caribbean Spiny Lobster", count: 14, speciesId: "caribbean_lobster" },
+  { morph: "cuttlefish", label: "Common Cuttlefish", count: 14, speciesId: "common_cuttlefish" },
+  { morph: "snapper", label: "snapper", count: 16, speciesId: "red_snapper" },
 ];
 
 function hashDailyCatchSeed(dayKey) {
@@ -7795,6 +7841,11 @@ function hashDailyCatchSeed(dayKey) {
   return h >>> 0;
 }
 
+function dailyCatchSpeciesIdForMorph(morph) {
+  const row = DAILY_CATCH_POOL.find((p) => p.morph === morph);
+  return row?.speciesId || "";
+}
+
 function normalizeDailyCatchState(raw) {
   if (!raw || typeof raw !== "object") return null;
   const dayKey = String(raw.dayKey || "");
@@ -7803,8 +7854,12 @@ function normalizeDailyCatchState(raw) {
   const target = Math.max(1, Math.floor(Number(raw.target) || 0));
   const progress = Math.max(0, Math.floor(Number(raw.progress) || 0));
   const claimed = Boolean(raw.claimed);
+  const speciesId =
+    typeof raw.speciesId === "string" && raw.speciesId
+      ? raw.speciesId
+      : dailyCatchSpeciesIdForMorph(morph);
   if (!dayKey || !morph || !label || !target) return null;
-  return { dayKey, morph, label, target, progress, claimed };
+  return { dayKey, morph, label, target, progress, claimed, speciesId };
 }
 
 function rollDailyCatchForDay(dayKey) {
@@ -7818,6 +7873,7 @@ function rollDailyCatchForDay(dayKey) {
     target: pick.count,
     progress: 0,
     claimed: false,
+    speciesId: pick.speciesId,
   };
 }
 
@@ -7864,7 +7920,7 @@ function refreshDailyCatchEventCard() {
     } else if (done) {
       btnDailyCatchClaim.hidden = false;
       btnDailyCatchClaim.disabled = false;
-      btnDailyCatchClaim.textContent = "Claim your reward";
+      btnDailyCatchClaim.textContent = "Claim your stamp";
     } else {
       btnDailyCatchClaim.hidden = true;
     }
@@ -7894,29 +7950,20 @@ let crabRewardSource = "crab";
 function showDailyCatchReward() {
   const ch = ensureDailyCatchChallenge();
   if (!ch || ch.claimed || !isDailyCatchComplete(ch)) return;
-  hideAllPanels();
-  crabRewardSource = "dailyCatch";
-  resetChestOpenUi();
-  const tier = "rare";
-  crabRewardBundles = rollCrabBundles(tier);
-  crabRewardClaimed = false;
-  if (crabRewardHeadline) crabRewardHeadline.textContent = "Daily Catch!";
-  if (crabRewardSummary) {
-    crabRewardSummary.innerHTML = `You caught <strong>${ch.target}</strong> ${ch.label}`;
+  const speciesId = ch.speciesId || dailyCatchSpeciesIdForMorph(ch.morph);
+  const result = grantCatchStamp(speciesId, { consolCoins: 220 });
+  ch.claimed = true;
+  gameMeta.dailyCatch = ch;
+  saveMeta();
+  refreshDailyCatchEventCard();
+  refreshCollectablesUI();
+  if (result.granted) {
+    showToast(`Daily Catch complete — ${result.name} stamp unlocked!`, 3800);
+  } else if (result.name) {
+    showToast(`Already had the ${result.name} stamp — +${result.consolCoins} coins instead.`, 3600);
+  } else {
+    showToast(`Daily Catch claimed — +${result.consolCoins} coins.`, 3200);
   }
-  if (crabRewardTier) {
-    crabRewardTier.hidden = true;
-    crabRewardTier.textContent = "";
-  }
-  if (crabRewardPrompt) crabRewardPrompt.textContent = "Choose one chest to claim your reward.";
-  if (crabRewardResult) {
-    crabRewardResult.hidden = true;
-    crabRewardResult.textContent = "";
-  }
-  if (btnCrabPlayAgain) btnCrabPlayAgain.hidden = true;
-  setCrabRewardBackLabel("Back to Events");
-  renderCrabRewardChests(tier);
-  if (panelCrabReward) panelCrabReward.hidden = false;
 }
 
 function dailyPrizeExtrasLabel(rank) {
@@ -12817,6 +12864,62 @@ async function refreshEventsPanel() {
 const DUEL_WIN_COINS = 800;
 const DUEL_DAILY_TICKETS = 5;
 const DUEL_TICKET_PRICE = 700;
+const DUEL_PRIZE_KINDS = ["coins", "rare_chest", "sea_pal", "stamp"];
+
+function todaysDuelPrizeKind(dayKey = getDailyDayKey()) {
+  const idx = hashDailyCatchSeed(`duel-prize:${dayKey}`) % DUEL_PRIZE_KINDS.length;
+  return DUEL_PRIZE_KINDS[idx];
+}
+
+function duelPrizeKindLabel(kind = todaysDuelPrizeKind()) {
+  if (kind === "rare_chest") return "a rare chest";
+  if (kind === "sea_pal") return "a sea pal";
+  if (kind === "stamp") return "a catch stamp";
+  return `${DUEL_WIN_COINS.toLocaleString()} coins`;
+}
+
+function grantDuelWinPrize() {
+  const kind = todaysDuelPrizeKind();
+  if (kind === "rare_chest") {
+    const bundle = rollCrabBundles("rare")[0] || { coins: DUEL_WIN_COINS, gems: 0, bait: null, rodId: null, special: null };
+    grantCrabReward(bundle);
+    const bits = [];
+    if (bundle.coins) bits.push(`${bundle.coins} coins`);
+    if (bundle.gems) bits.push(`${bundle.gems} gems`);
+    if (bundle.bait) bits.push(`${bundle.bait.qty}× bait`);
+    if (bundle.rodId) bits.push("a rod");
+    if (bundle.special?.kind === "catch_stamp" && bundle.special.speciesName) {
+      bits.push(`${bundle.special.speciesName} stamp`);
+    } else if (bundle.special?.kind) {
+      bits.push(specialPrizeLabel(bundle.special) || "a bonus");
+    }
+    return {
+      kind,
+      label: bits.length ? `Rare chest: ${bits.join(", ")}!` : "Rare chest unlocked!",
+    };
+  }
+  if (kind === "sea_pal") {
+    const result = grantSeaPalPrize({ consolCoins: 280 });
+    if (result.granted) return { kind, label: `Sea pal unlocked: ${result.name}!` };
+    return { kind, label: `All sea pals owned — +${result.consolCoins} coins!` };
+  }
+  if (kind === "stamp") {
+    const prize = rollCatchStampPrize();
+    if (prize.speciesId) {
+      const result = grantCatchStamp(prize.speciesId, { consolCoins: prize.consolCoins || 180 });
+      if (result.granted) return { kind, label: `Stamp unlocked: ${result.name}!` };
+      return { kind, label: `Already had that stamp — +${result.consolCoins} coins!` };
+    }
+    gameMeta.coins += prize.consolCoins || 180;
+    saveMeta();
+    refreshCoinDisplays();
+    return { kind, label: `Stamp album complete — +${prize.consolCoins || 180} coins!` };
+  }
+  gameMeta.coins += DUEL_WIN_COINS;
+  saveMeta();
+  refreshCoinDisplays();
+  return { kind: "coins", label: `+${DUEL_WIN_COINS} coins!` };
+}
 /** Sign-in, friends, and online presence for friend duels / co-op. */
 const PLAYER_PROFILES_URL = `${SUPABASE_REST_URL}/player_profiles`;
 const PLAYER_FRIENDS_URL = `${SUPABASE_REST_URL}/player_friends`;
@@ -15573,7 +15676,7 @@ function refreshDuelEventCard() {
   }
   if (eventsTicketCount) eventsTicketCount.textContent = String(tickets);
   if (duelEventTickets) {
-    duelEventTickets.textContent = `${DUEL_DAILY_TICKETS} free daily · extra in shop (700 coins)`;
+    duelEventTickets.textContent = `${DUEL_DAILY_TICKETS} free daily · win prize today: ${duelPrizeKindLabel()} · extra tickets in shop (700 coins)`;
   }
 
   duelPendingTargetScore = rollDuelRivalTargetScore();
@@ -16307,13 +16410,11 @@ async function endDuelRoundAsync() {
   }
   if (duelOverPrize) {
     if (won && !wasTourney) {
-      gameMeta.coins += DUEL_WIN_COINS;
-      saveMeta();
-      refreshCoinDisplays();
+      const prize = grantDuelWinPrize();
       duelOverPrize.hidden = false;
-      duelOverPrize.textContent = `+${DUEL_WIN_COINS} coins!`;
+      duelOverPrize.textContent = prize.label;
       duelOverPrize.classList.add("duel-over__prize--burst");
-      spawnDuelWinCoinAnimation();
+      if (prize.kind === "coins") spawnDuelWinCoinAnimation();
       playCatchCelebrationSound(3);
     } else {
       duelOverPrize.hidden = true;
