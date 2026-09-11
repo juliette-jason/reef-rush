@@ -29463,7 +29463,6 @@ function setStartSettingsOpen(open) {
   }
 }
 
-let settingsGearClickTimes = [];
 btnStartSettings?.addEventListener("click", (e) => {
   e.stopPropagation();
   const open = btnStartSettings.getAttribute("aria-expanded") !== "true";
