@@ -7610,11 +7610,14 @@ function loadMeta() {
       pendingLostCityCelebration: Boolean(o.pendingLostCityCelebration),
       pendingMermaidCoastCelebration: Boolean(o.pendingMermaidCoastCelebration),
       pendingDailyPrizeCelebration: normalizePendingDailyPrizeCelebration(o.pendingDailyPrizeCelebration),
-      playerInitials: String(o.playerInitials || "")
-        .toUpperCase()
-        .replace(/[^A-Z]/g, "")
-        .slice(0, 3),
-      playerName: String(o.playerName || "").replace(/\s+/g, " ").trim().slice(0, 16),
+      playerInitials: (() => {
+        const ini = String(o.playerInitials || "")
+          .toUpperCase()
+          .replace(/[^A-Z]/g, "")
+          .slice(0, 3);
+        return textFailsKidSafeFilter(ini) ? "" : ini;
+      })(),
+      playerName: parseLeaderboardName(o.playerName),
       dailyPrizeCheckedDay: String(o.dailyPrizeCheckedDay || ""),
       magnetRodDayKey: String(o.magnetRodDayKey || ""),
       duelTickets: Math.max(0, Math.floor(Number(o.duelTickets) || 0)),
@@ -9141,7 +9144,149 @@ function leaderboardEntryKey(e) {
 }
 
 function parseLeaderboardName(value) {
-  return String(value || "").replace(/\s+/g, " ").trim().slice(0, 16);
+  const name = String(value || "").replace(/\s+/g, " ").trim().slice(0, 16);
+  if (!name) return "";
+  if (textFailsKidSafeFilter(name)) return "";
+  return name;
+}
+
+/** Normalize typed text for kid-safe matching (leet / spacing tricks). */
+function normalizeKidSafeProbe(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/@/g, "a")
+    .replace(/\$/g, "s")
+    .replace(/\*/g, "")
+    .replace(/0/g, "o")
+    .replace(/[1!|]/g, "i")
+    .replace(/3/g, "e")
+    .replace(/4/g, "a")
+    .replace(/5/g, "s")
+    .replace(/7/g, "t")
+    .replace(/8/g, "b")
+    .replace(/[^a-z\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/(.)\1{2,}/g, "$1$1");
+}
+
+/**
+ * Whole-word rude terms (avoid false hits like "hello", "bass", "class").
+ * Compact list catches spaced/obfuscated forms like "f u c k".
+ */
+const KID_SAFE_BLOCKED_WORDS = [
+  "fuck",
+  "fucker",
+  "fucking",
+  "motherfucker",
+  "shit",
+  "shitty",
+  "bullshit",
+  "asshole",
+  "arsehole",
+  "bitch",
+  "bastard",
+  "damn",
+  "dammit",
+  "damnit",
+  "crap",
+  "dick",
+  "dickhead",
+  "cock",
+  "cocksucker",
+  "pussy",
+  "piss",
+  "pissed",
+  "slut",
+  "whore",
+  "fag",
+  "faggot",
+  "nigger",
+  "nigga",
+  "retard",
+  "retarded",
+  "rape",
+  "rapist",
+  "porn",
+  "porno",
+  "sexy",
+  "sex",
+  "nude",
+  "nudes",
+  "naked",
+  "boob",
+  "boobs",
+  "penis",
+  "vagina",
+  "bollocks",
+  "wanker",
+  "twat",
+  "cunt",
+  "prick",
+  "douche",
+  "douchebag",
+  "jackass",
+  "dumbass",
+  "smartass",
+  "badass",
+  "kill yourself",
+  "kys",
+  "stfu",
+  "gtfo",
+  "mf",
+  "mfo",
+  "fck",
+  "fuk",
+  "fuc",
+  "sht",
+  "azzhole",
+  "btch",
+  "biatch",
+  "horny",
+  "hentai",
+  "onlyfans",
+];
+
+const KID_SAFE_BLOCKED_COMPACT = KID_SAFE_BLOCKED_WORDS.map((w) => w.replace(/\s+/g, "")).filter(
+  (w) => w.length >= 3,
+);
+
+function escapeKidSafeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function textFailsKidSafeFilter(value) {
+  const spaced = normalizeKidSafeProbe(value);
+  if (!spaced) return false;
+  const compact = spaced.replace(/\s+/g, "");
+  for (const word of KID_SAFE_BLOCKED_WORDS) {
+    const re = new RegExp(`(?:^|[^a-z])${escapeKidSafeRegex(word)}(?:[^a-z]|$)`);
+    if (re.test(spaced)) return true;
+  }
+  for (const word of KID_SAFE_BLOCKED_COMPACT) {
+    if (compact.includes(word)) return true;
+  }
+  return false;
+}
+
+function kidSafeRejectToast(kind = "text") {
+  if (kind === "name") {
+    showToast("Please pick a friendlier name — kids play Reef Rush.", 3400);
+    return;
+  }
+  if (kind === "feedback") {
+    showToast("Please keep feedback friendly — kids play this game.", 3400);
+    return;
+  }
+  showToast("Please keep it friendly — kids play Reef Rush.", 3200);
+}
+
+function assertKidSafeText(value, kind = "text") {
+  if (textFailsKidSafeFilter(value)) {
+    kidSafeRejectToast(kind);
+    return false;
+  }
+  return true;
 }
 
 function leaderboardDisplayName(entry) {
@@ -20744,7 +20889,7 @@ function closeCollectables() {
 }
 
 function parsePlayerName(value) {
-  return String(value || "").replace(/\s+/g, " ").trim().slice(0, 16);
+  return parseLeaderboardName(value);
 }
 
 function initialsFromPlayerName(name) {
@@ -20774,7 +20919,12 @@ function updateProfileNameHint() {
 }
 
 function saveProfileNameFromInput() {
-  const name = parsePlayerName(profileNameInput?.value);
+  const raw = String(profileNameInput?.value || "").replace(/\s+/g, " ").trim().slice(0, 16);
+  if (raw && !assertKidSafeText(raw, "name")) {
+    if (profileNameInput) profileNameInput.value = gameMeta.playerName || "";
+    return;
+  }
+  const name = parsePlayerName(raw);
   gameMeta.playerName = name;
   const derived = initialsFromPlayerName(name);
   if (derived) gameMeta.playerInitials = derived;
@@ -29236,6 +29386,7 @@ async function submitGameFeedback() {
     showToast("Write a little more so I can help.", 2400);
     return;
   }
+  if (!assertKidSafeText(message, "feedback")) return;
   if (btnFeedbackSend) btnFeedbackSend.disabled = true;
   try {
     const payload = {
@@ -29380,7 +29531,10 @@ async function saveCurrentScoreToBoard() {
   if (leaderboardSaveInFlight) return;
   const board = loadLeaderboard();
   if (!qualifiesForLeaderboard(lastRoundScore, board)) return;
-  const { initials: ini, name } = resolveScorePlayerIdentity(initialsInput?.value || gameMeta.playerName);
+  const rawName = String(initialsInput?.value || gameMeta.playerName || "").trim();
+  if (rawName && !assertKidSafeText(rawName, "name")) return;
+  const { initials: ini, name } = resolveScorePlayerIdentity(rawName || gameMeta.playerName);
+  if (ini && !assertKidSafeText(ini, "name")) return;
   const pending = {
     initials: ini,
     name,
@@ -29418,7 +29572,10 @@ async function saveCurrentScoreToBoard() {
 
 async function saveDailyScoreFromGameOver() {
   if (lastRoundScore <= 0) return;
-  const { initials: ini, name } = resolveScorePlayerIdentity(dailyInitialsInput?.value || gameMeta.playerName);
+  const rawName = String(dailyInitialsInput?.value || gameMeta.playerName || "").trim();
+  if (rawName && !assertKidSafeText(rawName, "name")) return;
+  const { initials: ini, name } = resolveScorePlayerIdentity(rawName || gameMeta.playerName);
+  if (ini && !assertKidSafeText(ini, "name")) return;
   gameMeta.playerInitials = ini;
   if (name) gameMeta.playerName = name;
   saveMeta();
