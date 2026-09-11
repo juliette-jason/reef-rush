@@ -6080,22 +6080,31 @@ function drawMermaidCoastBed(themeId) {
 
   /* Two mermaids lounging on perch rocks */
   if (typeof drawSittingMermaidFigure === "function" && MERMAID_LOOKS?.length) {
-    const levelSeed = adventureSession ? adventureSession.levelIndex | 0 : 0;
-    const t = performance.now() * 0.001;
-    const lookL = MERMAID_LOOKS[(levelSeed + 1) % MERMAID_LOOKS.length];
-    const lookR = MERMAID_LOOKS[(levelSeed + 3) % MERMAID_LOOKS.length];
-    const sitAlpha = 0.88;
-    const sitS = dpr * 0.9;
-    ctx.save();
-    ctx.globalAlpha = sitAlpha;
-    ctx.translate(w * 0.28, base - dpr * 28 + Math.sin(t * 1.4 + 0.6) * dpr * 1.5);
-    drawSittingMermaidFigure(sitS, lookL, 1, t, sitAlpha, 0.6);
-    ctx.restore();
-    ctx.save();
-    ctx.globalAlpha = sitAlpha;
-    ctx.translate(w * 0.68, base - dpr * 26 + Math.sin(t * 1.25 + 2.1) * dpr * 1.5);
-    drawSittingMermaidFigure(sitS * 0.92, lookR, -1, t, sitAlpha, 2.1);
-    ctx.restore();
+    try {
+      const levelSeed = adventureSession ? adventureSession.levelIndex | 0 : 0;
+      const t = performance.now() * 0.001;
+      const lookL = MERMAID_LOOKS[(levelSeed + 1) % MERMAID_LOOKS.length];
+      const lookR = MERMAID_LOOKS[(levelSeed + 3) % MERMAID_LOOKS.length];
+      const sitAlpha = 0.88;
+      const sitS = dpr * 0.9;
+      ctx.save();
+      ctx.globalAlpha = sitAlpha;
+      ctx.translate(w * 0.28, base - dpr * 28 + Math.sin(t * 1.4 + 0.6) * dpr * 1.5);
+      drawSittingMermaidFigure(sitS, lookL, 1, t, sitAlpha, 0.6);
+      ctx.restore();
+      ctx.save();
+      ctx.globalAlpha = sitAlpha;
+      ctx.translate(w * 0.68, base - dpr * 26 + Math.sin(t * 1.25 + 2.1) * dpr * 1.5);
+      drawSittingMermaidFigure(sitS * 0.92, lookR, -1, t, sitAlpha, 2.1);
+      ctx.restore();
+    } catch (err) {
+      console.warn("Mermaid bed figure draw failed", err);
+      try {
+        ctx.restore();
+      } catch {
+        /* ignore */
+      }
+    }
   }
 
   /* Coral fans & sea blossoms */
@@ -7427,7 +7436,13 @@ function drawAdventureThemeOverlayInner(now) {
 
   if (themeId === "serpent-strait") drawVagueSerpentSilhouette(now);
   if (themeId === "leviathan-deep" || themeId === "bounty-trench") drawVagueLeviathanSilhouette(now);
-  if (isMermaidCoastTheme(themeId)) drawVagueMermaidSilhouette(now);
+  if (isMermaidCoastTheme(themeId)) {
+    try {
+      drawVagueMermaidSilhouette(now);
+    } catch (err) {
+      console.warn("Mermaid glimpse draw failed", err);
+    }
+  }
 
   const g = ctx.createLinearGradient(0, waterTop, 0, h);
   for (const [stop, color] of atm.stops) g.addColorStop(stop, color);
@@ -17844,6 +17859,11 @@ function recoverToSafeHome(reason = "") {
       /* ignore */
     }
     hideMenuPanelsOnly({ clearMatchup: true });
+    try {
+      clearAdventurePlayTheme?.();
+    } catch {
+      /* ignore */
+    }
     if (panelStart) panelStart.hidden = false;
     updateAdventureLaunchUI();
     syncHomeLaunchButtons();
@@ -18632,9 +18652,35 @@ function startAdventureLevel(levelIndex) {
     mermaidGlimpseSeen: false,
   };
   selectedReefId = lvl.reefId;
-  hideAllPanels();
-  updateAdventurePlayTheme(levelIndex);
-  startRound();
+  try {
+    hideAllPanels();
+    updateAdventurePlayTheme(levelIndex);
+    startRound();
+    if (!playing) {
+      adventureSession = null;
+      clearAdventurePlayTheme();
+      openAdventurePrep(levelIndex);
+      showToast("Couldn’t start that voyage — try again!", 2800);
+    }
+  } catch (err) {
+    console.warn("startAdventureLevel", err);
+    adventureSession = null;
+    try {
+      clearAdventurePlayTheme();
+    } catch {
+      /* ignore */
+    }
+    try {
+      openAdventurePrep(levelIndex);
+    } catch {
+      try {
+        openAdventureHub();
+      } catch {
+        recoverToSafeHome("startAdventureLevel");
+      }
+    }
+    showToast("Something went wrong starting that voyage.", 3200);
+  }
 }
 
 function adventurePrepSectionLabel(lvl) {
@@ -23740,12 +23786,21 @@ function initBubbles() {
 }
 
 function startRound() {
-  /* Home Start: claim Fisher of the Day first, then fish. */
-  if (dailyPrizeCelebrationActive) return;
+  /* Voyages / events / duels must never wait on Fisher of the Day — that used to
+     hide every panel then return, leaving a blank Adventure tab. */
   if (adventureSession || crabTrapSession || duelSession || eventMinigameSession) {
+    if (dailyPrizeCelebrationActive) {
+      try {
+        endDailyPrizeCelebration();
+      } catch {
+        dailyPrizeCelebrationActive = false;
+      }
+    }
     beginFishingRoundFromHomeStart();
     return;
   }
+  /* Home Start: claim Fisher of the Day first, then fish. */
+  if (dailyPrizeCelebrationActive) return;
   const yesterday = getPreviousDailyDayKey();
   const alreadyChecked = gameMeta.dailyPrizeCheckedDay === yesterday;
   if (alreadyChecked && !gameMeta.pendingDailyPrizeCelebration) {
