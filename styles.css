@@ -2120,6 +2120,37 @@ body {
   outline-offset: 1px;
 }
 
+.feedback-overlay__shot-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(253, 230, 138, 0.28);
+  background: rgba(15, 23, 42, 0.45);
+  color: #fef3c7;
+}
+
+.feedback-overlay__shot-icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(56, 189, 248, 0.16);
+  color: #7dd3fc;
+}
+
+.feedback-overlay__shot-copy {
+  flex: 1 1 auto;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: rgba(254, 243, 199, 0.95);
+}
+
 .feedback-overlay__actions {
   display: flex;
   flex-direction: column;

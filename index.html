@@ -23,7 +23,7 @@
       rel="stylesheet"
     />
     <link rel="canonical" href="https://juliette-jason.github.io/reef-rush/" />
-    <link rel="stylesheet" href="styles.css?v=2026-09-11-kidsafe" />
+    <link rel="stylesheet" href="styles.css?v=2026-09-11-shot-tip" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -332,6 +332,18 @@
               maxlength="2000"
               placeholder="Example: Crab Trap crashed when I quit, or I’d love a night reef…"
             ></textarea>
+            <p class="feedback-overlay__shot-tip" role="note">
+              <span class="feedback-overlay__shot-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                  <rect x="3" y="6" width="18" height="14" rx="3" stroke="currentColor" stroke-width="1.8" />
+                  <circle cx="12" cy="13" r="3.4" stroke="currentColor" stroke-width="1.8" />
+                  <path d="M8.5 6.2 9.4 4.4h5.2l.9 1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+              <span class="feedback-overlay__shot-copy"
+                >Send a screenshot if you can — it makes bugs much easier to fix.</span
+              >
+            </p>
             <div class="feedback-overlay__actions">
               <button type="button" id="btnFeedbackSend" class="btn btn--primary">Send</button>
               <button type="button" id="btnFeedbackCancel" class="btn btn--secondary">Cancel</button>
@@ -3030,6 +3042,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-09-11-kidsafe" defer></script>
+    <script src="game.js?v=2026-09-11-shot-tip" defer></script>
   </body>
 </html>
