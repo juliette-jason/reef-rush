@@ -23,7 +23,7 @@
       rel="stylesheet"
     />
     <link rel="canonical" href="https://juliette-jason.github.io/reef-rush/" />
-    <link rel="stylesheet" href="styles.css?v=2026-09-11-admin-device" />
+    <link rel="stylesheet" href="styles.css?v=2026-09-11-feedback-fix" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -318,38 +318,6 @@
             </button>
           </div>
         </div>
-        <div id="feedbackOverlay" class="feedback-overlay" hidden aria-hidden="true">
-          <div class="feedback-overlay__backdrop"></div>
-          <div class="feedback-overlay__stage" role="dialog" aria-labelledby="feedbackTitle" aria-modal="true">
-            <p class="feedback-overlay__badge">★ Reef Rush ★</p>
-            <h2 id="feedbackTitle" class="feedback-overlay__title">Send bug / feedback</h2>
-            <p class="feedback-overlay__lede">Tell Juliette what broke, what confused you, or what you’d love next.</p>
-            <label class="feedback-overlay__label" for="feedbackMessage">Your message</label>
-            <textarea
-              id="feedbackMessage"
-              class="feedback-overlay__input"
-              rows="5"
-              maxlength="2000"
-              placeholder="Example: Crab Trap crashed when I quit, or I’d love a night reef…"
-            ></textarea>
-            <p class="feedback-overlay__shot-tip" role="note">
-              <span class="feedback-overlay__shot-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
-                  <rect x="3" y="6" width="18" height="14" rx="3" stroke="currentColor" stroke-width="1.8" />
-                  <circle cx="12" cy="13" r="3.4" stroke="currentColor" stroke-width="1.8" />
-                  <path d="M8.5 6.2 9.4 4.4h5.2l.9 1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </span>
-              <span class="feedback-overlay__shot-copy">
-                Send a screenshot if you can — it makes bugs much easier to fix.
-              </span>
-            </p>
-            <div class="feedback-overlay__actions">
-              <button type="button" id="btnFeedbackSend" class="btn btn--primary">Send</button>
-              <button type="button" id="btnFeedbackCancel" class="btn btn--secondary">Cancel</button>
-            </div>
-          </div>
-        </div>
         <div id="tourneyBracketOverlay" class="tourney-bracket-overlay" hidden aria-hidden="true">
           <div class="tourney-bracket-overlay__bg" aria-hidden="true">
             <div class="ocean-bubbles ocean-bubbles--nested">
@@ -396,6 +364,39 @@
               <span id="crabTrapTime" class="crab-trap-stage__stat-value">1:00</span>
             </div>
             <button type="button" id="btnCrabQuit" class="crab-trap-stage__quit" aria-label="Quit Crab Trap">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="feedbackOverlay" class="feedback-overlay" hidden aria-hidden="true">
+        <div class="feedback-overlay__backdrop"></div>
+        <div class="feedback-overlay__stage" role="dialog" aria-labelledby="feedbackTitle" aria-modal="true">
+          <p class="feedback-overlay__badge">★ Reef Rush ★</p>
+          <h2 id="feedbackTitle" class="feedback-overlay__title">Send bug / feedback</h2>
+          <p class="feedback-overlay__lede">Tell Juliette what broke, what confused you, or what you’d love next.</p>
+          <label class="feedback-overlay__label" for="feedbackMessage">Your message</label>
+          <textarea
+            id="feedbackMessage"
+            class="feedback-overlay__input"
+            rows="5"
+            maxlength="2000"
+            placeholder="Example: Crab Trap crashed when I quit, or I’d love a night reef…"
+          ></textarea>
+          <p class="feedback-overlay__shot-tip" role="note">
+            <span class="feedback-overlay__shot-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                <rect x="3" y="6" width="18" height="14" rx="3" stroke="currentColor" stroke-width="1.8" />
+                <circle cx="12" cy="13" r="3.4" stroke="currentColor" stroke-width="1.8" />
+                <path d="M8.5 6.2 9.4 4.4h5.2l.9 1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+            <span class="feedback-overlay__shot-copy">
+              Send a screenshot if you can — it makes bugs much easier to fix.
+            </span>
+          </p>
+          <div class="feedback-overlay__actions">
+            <button type="button" id="btnFeedbackSend" class="btn btn--primary">Send</button>
+            <button type="button" id="btnFeedbackCancel" class="btn btn--secondary">Cancel</button>
           </div>
         </div>
       </div>
@@ -3042,6 +3043,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-09-11-admin-device" defer></script>
+    <script src="game.js?v=2026-09-11-feedback-fix" defer></script>
   </body>
 </html>

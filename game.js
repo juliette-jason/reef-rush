@@ -29401,7 +29401,13 @@ function openFeedbackOverlay() {
   if (feedbackMessage) feedbackMessage.value = "";
   feedbackOverlay.hidden = false;
   feedbackOverlay.setAttribute("aria-hidden", "false");
-  window.setTimeout(() => feedbackMessage?.focus(), 60);
+  window.setTimeout(() => {
+    try {
+      feedbackMessage?.focus({ preventScroll: true });
+    } catch {
+      feedbackMessage?.focus();
+    }
+  }, 80);
 }
 
 function closeFeedbackOverlay() {
@@ -29469,12 +29475,20 @@ btnStartSettings?.addEventListener("click", (e) => {
   setStartSettingsOpen(open);
 });
 
-btnSendFeedback?.addEventListener("click", () => {
+btnSendFeedback?.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
   openFeedbackOverlay();
 });
 btnFeedbackCancel?.addEventListener("click", closeFeedbackOverlay);
 btnFeedbackSend?.addEventListener("click", () => void submitGameFeedback());
 feedbackOverlay?.querySelector(".feedback-overlay__backdrop")?.addEventListener("click", closeFeedbackOverlay);
+feedbackOverlay?.querySelector(".feedback-overlay__stage")?.addEventListener("click", (e) => {
+  e.stopPropagation();
+});
+feedbackOverlay?.addEventListener("pointerdown", (e) => {
+  e.stopPropagation();
+});
 
 tryConsumeAdminUnlockFromUrl();
 syncAdminSettingsUi();
@@ -29497,6 +29511,10 @@ document.addEventListener("pointerdown", (e) => {
 
 window.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
+  if (feedbackOverlay && !feedbackOverlay.hidden) {
+    closeFeedbackOverlay();
+    return;
+  }
   if (isDuelSpectatorSession()) {
     leaveDuelSpectator();
     return;
