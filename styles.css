@@ -8631,6 +8631,14 @@ button.seagull-avatar:active {
   color: var(--neon-cyan);
 }
 
+.event-card__about .event-card__tickets--info {
+  margin: 0 0 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(125, 211, 252, 0.22);
+  font-size: inherit;
+  color: #fde68a;
+}
+
 .event-card__unavailable {
   margin: 0 16px 10px;
   padding: 8px 10px;
