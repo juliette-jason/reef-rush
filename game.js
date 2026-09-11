@@ -29872,12 +29872,6 @@ btnStartSettings?.addEventListener("click", (e) => {
   setStartSettingsOpen(open);
 });
 
-btnAdminCode?.addEventListener("click", (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  promptAdminStatsCode();
-});
-
 btnSendFeedback?.addEventListener("click", (e) => {
   e.preventDefault();
   e.stopPropagation();
