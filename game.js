@@ -30865,13 +30865,6 @@ window.addEventListener("keydown", (e) => {
       return;
     }
   }
-  const tag = e.target?.tagName;
-  if (tag === "INPUT" || tag === "TEXTAREA" || e.target?.isContentEditable) return;
-  if (e.repeat) return;
-  if (e.shiftKey && (e.code === "Digit8" || e.key === "*" || e.key === "8")) {
-    e.preventDefault();
-    applyShiftEightUnlockCombo();
-  }
 });
 
 // keyboard: aim with arrows, Enter = cast down + hook, Space = quick snag
