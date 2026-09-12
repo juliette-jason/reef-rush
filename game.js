@@ -19988,8 +19988,8 @@ function buildAdventureLevelUI(force = false) {
       (isAdventureBonusUnlocked() || gameMeta.pendingBonusVoyagesCelebration) && isAdventureUnlocked();
     adventureMapBonusBanner.hidden = !showBonusBanner;
     adventureMapBonusBanner.textContent = bonusRevealed
-      ? `${ADVENTURE_SECTION_GOLD_QUEST} — riches beyond Treasure Cove`
-      : `${ADVENTURE_SECTION_GOLD_QUEST} — conquer Treasure Cove to unlock`;
+      ? ADVENTURE_SECTION_GOLD_QUEST
+      : `${ADVENTURE_SECTION_GOLD_QUEST} — Treasure Cove`;
     adventureMapBonusBanner.classList.toggle(
       "adventure-map-bonus-banner--reveal",
       Boolean(gameMeta.pendingBonusVoyagesCelebration)
@@ -20000,8 +20000,8 @@ function buildAdventureLevelUI(force = false) {
       (isAdventureIceUnlocked() || gameMeta.pendingIceVoyagesCelebration) && isAdventureUnlocked();
     adventureMapIceBanner.hidden = !showIceBanner;
     adventureMapIceBanner.textContent = iceRevealed
-      ? `${ADVENTURE_SECTION_FROZEN_SEA} — icy voyages on their own chart`
-      : `${ADVENTURE_SECTION_FROZEN_SEA} — clear Legend's Gate to unlock`;
+      ? ADVENTURE_SECTION_FROZEN_SEA
+      : `${ADVENTURE_SECTION_FROZEN_SEA} — Legend's Gate`;
     adventureMapIceBanner.classList.toggle(
       "adventure-map-ice-banner--reveal",
       Boolean(gameMeta.pendingIceVoyagesCelebration)
@@ -20012,8 +20012,8 @@ function buildAdventureLevelUI(force = false) {
       (isAdventureLostCityUnlocked() || gameMeta.pendingLostCityCelebration) && isAdventureUnlocked();
     adventureMapLostCityBanner.hidden = !showLostCityBanner;
     adventureMapLostCityBanner.textContent = lostCityRevealed
-      ? `${ADVENTURE_SECTION_LOST_CITY} — sunken Atlantis voyages on their own chart`
-      : `${ADVENTURE_SECTION_LOST_CITY} — clear Aurora Reach to unlock`;
+      ? ADVENTURE_SECTION_LOST_CITY
+      : `${ADVENTURE_SECTION_LOST_CITY} — Aurora Reach`;
     adventureMapLostCityBanner.classList.toggle(
       "adventure-map-lost-city-banner--reveal",
       Boolean(gameMeta.pendingLostCityCelebration),
@@ -20024,8 +20024,8 @@ function buildAdventureLevelUI(force = false) {
       (isAdventureMermaidCoastUnlocked() || gameMeta.pendingMermaidCoastCelebration) && isAdventureUnlocked();
     adventureMapMermaidBanner.hidden = !showMermaidBanner;
     adventureMapMermaidBanner.textContent = mermaidRevealed
-      ? `${ADVENTURE_SECTION_MERMAID_COAST} — enchanted voyages beyond Atlantis`
-      : `${ADVENTURE_SECTION_MERMAID_COAST} — clear Throne of Atlantis to unlock`;
+      ? ADVENTURE_SECTION_MERMAID_COAST
+      : `${ADVENTURE_SECTION_MERMAID_COAST} — Throne of Atlantis`;
     adventureMapMermaidBanner.classList.toggle(
       "adventure-map-mermaid-banner--reveal",
       Boolean(gameMeta.pendingMermaidCoastCelebration),
@@ -20036,8 +20036,8 @@ function buildAdventureLevelUI(force = false) {
       (isAdventureStarfallSeasUnlocked() || gameMeta.pendingStarfallSeasCelebration) && isAdventureUnlocked();
     adventureMapStarfallBanner.hidden = !show;
     adventureMapStarfallBanner.textContent = starfallRevealed
-      ? `${ADVENTURE_SECTION_STARFALL_SEAS} — night voyages beyond Mermaid Crown`
-      : `${ADVENTURE_SECTION_STARFALL_SEAS} — clear Mermaid Crown to unlock`;
+      ? ADVENTURE_SECTION_STARFALL_SEAS
+      : `${ADVENTURE_SECTION_STARFALL_SEAS} — Mermaid Crown`;
     adventureMapStarfallBanner.classList.toggle(
       "adventure-map-starfall-banner--reveal",
       Boolean(gameMeta.pendingStarfallSeasCelebration),
@@ -20048,8 +20048,8 @@ function buildAdventureLevelUI(force = false) {
       (isAdventureDragonwakeIslesUnlocked() || gameMeta.pendingDragonwakeIslesCelebration) && isAdventureUnlocked();
     adventureMapDragonwakeBanner.hidden = !show;
     adventureMapDragonwakeBanner.textContent = dragonwakeRevealed
-      ? `${ADVENTURE_SECTION_DRAGONWAKE_ISLES} — ember voyages beyond the stars`
-      : `${ADVENTURE_SECTION_DRAGONWAKE_ISLES} — clear Crown of Stars to unlock`;
+      ? ADVENTURE_SECTION_DRAGONWAKE_ISLES
+      : `${ADVENTURE_SECTION_DRAGONWAKE_ISLES} — Crown of Stars`;
     adventureMapDragonwakeBanner.classList.toggle(
       "adventure-map-dragonwake-banner--reveal",
       Boolean(gameMeta.pendingDragonwakeIslesCelebration),
@@ -20060,8 +20060,8 @@ function buildAdventureLevelUI(force = false) {
       (isAdventureMangroveKingdomUnlocked() || gameMeta.pendingMangroveKingdomCelebration) && isAdventureUnlocked();
     adventureMapMangroveBanner.hidden = !show;
     adventureMapMangroveBanner.textContent = mangroveRevealed
-      ? `${ADVENTURE_SECTION_MANGROVE_KINGDOM} — green river voyages beyond dragonfire`
-      : `${ADVENTURE_SECTION_MANGROVE_KINGDOM} — clear Dragonwake Crown to unlock`;
+      ? ADVENTURE_SECTION_MANGROVE_KINGDOM
+      : `${ADVENTURE_SECTION_MANGROVE_KINGDOM} — Dragonwake Crown`;
     adventureMapMangroveBanner.classList.toggle(
       "adventure-map-mangrove-banner--reveal",
       Boolean(gameMeta.pendingMangroveKingdomCelebration),

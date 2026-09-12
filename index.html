@@ -23,7 +23,7 @@
       rel="stylesheet"
     />
     <link rel="canonical" href="https://reef-rush.com/" />
-    <link rel="stylesheet" href="styles.css?v=2026-09-12-no-shift8" />
+    <link rel="stylesheet" href="styles.css?v=2026-09-12-map-side-banners" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -1925,16 +1925,20 @@
           </div>
         </div>
         <header class="adventure-map-header">
-          <h2 class="adventure-map-title">Pirate's Chart</h2>
-          <p id="adventureMapHere" class="adventure-map-here"></p>
-          <p id="adventureMapBanner" class="adventure-map-banner" hidden>Chart the course — sail every sea from Pirates Path to Mangrove Kingdom!</p>
-          <p id="adventureMapBonusBanner" class="adventure-map-bonus-banner" hidden>Gold Quest — conquer Treasure Cove to unlock</p>
-          <p id="adventureMapIceBanner" class="adventure-map-ice-banner" hidden>Frozen Sea — clear Legend's Gate to unlock</p>
-          <p id="adventureMapLostCityBanner" class="adventure-map-lost-city-banner" hidden>The Lost City — clear Aurora Reach to unlock</p>
-          <p id="adventureMapMermaidBanner" class="adventure-map-mermaid-banner" hidden>Mermaid Coast — clear Throne of Atlantis to unlock</p>
-          <p id="adventureMapStarfallBanner" class="adventure-map-starfall-banner" hidden>Starfall Seas — clear Mermaid Crown to unlock</p>
-          <p id="adventureMapDragonwakeBanner" class="adventure-map-dragonwake-banner" hidden>Dragonwake Isles — clear Crown of Stars to unlock</p>
-          <p id="adventureMapMangroveBanner" class="adventure-map-mangrove-banner" hidden>Mangrove Kingdom — clear Dragonwake Crown to unlock</p>
+          <div class="adventure-map-header__top">
+            <h2 class="adventure-map-title">Pirate's Chart</h2>
+            <p id="adventureMapHere" class="adventure-map-here"></p>
+            <p id="adventureMapBanner" class="adventure-map-banner" hidden>Chart the course — sail every sea from Pirates Path to Mangrove Kingdom!</p>
+          </div>
+          <aside class="adventure-map-sections" aria-label="Unlocked adventure charts">
+            <p id="adventureMapBonusBanner" class="adventure-map-bonus-banner" hidden>Gold Quest — conquer Treasure Cove to unlock</p>
+            <p id="adventureMapIceBanner" class="adventure-map-ice-banner" hidden>Frozen Sea — clear Legend's Gate to unlock</p>
+            <p id="adventureMapLostCityBanner" class="adventure-map-lost-city-banner" hidden>The Lost City — clear Aurora Reach to unlock</p>
+            <p id="adventureMapMermaidBanner" class="adventure-map-mermaid-banner" hidden>Mermaid Coast — clear Throne of Atlantis to unlock</p>
+            <p id="adventureMapStarfallBanner" class="adventure-map-starfall-banner" hidden>Starfall Seas — clear Mermaid Crown to unlock</p>
+            <p id="adventureMapDragonwakeBanner" class="adventure-map-dragonwake-banner" hidden>Dragonwake Isles — clear Crown of Stars to unlock</p>
+            <p id="adventureMapMangroveBanner" class="adventure-map-mangrove-banner" hidden>Mangrove Kingdom — clear Dragonwake Crown to unlock</p>
+          </aside>
         </header>
         <button type="button" id="btnAdventureBack" class="btn btn--secondary adventure-map-back">
           <span class="adventure-map-back__label">← Back to home</span>
@@ -3360,6 +3364,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-09-12-no-shift8" defer></script>
+    <script src="game.js?v=2026-09-12-map-side-banners" defer></script>
   </body>
 </html>

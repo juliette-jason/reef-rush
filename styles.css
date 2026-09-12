@@ -9543,15 +9543,65 @@ button.seagull-avatar:active {
 .adventure-map-header {
   position: fixed;
   top: max(10px, env(safe-area-inset-top, 0px));
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
   z-index: 40;
-  width: min(92vw, 420px);
+  width: auto;
   pointer-events: none;
+  display: block;
+}
+
+.adventure-map-header__top {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  width: min(92vw, 420px);
+  margin: 0 auto;
+}
+
+.adventure-map-sections {
+  position: fixed;
+  top: max(118px, calc(env(safe-area-inset-top, 0px) + 108px));
+  right: max(8px, env(safe-area-inset-right, 0px));
+  bottom: auto;
+  z-index: 40;
+  width: min(158px, 28vw);
+  max-height: min(56vh, calc(100dvh - 210px));
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 5px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  pointer-events: none;
+  scrollbar-width: thin;
+}
+
+.adventure-map-sections > [hidden] {
+  display: none !important;
+}
+
+.adventure-map-sections .adventure-map-bonus-banner,
+.adventure-map-sections .adventure-map-ice-banner,
+.adventure-map-sections .adventure-map-lost-city-banner,
+.adventure-map-sections .adventure-map-mermaid-banner,
+.adventure-map-sections .adventure-map-starfall-banner,
+.adventure-map-sections .adventure-map-dragonwake-banner,
+.adventure-map-sections .adventure-map-mangrove-banner {
+  position: relative;
+  top: auto;
+  left: auto;
+  right: auto;
+  width: 100%;
+  margin: 0;
+  padding: 6px 8px;
+  border-radius: 10px;
+  font-size: 0.62rem;
+  line-height: 1.25;
+  text-align: left;
+  box-sizing: border-box;
 }
 
 .adventure-map-title {
@@ -10348,6 +10398,26 @@ button.seagull-avatar:active {
 @media (max-width: 560px) {
   .adventure-map-scroll {
     overflow: hidden;
+  }
+
+  .adventure-map-sections {
+    top: max(104px, calc(env(safe-area-inset-top, 0px) + 92px));
+    right: max(4px, env(safe-area-inset-right, 0px));
+    width: min(112px, 29vw);
+    max-height: min(40vh, calc(100dvh - 230px));
+    gap: 4px;
+  }
+
+  .adventure-map-sections .adventure-map-bonus-banner,
+  .adventure-map-sections .adventure-map-ice-banner,
+  .adventure-map-sections .adventure-map-lost-city-banner,
+  .adventure-map-sections .adventure-map-mermaid-banner,
+  .adventure-map-sections .adventure-map-starfall-banner,
+  .adventure-map-sections .adventure-map-dragonwake-banner,
+  .adventure-map-sections .adventure-map-mangrove-banner {
+    padding: 5px 6px;
+    font-size: 0.56rem;
+    border-radius: 8px;
   }
 
   .adventure-map-atlas {
