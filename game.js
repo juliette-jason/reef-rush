@@ -2322,15 +2322,21 @@ function adventureLevelTimeBonusMs(levelIndex) {
     return levelIndex * ADVENTURE_LEVEL_TIME_BONUS_MS + legendsGateBonus;
   }
   const piratesBonus = ADVENTURE_MAIN_LEVEL_COUNT * ADVENTURE_LEVEL_TIME_BONUS_MS;
-  return (
+  if (levelIndex < ADVENTURE_STARFALL_START_INDEX) {
+    return (
+      piratesBonus +
+      (levelIndex - ADVENTURE_MAIN_LEVEL_COUNT) * ADVENTURE_GOLD_TO_LOST_CITY_TIME_BONUS_MS +
+      legendsGateBonus
+    );
+  }
+  /* Newer charts keep denser spawns, so clocks sit under Mermaid’s long stack —
+     about ~60s on Crown of Stars: clearable with focus, not a free 26k. */
+  const mermaidPeakBonus =
     piratesBonus +
-    (levelIndex - ADVENTURE_MAIN_LEVEL_COUNT) * ADVENTURE_GOLD_TO_LOST_CITY_TIME_BONUS_MS +
-    legendsGateBonus
-  );
+    (ADVENTURE_STARFALL_START_INDEX - 1 - ADVENTURE_MAIN_LEVEL_COUNT) * ADVENTURE_GOLD_TO_LOST_CITY_TIME_BONUS_MS;
+  const post = levelIndex - ADVENTURE_STARFALL_START_INDEX;
+  return mermaidPeakBonus - 7_500 + post * 180;
 }
-
-/** Flat extra clock on Starfall / Dragonwake / Mangrove voyages. */
-const ADVENTURE_POST_MERMAID_EXTRA_TIME_MS = 10_000;
 
 const TREASURE_CINEMATIC_ANTICIPATE_MS = 1000;
 const TREASURE_CINEMATIC_FLY_MS = 2600;
@@ -10570,9 +10576,7 @@ function buildAdventureLevels() {
         Math.max(
           lateChapter ? 43_000 : isLostCity ? 46_000 : isIce ? 47_000 : isBonus ? 44_000 : 46_000,
           reef.roundMs - tier * 2200 - Math.min(i, 41) * 420,
-        ) +
-        adventureLevelTimeBonusMs(i) +
-        (isPostMermaid ? ADVENTURE_POST_MERMAID_EXTRA_TIME_MS : 0),
+        ) + adventureLevelTimeBonusMs(i),
       spawnMin: Math.max(
         isPostMermaid ? 90 : lateChapter ? 120 : isLostCity ? 140 : isIce ? 150 : isBonus ? 165 : 185,
         Math.min(400, reef.spawnMin - Math.min(i, 41) * 12 - (isPostMermaid ? 25 : 0)),
