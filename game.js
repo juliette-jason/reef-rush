@@ -3678,81 +3678,84 @@ const ADVENTURE_PLAY_ATMOSPHERE = {
   },
   "dusk-harbor": {
     stops: [
-      [0, "rgba(180, 170, 255, 0.12)"],
-      [0.45, "rgba(60, 80, 160, 0.14)"],
-      [1, "rgba(10, 16, 40, 0.3)"],
+      [0, "rgba(255, 200, 160, 0.14)"],
+      [0.35, "rgba(140, 130, 255, 0.16)"],
+      [0.7, "rgba(50, 60, 140, 0.16)"],
+      [1, "rgba(8, 10, 32, 0.36)"],
     ],
     effect: "dusk-harbor",
   },
   "lantern-shoals": {
     stops: [
-      [0, "rgba(180, 170, 255, 0.12)"],
-      [0.45, "rgba(60, 80, 160, 0.14)"],
-      [1, "rgba(10, 16, 40, 0.3)"],
+      [0, "rgba(255, 220, 140, 0.14)"],
+      [0.4, "rgba(160, 120, 255, 0.14)"],
+      [1, "rgba(10, 12, 36, 0.34)"],
     ],
     effect: "lantern-shoals",
   },
   "comet-drift": {
     stops: [
-      [0, "rgba(180, 170, 255, 0.12)"],
-      [0.45, "rgba(60, 80, 160, 0.14)"],
-      [1, "rgba(10, 16, 40, 0.3)"],
+      [0, "rgba(255, 240, 200, 0.16)"],
+      [0.35, "rgba(120, 160, 255, 0.14)"],
+      [1, "rgba(8, 12, 40, 0.36)"],
     ],
     effect: "comet-drift",
   },
   "moonbridge-narrows": {
     stops: [
-      [0, "rgba(180, 170, 255, 0.12)"],
-      [0.45, "rgba(60, 80, 160, 0.14)"],
-      [1, "rgba(10, 16, 40, 0.3)"],
+      [0, "rgba(220, 230, 255, 0.16)"],
+      [0.45, "rgba(90, 110, 210, 0.14)"],
+      [1, "rgba(8, 12, 36, 0.34)"],
     ],
     effect: "moonbridge-narrows",
   },
   "starfish-orchard": {
     stops: [
-      [0, "rgba(180, 170, 255, 0.12)"],
-      [0.45, "rgba(60, 80, 160, 0.14)"],
-      [1, "rgba(10, 16, 40, 0.3)"],
+      [0, "rgba(255, 190, 170, 0.14)"],
+      [0.4, "rgba(150, 130, 255, 0.14)"],
+      [1, "rgba(12, 14, 40, 0.34)"],
     ],
     effect: "starfish-orchard",
   },
   "nightingale-deep": {
     stops: [
-      [0, "rgba(180, 170, 255, 0.12)"],
-      [0.45, "rgba(60, 80, 160, 0.14)"],
-      [1, "rgba(10, 16, 40, 0.3)"],
+      [0, "rgba(160, 150, 255, 0.14)"],
+      [0.45, "rgba(40, 50, 140, 0.16)"],
+      [1, "rgba(4, 6, 28, 0.4)"],
     ],
     effect: "nightingale-deep",
   },
   "aurora-mirror": {
     stops: [
-      [0, "rgba(180, 170, 255, 0.12)"],
-      [0.45, "rgba(60, 80, 160, 0.14)"],
-      [1, "rgba(10, 16, 40, 0.3)"],
+      [0, "rgba(160, 255, 220, 0.12)"],
+      [0.35, "rgba(180, 140, 255, 0.14)"],
+      [0.7, "rgba(80, 100, 200, 0.14)"],
+      [1, "rgba(8, 12, 36, 0.34)"],
     ],
     effect: "aurora-mirror",
   },
   "constellation-cay": {
     stops: [
-      [0, "rgba(180, 170, 255, 0.12)"],
-      [0.45, "rgba(60, 80, 160, 0.14)"],
-      [1, "rgba(10, 16, 40, 0.3)"],
+      [0, "rgba(255, 245, 210, 0.14)"],
+      [0.4, "rgba(140, 140, 255, 0.15)"],
+      [1, "rgba(8, 10, 34, 0.36)"],
     ],
     effect: "constellation-cay",
   },
   "meteor-pool": {
     stops: [
-      [0, "rgba(180, 170, 255, 0.12)"],
-      [0.45, "rgba(60, 80, 160, 0.14)"],
-      [1, "rgba(10, 16, 40, 0.3)"],
+      [0, "rgba(255, 210, 160, 0.16)"],
+      [0.4, "rgba(160, 100, 255, 0.14)"],
+      [1, "rgba(10, 8, 32, 0.36)"],
     ],
     effect: "meteor-pool",
   },
   "crown-of-stars": {
     stops: [
-      [0, "rgba(180, 170, 255, 0.12)"],
-      [0.45, "rgba(60, 80, 160, 0.14)"],
-      [1, "rgba(10, 16, 40, 0.3)"],
+      [0, "rgba(255, 240, 200, 0.2)"],
+      [0.3, "rgba(200, 170, 255, 0.16)"],
+      [0.65, "rgba(80, 90, 200, 0.14)"],
+      [1, "rgba(6, 8, 30, 0.38)"],
     ],
     effect: "crown-of-stars",
   },
@@ -7296,25 +7299,56 @@ function drawStarfallSeasBed() {
   const themeId = adventureSession ? getAdventureLevelTheme(adventureSession.levelIndex) : "";
   const sandTop = h - dpr * 92;
   const base = sandTop + dpr * 8;
-  ctx.fillStyle = "rgba(60, 70, 120, 0.28)";
+  const glow = ctx.createRadialGradient(w * 0.5, base, dpr * 8, w * 0.5, base, w * 0.48);
+  glow.addColorStop(0, "rgba(120, 110, 200, 0.34)");
+  glow.addColorStop(0.55, "rgba(50, 60, 120, 0.22)");
+  glow.addColorStop(1, "rgba(20, 24, 50, 0)");
+  ctx.fillStyle = glow;
   ctx.beginPath();
-  ctx.ellipse(w * 0.5, base + dpr * 4, w * 0.42, dpr * 14, 0, 0, Math.PI * 2);
+  ctx.ellipse(w * 0.5, base + dpr * 4, w * 0.46, dpr * 18, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = "rgba(200, 190, 255, 0.35)";
-  for (let i = 0; i < perfN(10); i++) {
-    const sx = w * (0.12 + ((i * 79) % 760) / 1000);
-    const sy = sandTop + dpr * (8 + (i % 5) * 8);
+  for (let i = 0; i < perfN(22); i++) {
+    const sx = w * (0.08 + ((i * 79) % 840) / 1000);
+    const sy = sandTop + dpr * (6 + (i % 6) * 7);
+    ctx.fillStyle = i % 3 === 0 ? "rgba(255, 240, 190, 0.55)" : "rgba(200, 190, 255, 0.4)";
     ctx.beginPath();
-    ctx.arc(sx, sy, dpr * (0.8 + (i % 3) * 0.4), 0, Math.PI * 2);
+    ctx.arc(sx, sy, dpr * (0.6 + (i % 4) * 0.35), 0, Math.PI * 2);
     ctx.fill();
   }
-  if (themeId === "crown-of-stars" || !themeId) {
-    ctx.fillStyle = "rgba(255, 230, 160, 0.4)";
+  ctx.strokeStyle = "rgba(255, 230, 180, 0.28)";
+  ctx.lineWidth = dpr * 1.1;
+  ctx.beginPath();
+  ctx.moveTo(w * 0.22, base - dpr * 6);
+  ctx.lineTo(w * 0.34, base - dpr * 22);
+  ctx.lineTo(w * 0.48, base - dpr * 10);
+  ctx.lineTo(w * 0.62, base - dpr * 28);
+  ctx.lineTo(w * 0.74, base - dpr * 8);
+  ctx.stroke();
+  ctx.fillStyle = "rgba(255, 245, 210, 0.55)";
+  for (const px of [0.22, 0.34, 0.48, 0.62, 0.74]) {
+    const py = base - dpr * (px === 0.34 || px === 0.62 ? 22 : px === 0.48 ? 10 : 6);
     ctx.beginPath();
-    ctx.moveTo(w * 0.44, base - dpr * 20);
-    ctx.lineTo(w * 0.5, base - dpr * 42);
-    ctx.lineTo(w * 0.56, base - dpr * 20);
+    ctx.arc(w * px, py, dpr * 2.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  if (themeId === "crown-of-stars" || themeId === "meteor-pool" || !themeId) {
+    ctx.fillStyle = "rgba(255, 230, 160, 0.55)";
+    ctx.beginPath();
+    ctx.moveTo(w * 0.5, base - dpr * 48);
+    ctx.lineTo(w * 0.535, base - dpr * 28);
+    ctx.lineTo(w * 0.58, base - dpr * 28);
+    ctx.lineTo(w * 0.545, base - dpr * 16);
+    ctx.lineTo(w * 0.56, base + dpr * 2);
+    ctx.lineTo(w * 0.5, base - dpr * 8);
+    ctx.lineTo(w * 0.44, base + dpr * 2);
+    ctx.lineTo(w * 0.455, base - dpr * 16);
+    ctx.lineTo(w * 0.42, base - dpr * 28);
+    ctx.lineTo(w * 0.465, base - dpr * 28);
     ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "rgba(180, 170, 255, 0.35)";
+    ctx.beginPath();
+    ctx.arc(w * 0.5, base - dpr * 30, dpr * 16, 0, Math.PI * 2);
     ctx.fill();
   }
 }
@@ -7502,33 +7536,187 @@ function drawAdventureMermaidCoastEffect(now, themeId) {
   }
 }
 
+function drawStarTwinkleMark(x, y, size, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.strokeStyle = "rgba(255, 250, 235, 0.95)";
+  ctx.fillStyle = "rgba(255, 245, 210, 0.95)";
+  ctx.lineWidth = Math.max(dpr * 0.7, size * 0.28);
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(x - size, y);
+  ctx.lineTo(x + size, y);
+  ctx.moveTo(x, y - size);
+  ctx.lineTo(x, y + size);
+  if (size > dpr * 2.2) {
+    const d = size * 0.65;
+    ctx.moveTo(x - d, y - d);
+    ctx.lineTo(x + d, y + d);
+    ctx.moveTo(x + d, y - d);
+    ctx.lineTo(x - d, y + d);
+  }
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(x, y, Math.max(dpr * 0.5, size * 0.28), 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+/** Starfall Seas water FX — night lagoon, dense stars, twinkles, soft aurora. */
 function drawAdventureStarfallSeasEffect(now, themeId) {
   const t = now * 0.001;
   const wh = h - waterTop;
+  const sandTop = h - dpr * 92;
+
   const wash = ctx.createLinearGradient(0, waterTop, 0, h);
-  wash.addColorStop(0, "rgba(120, 130, 220, 0.08)");
-  wash.addColorStop(1, "rgba(20, 24, 60, 0.1)");
+  wash.addColorStop(0, "rgba(160, 150, 255, 0.14)");
+  wash.addColorStop(0.28, "rgba(90, 100, 210, 0.1)");
+  wash.addColorStop(0.65, "rgba(40, 50, 120, 0.12)");
+  wash.addColorStop(1, "rgba(12, 14, 40, 0.16)");
   ctx.fillStyle = wash;
   ctx.fillRect(0, waterTop, w, wh);
-  ctx.fillStyle = "rgba(255, 245, 210, 0.45)";
-  for (let i = 0; i < perfN(14); i++) {
-    const bx = ((i * 131 + Math.floor(t * 8)) % 1000) / 1000 * w;
-    const by = waterTop + wh * (0.12 + ((i * 71) % 500) / 1000);
-    const tw = 0.5 + 0.5 * Math.sin(t * 3 + i);
-    ctx.globalAlpha = 0.25 + tw * 0.45;
+
+  const moonX = w * (0.62 + Math.sin(t * 0.15) * 0.04);
+  const moon = ctx.createRadialGradient(moonX, waterTop, dpr * 4, moonX, waterTop + wh * 0.45, w * 0.55);
+  moon.addColorStop(0, "rgba(255, 245, 220, 0.16)");
+  moon.addColorStop(0.35, "rgba(200, 190, 255, 0.08)");
+  moon.addColorStop(1, "rgba(80, 90, 180, 0)");
+  ctx.fillStyle = moon;
+  ctx.fillRect(0, waterTop, w, wh);
+
+  ctx.save();
+  ctx.globalAlpha = 0.18 + Math.sin(t * 0.7) * 0.05;
+  for (let i = 0; i < (PERF_CHROMEBOOK ? 2 : 3); i++) {
+    const gy = waterTop + wh * (0.22 + i * 0.14);
+    const g = ctx.createLinearGradient(0, gy, w, gy + dpr * 20);
+    g.addColorStop(0, "rgba(120, 255, 210, 0)");
+    g.addColorStop(0.35, i % 2 ? "rgba(180, 140, 255, 0.55)" : "rgba(120, 220, 255, 0.5)");
+    g.addColorStop(0.7, i % 2 ? "rgba(255, 180, 220, 0.4)" : "rgba(160, 255, 200, 0.35)");
+    g.addColorStop(1, "rgba(100, 140, 255, 0)");
+    ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.arc(bx, by, dpr * (0.7 + (i % 3) * 0.35), 0, Math.PI * 2);
+    ctx.moveTo(0, gy + Math.sin(t + i) * dpr * 8);
+    for (let x = 0; x <= w; x += Math.max(24, w / 18)) {
+      ctx.lineTo(x, gy + Math.sin(t * 1.1 + x * 0.012 + i) * dpr * (10 + i * 3));
+    }
+    ctx.lineTo(w, gy + dpr * 28);
+    ctx.lineTo(0, gy + dpr * 28);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+
+  for (let i = 0; i < perfN(36); i++) {
+    const bx = ((i * 131 + Math.floor(t * (5 + (i % 4)))) % 1000) / 1000 * w;
+    const by = waterTop + wh * (0.06 + ((i * 71) % 780) / 1000);
+    const tw = 0.35 + 0.65 * Math.abs(Math.sin(t * (2.2 + (i % 5) * 0.35) + i * 0.7));
+    const size = dpr * (0.7 + (i % 5) * 0.45 + tw * 0.6);
+    if (i % 4 === 0) {
+      drawStarTwinkleMark(bx, by, size * 1.35, 0.28 + tw * 0.55);
+    } else {
+      ctx.globalAlpha = 0.22 + tw * 0.55;
+      ctx.fillStyle = i % 3 === 0 ? "rgba(255, 245, 210, 0.95)" : "rgba(210, 200, 255, 0.9)";
+      ctx.beginPath();
+      ctx.arc(bx, by, size * 0.55, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  for (let i = 0; i < perfN(18); i++) {
+    const bx = ((i * 97 + Math.floor(t * 22 + 30)) % 1000) / 1000 * w;
+    const by = waterTop + wh * (0.1 + ((i * 53 + Math.floor(t * 7)) % 700) / 1000);
+    ctx.globalAlpha = 0.15 + 0.35 * Math.abs(Math.sin(t * 4 + i));
+    ctx.fillStyle = "rgba(255, 240, 255, 0.9)";
+    ctx.beginPath();
+    ctx.arc(bx, by, dpr * (0.5 + (i % 2) * 0.35), 0, Math.PI * 2);
     ctx.fill();
   }
   ctx.globalAlpha = 1;
-  if (themeId === "comet-drift" || themeId === "meteor-pool" || themeId === "crown-of-stars") {
-    ctx.strokeStyle = "rgba(255, 220, 160, 0.35)";
-    ctx.lineWidth = dpr * 1.4;
-    const cx = ((Math.floor(t * 40) % 1200) / 1200) * w * 1.2 - w * 0.1;
+
+  for (let i = 0; i < perfN(6); i++) {
+    const bx = w * (0.12 + ((i * 41 + Math.floor(t * 3)) % 760) / 1000);
+    const by = sandTop - dpr * (8 + Math.sin(t * 1.5 + i) * 10 + (i % 3) * 6);
+    const pulse = 0.4 + 0.6 * Math.abs(Math.sin(t * 2.4 + i));
+    const rg = ctx.createRadialGradient(bx, by, 0, bx, by, dpr * (8 + pulse * 4));
+    rg.addColorStop(0, "rgba(255, 245, 210, 0.45)");
+    rg.addColorStop(0.45, "rgba(180, 170, 255, 0.18)");
+    rg.addColorStop(1, "rgba(100, 120, 220, 0)");
+    ctx.fillStyle = rg;
     ctx.beginPath();
-    ctx.moveTo(cx, waterTop + wh * 0.2);
-    ctx.lineTo(cx - dpr * 40, waterTop + wh * 0.35);
+    ctx.arc(bx, by, dpr * (10 + pulse * 4), 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  const wantComet =
+    themeId === "comet-drift" ||
+    themeId === "meteor-pool" ||
+    themeId === "crown-of-stars" ||
+    themeId === "aurora-mirror" ||
+    themeId === "constellation-cay" ||
+    Math.floor(t * 0.55) % 3 === 0;
+  if (wantComet) {
+    for (let c = 0; c < (PERF_CHROMEBOOK ? 1 : 2); c++) {
+      const speed = 55 + c * 18;
+      const cx = ((((t * speed + c * 420) % 1400) / 1400) * w * 1.35) - w * 0.2;
+      const cy = waterTop + wh * (0.14 + c * 0.18 + Math.sin(t * 0.4 + c) * 0.03);
+      const trail = ctx.createLinearGradient(cx, cy, cx - dpr * 70, cy + dpr * 28);
+      trail.addColorStop(0, "rgba(255, 250, 230, 0.75)");
+      trail.addColorStop(0.35, "rgba(255, 200, 160, 0.35)");
+      trail.addColorStop(1, "rgba(160, 140, 255, 0)");
+      ctx.strokeStyle = trail;
+      ctx.lineWidth = dpr * (1.6 + c * 0.5);
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx - dpr * 68, cy + dpr * 26);
+      ctx.stroke();
+      drawStarTwinkleMark(cx, cy, dpr * (2.4 + c), 0.7);
+    }
+  }
+
+  if (themeId === "lantern-shoals" || themeId === "dusk-harbor") {
+    for (let i = 0; i < 4; i++) {
+      const lx = w * (0.18 + i * 0.2);
+      const ly = sandTop - dpr * (18 + Math.sin(t * 1.8 + i) * 4);
+      const lg = ctx.createRadialGradient(lx, ly, 0, lx, ly, dpr * 18);
+      lg.addColorStop(0, "rgba(255, 210, 120, 0.4)");
+      lg.addColorStop(1, "rgba(255, 160, 80, 0)");
+      ctx.fillStyle = lg;
+      ctx.beginPath();
+      ctx.arc(lx, ly, dpr * 18, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  if (themeId === "moonbridge-narrows") {
+    ctx.strokeStyle = "rgba(220, 230, 255, 0.22)";
+    ctx.lineWidth = dpr * 3;
+    ctx.beginPath();
+    ctx.moveTo(w * 0.12, waterTop + wh * 0.55);
+    ctx.quadraticCurveTo(w * 0.5, waterTop + wh * 0.28, w * 0.88, waterTop + wh * 0.55);
     ctx.stroke();
+  }
+  if (themeId === "starfish-orchard") {
+    ctx.fillStyle = "rgba(255, 180, 140, 0.2)";
+    for (let i = 0; i < 5; i++) {
+      const sx = w * (0.15 + i * 0.16);
+      const sy = sandTop - dpr * (4 + (i % 2) * 8);
+      ctx.beginPath();
+      for (let p = 0; p < 5; p++) {
+        const ang = -Math.PI / 2 + (p * Math.PI * 2) / 5;
+        const px = sx + Math.cos(ang) * dpr * 7;
+        const py = sy + Math.sin(ang) * dpr * 7;
+        if (p === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+  if (themeId === "crown-of-stars") {
+    drawStarTwinkleMark(w * 0.5, waterTop + wh * 0.2, dpr * 5, 0.55 + Math.sin(t * 2) * 0.2);
+    drawStarTwinkleMark(w * 0.42, waterTop + wh * 0.28, dpr * 3, 0.4);
+    drawStarTwinkleMark(w * 0.58, waterTop + wh * 0.28, dpr * 3, 0.4);
   }
 }
 
@@ -7588,17 +7776,32 @@ function drawVagueStarfallSilhouette(now) {
   const t = now * 0.001;
   const wh = h - waterTop;
   ctx.save();
-  ctx.globalAlpha = 0.22 + Math.sin(t * 1.2) * 0.06;
-  ctx.fillStyle = "rgba(220, 210, 255, 0.9)";
-  const x = w * (0.2 + (Math.sin(t * 0.35) * 0.5 + 0.5) * 0.6);
-  const y = waterTop + wh * 0.42;
+  const x = w * (0.18 + (Math.sin(t * 0.28) * 0.5 + 0.5) * 0.64);
+  const y = waterTop + wh * (0.38 + Math.sin(t * 0.55) * 0.04);
+  ctx.globalAlpha = 0.2 + Math.sin(t * 1.1) * 0.07;
+  ctx.fillStyle = "rgba(210, 200, 255, 0.85)";
   ctx.beginPath();
-  ctx.ellipse(x, y, dpr * 28, dpr * 10, -0.2, 0, Math.PI * 2);
+  ctx.ellipse(x, y, dpr * 30, dpr * 11, -0.18, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = "rgba(255, 245, 200, 0.8)";
   ctx.beginPath();
-  ctx.arc(x + dpr * 18, y - dpr * 4, dpr * 3, 0, Math.PI * 2);
+  ctx.moveTo(x - dpr * 28, y);
+  ctx.lineTo(x - dpr * 44, y - dpr * 10);
+  ctx.lineTo(x - dpr * 40, y);
+  ctx.lineTo(x - dpr * 44, y + dpr * 10);
+  ctx.closePath();
   ctx.fill();
+  ctx.fillStyle = "rgba(255, 245, 200, 0.9)";
+  ctx.beginPath();
+  ctx.arc(x + dpr * 18, y - dpr * 3, dpr * 3.2, 0, Math.PI * 2);
+  ctx.fill();
+  for (let i = 0; i < 5; i++) {
+    drawStarTwinkleMark(
+      x - dpr * (20 + i * 10),
+      y + Math.sin(t * 2 + i) * dpr * 4,
+      dpr * (1.4 + (i % 2)),
+      0.35 + (i % 3) * 0.1,
+    );
+  }
   ctx.restore();
 }
 
