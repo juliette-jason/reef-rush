@@ -2322,7 +2322,19 @@ function adventureLevelTimeBonusMs(levelIndex) {
     return levelIndex * ADVENTURE_LEVEL_TIME_BONUS_MS + legendsGateBonus;
   }
   const piratesBonus = ADVENTURE_MAIN_LEVEL_COUNT * ADVENTURE_LEVEL_TIME_BONUS_MS;
-  return piratesBonus + (levelIndex - ADVENTURE_MAIN_LEVEL_COUNT) * ADVENTURE_GOLD_TO_LOST_CITY_TIME_BONUS_MS + legendsGateBonus;
+  if (levelIndex < ADVENTURE_STARFALL_START_INDEX) {
+    return (
+      piratesBonus +
+      (levelIndex - ADVENTURE_MAIN_LEVEL_COUNT) * ADVENTURE_GOLD_TO_LOST_CITY_TIME_BONUS_MS +
+      legendsGateBonus
+    );
+  }
+  /* Starfall onward: stop stacking clock and shave time vs Mermaid Coast. */
+  const mermaidPeakBonus =
+    piratesBonus +
+    (ADVENTURE_STARFALL_START_INDEX - 1 - ADVENTURE_MAIN_LEVEL_COUNT) * ADVENTURE_GOLD_TO_LOST_CITY_TIME_BONUS_MS;
+  const post = levelIndex - ADVENTURE_STARFALL_START_INDEX;
+  return mermaidPeakBonus - 5_000 - post * 400;
 }
 
 const TREASURE_CINEMATIC_ANTICIPATE_MS = 1000;
@@ -8785,15 +8797,14 @@ function adventurePassScoreForIndex(i) {
   }
   if (i < ADVENTURE_DRAGONWAKE_START_INDEX) {
     const sfI = i - ADVENTURE_STARFALL_START_INDEX;
-    /* Mid challenge — a bit under Mermaid peak so the new charts feel fair. */
-    return 14500 + Math.round((sfI * (16000 - 14500)) / Math.max(1, ADVENTURE_STARFALL_LEVEL_COUNT - 1));
+    return 15800 + Math.round((sfI * (17800 - 15800)) / Math.max(1, ADVENTURE_STARFALL_LEVEL_COUNT - 1));
   }
   if (i < ADVENTURE_MANGROVE_START_INDEX) {
     const dwI = i - ADVENTURE_DRAGONWAKE_START_INDEX;
-    return 15000 + Math.round((dwI * (16500 - 15000)) / Math.max(1, ADVENTURE_DRAGONWAKE_LEVEL_COUNT - 1));
+    return 16800 + Math.round((dwI * (18800 - 16800)) / Math.max(1, ADVENTURE_DRAGONWAKE_LEVEL_COUNT - 1));
   }
   const mgI = i - ADVENTURE_MANGROVE_START_INDEX;
-  return 15200 + Math.round((mgI * (16800 - 15200)) / Math.max(1, ADVENTURE_MANGROVE_LEVEL_COUNT - 1));
+  return 17500 + Math.round((mgI * (19800 - 17500)) / Math.max(1, ADVENTURE_MANGROVE_LEVEL_COUNT - 1));
 }
 
 function drawAdventureThemeOverlayInner(now) {
@@ -10326,7 +10337,8 @@ function buildAdventureLevels() {
     const isStarfall = i >= ADVENTURE_STARFALL_START_INDEX && i < ADVENTURE_DRAGONWAKE_START_INDEX;
     const isDragonwake = i >= ADVENTURE_DRAGONWAKE_START_INDEX && i < ADVENTURE_MANGROVE_START_INDEX;
     const isMangrove = i >= ADVENTURE_MANGROVE_START_INDEX;
-    const lateChapter = isMermaid || isStarfall || isDragonwake || isMangrove;
+    const isPostMermaid = isStarfall || isDragonwake || isMangrove;
+    const lateChapter = isMermaid || isPostMermaid;
     levels.push({
       level: i + 1,
       id: `adv_${i + 1}`,
@@ -10358,26 +10370,26 @@ function buildAdventureLevels() {
       passScore: adventurePassScoreForIndex(i),
       roundMs:
         Math.max(
-          lateChapter ? 43_000 : isLostCity ? 46_000 : isIce ? 47_000 : isBonus ? 44_000 : 46_000,
-          reef.roundMs - tier * 2200 - Math.min(i, 41) * 420,
+          isPostMermaid ? 35_000 : lateChapter ? 43_000 : isLostCity ? 46_000 : isIce ? 47_000 : isBonus ? 44_000 : 46_000,
+          reef.roundMs - tier * 2200 - Math.min(i, 41) * 420 - (isPostMermaid ? 6_500 : 0),
         ) + adventureLevelTimeBonusMs(i),
       spawnMin: Math.max(
-        lateChapter ? 120 : isLostCity ? 140 : isIce ? 150 : isBonus ? 165 : 185,
+        isPostMermaid ? 135 : lateChapter ? 120 : isLostCity ? 140 : isIce ? 150 : isBonus ? 165 : 185,
         Math.min(400, reef.spawnMin - Math.min(i, 41) * 12),
       ),
       spawnMax: Math.max(
-        lateChapter ? 300 : isLostCity ? 340 : isIce ? 360 : isBonus ? 390 : 430,
+        isPostMermaid ? 320 : lateChapter ? 300 : isLostCity ? 340 : isIce ? 360 : isBonus ? 390 : 430,
         Math.min(1500, reef.spawnMax - i * 30),
       ),
       maxFish: Math.min(
-        lateChapter ? 23 : isLostCity ? 21 : isIce ? 20 : isBonus ? 19 : 18,
+        isPostMermaid ? 21 : lateChapter ? 23 : isLostCity ? 21 : isIce ? 20 : isBonus ? 19 : 18,
         reef.maxFish + Math.floor(Math.min(i, 41) / 2.4),
       ),
       fishSpeed: Math.max(
         0.96,
         reef.fishSpeed *
           (1.12 + Math.min(i, 41) * 0.02) *
-          (lateChapter ? 0.9 : isLostCity ? 0.82 : isIce ? 0.84 : isBonus ? 0.94 : 1),
+          (isPostMermaid ? 0.98 : lateChapter ? 0.9 : isLostCity ? 0.82 : isIce ? 0.84 : isBonus ? 0.94 : 1),
       ),
       rareRollMult: Math.max(
         lateChapter ? 0.6 : isLostCity || isIce ? 0.66 : 0.55,
