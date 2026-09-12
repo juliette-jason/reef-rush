@@ -11599,10 +11599,11 @@ async function fetchSharedLeaderboardForDay(dayKey) {
 
 async function fetchDailyLeaderboardForDay(dayKey = getDailyDayKey()) {
   try {
-    /* Prefer dedicated table when present; otherwise reuse shared leaderboard rows for that UTC day. */
+    /* Prefer dedicated table when it has rows; empty dedicated must fall back to shared. */
     const dedicated = await fetchDedicatedDailyLeaderboard(dayKey);
+    const useDedicated = Array.isArray(dedicated) && dedicated.length > 0;
     const rows = withKnownDailyDisplayNames(
-      dedicated || (await fetchSharedLeaderboardForDay(dayKey))
+      useDedicated ? dedicated : await fetchSharedLeaderboardForDay(dayKey)
     );
     dailyLeaderboardRemoteOk = true;
     saveLocalDailyLeaderboard(dayKey, rows);
@@ -11749,9 +11750,13 @@ async function submitDailyScore(initials, score, reefId, displayName = "") {
   updateDailyEventPlayerHint(optimistic);
 
   try {
-    /* Shared all-time table is the live sync path (daily_leaderboard table is optional). */
+    /* Shared all-time table is the live sync path; also write dedicated when available. */
     await postDailyScoreToSharedLeaderboard(entry);
-    void postDailyScoreToDedicatedTable(entry, dayKey);
+    try {
+      await postDailyScoreToDedicatedTable(entry, dayKey);
+    } catch (dedErr) {
+      console.warn(dedErr);
+    }
     await fetchTodayDailyLeaderboard();
     void fetchSharedLeaderboard();
     return true;
@@ -11923,6 +11928,10 @@ async function processDailyPrizePayouts() {
   }
 
   const rows = await fetchDailyLeaderboardForDay(yesterday);
+  if (!dailyLeaderboardRemoteOk) {
+    /* Don't lock the day if we never reached the board — retry next home visit. */
+    return;
+  }
   const rank = rows.findIndex((r) => String(r.initials || "").toUpperCase() === ini);
   if (rank >= 0 && rank < DAILY_PRIZE_COUNT) {
     const chestTier = dailyPrizeChestTierForRank(rank);
@@ -19399,8 +19408,10 @@ function showHomePanel() {
   if (musicEnabled) switchSceneMusic(startHomeMusic);
   window.requestAnimationFrame(() => startAdventureHomeUnlockAnimation());
   showIntroIfNeeded();
+  void fetchTodayDailyLeaderboard();
   void processDailyPrizePayouts().then(() => {
-    window.setTimeout(tryStartDailyPrizeCelebration, 500);
+    if (!gameMeta.pendingDailyPrizeCelebration || dailyPrizeCelebrationActive || playing) return;
+    startDailyPrizeCelebration(gameMeta.pendingDailyPrizeCelebration, { force: true });
   });
 }
 
@@ -25889,9 +25900,17 @@ function endRound() {
   }
   refreshLeaderboardViews();
   void fetchTodayDailyLeaderboard().then(() => {
-    const identity = resolveScorePlayerIdentity(gameMeta.playerName);
-    if (score > 0 && identity.name) {
-      return submitDailyScore(identity.initials, score, selectedReefId, identity.name).then((submitted) => {
+    const identity = resolveScorePlayerIdentity(gameMeta.playerName || gameMeta.playerInitials);
+    const hasProfile =
+      Boolean(parseLeaderboardName(gameMeta.playerName)) ||
+      Boolean(safeLeaderboardInitials(gameMeta.playerInitials));
+    if (score > 0 && hasProfile && identity.initials) {
+      return submitDailyScore(
+        identity.initials,
+        score,
+        selectedReefId,
+        identity.name || identity.initials,
+      ).then((submitted) => {
         updateDailyGameOverStatus(score, submitted);
       });
     }
