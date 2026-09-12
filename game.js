@@ -10399,6 +10399,33 @@ function isAdventureUnlocked() {
   return (gameMeta.totalTreasureChests || 0) >= TREASURE_CHESTS_TO_UNLOCK_ADVENTURE;
 }
 
+/** Dev combo: Shift+8 — unlock adventure mode, every voyage, and all sea pals. */
+function applyShiftEightUnlockCombo() {
+  gameMeta.totalTreasureChests = Math.max(
+    gameMeta.totalTreasureChests || 0,
+    TREASURE_CHESTS_TO_UNLOCK_ADVENTURE,
+  );
+  gameMeta.adventureHighestLevel = ADVENTURE_LEVEL_COUNT;
+  gameMeta.adventureMapContentRev = ADVENTURE_MAP_CONTENT_REV;
+  gameMeta.ownedClothes = normalizeOwnedClothes(COMPANION_DEFS.map((c) => c.id));
+  if (!gameMeta.equippedClothes || !gameMeta.ownedClothes.includes(gameMeta.equippedClothes)) {
+    gameMeta.equippedClothes = STARTER_COMPANION_ID;
+  }
+  adventureMapUiProgress = -1;
+  saveMeta();
+  syncSeagullOutfit();
+  refreshCollectablesUI();
+  refreshCoinDisplays();
+  syncAdventureLaunchVisibility();
+  if (panelAdventure && !panelAdventure.hidden) {
+    prepareAdventureHub();
+    syncAdventureMapNodeStates();
+    syncAdventureMapTrail(false);
+    updateAdventureMapHereLabel();
+  }
+  showToast("Cheat unlocked — Adventure + all levels + all sea pals!", 3200);
+}
+
 function isAdventureLevelPlayable(levelNum) {
   if (!isAdventureUnlocked()) return false;
   const highest = gameMeta.adventureHighestLevel || 0;
@@ -30864,6 +30891,13 @@ window.addEventListener("keydown", (e) => {
       endTreasureMapReveal();
       return;
     }
+  }
+  const tag = e.target?.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA" || e.target?.isContentEditable) return;
+  if (e.repeat) return;
+  if (e.shiftKey && (e.code === "Digit8" || e.key === "*" || e.key === "8")) {
+    e.preventDefault();
+    applyShiftEightUnlockCombo();
   }
 });
 
