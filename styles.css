@@ -4793,10 +4793,23 @@ button.seagull-avatar:active {
   display: grid;
   place-items: center;
   padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+
+.tourney-vote-reveal.tourney-vote-reveal--active {
+  pointer-events: auto;
 }
 
 .tourney-vote-reveal[hidden] {
   display: none !important;
+  pointer-events: none !important;
+}
+
+.btn.is-tourney-blocked,
+button.is-tourney-blocked {
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: grayscale(0.15);
 }
 
 .tourney-vote-reveal__backdrop {

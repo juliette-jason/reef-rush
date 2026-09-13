@@ -11053,6 +11053,15 @@ function leaderboardHeaders(extra = {}) {
 
 const LEADERBOARD_FETCH_OPTS = { cache: "no-store" };
 
+/** Abort slow mobile fetches so Join/Compete never hang forever. */
+function fetchWithTimeout(url, opts = {}, ms = 8000) {
+  const ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+  const timer = ctrl ? window.setTimeout(() => ctrl.abort(), ms) : 0;
+  return fetch(url, ctrl ? { ...opts, signal: ctrl.signal } : opts).finally(() => {
+    if (timer) window.clearTimeout(timer);
+  });
+}
+
 function purgeLegacyLeaderboardCaches() {
   for (const key of LEADERBOARD_LEGACY_KEYS) {
     try {
@@ -12584,13 +12593,14 @@ function startTourneyHeatReveal({ eventKind, prepKind, slotKey, bracketLine = ""
   reveal.classList.remove("tourney-vote-reveal--active");
   void reveal.offsetWidth;
   reveal.classList.add("tourney-vote-reveal--active");
-  /* Let the heat game name land first, then offer Continue → gear → I am ready. */
+  /* Show Continue quickly — phones felt stuck when the CTA stayed hidden ~1s. */
+  if (btn) btn.hidden = false;
   tourneyHeatReadyTimer = window.setTimeout(() => {
     tourneyHeatReadyTimer = 0;
     if (!btn || reveal.hidden) return;
     btn.hidden = false;
     btn.focus();
-  }, 900);
+  }, 180);
 }
 
 function showTourneyBracketOverlay({ continueToPrep = true } = {}) {
@@ -12835,10 +12845,14 @@ function tourneyVoteBridgeSelectUrl(dayKey) {
 }
 
 async function fetchTourneyVotesFromBridge(dayKey) {
-  const res = await fetch(tourneyVoteBridgeSelectUrl(dayKey), {
-    headers: leaderboardHeaders(),
-    ...LEADERBOARD_FETCH_OPTS,
-  });
+  const res = await fetchWithTimeout(
+    tourneyVoteBridgeSelectUrl(dayKey),
+    {
+      headers: leaderboardHeaders(),
+      ...LEADERBOARD_FETCH_OPTS,
+    },
+    7000,
+  );
   const bodyText = await res.text();
   if (!res.ok) throw new Error(`Tourney vote bridge failed: ${res.status}`);
   let rows = [];
@@ -12856,9 +12870,10 @@ async function fetchTourneyVotesFromBridge(dayKey) {
 }
 
 async function fetchTourneyVotesFromDedicated(dayKey) {
-  const res = await fetch(
+  const res = await fetchWithTimeout(
     `${TOURNEY_VOTES_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=event_kind,voter_client_id,created_at`,
     { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS },
+    7000,
   );
   const bodyText = await res.text();
   if (!res.ok) {
@@ -13033,9 +13048,10 @@ async function fetchTourneySignupCount(dayKey = getTourneyDayKey()) {
   const localSignups = tourneyLocalDaySignups(dayKey);
   try {
     /* Prefer counting rows in the JSON body — Content-Range is often blocked by CORS. */
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `${TOURNEY_SIGNUPS_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=client_id&order=created_at.asc&limit=${TOURNEY_MAX_PLAYERS + 5}`,
       { headers: leaderboardHeaders({ Prefer: "count=exact" }), ...LEADERBOARD_FETCH_OPTS },
+      7000,
     );
     const bodyText = await res.text();
     if (!res.ok) {
@@ -13398,7 +13414,10 @@ async function submitTourneyVote(eventKind) {
 }
 
 async function submitTourneySignup() {
-  if (tourneySignupInFlight) return;
+  if (tourneySignupInFlight) {
+    showToast("Still joining…", 1600);
+    return;
+  }
   const dayKey = getTourneyDayKey();
   if (isTourneySignedUpToday()) {
     showToast("You're already in today's tourney!", 2400);
@@ -13407,6 +13426,7 @@ async function submitTourneySignup() {
   }
   tourneySignupInFlight = true;
   setTourneySignupButtonsBusy(true);
+  showToast("Joining tourney…", 1600);
   const identity = tourneyPlayerIdentity();
   const entry = {
     day_key: dayKey,
@@ -13415,55 +13435,50 @@ async function submitTourneySignup() {
     display_name: identity.name || identity.initials,
   };
 
-  const finishLocalSignup = async (fromSetup) => {
+  const finishLocalSignup = (fromSetup) => {
     rememberTourneyLocalSignup(dayKey, entry);
     gameMeta.tourneySignedUpDayKey = dayKey;
     saveMeta();
-    await fetchTourneySignupCount(dayKey);
-    if (!tourneySignupCount) tourneySignupCount = Math.max(1, tourneyLocalDaySignups(dayKey).length);
+    tourneySignupCount = Math.max(tourneySignupCount || 0, tourneyLocalDaySignups(dayKey).length, 1);
+    refreshTournamentCard();
+    refreshTourneyQuickJoin();
     if (fromSetup) tourneySetupToast();
     else showToast(`You're in! Spot ${tourneySignupCount} of ${TOURNEY_MAX_PLAYERS} — cast your event vote below.`, 3600);
-    /* Do not auto-cast a vote on signup — that made it look like you voted for the leading event. */
-    refreshTournamentCard();
   };
 
   try {
-    await fetchTourneySignupCount(dayKey);
-    if (isTourneySignedUpToday()) {
-      showToast("You're already in today's tourney!", 2400);
-      refreshTournamentCard();
-      return;
-    }
-    if (tourneySignupCount >= TOURNEY_MAX_PLAYERS) {
-      showToast("All 35 tourney spots are full today.", 2800);
-      refreshTournamentCard();
-      return;
-    }
-    const res = await fetch(TOURNEY_SIGNUPS_URL, {
-      method: "POST",
-      headers: leaderboardHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
-      body: JSON.stringify(entry),
-    });
-    if (res.status === 409) {
-      await finishLocalSignup(false);
-      return;
-    }
-    if (!res.ok) {
-      const bodyText = await res.text().catch(() => "");
-      if (isTourneyBackendMissingError(res.status, bodyText)) {
-        tourneyBackendMissing = true;
-        await finishLocalSignup(true);
-        return;
+    /* Claim locally first so phone taps never wait on a slow network. */
+    finishLocalSignup(false);
+    try {
+      const res = await fetchWithTimeout(
+        TOURNEY_SIGNUPS_URL,
+        {
+          method: "POST",
+          headers: leaderboardHeaders({ "Content-Type": "application/json", Prefer: "return=minimal" }),
+          body: JSON.stringify(entry),
+        },
+        7000,
+      );
+      if (res.ok || res.status === 409) {
+        tourneyBackendMissing = false;
+      } else {
+        const bodyText = await res.text().catch(() => "");
+        if (isTourneyBackendMissingError(res.status, bodyText)) {
+          tourneyBackendMissing = true;
+          tourneySetupToast();
+        }
       }
-      throw new Error(`Signup failed: ${res.status} ${bodyText.slice(0, 120)}`);
+    } catch (syncErr) {
+      console.warn(syncErr);
+      tourneyBackendMissing = true;
     }
-    tourneyBackendMissing = false;
-    await finishLocalSignup(false);
+    void fetchTourneySignupCount(dayKey).then(() => {
+      refreshTournamentCard();
+      refreshTourneyQuickJoin();
+    });
   } catch (err) {
     console.warn(err);
-    /* Still claim a local spot so Join / Vote aren't stuck on 0/35. */
-    tourneyBackendMissing = true;
-    await finishLocalSignup(true);
+    finishLocalSignup(true);
   } finally {
     tourneySignupInFlight = false;
     setTourneySignupButtonsBusy(false);
@@ -13471,10 +13486,75 @@ async function submitTourneySignup() {
   }
 }
 
+function explainTourneyCompeteBlocked() {
+  const slot = getTourneySlotState();
+  if (!isTourneySignedUpToday()) {
+    showToast("Tap Join today's tourney first.", 2600);
+    return;
+  }
+  if (!areTourneyVotesLocked()) {
+    showToast("Votes are still open — Compete unlocks when the morning heat opens.", 3200);
+    return;
+  }
+  if (!slot.slotKey) {
+    showToast(`Next heat: ${slot.nextLabel}`, 3200);
+    return;
+  }
+  if (!isTourneyDuelBracketDay() && hasPlayedTourneyHeat(slot.slotKey)) {
+    showToast("You already played this heat — one run per heat.", 3000);
+    return;
+  }
+  if (isTourneyDuelBracketDay()) {
+    showToast("No bracket match for you in this heat yet — check back next round.", 3400);
+    return;
+  }
+  showToast("Heat isn't open yet — try again during 11 AM, 4 PM, or 8 PM.", 3000);
+}
+
+/** Prefer aria-disabled so phone taps still fire and we can toast why it's blocked. */
+function setTourneyActionBlocked(btn, blocked) {
+  if (!btn) return;
+  btn.disabled = false;
+  btn.setAttribute("aria-disabled", blocked ? "true" : "false");
+  btn.classList.toggle("is-tourney-blocked", Boolean(blocked));
+}
+
+function isTourneyActionBlocked(btn) {
+  return btn?.getAttribute("aria-disabled") === "true" || btn?.classList.contains("is-tourney-blocked");
+}
+
+function onTourneySignupTap(e) {
+  e.preventDefault();
+  const btn = e.currentTarget;
+  if (btn?.hidden) return;
+  if (isTourneyActionBlocked(btn)) {
+    if (isTourneySignedUpToday()) showToast("You're already in today's tourney!", 2400);
+    else if (tourneySignupCount >= TOURNEY_MAX_PLAYERS) showToast("All 35 tourney spots are full today.", 2800);
+    else if (tourneySignupInFlight) showToast("Still joining…", 1600);
+    else showToast("Can't join right now — try again.", 2200);
+    return;
+  }
+  void submitTourneySignup();
+}
+
+function onTourneyCompeteTap(e) {
+  e.preventDefault();
+  const btn = e.currentTarget;
+  if (btn?.hidden) {
+    showToast("Tap Join today's tourney first.", 2600);
+    return;
+  }
+  if (isTourneyActionBlocked(btn)) {
+    explainTourneyCompeteBlocked();
+    return;
+  }
+  void beginTournamentCompetition();
+}
+
 function setTourneySignupButtonsBusy(busy) {
   for (const btn of [btnTourneySignup, btnTourneyQuickJoin]) {
     if (!btn) continue;
-    btn.disabled = busy || tourneySignupCount >= TOURNEY_MAX_PLAYERS;
+    setTourneyActionBlocked(btn, busy || tourneySignupCount >= TOURNEY_MAX_PLAYERS);
     if (busy) btn.textContent = "Joining…";
   }
   if (!busy) refreshTournamentCard();
@@ -13497,7 +13577,7 @@ function refreshTourneyQuickJoin() {
   }
   if (btnTourneyQuickJoin) {
     btnTourneyQuickJoin.hidden = signed;
-    btnTourneyQuickJoin.disabled = full || tourneySignupInFlight;
+    setTourneyActionBlocked(btnTourneyQuickJoin, full || tourneySignupInFlight);
     btnTourneyQuickJoin.textContent = full ? "Tourney full" : tourneySignupInFlight ? "Joining…" : "Join in 1 tap";
   }
 }
@@ -14357,7 +14437,12 @@ async function finishTournamentRun(scorePts, duelMeta = null) {
 }
 
 async function beginTournamentCompetition() {
-  await fetchTourneySignupCount();
+  showToast("Opening heat…", 1800);
+  try {
+    await fetchTourneySignupCount();
+  } catch {
+    /* local signup state is enough to proceed */
+  }
   if (!isTourneySignedUpToday()) {
     if (tourneySignupCount < TOURNEY_MAX_PLAYERS) {
       await submitTourneySignup();
@@ -14377,8 +14462,12 @@ async function beginTournamentCompetition() {
     showToast(`Next heat: ${slot.nextLabel}`, 3200);
     return;
   }
-  await fetchTourneyVoteCounts();
-  if (isTourneyMixedEventDay()) await fetchAllTourneyHeatVoteCounts();
+  try {
+    await fetchTourneyVoteCounts();
+    if (isTourneyMixedEventDay()) await fetchAllTourneyHeatVoteCounts();
+  } catch (err) {
+    console.warn(err);
+  }
   const eventKind = getTourneyEventForHeat(slot.slotKey);
   if (eventKind !== "duel" && hasPlayedTourneyHeat(slot.slotKey)) {
     showToast(`You already played the ${tourneySlotLabel(slot.slotKey)} heat — one run per heat.`, 3400);
@@ -14681,7 +14770,7 @@ async function refreshTournamentCard() {
   if (bracketOverlay && !bracketOverlay.hidden) renderTourneyBracketPanel(tourneyBracketState);
   if (btnTourneySignup) {
     btnTourneySignup.hidden = isTourneySignedUpToday();
-    btnTourneySignup.disabled = tourneySignupCount >= TOURNEY_MAX_PLAYERS || tourneySignupInFlight;
+    setTourneyActionBlocked(btnTourneySignup, tourneySignupCount >= TOURNEY_MAX_PLAYERS || tourneySignupInFlight);
     btnTourneySignup.textContent = tourneySignupInFlight
       ? "Joining…"
       : tourneySignupCount >= TOURNEY_MAX_PLAYERS
@@ -14697,33 +14786,34 @@ async function refreshTournamentCard() {
         : null;
     const heatAlreadyPlayed =
       Boolean(slot.slotKey) && !isTourneyDuelBracketDay() && hasPlayedTourneyHeat(slot.slotKey);
-    btnTourneyCompete.disabled =
+    let competeBlocked =
       !slot.slotKey || !areTourneyVotesLocked() || heatAlreadyPlayed || (isTourneyDuelBracketDay() && !bracketPlayable && Boolean(slot.slotKey));
     if (!areTourneyVotesLocked()) {
-      btnTourneyCompete.disabled = true;
+      competeBlocked = true;
       btnTourneyCompete.textContent = "Votes still open";
     } else if (!slot.slotKey) {
-      btnTourneyCompete.disabled = true;
+      competeBlocked = true;
       btnTourneyCompete.textContent = "Heat opens soon";
     } else if (heatAlreadyPlayed) {
-      btnTourneyCompete.disabled = true;
+      competeBlocked = true;
       btnTourneyCompete.textContent = "Already played this heat";
     } else if (isTourneyDuelBracketDay() && bracketPlayable) {
-      btnTourneyCompete.disabled = false;
+      competeBlocked = false;
       btnTourneyCompete.textContent = "Play bracket match";
     } else if (isTourneyDuelBracketDay()) {
-      btnTourneyCompete.disabled = true;
+      competeBlocked = true;
       btnTourneyCompete.textContent = "No match this heat";
     } else if (now < slot.start) {
-      btnTourneyCompete.disabled = false;
+      competeBlocked = false;
       btnTourneyCompete.textContent = "Compete (early join)";
     } else if (now >= slot.end) {
-      btnTourneyCompete.disabled = false;
+      competeBlocked = false;
       btnTourneyCompete.textContent = "Compete (late join)";
     } else {
-      btnTourneyCompete.disabled = false;
+      competeBlocked = false;
       btnTourneyCompete.textContent = "Compete in live heat";
     }
+    setTourneyActionBlocked(btnTourneyCompete, competeBlocked);
   }
   renderTournamentVoteButtons();
   renderTournamentLeaderboard();
@@ -31166,9 +31256,9 @@ btnWorldAdventures?.addEventListener("click", () => {
   if (homeAudioUnlocked) startHomeWaves();
 });
 btnEvents?.addEventListener("click", openEvents);
-btnTourneySignup?.addEventListener("click", () => void submitTourneySignup());
-btnTourneyQuickJoin?.addEventListener("click", () => void submitTourneySignup());
-btnTourneyCompete?.addEventListener("click", () => void beginTournamentCompetition());
+btnTourneySignup?.addEventListener("click", onTourneySignupTap);
+btnTourneyQuickJoin?.addEventListener("click", onTourneySignupTap);
+btnTourneyCompete?.addEventListener("click", onTourneyCompeteTap);
 btnCollectables?.addEventListener("click", openCollectables);
 document.getElementById("seagullAvatarStart")?.addEventListener("click", () => {
   openProfile();
@@ -31931,6 +32021,11 @@ btnTreasureMapRevealDone?.addEventListener("click", endTreasureMapReveal);
 document.getElementById("btnTourneyVoteRevealDone")?.addEventListener("click", endTourneyVoteReveal);
 document.getElementById("btnTourneyHeatRevealReady")?.addEventListener("click", endTourneyHeatRevealToPrep);
 document.getElementById("btnTourneyBracketContinue")?.addEventListener("click", endTourneyBracketOverlayToPrep);
+document.querySelector("#tourneyVoteReveal .tourney-vote-reveal__backdrop")?.addEventListener("click", endTourneyVoteReveal);
+document.querySelector("#tourneyHeatReveal .tourney-vote-reveal__backdrop")?.addEventListener("click", () => {
+  const btn = document.getElementById("btnTourneyHeatRevealReady");
+  if (btn && !btn.hidden) endTourneyHeatRevealToPrep();
+});
 btnDailyPrizeContinue?.addEventListener("click", showDailyPrizeChestPhase);
 btnDailyPrizeChest?.addEventListener("click", () => {
   if (dailyPrizePhase === "chest") openDailyPrizeChest();
