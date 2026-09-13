@@ -11584,10 +11584,10 @@ function withKnownDailyDisplayNames(rows) {
 
 async function fetchDedicatedDailyLeaderboard(dayKey) {
   const url = `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=initials,display_name,score,reef_id,created_at,day_key&order=score.desc,created_at.asc&limit=${DAILY_LEADERBOARD_FETCH_LIMIT}`;
-  let res = await fetch(url, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
+  let res = await fetchWithTimeout(url, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS }, 7000);
   if (!res.ok) {
     const fallbackUrl = `${DAILY_LEADERBOARD_TABLE_URL}?day_key=eq.${encodeURIComponent(dayKey)}&select=initials,score,reef_id,created_at,day_key&order=score.desc,created_at.asc&limit=${DAILY_LEADERBOARD_FETCH_LIMIT}`;
-    res = await fetch(fallbackUrl, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
+    res = await fetchWithTimeout(fallbackUrl, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS }, 7000);
   }
   if (!res.ok) return null;
   return normalizeDailyLeaderboardRows(await res.json());
@@ -11599,7 +11599,7 @@ async function fetchSharedLeaderboardForDay(dayKey) {
     `${LEADERBOARD_TABLE_URL}?select=initials,score,reef_id,created_at` +
     `&created_at=gte.${encodeURIComponent(start)}&created_at=lt.${encodeURIComponent(end)}` +
     `&order=score.desc,created_at.asc&limit=${DAILY_LEADERBOARD_FETCH_LIMIT}`;
-  const res = await fetch(url, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
+  const res = await fetchWithTimeout(url, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS }, 7000);
   if (!res.ok) throw new Error(`Daily leaderboard fetch failed: ${res.status}`);
   return normalizeDailyLeaderboardRows(
     (await res.json()).map((row) => ({ ...row, day_key: dayKey, dayKey }))
@@ -12496,7 +12496,14 @@ function maybeAnnounceTourneyVoteLock() {
   if (gameMeta.tourneyVoteLockAnnouncedDayKey === dayKey) return;
   gameMeta.tourneyVoteLockAnnouncedDayKey = dayKey;
   saveMeta();
-  startTourneyVoteReveal(winningTourneyEventKind());
+  const kind = winningTourneyEventKind();
+  const label = tourneyEventLabel(kind);
+  /* Never cover Join with a full-screen overlay for people who haven't signed up yet. */
+  if (!isTourneySignedUpToday()) {
+    showToast(`Votes locked — today's event is ${label}. Tap Join to enter!`, 4800);
+    return;
+  }
+  startTourneyVoteReveal(kind);
 }
 
 function startTourneyVoteReveal(kind) {
@@ -13524,10 +13531,37 @@ function isTourneyActionBlocked(btn) {
   return btn?.getAttribute("aria-disabled") === "true" || btn?.classList.contains("is-tourney-blocked");
 }
 
+/** Phone-safe tap binding — touchend + click with debounce so iOS always responds. */
+function bindTourneyButtonTap(btn, handler) {
+  if (!btn) return;
+  let lastTap = 0;
+  const run = (e) => {
+    const now = Date.now();
+    if (now - lastTap < 450) return;
+    lastTap = now;
+    handler(e);
+  };
+  btn.addEventListener("click", run);
+  btn.addEventListener(
+    "touchend",
+    (e) => {
+      /* Prevent the delayed synthetic click; run the handler from the touch. */
+      e.preventDefault();
+      run(e);
+    },
+    { passive: false },
+  );
+}
+
 function onTourneySignupTap(e) {
   e.preventDefault();
+  e.stopPropagation();
   const btn = e.currentTarget;
-  if (btn?.hidden) return;
+  if (btn?.hidden) {
+    showToast("You're already in today's tourney!", 2400);
+    syncTourneyJoinCompeteButtons();
+    return;
+  }
   if (isTourneyActionBlocked(btn)) {
     if (isTourneySignedUpToday()) showToast("You're already in today's tourney!", 2400);
     else if (tourneySignupCount >= TOURNEY_MAX_PLAYERS) showToast("All 35 tourney spots are full today.", 2800);
@@ -23275,6 +23309,8 @@ function openEvents() {
   showExclusiveMenu("events");
   refreshDuelTicketsForToday();
   syncHomeLaunchButtons();
+  /* Paint Join UI before any network — phones were stuck waiting on daily prize fetch. */
+  syncTourneyJoinCompeteButtons();
   void processDailyPrizePayouts().then(() => {
     refreshEventsPanel();
     window.setTimeout(tryStartDailyPrizeCelebration, 400);
@@ -31303,9 +31339,9 @@ btnWorldAdventures?.addEventListener("click", () => {
   if (homeAudioUnlocked) startHomeWaves();
 });
 btnEvents?.addEventListener("click", openEvents);
-btnTourneySignup?.addEventListener("click", onTourneySignupTap);
-btnTourneyQuickJoin?.addEventListener("click", onTourneySignupTap);
-btnTourneyCompete?.addEventListener("click", onTourneyCompeteTap);
+bindTourneyButtonTap(btnTourneySignup, onTourneySignupTap);
+bindTourneyButtonTap(btnTourneyQuickJoin, onTourneySignupTap);
+bindTourneyButtonTap(btnTourneyCompete, onTourneyCompeteTap);
 btnCollectables?.addEventListener("click", openCollectables);
 document.getElementById("seagullAvatarStart")?.addEventListener("click", () => {
   openProfile();
