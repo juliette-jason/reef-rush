@@ -12221,9 +12221,9 @@ const TOURNEY_MAX_PLAYERS = 35;
 const TOURNEY_FIELD_SIZE = TOURNEY_MAX_PLAYERS;
 const TOURNEY_COM_ID_PREFIX = "com-tourney-";
 const TOURNEY_WINDOW_MS = 30 * 60_000;
-/** Compete from 2 min before official start through 2 min after the heat ends. */
+/** Compete from 2 min before official start through 5 min after the heat ends (e.g. morning 10:58–11:35). */
 const TOURNEY_JOIN_EARLY_MS = 2 * 60_000;
-const TOURNEY_JOIN_LATE_MS = 2 * 60_000;
+const TOURNEY_JOIN_LATE_MS = 5 * 60_000;
 /** In-play toast when the next heat is about 5 minutes away. */
 const TOURNEY_WARN_AHEAD_MS = 5 * 60_000;
 const TOURNEY_SLOTS = [
@@ -12462,7 +12462,7 @@ function getTourneySlotState(now = Date.now()) {
         end: win.end,
         joinStart: win.joinStart,
         joinEnd: win.joinEnd,
-        nextLabel: `${def.name} heat at ${formatTourneyHeatTime(def.hour)} · join 2 min early / late`,
+        nextLabel: `${def.name} heat at ${formatTourneyHeatTime(def.hour)} · open 2 min early through heat + 5 min late`,
         upcoming: def.key,
       };
     }
@@ -12678,8 +12678,8 @@ function maybeWarnTourneyHeat(now = Date.now()) {
     const signed = isTourneySignedUpToday();
     showToast(
       signed
-        ? `Tournament ${def.name} heat in ${mins} min — Compete from Events (join opens 2 min early)!`
-        : `Tournament ${def.name} heat in ${mins} min — sign up on Events to play!`,
+        ? `Tournament ${def.name} heat in ${mins} min — Compete from Events (open 2 min early through heat + 5 min late)!`
+        : `Tournament ${def.name} heat in ${mins} min — join on Events to play!`,
       5200,
     );
     return;
@@ -12793,6 +12793,16 @@ function tourneyEventLabel(kind) {
 
 function isTourneySignedUpToday() {
   return gameMeta.tourneySignedUpDayKey === getTourneyDayKey();
+}
+
+/** Restore local signup flag if this device already claimed a spot (remote or local list). */
+function restoreTourneySignupFromKnownIds(dayKey, idSet) {
+  const myId = getDuelClientId();
+  if (!myId || !idSet?.has?.(myId)) return false;
+  if (gameMeta.tourneySignedUpDayKey === dayKey) return true;
+  gameMeta.tourneySignedUpDayKey = dayKey;
+  saveMeta();
+  return true;
 }
 
 function hasTourneyVotedToday() {
@@ -13043,6 +13053,7 @@ async function fetchTourneySignupCount(dayKey = getTourneyDayKey()) {
     for (const row of localSignups) {
       if (row?.client_id) ids.add(row.client_id);
     }
+    restoreTourneySignupFromKnownIds(dayKey, ids);
     const countHeader = res.headers.get("content-range");
     const m = countHeader && countHeader.match(/\/(\d+)$/);
     const headerCount = m ? Number(m[1]) : 0;
@@ -13054,6 +13065,7 @@ async function fetchTourneySignupCount(dayKey = getTourneyDayKey()) {
     console.warn(err);
     const ids = new Set(localSignups.map((r) => r.client_id).filter(Boolean));
     if (isTourneySignedUpToday()) ids.add(getDuelClientId());
+    restoreTourneySignupFromKnownIds(dayKey, ids);
     tourneySignupCount = ids.size;
     return tourneySignupCount;
   }
@@ -13417,8 +13429,14 @@ async function submitTourneySignup() {
 
   try {
     await fetchTourneySignupCount(dayKey);
-    if (tourneySignupCount >= TOURNEY_MAX_PLAYERS && !isTourneySignedUpToday()) {
+    if (isTourneySignedUpToday()) {
+      showToast("You're already in today's tourney!", 2400);
+      refreshTournamentCard();
+      return;
+    }
+    if (tourneySignupCount >= TOURNEY_MAX_PLAYERS) {
       showToast("All 35 tourney spots are full today.", 2800);
+      refreshTournamentCard();
       return;
     }
     const res = await fetch(TOURNEY_SIGNUPS_URL, {
@@ -14339,17 +14357,24 @@ async function finishTournamentRun(scorePts, duelMeta = null) {
 }
 
 async function beginTournamentCompetition() {
+  await fetchTourneySignupCount();
   if (!isTourneySignedUpToday()) {
-    showToast("Sign up this morning to claim a tourney spot.", 2800);
-    return;
+    if (tourneySignupCount < TOURNEY_MAX_PLAYERS) {
+      await submitTourneySignup();
+    }
+    if (!isTourneySignedUpToday()) {
+      showToast("Join today's tourney on Events first (or spots may be full).", 3000);
+      refreshTournamentCard();
+      return;
+    }
   }
   if (!areTourneyVotesLocked()) {
-    showToast("Votes lock before the morning heat — hang tight.", 2800);
+    showToast("Votes lock just before the morning heat — hang tight.", 2800);
     return;
   }
   const slot = getTourneySlotState();
   if (!slot.slotKey) {
-    showToast(`Next heat: ${slot.nextLabel}`, 3000);
+    showToast(`Next heat: ${slot.nextLabel}`, 3200);
     return;
   }
   await fetchTourneyVoteCounts();
