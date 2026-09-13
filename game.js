@@ -23309,6 +23309,11 @@ function openEvents() {
   showExclusiveMenu("events");
   refreshDuelTicketsForToday();
   syncHomeLaunchButtons();
+  /* Don't leave a vote/heat overlay eating taps when someone just wants to Join. */
+  if (!isTourneySignedUpToday()) {
+    endTourneyVoteReveal();
+    endTourneyHeatRevealSilent();
+  }
   /* Paint Join UI before any network — phones were stuck waiting on daily prize fetch. */
   syncTourneyJoinCompeteButtons();
   void processDailyPrizePayouts().then(() => {
