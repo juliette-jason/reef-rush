@@ -4705,6 +4705,11 @@ button.seagull-avatar:active {
   color: #fde68a;
 }
 
+.tourney-signup-status {
+  margin: 6px 0 0;
+  color: #7dd3fc;
+}
+
 .tourney-card-copy__live:last-of-type {
   margin-bottom: 10px;
   padding-bottom: 10px;

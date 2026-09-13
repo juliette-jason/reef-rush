@@ -23,7 +23,7 @@
       rel="stylesheet"
     />
     <link rel="canonical" href="https://reef-rush.com/" />
-    <link rel="stylesheet" href="styles.css?v=2026-09-13-tourney-tap" />
+    <link rel="stylesheet" href="styles.css?v=2026-09-13-tourney-join2" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -2282,7 +2282,6 @@
                   <span class="event-card__info-text">Info</span>
                 </summary>
                 <div class="event-card__blurb event-card__blurb--stack tourney-card-copy">
-                  <p id="tourneySignupLine" class="tourney-card-copy__live">0/35 spots filled · tap Join below</p>
                   <p id="tourneyScheduleLine" class="tourney-card-copy__live">Morning heat at 11:00 AM · Afternoon 4:00 PM · Evening 8:00 PM</p>
                   <p id="tourneyPrizeLine" class="tourney-card-copy__live">Top 3 of 35 win chests + gems</p>
                   <p class="tourney-card-copy__lead">
@@ -2298,6 +2297,7 @@
               </details>
             </div>
             <p id="tourneyEventTitle" class="event-card__reset">Vote for today's event</p>
+            <p id="tourneySignupLine" class="tourney-card-copy__live tourney-signup-status">0/35 spots filled · tap Join below</p>
           </header>
           <div class="event-card__actions event-card__actions--tourney">
             <button type="button" id="btnTourneySignup" class="btn event-card__play tourney-join-btn">Join today's tourney</button>
@@ -3398,6 +3398,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-09-13-tourney-tap" defer></script>
+    <script src="game.js?v=2026-09-13-tourney-join2" defer></script>
   </body>
 </html>
