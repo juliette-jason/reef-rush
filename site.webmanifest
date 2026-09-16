@@ -1,7 +1,7 @@
 {
-  "name": "Reef Rush Fishing",
+  "name": "Reef Rush — World Adventures",
   "short_name": "Reef Rush",
-  "description": "Free fishing game — catch fish, chase high scores, and compete in events.",
+  "description": "Free browser fishing game. Explore World Adventures reefs, clear Adventure Mode voyages, collect sea pals and loot, and chase high scores.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -9,6 +9,12 @@
   "background_color": "#031525",
   "theme_color": "#062a4a",
   "icons": [
+    {
+      "src": "icons/favicon-48.png",
+      "sizes": "48x48",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "icons/icon-192.png",
       "sizes": "192x192",
