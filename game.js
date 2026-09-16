@@ -25809,28 +25809,16 @@ function startRound() {
     beginFishingRoundFromHomeStart();
     return;
   }
-  /* Home Start: claim Fisher of the Day first, then fish. */
-  if (dailyPrizeCelebrationActive) return;
-  const yesterday = getPreviousDailyDayKey();
-  const alreadyChecked = gameMeta.dailyPrizeCheckedDay === yesterday;
-  if (alreadyChecked && !gameMeta.pendingDailyPrizeCelebration) {
-    beginFishingRoundFromHomeStart();
-    return;
-  }
-  if (alreadyChecked && gameMeta.pendingDailyPrizeCelebration) {
-    if (isHomeScreenActive()) {
-      startDailyPrizeCelebration(gameMeta.pendingDailyPrizeCelebration, { force: true });
-      return;
+  /* World Adventures Start must always fish. Fisher of the Day is shown on home load,
+     not as a silent gate that can block Start when the overlay fails to appear. */
+  if (dailyPrizeCelebrationActive) {
+    try {
+      deferDailyPrizeCelebration();
+    } catch {
+      dailyPrizeCelebrationActive = false;
     }
   }
-  void processDailyPrizePayouts().then(() => {
-    if (playing || dailyPrizeCelebrationActive || adventureSession || duelSession || eventMinigameSession) return;
-    if (gameMeta.pendingDailyPrizeCelebration && isHomeScreenActive()) {
-      startDailyPrizeCelebration(gameMeta.pendingDailyPrizeCelebration, { force: true });
-      return;
-    }
-    if (!gameMeta.pendingDailyPrizeCelebration) beginFishingRoundFromHomeStart();
-  });
+  beginFishingRoundFromHomeStart();
 }
 
 function beginFishingRoundFromHomeStart() {
