@@ -12149,6 +12149,8 @@ function endDailyPrizeCelebration() {
 function startDailyPrizeCelebration(prize, { force = false } = {}) {
   if (!prize || dailyPrizeCelebrationActive || playing) return;
   if (isSplashScreenActive()) return;
+  /* Always require World Adventures home — never pop the chest over Events/Shop. */
+  if (!isHomeScreenActive()) return;
   if (force) {
     if (mapSeagullGuide && !mapSeagullGuide.hidden) {
       if (mapSeagullMode === "howto") markIntroSeen();
@@ -12158,7 +12160,6 @@ function startDailyPrizeCelebration(prize, { force = false } = {}) {
   } else {
     if (treasureMapRevealPaused) return;
     if (mapSeagullGuide && !mapSeagullGuide.hidden && mapSeagullMode === "howto") return;
-    if (!isHomeScreenActive()) return;
   }
   ensureDailyPrizeBundle(prize);
   saveMeta();
@@ -13501,7 +13502,7 @@ function explainTourneyCompeteBlocked() {
     return;
   }
   if (!areTourneyVotesLocked()) {
-    showToast("Votes are still open — Compete unlocks when the morning heat opens.", 3200);
+    showToast("You're already in! Cast your vote below — Compete unlocks when the morning heat opens.", 3600);
     return;
   }
   if (!slot.slotKey) {
@@ -13636,10 +13637,10 @@ function syncTourneyJoinCompeteButtons() {
         !slot.slotKey || !areTourneyVotesLocked() || heatAlreadyPlayed || (isTourneyDuelBracketDay() && !bracketPlayable && Boolean(slot.slotKey));
       if (!areTourneyVotesLocked()) {
         competeBlocked = true;
-        btnTourneyCompete.textContent = "Votes still open";
+        btnTourneyCompete.textContent = "You're in — vote below";
       } else if (!slot.slotKey) {
         competeBlocked = true;
-        btnTourneyCompete.textContent = "Heat opens soon";
+        btnTourneyCompete.textContent = "You're in — heat opens soon";
       } else if (heatAlreadyPlayed) {
         competeBlocked = true;
         btnTourneyCompete.textContent = "Already played this heat";
@@ -19606,6 +19607,8 @@ function showHomePanel() {
   showIntroIfNeeded();
   void fetchTodayDailyLeaderboard();
   void processDailyPrizePayouts().then(() => {
+    /* Only if still on World Adventures — don't drop the chest on Events/Shop. */
+    if (!isHomeScreenActive()) return;
     if (!gameMeta.pendingDailyPrizeCelebration || dailyPrizeCelebrationActive || playing) return;
     startDailyPrizeCelebration(gameMeta.pendingDailyPrizeCelebration, { force: true });
   });
@@ -23318,7 +23321,7 @@ function openEvents() {
   syncTourneyJoinCompeteButtons();
   void processDailyPrizePayouts().then(() => {
     refreshEventsPanel();
-    window.setTimeout(tryStartDailyPrizeCelebration, 400);
+    /* Do NOT start Fisher of the Day here — that belongs on World Adventures only. */
   });
   startDailyEventCountdown();
   if (musicEnabled) switchSceneMusic(startHomeMusic);
@@ -25815,16 +25818,18 @@ function startRound() {
     return;
   }
   if (alreadyChecked && gameMeta.pendingDailyPrizeCelebration) {
-    startDailyPrizeCelebration(gameMeta.pendingDailyPrizeCelebration, { force: true });
-    return;
-  }
-  void processDailyPrizePayouts().then(() => {
-    if (playing || dailyPrizeCelebrationActive || adventureSession || duelSession || eventMinigameSession) return;
-    if (gameMeta.pendingDailyPrizeCelebration) {
+    if (isHomeScreenActive()) {
       startDailyPrizeCelebration(gameMeta.pendingDailyPrizeCelebration, { force: true });
       return;
     }
-    beginFishingRoundFromHomeStart();
+  }
+  void processDailyPrizePayouts().then(() => {
+    if (playing || dailyPrizeCelebrationActive || adventureSession || duelSession || eventMinigameSession) return;
+    if (gameMeta.pendingDailyPrizeCelebration && isHomeScreenActive()) {
+      startDailyPrizeCelebration(gameMeta.pendingDailyPrizeCelebration, { force: true });
+      return;
+    }
+    if (!gameMeta.pendingDailyPrizeCelebration) beginFishingRoundFromHomeStart();
   });
 }
 
