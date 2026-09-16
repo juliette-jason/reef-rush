@@ -1613,21 +1613,6 @@ body {
   text-shadow: 0 1px 10px rgba(3, 21, 37, 0.65);
 }
 
-.splash-copy__seo {
-  position: absolute;
-  left: 50%;
-  top: calc(100% + 40px);
-  transform: translateX(-50%);
-  margin: 0;
-  width: min(92vw, 420px);
-  font-size: 0.72rem;
-  font-weight: 700;
-  line-height: 1.35;
-  text-align: center;
-  color: rgba(186, 230, 253, 0.72);
-  text-shadow: 0 1px 8px rgba(3, 21, 37, 0.7);
-}
-
 @keyframes splashRaySway {
   from { opacity: 0.12; transform: skewX(-2.5deg); }
   to { opacity: 0.22; transform: skewX(2.5deg); }
@@ -5918,16 +5903,6 @@ button.is-tourney-blocked {
   letter-spacing: 0.12em;
   color: #7dd3fc;
   text-shadow: 0 0 14px rgba(56, 189, 248, 0.35);
-}
-
-.panel__seo-blurb {
-  margin: -8px 0 14px;
-  max-width: 34rem;
-  font-family: "Nunito", sans-serif;
-  font-size: clamp(0.78rem, 2.8vw, 0.9rem);
-  font-weight: 700;
-  line-height: 1.35;
-  color: rgba(226, 242, 255, 0.78);
 }
 
 .app--show-tabs .panel--shop,
