@@ -10777,6 +10777,10 @@ const ADMIN_STATS_UNLOCK_KEY = "reefRushAdminUnlocked_v1";
 const ADMIN_STATS_DEVICE_KEY = "reefRushAdminDevice_v1";
 /** Settings → Enter code (also works as ?reefadmin=12c9). */
 const ADMIN_STATS_UNLOCK_CODE = "12c9";
+/** Owner-only Feedback Inbox unlock (Settings → Owner code, or ?feedbackAdmin=123). */
+const FEEDBACK_ADMIN_KEY = "reefRushFeedbackAdmin";
+const FEEDBACK_ADMIN_CODE = "123";
+const FEEDBACK_INBOX_FETCH_LIMIT = 40;
 const PLAY_EVENT_KINDS = {
   duel: "Duel Fishing",
   coop: "Co-op Haul",
@@ -19482,6 +19486,18 @@ let mapSeagullMode = null;
 let mapSeagullFlyTimer = 0;
 const btnResetProgress = document.getElementById("btnResetProgress");
 const btnSendFeedback = document.getElementById("btnSendFeedback");
+const btnFeedbackInbox = document.getElementById("btnFeedbackInbox");
+const btnFeedbackAdminUnlock = document.getElementById("btnFeedbackAdminUnlock");
+const btnFeedbackAdminLock = document.getElementById("btnFeedbackAdminLock");
+const feedbackAdminUnlockRow = document.getElementById("feedbackAdminUnlockRow");
+const feedbackAdminCodeInput = document.getElementById("feedbackAdminCodeInput");
+const feedbackInboxBadge = document.getElementById("feedbackInboxBadge");
+const feedbackInboxOverlay = document.getElementById("feedbackInboxOverlay");
+const feedbackInboxList = document.getElementById("feedbackInboxList");
+const feedbackInboxStatus = document.getElementById("feedbackInboxStatus");
+const btnFeedbackInboxClose = document.getElementById("btnFeedbackInboxClose");
+const btnFeedbackInboxPending = document.getElementById("btnFeedbackInboxPending");
+const btnFeedbackInboxApproved = document.getElementById("btnFeedbackInboxApproved");
 const feedbackOverlay = document.getElementById("feedbackOverlay");
 const feedbackMessage = document.getElementById("feedbackMessage");
 const feedbackScreenshotInput = document.getElementById("feedbackScreenshotInput");
@@ -31858,6 +31874,11 @@ canvas.addEventListener("touchcancel", () => {
 });
 
 window.addEventListener("keydown", (e) => {
+  if (feedbackInboxOverlay && !feedbackInboxOverlay.hidden && e.key === "Escape") {
+    e.preventDefault();
+    closeFeedbackInboxOverlay();
+    return;
+  }
   if (feedbackOverlay && !feedbackOverlay.hidden && e.key === "Escape") {
     e.preventDefault();
     closeFeedbackOverlay();
@@ -32438,13 +32459,382 @@ async function submitGameFeedback() {
   }
 }
 
+function isFeedbackAdminUnlocked() {
+  try {
+    return localStorage.getItem(FEEDBACK_ADMIN_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function setFeedbackAdminUnlocked(on) {
+  try {
+    if (on) localStorage.setItem(FEEDBACK_ADMIN_KEY, "1");
+    else localStorage.removeItem(FEEDBACK_ADMIN_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+function tryConsumeFeedbackAdminFromUrl() {
+  let params;
+  try {
+    params = new URLSearchParams(location.search);
+  } catch {
+    return;
+  }
+  if (!params.has("feedbackAdmin")) return;
+  const typed = String(params.get("feedbackAdmin") || "").trim();
+  params.delete("feedbackAdmin");
+  const qs = params.toString();
+  const next = `${location.pathname}${qs ? `?${qs}` : ""}${location.hash || ""}`;
+  try {
+    history.replaceState({}, "", next);
+  } catch {
+    /* ignore */
+  }
+  if (typed === FEEDBACK_ADMIN_CODE || typed === "1" || typed.toLowerCase() === "yes") {
+    unlockFeedbackAdminWithToast();
+  } else if (typed === "0" || typed.toLowerCase() === "no" || typed.toLowerCase() === "off") {
+    setFeedbackAdminUnlocked(false);
+    showToast("Feedback Inbox locked.", 2000);
+    syncFeedbackAdminUi();
+  } else {
+    showToast("Wrong owner code.", 1800);
+  }
+}
+
+function unlockFeedbackAdminWithToast() {
+  setFeedbackAdminUnlocked(true);
+  if (feedbackAdminCodeInput) feedbackAdminCodeInput.value = "";
+  showToast("Feedback Inbox unlocked on this device.", 2800);
+  syncFeedbackAdminUi();
+  void refreshFeedbackInboxBadge();
+}
+
+function syncFeedbackAdminUi() {
+  const unlocked = isFeedbackAdminUnlocked();
+  if (feedbackAdminUnlockRow) feedbackAdminUnlockRow.hidden = unlocked;
+  if (btnFeedbackInbox) btnFeedbackInbox.hidden = !unlocked;
+  if (btnFeedbackAdminLock) btnFeedbackAdminLock.hidden = !unlocked;
+  if (!unlocked && feedbackInboxBadge) {
+    feedbackInboxBadge.hidden = true;
+    feedbackInboxBadge.textContent = "0";
+  }
+}
+
+function attemptFeedbackAdminUnlockFromInput() {
+  const typed = String(feedbackAdminCodeInput?.value || "").trim();
+  if (!typed) {
+    showToast("Enter your owner code.", 1800);
+    return;
+  }
+  if (typed === FEEDBACK_ADMIN_CODE) {
+    unlockFeedbackAdminWithToast();
+    return;
+  }
+  showToast("Wrong owner code.", 1800);
+  if (feedbackAdminCodeInput) {
+    feedbackAdminCodeInput.value = "";
+    try {
+      feedbackAdminCodeInput.focus({ preventScroll: true });
+    } catch {
+      feedbackAdminCodeInput.focus();
+    }
+  }
+}
+
+function lockFeedbackAdminFromSettings() {
+  setFeedbackAdminUnlocked(false);
+  closeFeedbackInboxOverlay();
+  if (feedbackAdminCodeInput) feedbackAdminCodeInput.value = "";
+  showToast("Feedback Inbox locked.", 2000);
+  syncFeedbackAdminUi();
+}
+
+let feedbackInboxFilter = "pending";
+let feedbackInboxRows = [];
+let feedbackInboxLoadId = 0;
+let feedbackInboxActionLock = false;
+
+function setFeedbackInboxStatus(text = "", tone = "error") {
+  if (!feedbackInboxStatus) return;
+  const msg = String(text || "").trim();
+  if (!msg) {
+    feedbackInboxStatus.hidden = true;
+    feedbackInboxStatus.textContent = "";
+    feedbackInboxStatus.classList.remove("feedback-overlay__status--info");
+    return;
+  }
+  feedbackInboxStatus.hidden = false;
+  feedbackInboxStatus.textContent = msg;
+  feedbackInboxStatus.classList.toggle("feedback-overlay__status--info", tone === "info");
+}
+
+function formatFeedbackInboxWhen(iso) {
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return String(iso || "");
+    return d.toLocaleString(undefined, {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  } catch {
+    return String(iso || "");
+  }
+}
+
+function escapeFeedbackHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function buildFeedbackFixPrompt(row) {
+  const lines = [
+    "Fix this Reef Rush player feedback.",
+    "",
+    `Id: ${row.id}`,
+    `Kind: ${row.kind || "feedback"}`,
+    `Player: ${row.player_name || "(none)"}`,
+    `When: ${row.created_at || ""}`,
+  ];
+  if (row.screenshot_url) lines.push(`Screenshot: ${row.screenshot_url}`);
+  lines.push("", "Feedback:", String(row.message || "").trim());
+  return lines.join("\n");
+}
+
+async function copyTextToClipboard(text) {
+  const value = String(text || "");
+  if (!value) return false;
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value);
+      return true;
+    }
+  } catch {
+    /* fall through */
+  }
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = value;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand("copy");
+    ta.remove();
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
+async function fetchGameFeedbackInbox(status = feedbackInboxFilter) {
+  const wanted = status === "approved" ? "approved" : "pending";
+  const url =
+    `${GAME_FEEDBACK_URL}?select=id,created_at,message,kind,player_name,screenshot_url,status,reviewed_at` +
+    `&status=eq.${encodeURIComponent(wanted)}` +
+    `&order=created_at.desc&limit=${FEEDBACK_INBOX_FETCH_LIMIT}`;
+  const res = await fetch(url, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
+  const text = await res.text();
+  if (!res.ok) {
+    if (/status|PGRST204|column/i.test(text)) {
+      throw new Error("Inbox needs SQL — run supabase/game_feedback_admin.sql in Supabase.");
+    }
+    if (/game_feedback|PGRST205|schema cache/i.test(text) || res.status === 404) {
+      throw new Error("Feedback table isn’t set up yet — run supabase/game_feedback.sql.");
+    }
+    throw new Error(text || `Couldn’t load inbox (${res.status})`);
+  }
+  let rows = [];
+  try {
+    rows = JSON.parse(text);
+  } catch {
+    rows = [];
+  }
+  return Array.isArray(rows) ? rows : [];
+}
+
+async function refreshFeedbackInboxBadge() {
+  if (!isFeedbackAdminUnlocked() || !feedbackInboxBadge) return;
+  try {
+    const rows = await fetchGameFeedbackInbox("pending");
+    const n = rows.length;
+    if (n > 0) {
+      feedbackInboxBadge.hidden = false;
+      feedbackInboxBadge.textContent = n > 99 ? "99+" : String(n);
+    } else {
+      feedbackInboxBadge.hidden = true;
+      feedbackInboxBadge.textContent = "0";
+    }
+  } catch {
+    /* keep prior badge */
+  }
+}
+
+function renderFeedbackInboxList() {
+  if (!feedbackInboxList) return;
+  const showActions = feedbackInboxFilter === "pending";
+  if (!feedbackInboxRows.length) {
+    feedbackInboxList.innerHTML = `<p class="feedback-inbox-empty">${
+      feedbackInboxFilter === "approved" ? "No approved items yet." : "No pending feedback."
+    }</p>`;
+    return;
+  }
+  feedbackInboxList.innerHTML = feedbackInboxRows
+    .map((row) => {
+      const shot = row.screenshot_url
+        ? `<img class="feedback-inbox-card__shot" src="${escapeFeedbackHtml(row.screenshot_url)}" alt="Feedback screenshot" loading="lazy" />`
+        : "";
+      const actions = showActions
+        ? `<div class="feedback-inbox-card__actions">
+            <button type="button" class="btn btn--primary" data-feedback-approve="${row.id}">Approve</button>
+            <button type="button" class="btn btn--secondary" data-feedback-dismiss="${row.id}">Dismiss</button>
+          </div>`
+        : "";
+      return `<article class="feedback-inbox-card" data-feedback-id="${row.id}">
+        <p class="feedback-inbox-card__meta">
+          <span class="feedback-inbox-card__kind">${escapeFeedbackHtml(row.kind || "feedback")}</span>
+          <span>#${escapeFeedbackHtml(row.id)}</span>
+          <span>${escapeFeedbackHtml(formatFeedbackInboxWhen(row.created_at))}</span>
+          <span>${escapeFeedbackHtml(row.player_name || "Player")}</span>
+        </p>
+        <p class="feedback-inbox-card__message">${escapeFeedbackHtml(row.message)}</p>
+        ${shot}
+        ${actions}
+      </article>`;
+    })
+    .join("");
+}
+
+function syncFeedbackInboxTabs() {
+  const pending = feedbackInboxFilter === "pending";
+  btnFeedbackInboxPending?.classList.toggle("is-active", pending);
+  btnFeedbackInboxApproved?.classList.toggle("is-active", !pending);
+  btnFeedbackInboxPending?.setAttribute("aria-selected", pending ? "true" : "false");
+  btnFeedbackInboxApproved?.setAttribute("aria-selected", pending ? "false" : "true");
+}
+
+async function loadFeedbackInbox() {
+  if (!isFeedbackAdminUnlocked()) return;
+  const loadId = ++feedbackInboxLoadId;
+  setFeedbackInboxStatus("Loading…", "info");
+  try {
+    const rows = await fetchGameFeedbackInbox(feedbackInboxFilter);
+    if (loadId !== feedbackInboxLoadId) return;
+    feedbackInboxRows = rows;
+    renderFeedbackInboxList();
+    setFeedbackInboxStatus("");
+    if (feedbackInboxFilter === "pending") void refreshFeedbackInboxBadge();
+  } catch (err) {
+    if (loadId !== feedbackInboxLoadId) return;
+    feedbackInboxRows = [];
+    renderFeedbackInboxList();
+    const tip = err?.message || "Couldn’t load inbox.";
+    setFeedbackInboxStatus(tip);
+  }
+}
+
+function openFeedbackInboxOverlay() {
+  if (!isFeedbackAdminUnlocked()) return;
+  setStartSettingsOpen(false);
+  if (!feedbackInboxOverlay) return;
+  feedbackInboxFilter = "pending";
+  syncFeedbackInboxTabs();
+  setFeedbackInboxStatus("");
+  feedbackInboxOverlay.hidden = false;
+  feedbackInboxOverlay.setAttribute("aria-hidden", "false");
+  void loadFeedbackInbox();
+}
+
+function closeFeedbackInboxOverlay() {
+  if (!feedbackInboxOverlay) return;
+  feedbackInboxOverlay.hidden = true;
+  feedbackInboxOverlay.setAttribute("aria-hidden", "true");
+  setFeedbackInboxStatus("");
+}
+
+async function patchGameFeedbackStatus(id, status) {
+  const res = await fetch(`${GAME_FEEDBACK_URL}?id=eq.${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: leaderboardHeaders({
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    }),
+    body: JSON.stringify({
+      status,
+      reviewed_at: new Date().toISOString(),
+    }),
+  });
+  const text = await res.text().catch(() => "");
+  if (!res.ok) {
+    if (/status|PGRST204|column|policy|permission/i.test(text)) {
+      throw new Error("Inbox needs SQL — run supabase/game_feedback_admin.sql in Supabase.");
+    }
+    throw new Error(text || `Update failed (${res.status})`);
+  }
+}
+
+async function approveGameFeedback(id) {
+  if (feedbackInboxActionLock) return;
+  const row = feedbackInboxRows.find((r) => String(r.id) === String(id));
+  if (!row) return;
+  feedbackInboxActionLock = true;
+  setFeedbackInboxStatus("Approving…", "info");
+  try {
+    const prompt = buildFeedbackFixPrompt(row);
+    const copied = await copyTextToClipboard(prompt);
+    await patchGameFeedbackStatus(row.id, "approved");
+    showToast(copied ? "Copied — paste into Cursor" : "Approved (clipboard blocked — copy manually)", copied ? 3200 : 4200);
+    if (!copied) setFeedbackInboxStatus(prompt, "info");
+    else setFeedbackInboxStatus("");
+    await loadFeedbackInbox();
+    void refreshFeedbackInboxBadge();
+  } catch (err) {
+    const tip = err?.message || "Couldn’t approve.";
+    setFeedbackInboxStatus(tip);
+    showToast(tip, 3600);
+  } finally {
+    feedbackInboxActionLock = false;
+  }
+}
+
+async function dismissGameFeedback(id) {
+  if (feedbackInboxActionLock) return;
+  const row = feedbackInboxRows.find((r) => String(r.id) === String(id));
+  if (!row) return;
+  feedbackInboxActionLock = true;
+  setFeedbackInboxStatus("Dismissing…", "info");
+  try {
+    await patchGameFeedbackStatus(row.id, "dismissed");
+    showToast("Dismissed.", 1600);
+    setFeedbackInboxStatus("");
+    await loadFeedbackInbox();
+    void refreshFeedbackInboxBadge();
+  } catch (err) {
+    const tip = err?.message || "Couldn’t dismiss.";
+    setFeedbackInboxStatus(tip);
+    showToast(tip, 3600);
+  } finally {
+    feedbackInboxActionLock = false;
+  }
+}
+
 function setStartSettingsOpen(open) {
   if (!btnStartSettings || !startSettingsMenu) return;
   startSettingsMenu.hidden = !open;
   btnStartSettings.setAttribute("aria-expanded", open ? "true" : "false");
   if (open) {
     syncAdminSettingsUi();
+    syncFeedbackAdminUi();
     if (isAdminStatsUnlocked()) void refreshAdminStats();
+    if (isFeedbackAdminUnlocked()) void refreshFeedbackInboxBadge();
   }
 }
 
@@ -32454,11 +32844,69 @@ btnStartSettings?.addEventListener("click", (e) => {
   setStartSettingsOpen(open);
 });
 
-btnSendFeedback?.addEventListener("click", (e) => {
+{
+  btnSendFeedback?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openFeedbackOverlay();
+  });
+  btnFeedbackAdminUnlock?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    attemptFeedbackAdminUnlockFromInput();
+  });
+  btnFeedbackAdminLock?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    lockFeedbackAdminFromSettings();
+  });
+  feedbackAdminCodeInput?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      attemptFeedbackAdminUnlockFromInput();
+    }
+  });
+  feedbackAdminCodeInput?.addEventListener("click", (e) => e.stopPropagation());
+  feedbackAdminCodeInput?.addEventListener("pointerdown", (e) => e.stopPropagation());
+}
+
+btnFeedbackInbox?.addEventListener("click", (e) => {
   e.preventDefault();
   e.stopPropagation();
-  openFeedbackOverlay();
+  openFeedbackInboxOverlay();
 });
+btnFeedbackInboxClose?.addEventListener("click", closeFeedbackInboxOverlay);
+feedbackInboxOverlay?.querySelector("[data-feedback-inbox-close]")?.addEventListener("click", closeFeedbackInboxOverlay);
+feedbackInboxOverlay?.querySelector(".feedback-inbox-overlay__stage")?.addEventListener("click", (e) => {
+  e.stopPropagation();
+});
+feedbackInboxOverlay?.addEventListener("pointerdown", (e) => {
+  e.stopPropagation();
+});
+btnFeedbackInboxPending?.addEventListener("click", () => {
+  feedbackInboxFilter = "pending";
+  syncFeedbackInboxTabs();
+  void loadFeedbackInbox();
+});
+btnFeedbackInboxApproved?.addEventListener("click", () => {
+  feedbackInboxFilter = "approved";
+  syncFeedbackInboxTabs();
+  void loadFeedbackInbox();
+});
+feedbackInboxList?.addEventListener("click", (e) => {
+  const approveBtn = e.target?.closest?.("[data-feedback-approve]");
+  if (approveBtn) {
+    e.preventDefault();
+    void approveGameFeedback(approveBtn.getAttribute("data-feedback-approve"));
+    return;
+  }
+  const dismissBtn = e.target?.closest?.("[data-feedback-dismiss]");
+  if (dismissBtn) {
+    e.preventDefault();
+    void dismissGameFeedback(dismissBtn.getAttribute("data-feedback-dismiss"));
+  }
+});
+
 btnFeedbackCancel?.addEventListener("click", closeFeedbackOverlay);
 btnFeedbackSend?.addEventListener("click", requestSubmitGameFeedback);
 btnFeedbackSend?.addEventListener(
@@ -32502,7 +32950,10 @@ feedbackOverlay?.addEventListener("pointerdown", (e) => {
 });
 
 tryConsumeAdminUnlockFromUrl();
+tryConsumeFeedbackAdminFromUrl();
 syncAdminSettingsUi();
+syncFeedbackAdminUi();
+void refreshFeedbackInboxBadge();
 
 function setStartMoreOptionsOpen(open) {
   /* Phone launch buttons stay visible under Start Game; no sheet to toggle. */

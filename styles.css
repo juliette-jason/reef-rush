@@ -2009,7 +2009,8 @@ body {
 .panel--start .btn--reset,
 .panel--start .btn--shop,
 .panel--start .btn--music,
-.panel--start .btn--feedback {
+.panel--start .btn--feedback,
+.panel--start .btn--feedback-inbox {
   width: 100%;
   padding: 9px 14px;
   font-size: 0.82rem;
@@ -2022,6 +2023,92 @@ body {
 .panel--start .btn--feedback {
   color: #bae6fd;
   border-color: rgba(125, 211, 252, 0.45);
+}
+
+.panel--start .btn--feedback-inbox {
+  position: relative;
+  color: #fde68a;
+  border-color: rgba(253, 230, 138, 0.5);
+}
+
+.panel--start .btn--feedback-inbox[hidden],
+.panel--start .btn--feedback-lock[hidden],
+.feedback-admin-unlock[hidden] {
+  display: none !important;
+}
+
+.panel--start .btn--feedback-lock {
+  color: rgba(226, 232, 240, 0.88);
+  border-color: rgba(148, 163, 184, 0.4);
+}
+
+.feedback-admin-unlock {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(253, 230, 138, 0.35);
+  background: rgba(8, 47, 73, 0.65);
+}
+
+.feedback-admin-unlock__label {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fde68a;
+}
+
+.feedback-admin-unlock__row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.feedback-admin-unlock__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(125, 211, 252, 0.4);
+  background: rgba(2, 6, 23, 0.55);
+  color: #e2e8f0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.feedback-admin-unlock__input:focus {
+  outline: none;
+  border-color: rgba(253, 230, 138, 0.7);
+}
+
+.feedback-admin-unlock__btn {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.feedback-inbox-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.35em;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: 0.72em;
+  font-weight: 800;
+  line-height: 1.35;
+  color: #0f172a;
+  background: #fde68a;
+  vertical-align: middle;
+}
+
+.feedback-inbox-badge[hidden] {
+  display: none !important;
 }
 
 .start-settings__admin {
@@ -2270,6 +2357,111 @@ body {
   border-color: rgba(125, 211, 252, 0.4);
   background: rgba(8, 47, 73, 0.65);
   color: #bae6fd;
+}
+
+.feedback-inbox-overlay__stage {
+  width: min(480px, 100%);
+  max-height: min(92dvh, 720px);
+}
+
+.feedback-inbox-overlay__tabs {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.feedback-inbox-tab {
+  flex: 1 1 0;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.55);
+  color: rgba(226, 232, 240, 0.85);
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.feedback-inbox-tab.is-active {
+  border-color: rgba(253, 230, 138, 0.55);
+  background: rgba(120, 53, 15, 0.45);
+  color: #fde68a;
+}
+
+.feedback-inbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 0 12px;
+  min-height: 120px;
+  max-height: min(52dvh, 420px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.feedback-inbox-empty {
+  margin: 12px 4px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: rgba(186, 230, 253, 0.85);
+  text-align: center;
+}
+
+.feedback-inbox-card {
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(125, 211, 252, 0.28);
+  background: rgba(8, 28, 48, 0.72);
+}
+
+.feedback-inbox-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin: 0 0 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(186, 230, 253, 0.8);
+}
+
+.feedback-inbox-card__kind {
+  color: #fde68a;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.feedback-inbox-card__message {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #f8fafc;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.feedback-inbox-card__shot {
+  display: block;
+  width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  margin: 0 0 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(2, 6, 23, 0.55);
+}
+
+.feedback-inbox-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.feedback-inbox-card__actions .btn {
+  flex: 1 1 auto;
+  min-width: 110px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
 }
 
 .feedback-overlay__actions .btn {

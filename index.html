@@ -39,7 +39,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png?v=circle-logo" />
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=circle-logo" />
     <link rel="manifest" href="site.webmanifest?v=circle-logo" />
-    <link rel="stylesheet" href="styles.css?v=2026-10-05-ladder-fish" />
+    <link rel="stylesheet" href="styles.css?v=2026-10-05-feedback-code" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -437,6 +437,28 @@
         </div>
       </div>
 
+      <div id="feedbackInboxOverlay" class="feedback-overlay feedback-inbox-overlay" hidden aria-hidden="true">
+        <div class="feedback-overlay__backdrop" data-feedback-inbox-close></div>
+        <div class="feedback-overlay__stage feedback-inbox-overlay__stage" role="dialog" aria-labelledby="feedbackInboxTitle" aria-modal="true">
+          <p class="feedback-overlay__badge">★ Owner ★</p>
+          <h2 id="feedbackInboxTitle" class="feedback-overlay__title">Feedback Inbox</h2>
+          <p class="feedback-overlay__lede">Approve copies a Cursor fix prompt. Dismiss hides noise.</p>
+          <div class="feedback-inbox-overlay__tabs" role="tablist" aria-label="Feedback filter">
+            <button type="button" id="btnFeedbackInboxPending" class="feedback-inbox-tab is-active" role="tab" aria-selected="true">
+              Pending
+            </button>
+            <button type="button" id="btnFeedbackInboxApproved" class="feedback-inbox-tab" role="tab" aria-selected="false">
+              Approved
+            </button>
+          </div>
+          <div id="feedbackInboxList" class="feedback-inbox-list" aria-live="polite"></div>
+          <p id="feedbackInboxStatus" class="feedback-overlay__status" hidden aria-live="polite"></p>
+          <div class="feedback-overlay__actions">
+            <button type="button" id="btnFeedbackInboxClose" class="btn btn--secondary">Close</button>
+          </div>
+        </div>
+      </div>
+
       <div id="toast" class="toast" hidden></div>
 
       <p class="hint" id="controlHint">Laptop: aim left/right, Enter casts · Phone: drag left/right, tap to cast</p>
@@ -756,6 +778,31 @@
                 <button type="button" id="btnOpenIntro" class="btn btn--secondary btn--help">How to play</button>
                 <button type="button" id="btnToggleMusic" class="btn btn--secondary btn--music" aria-pressed="false">Music</button>
                 <button type="button" id="btnSendFeedback" class="btn btn--secondary btn--feedback">Send bug / feedback</button>
+                <div id="feedbackAdminUnlockRow" class="feedback-admin-unlock">
+                  <label class="feedback-admin-unlock__label" for="feedbackAdminCodeInput">Owner code</label>
+                  <div class="feedback-admin-unlock__row">
+                    <input
+                      id="feedbackAdminCodeInput"
+                      class="feedback-admin-unlock__input"
+                      type="password"
+                      inputmode="numeric"
+                      maxlength="12"
+                      autocomplete="off"
+                      placeholder="Code"
+                      aria-label="Owner code"
+                    />
+                    <button type="button" id="btnFeedbackAdminUnlock" class="btn btn--secondary feedback-admin-unlock__btn">
+                      Unlock
+                    </button>
+                  </div>
+                </div>
+                <button type="button" id="btnFeedbackInbox" class="btn btn--secondary btn--feedback-inbox" hidden>
+                  Feedback Inbox
+                  <span id="feedbackInboxBadge" class="feedback-inbox-badge" hidden>0</span>
+                </button>
+                <button type="button" id="btnFeedbackAdminLock" class="btn btn--secondary btn--feedback-lock" hidden>
+                  Lock owner tools
+                </button>
                 <button type="button" id="btnResetProgress" class="btn btn--secondary btn--reset">Reset progress</button>
                 <div id="startSettingsAdmin" class="start-settings__admin" hidden>
                   <p class="start-settings__admin-title">Players &amp; minigames</p>
@@ -3597,6 +3644,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-10-05-fotd-fix" defer></script>
+    <script src="game.js?v=2026-10-05-feedback-code" defer></script>
   </body>
 </html>
