@@ -10777,9 +10777,8 @@ const ADMIN_STATS_UNLOCK_KEY = "reefRushAdminUnlocked_v1";
 const ADMIN_STATS_DEVICE_KEY = "reefRushAdminDevice_v1";
 /** Settings → Enter code (also works as ?reefadmin=12c9). */
 const ADMIN_STATS_UNLOCK_CODE = "12c9";
-/** Owner-only Feedback Inbox unlock (Settings → Owner code, or ?feedbackAdmin=123). */
+/** Owner-only Feedback Inbox — stays unlocked on devices that already unlocked. */
 const FEEDBACK_ADMIN_KEY = "reefRushFeedbackAdmin";
-const FEEDBACK_ADMIN_CODE = "123";
 const FEEDBACK_INBOX_FETCH_LIMIT = 40;
 const PLAY_EVENT_KINDS = {
   duel: "Duel Fishing",
@@ -19487,10 +19486,7 @@ let mapSeagullFlyTimer = 0;
 const btnResetProgress = document.getElementById("btnResetProgress");
 const btnSendFeedback = document.getElementById("btnSendFeedback");
 const btnFeedbackInbox = document.getElementById("btnFeedbackInbox");
-const btnFeedbackAdminUnlock = document.getElementById("btnFeedbackAdminUnlock");
 const btnFeedbackAdminLock = document.getElementById("btnFeedbackAdminLock");
-const feedbackAdminUnlockRow = document.getElementById("feedbackAdminUnlockRow");
-const feedbackAdminCodeInput = document.getElementById("feedbackAdminCodeInput");
 const feedbackInboxBadge = document.getElementById("feedbackInboxBadge");
 const feedbackInboxOverlay = document.getElementById("feedbackInboxOverlay");
 const feedbackInboxList = document.getElementById("feedbackInboxList");
@@ -32477,44 +32473,11 @@ function setFeedbackAdminUnlocked(on) {
 }
 
 function tryConsumeFeedbackAdminFromUrl() {
-  let params;
-  try {
-    params = new URLSearchParams(location.search);
-  } catch {
-    return;
-  }
-  if (!params.has("feedbackAdmin")) return;
-  const typed = String(params.get("feedbackAdmin") || "").trim();
-  params.delete("feedbackAdmin");
-  const qs = params.toString();
-  const next = `${location.pathname}${qs ? `?${qs}` : ""}${location.hash || ""}`;
-  try {
-    history.replaceState({}, "", next);
-  } catch {
-    /* ignore */
-  }
-  if (typed === FEEDBACK_ADMIN_CODE || typed === "1" || typed.toLowerCase() === "yes") {
-    unlockFeedbackAdminWithToast();
-  } else if (typed === "0" || typed.toLowerCase() === "no" || typed.toLowerCase() === "off") {
-    setFeedbackAdminUnlocked(false);
-    showToast("Feedback Inbox locked.", 2000);
-    syncFeedbackAdminUi();
-  } else {
-    showToast("Wrong owner code.", 1800);
-  }
-}
-
-function unlockFeedbackAdminWithToast() {
-  setFeedbackAdminUnlocked(true);
-  if (feedbackAdminCodeInput) feedbackAdminCodeInput.value = "";
-  showToast("Feedback Inbox unlocked on this device.", 2800);
-  syncFeedbackAdminUi();
-  void refreshFeedbackInboxBadge();
+  /* Code entry removed from Settings; devices already unlocked keep access via localStorage. */
 }
 
 function syncFeedbackAdminUi() {
   const unlocked = isFeedbackAdminUnlocked();
-  if (feedbackAdminUnlockRow) feedbackAdminUnlockRow.hidden = unlocked;
   if (btnFeedbackInbox) btnFeedbackInbox.hidden = !unlocked;
   if (btnFeedbackAdminLock) btnFeedbackAdminLock.hidden = !unlocked;
   if (!unlocked && feedbackInboxBadge) {
@@ -32523,31 +32486,9 @@ function syncFeedbackAdminUi() {
   }
 }
 
-function attemptFeedbackAdminUnlockFromInput() {
-  const typed = String(feedbackAdminCodeInput?.value || "").trim();
-  if (!typed) {
-    showToast("Enter your owner code.", 1800);
-    return;
-  }
-  if (typed === FEEDBACK_ADMIN_CODE) {
-    unlockFeedbackAdminWithToast();
-    return;
-  }
-  showToast("Wrong owner code.", 1800);
-  if (feedbackAdminCodeInput) {
-    feedbackAdminCodeInput.value = "";
-    try {
-      feedbackAdminCodeInput.focus({ preventScroll: true });
-    } catch {
-      feedbackAdminCodeInput.focus();
-    }
-  }
-}
-
 function lockFeedbackAdminFromSettings() {
   setFeedbackAdminUnlocked(false);
   closeFeedbackInboxOverlay();
-  if (feedbackAdminCodeInput) feedbackAdminCodeInput.value = "";
   showToast("Feedback Inbox locked.", 2000);
   syncFeedbackAdminUi();
 }
@@ -32850,24 +32791,11 @@ btnStartSettings?.addEventListener("click", (e) => {
     e.stopPropagation();
     openFeedbackOverlay();
   });
-  btnFeedbackAdminUnlock?.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    attemptFeedbackAdminUnlockFromInput();
-  });
   btnFeedbackAdminLock?.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
     lockFeedbackAdminFromSettings();
   });
-  feedbackAdminCodeInput?.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      attemptFeedbackAdminUnlockFromInput();
-    }
-  });
-  feedbackAdminCodeInput?.addEventListener("click", (e) => e.stopPropagation());
-  feedbackAdminCodeInput?.addEventListener("pointerdown", (e) => e.stopPropagation());
 }
 
 btnFeedbackInbox?.addEventListener("click", (e) => {

@@ -39,7 +39,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png?v=circle-logo" />
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=circle-logo" />
     <link rel="manifest" href="site.webmanifest?v=circle-logo" />
-    <link rel="stylesheet" href="styles.css?v=2026-10-05-feedback-code" />
+    <link rel="stylesheet" href="styles.css?v=2026-10-05-feedback-nocode" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -778,24 +778,6 @@
                 <button type="button" id="btnOpenIntro" class="btn btn--secondary btn--help">How to play</button>
                 <button type="button" id="btnToggleMusic" class="btn btn--secondary btn--music" aria-pressed="false">Music</button>
                 <button type="button" id="btnSendFeedback" class="btn btn--secondary btn--feedback">Send bug / feedback</button>
-                <div id="feedbackAdminUnlockRow" class="feedback-admin-unlock">
-                  <label class="feedback-admin-unlock__label" for="feedbackAdminCodeInput">Owner code</label>
-                  <div class="feedback-admin-unlock__row">
-                    <input
-                      id="feedbackAdminCodeInput"
-                      class="feedback-admin-unlock__input"
-                      type="password"
-                      inputmode="numeric"
-                      maxlength="12"
-                      autocomplete="off"
-                      placeholder="Code"
-                      aria-label="Owner code"
-                    />
-                    <button type="button" id="btnFeedbackAdminUnlock" class="btn btn--secondary feedback-admin-unlock__btn">
-                      Unlock
-                    </button>
-                  </div>
-                </div>
                 <button type="button" id="btnFeedbackInbox" class="btn btn--secondary btn--feedback-inbox" hidden>
                   Feedback Inbox
                   <span id="feedbackInboxBadge" class="feedback-inbox-badge" hidden>0</span>
@@ -3644,6 +3626,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-10-05-feedback-code" defer></script>
+    <script src="game.js?v=2026-10-05-feedback-nocode" defer></script>
   </body>
 </html>
