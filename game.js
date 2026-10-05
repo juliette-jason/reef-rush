@@ -12231,9 +12231,8 @@ const TOURNEY_MAX_PLAYERS = 35;
 const TOURNEY_FIELD_SIZE = TOURNEY_MAX_PLAYERS;
 const TOURNEY_COM_ID_PREFIX = "com-tourney-";
 const TOURNEY_WINDOW_MS = 30 * 60_000;
-/** Compete from 2 min before official start through 5 min after the heat ends (e.g. morning 10:58–11:35). */
+/** Compete from 2 min before official start through the end of the 30-min heat (e.g. morning 10:58–11:30). */
 const TOURNEY_JOIN_EARLY_MS = 2 * 60_000;
-const TOURNEY_JOIN_LATE_MS = 5 * 60_000;
 /** In-play toast when the next heat is about 5 minutes away. */
 const TOURNEY_WARN_AHEAD_MS = 5 * 60_000;
 const TOURNEY_SLOTS = [
@@ -12443,7 +12442,8 @@ function tourneySlotWindows(day = new Date()) {
       start: startMs,
       end: endMs,
       joinStart: startMs - TOURNEY_JOIN_EARLY_MS,
-      joinEnd: endMs + TOURNEY_JOIN_LATE_MS,
+      /* Exactly 30 minutes from official start — no extra late window after the heat. */
+      joinEnd: endMs,
     };
   }
   return windows;
@@ -12472,7 +12472,7 @@ function getTourneySlotState(now = Date.now()) {
         end: win.end,
         joinStart: win.joinStart,
         joinEnd: win.joinEnd,
-        nextLabel: `${def.name} heat at ${formatTourneyHeatTime(def.hour)} · open 2 min early through heat + 5 min late`,
+        nextLabel: `${def.name} heat at ${formatTourneyHeatTime(def.hour)} · 30 min (open 2 min early)`,
         upcoming: def.key,
       };
     }
@@ -12696,7 +12696,7 @@ function maybeWarnTourneyHeat(now = Date.now()) {
     const signed = isTourneySignedUpToday();
     showToast(
       signed
-        ? `Tournament ${def.name} heat in ${mins} min — Compete from Events (open 2 min early through heat + 5 min late)!`
+        ? `Tournament ${def.name} heat in ${mins} min — Compete from Events (30 min heat, open 2 min early)!`
         : `Tournament ${def.name} heat in ${mins} min — join on Events to play!`,
       5200,
     );
@@ -12831,6 +12831,22 @@ function hasPlayedTourneyHeat(slotKey, dayKey = getTourneyDayKey()) {
   if (!slotKey) return false;
   if (gameMeta.tourneyPlayedDayKey !== dayKey) return false;
   return Boolean(gameMeta.tourneyPlayedSlots?.[slotKey]);
+}
+
+/** Undo a heat lock if we never posted a score (failed start / crash after "I am ready"). */
+function clearStuckTourneyHeatPlayed(slotKey, dayKey = getTourneyDayKey()) {
+  if (!slotKey || !hasPlayedTourneyHeat(slotKey, dayKey)) return false;
+  const myId = getDuelClientId();
+  const scored = tourneyLeaderboardRows.some(
+    (row) => row?.client_id === myId && row?.slot_key === slotKey,
+  );
+  if (scored) return false;
+  const next = { ...(gameMeta.tourneyPlayedSlots || {}) };
+  delete next[slotKey];
+  gameMeta.tourneyPlayedSlots = next;
+  gameMeta.tourneyPlayedDayKey = dayKey;
+  saveMeta();
+  return true;
 }
 
 function markTourneyHeatPlayed(slotKey, dayKey = getTourneyDayKey()) {
@@ -13422,7 +13438,7 @@ async function submitTourneyVote(eventKind) {
   }
 }
 
-async function submitTourneySignup() {
+async function submitTourneySignup({ autoCompete = true } = {}) {
   if (tourneySignupInFlight) {
     showToast("Still joining…", 1600);
     return;
@@ -13431,6 +13447,7 @@ async function submitTourneySignup() {
   if (isTourneySignedUpToday()) {
     showToast("You're already in today's tourney!", 2400);
     refreshTournamentCard();
+    if (autoCompete) maybeAutoStartTourneyHeatAfterJoin();
     return;
   }
   tourneySignupInFlight = true;
@@ -13493,6 +13510,16 @@ async function submitTourneySignup() {
     setTourneySignupButtonsBusy(false);
     refreshTourneyQuickJoin();
   }
+  if (autoCompete) maybeAutoStartTourneyHeatAfterJoin();
+}
+
+/** If a heat is live right now, Join should take you into it — not leave you staring at Compete. */
+function maybeAutoStartTourneyHeatAfterJoin() {
+  if (!isTourneySignedUpToday() || !areTourneyVotesLocked()) return;
+  const slot = getTourneySlotState();
+  if (!slot.slotKey) return;
+  if (!isTourneyDuelBracketDay() && hasPlayedTourneyHeat(slot.slotKey)) return;
+  void beginTournamentCompetition();
 }
 
 function explainTourneyCompeteBlocked() {
@@ -13617,11 +13644,14 @@ function syncTourneyJoinCompeteButtons() {
   if (btnTourneySignup) {
     btnTourneySignup.hidden = signed;
     setTourneyActionBlocked(btnTourneySignup, !signed && (full || tourneySignupInFlight));
+    const heatLive = Boolean(getTourneySlotState().slotKey) && areTourneyVotesLocked();
     btnTourneySignup.textContent = tourneySignupInFlight
       ? "Joining…"
       : full
         ? "Tourney full"
-        : "Join today's tourney";
+        : heatLive
+          ? "Join & play heat"
+          : "Join today's tourney";
   }
   if (btnTourneyCompete) {
     btnTourneyCompete.hidden = !signed;
@@ -13653,9 +13683,6 @@ function syncTourneyJoinCompeteButtons() {
       } else if (now < slot.start) {
         competeBlocked = false;
         btnTourneyCompete.textContent = "Compete (early join)";
-      } else if (now >= slot.end) {
-        competeBlocked = false;
-        btnTourneyCompete.textContent = "Compete (late join)";
       } else {
         competeBlocked = false;
         btnTourneyCompete.textContent = "Compete in live heat";
@@ -13677,8 +13704,8 @@ function refreshTourneyQuickJoin() {
       const comFill = tourneyComSignupFillCount();
       tourneyQuickJoinLine.textContent =
         comFill > 0
-          ? `${tourneyRealSignupCount()}/35 signed up · random anglers fill the rest · heats 11 AM, 4 PM & 8 PM`
-          : `Full field · heats at 11 AM, 4 PM & 8 PM`;
+          ? `${tourneyRealSignupCount()}/35 signed up · random anglers fill the rest · 30-min heats 11 AM, 4 PM & 8 PM`
+          : `Full field · 30-min heats at 11 AM, 4 PM & 8 PM`;
     }
   }
   if (btnTourneyQuickJoin) {
@@ -14554,6 +14581,14 @@ async function finishTournamentRun(scorePts, duelMeta = null) {
 }
 
 async function beginTournamentCompetition() {
+  if (tournamentRun) {
+    showToast("Heat already opening…", 1800);
+    return;
+  }
+  if (playing || duelSession || eventMinigameSession || crabTrapSession || duelMatchmakingActive || coopMatchmakingActive) {
+    showToast("Finish your current run first, then join the heat.", 3000);
+    return;
+  }
   showToast("Opening heat…", 1800);
   try {
     await fetchTourneySignupCount();
@@ -14562,7 +14597,7 @@ async function beginTournamentCompetition() {
   }
   if (!isTourneySignedUpToday()) {
     if (tourneySignupCount < TOURNEY_MAX_PLAYERS) {
-      await submitTourneySignup();
+      await submitTourneySignup({ autoCompete: false });
     }
     if (!isTourneySignedUpToday()) {
       showToast("Join today's tourney on Events first (or spots may be full).", 3000);
@@ -14582,10 +14617,14 @@ async function beginTournamentCompetition() {
   try {
     await fetchTourneyVoteCounts();
     if (isTourneyMixedEventDay()) await fetchAllTourneyHeatVoteCounts();
+    await fetchTourneyLeaderboard();
   } catch (err) {
     console.warn(err);
   }
   const eventKind = getTourneyEventForHeat(slot.slotKey);
+  if (eventKind !== "duel") {
+    clearStuckTourneyHeatPlayed(slot.slotKey);
+  }
   if (eventKind !== "duel" && hasPlayedTourneyHeat(slot.slotKey)) {
     showToast(`You already played the ${tourneySlotLabel(slot.slotKey)} heat — one run per heat.`, 3400);
     refreshTournamentCard();
@@ -14836,31 +14875,27 @@ async function refreshTournamentCard() {
     if (isTourneyDuelBracketDay()) {
       if (slot.slotKey) {
         const now = Date.now();
-        const joinEnd = slot.joinEnd ?? slot.end + TOURNEY_JOIN_LATE_MS;
+        const joinEnd = slot.joinEnd ?? slot.end;
         const minsLeft = Math.max(0, Math.ceil((joinEnd - now) / 60000));
         const heatTime = tourneySlotHeatTime(slot.slotKey);
         if (now < slot.start) {
           const minsToStart = Math.max(1, Math.ceil((slot.start - now) / 60000));
-          tourneyScheduleLine.textContent = `Bracket heat ${tourneySlotLabel(slot.slotKey)} (${heatTime}) open early — starts in ${minsToStart} min`;
-        } else if (now < slot.end) {
-          tourneyScheduleLine.textContent = `Bracket heat LIVE · ${tourneySlotLabel(slot.slotKey)} (${heatTime}) — ${minsLeft} min left`;
+          tourneyScheduleLine.textContent = `Bracket heat ${tourneySlotLabel(slot.slotKey)} (${heatTime}) open early — starts in ${minsToStart} min · 30 min heat`;
         } else {
-          tourneyScheduleLine.textContent = `Bracket late join · ${tourneySlotLabel(slot.slotKey)} (${heatTime}) — ${minsLeft} min left`;
+          tourneyScheduleLine.textContent = `Bracket heat LIVE · ${tourneySlotLabel(slot.slotKey)} (${heatTime}) — ${minsLeft} min left of 30`;
         }
       } else {
         tourneyScheduleLine.textContent = `${tourneyBracketScheduleSummary()} · ${slot.nextLabel}`;
       }
     } else if (slot.slotKey) {
       const now = Date.now();
-      const joinEnd = slot.joinEnd ?? slot.end + TOURNEY_JOIN_LATE_MS;
+      const joinEnd = slot.joinEnd ?? slot.end;
       const minsLeft = Math.max(0, Math.ceil((joinEnd - now) / 60000));
       if (now < slot.start) {
         const minsToStart = Math.max(1, Math.ceil((slot.start - now) / 60000));
-        tourneyScheduleLine.textContent = `${tourneySlotLabel(slot.slotKey)} heat open early — official start in ${minsToStart} min`;
-      } else if (now < slot.end) {
-        tourneyScheduleLine.textContent = `${tourneySlotLabel(slot.slotKey)} heat LIVE — ${minsLeft} min left (incl. late join)`;
+        tourneyScheduleLine.textContent = `${tourneySlotLabel(slot.slotKey)} heat open early — official start in ${minsToStart} min · 30 min heat`;
       } else {
-        tourneyScheduleLine.textContent = `${tourneySlotLabel(slot.slotKey)} late join open — ${minsLeft} min left`;
+        tourneyScheduleLine.textContent = `${tourneySlotLabel(slot.slotKey)} heat LIVE — ${minsLeft} min left of 30`;
       }
     } else {
       tourneyScheduleLine.textContent = slot.nextLabel;
@@ -23832,10 +23867,8 @@ function confirmEventPrepStart() {
   pendingEventPrepKind = null;
   if (panelEventPrep) panelEventPrep.hidden = true;
   appRoot?.classList.remove("app--events-mode");
-  /* Non-duel heats: one run per morning / afternoon / evening. Bracket days use match status instead. */
-  if (tournamentRun?.slotKey && tournamentRun.eventKind !== "duel") {
-    markTourneyHeatPlayed(tournamentRun.slotKey, tournamentRun.dayKey);
-  }
+  /* Mark heat played only when the run finishes (finishTournamentRun) — marking here
+     locked players out if the minigame failed to start after "I am ready". */
   syncEventPrepStartLabel();
   if (kind === "duel") {
     void startDuelFromEvents(true);
