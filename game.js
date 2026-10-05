@@ -9156,6 +9156,10 @@ function defaultMeta() {
     tourneyScorePodiumClaimDayKey: "",
     tourneyPlayedDayKey: "",
     tourneyPlayedSlots: {},
+    seaPalLadderWeekKey: "",
+    seaPalLadderWins: 0,
+    seaPalLadderLosses: 0,
+    seaPalLadderClaimed: {},
   };
 }
 
@@ -9270,6 +9274,13 @@ function loadMeta() {
       tourneyPlayedSlots:
         o.tourneyPlayedSlots && typeof o.tourneyPlayedSlots === "object" && !Array.isArray(o.tourneyPlayedSlots)
           ? { ...o.tourneyPlayedSlots }
+          : {},
+      seaPalLadderWeekKey: typeof o.seaPalLadderWeekKey === "string" ? o.seaPalLadderWeekKey : "",
+      seaPalLadderWins: Math.max(0, Math.floor(Number(o.seaPalLadderWins) || 0)),
+      seaPalLadderLosses: Math.max(0, Math.floor(Number(o.seaPalLadderLosses) || 0)),
+      seaPalLadderClaimed:
+        o.seaPalLadderClaimed && typeof o.seaPalLadderClaimed === "object" && !Array.isArray(o.seaPalLadderClaimed)
+          ? { ...o.seaPalLadderClaimed }
           : {},
     };
   } catch {
@@ -14952,6 +14963,433 @@ async function refreshEventsPanel() {
   refreshEventMinigameCards();
   refreshDailyCatchEventCard();
   void refreshTournamentCard();
+  void refreshSeaPalLadderCard();
+}
+
+/* ─── Sea Pal Weekly Ladder (Pocket Champs–style 20-win climb) ─── */
+const SEA_PAL_LADDER_URL = `${SUPABASE_REST_URL}/sea_pal_ladder`;
+const SEA_PAL_LADDER_GRAND_WINS = 20;
+const SEA_PAL_LADDER_BOARD_LIMIT = 15;
+const SEA_PAL_LADDER_PRIZES = [
+  { wins: 2, id: "coins_2", label: "400 coins" },
+  { wins: 4, id: "chest_common", label: "Common chest" },
+  { wins: 6, id: "upgrade_6", label: "My Loot upgrade" },
+  { wins: 8, id: "stamp_8", label: "Catch stamp" },
+  { wins: 11, id: "chest_rare", label: "Rare chest + 600 coins" },
+  { wins: 14, id: "upgrade_14", label: "My Loot upgrade" },
+  { wins: 17, id: "sea_pal_17", label: "Sea pal" },
+  { wins: 20, id: "grand_20", label: "Grand prize — Legendary chest" },
+];
+const SEA_PAL_LADDER_UPGRADE_POOL_6 = ["lucky_lure", "double_haul"];
+const SEA_PAL_LADDER_UPGRADE_POOL_14 = ["golden_net", "adventure_skip_rope"];
+
+/** Active Sea Pal Ladder duel — skips normal duel win prizes. */
+let ladderRun = null;
+let seaPalLadderBoardRows = [];
+let seaPalLadderClaimInFlight = false;
+
+function getSeaPalLadderWeekKey(date = new Date()) {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const day = d.getDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + mondayOffset);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function formatSeaPalLadderWeekLabel(weekKey = getSeaPalLadderWeekKey()) {
+  const parts = String(weekKey).split("-").map(Number);
+  if (parts.length !== 3 || parts.some((n) => !n)) return "This week";
+  const start = new Date(parts[0], parts[1] - 1, parts[2]);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  const fmt = (dt) =>
+    dt.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return `${fmt(start)} – ${fmt(end)}`;
+}
+
+function ensureSeaPalLadderWeekRollover() {
+  const weekKey = getSeaPalLadderWeekKey();
+  if (gameMeta.seaPalLadderWeekKey === weekKey) return false;
+  gameMeta.seaPalLadderWeekKey = weekKey;
+  gameMeta.seaPalLadderWins = 0;
+  gameMeta.seaPalLadderLosses = 0;
+  if (!gameMeta.seaPalLadderClaimed || typeof gameMeta.seaPalLadderClaimed !== "object") {
+    gameMeta.seaPalLadderClaimed = {};
+  }
+  if (!gameMeta.seaPalLadderClaimed[weekKey]) gameMeta.seaPalLadderClaimed[weekKey] = {};
+  saveMeta();
+  seaPalLadderBoardRows = [];
+  return true;
+}
+
+function getSeaPalLadderClaimedMap(weekKey = getSeaPalLadderWeekKey()) {
+  ensureSeaPalLadderWeekRollover();
+  if (!gameMeta.seaPalLadderClaimed || typeof gameMeta.seaPalLadderClaimed !== "object") {
+    gameMeta.seaPalLadderClaimed = {};
+  }
+  if (!gameMeta.seaPalLadderClaimed[weekKey] || typeof gameMeta.seaPalLadderClaimed[weekKey] !== "object") {
+    gameMeta.seaPalLadderClaimed[weekKey] = {};
+  }
+  return gameMeta.seaPalLadderClaimed[weekKey];
+}
+
+function isSeaPalLadderPrizeClaimed(winsThreshold, weekKey = getSeaPalLadderWeekKey()) {
+  return Boolean(getSeaPalLadderClaimedMap(weekKey)[String(winsThreshold)]);
+}
+
+function markSeaPalLadderPrizeClaimed(winsThreshold, weekKey = getSeaPalLadderWeekKey()) {
+  const map = getSeaPalLadderClaimedMap(weekKey);
+  map[String(winsThreshold)] = true;
+  saveMeta();
+}
+
+function seaPalLadderIdentity() {
+  return resolveScorePlayerIdentity(gameMeta.playerName || gameMeta.playerInitials);
+}
+
+async function fetchSeaPalLadderBoard(weekKey = getSeaPalLadderWeekKey()) {
+  try {
+    const res = await fetchWithTimeout(
+      `${SEA_PAL_LADDER_URL}?week_key=eq.${encodeURIComponent(weekKey)}` +
+        `&select=client_id,initials,display_name,wins,losses,updated_at` +
+        `&order=wins.desc,losses.asc,updated_at.asc&limit=${SEA_PAL_LADDER_BOARD_LIMIT + 5}`,
+      { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS },
+      7000,
+    );
+    if (!res.ok) {
+      seaPalLadderBoardRows = [];
+      return [];
+    }
+    const rows = await res.json().catch(() => []);
+    seaPalLadderBoardRows = Array.isArray(rows) ? rows.slice(0, SEA_PAL_LADDER_BOARD_LIMIT) : [];
+    return seaPalLadderBoardRows;
+  } catch (err) {
+    console.warn(err);
+    seaPalLadderBoardRows = [];
+    return [];
+  }
+}
+
+async function syncSeaPalLadderRemote() {
+  ensureSeaPalLadderWeekRollover();
+  const weekKey = getSeaPalLadderWeekKey();
+  const identity = seaPalLadderIdentity();
+  const body = {
+    week_key: weekKey,
+    client_id: getDuelClientId(),
+    initials: identity.initials,
+    display_name: identity.name || identity.initials,
+    wins: Math.max(0, Math.floor(Number(gameMeta.seaPalLadderWins) || 0)),
+    losses: Math.max(0, Math.floor(Number(gameMeta.seaPalLadderLosses) || 0)),
+    updated_at: new Date().toISOString(),
+  };
+  try {
+    const res = await fetchWithTimeout(
+      SEA_PAL_LADDER_URL,
+      {
+        method: "POST",
+        headers: leaderboardHeaders({
+          "Content-Type": "application/json",
+          Prefer: "resolution=merge-duplicates,return=minimal",
+        }),
+        body: JSON.stringify(body),
+      },
+      7000,
+    );
+    if (!res.ok && res.status !== 409) {
+      console.warn("Sea Pal Ladder sync failed", res.status, await res.text().catch(() => ""));
+    }
+  } catch (err) {
+    console.warn(err);
+  }
+}
+
+function applySeaPalLadderDuelResult(won) {
+  ensureSeaPalLadderWeekRollover();
+  if (won) {
+    gameMeta.seaPalLadderWins = Math.max(0, Math.floor(Number(gameMeta.seaPalLadderWins) || 0) + 1);
+  } else {
+    gameMeta.seaPalLadderLosses = Math.max(0, Math.floor(Number(gameMeta.seaPalLadderLosses) || 0) + 1);
+  }
+  saveMeta();
+  void syncSeaPalLadderRemote().then(() => refreshSeaPalLadderCard());
+  const wins = gameMeta.seaPalLadderWins;
+  if (won) {
+    const next = SEA_PAL_LADDER_PRIZES.find(
+      (p) => wins >= p.wins && !isSeaPalLadderPrizeClaimed(p.wins),
+    );
+    if (next) {
+      showToast(`Ladder climb: ${wins}/${SEA_PAL_LADDER_GRAND_WINS} wins — claim ${next.label}!`, 4200);
+    } else {
+      showToast(`Ladder climb: ${wins}/${SEA_PAL_LADDER_GRAND_WINS} wins`, 2800);
+    }
+  } else {
+    showToast(
+      `Ladder loss recorded · still ${wins}/${SEA_PAL_LADDER_GRAND_WINS} wins this week`,
+      3000,
+    );
+  }
+}
+
+function grantSeaPalLadderChest(tier) {
+  const bundle =
+    (typeof rollCrabBundles === "function" ? rollCrabBundles(tier)?.[0] : null) || {
+      coins: tier === "legendary" ? 1200 : tier === "rare" ? 700 : 350,
+      gems: tier === "legendary" ? 40 : tier === "rare" ? 25 : 10,
+      bait: null,
+      rodId: null,
+      special: null,
+    };
+  grantCrabReward(bundle);
+  gameMeta.totalTreasureChests = (gameMeta.totalTreasureChests || 0) + 1;
+  saveMeta();
+  const bits = [];
+  if (bundle.coins) bits.push(`${bundle.coins} coins`);
+  if (bundle.gems) bits.push(`${bundle.gems} gems`);
+  if (bundle.bait) bits.push(`${bundle.bait.qty}× bait`);
+  if (bundle.rodId) bits.push("a rod");
+  if (bundle.special?.kind === "catch_stamp" && bundle.special.speciesName) {
+    bits.push(`${bundle.special.speciesName} stamp`);
+  } else if (bundle.special?.kind && CHEST_ITEM_DEFS[bundle.special.kind]) {
+    bits.push(CHEST_ITEM_DEFS[bundle.special.kind].name);
+  }
+  return bits.length ? bits.join(", ") : `${tier} chest loot`;
+}
+
+function pickSeaPalLadderUpgrade(pool) {
+  const choices = pool.filter((id) => CHEST_ITEM_DEFS[id]);
+  if (!choices.length) return null;
+  return choices[Math.floor(Math.random() * choices.length)];
+}
+
+function grantSeaPalLadderPrize(prizeDef) {
+  if (!prizeDef) return { ok: false, label: "" };
+  if (prizeDef.id === "coins_2") {
+    gameMeta.coins += 400;
+    saveMeta();
+    refreshCoinDisplays();
+    return { ok: true, label: "+400 coins!" };
+  }
+  if (prizeDef.id === "chest_common") {
+    return { ok: true, label: `Common chest: ${grantSeaPalLadderChest("common")}!` };
+  }
+  if (prizeDef.id === "upgrade_6") {
+    const id = pickSeaPalLadderUpgrade(SEA_PAL_LADDER_UPGRADE_POOL_6);
+    if (!id) {
+      gameMeta.coins += 250;
+      saveMeta();
+      refreshCoinDisplays();
+      return { ok: true, label: "+250 coins (upgrades full)!" };
+    }
+    addChestItem(id, 1);
+    saveMeta();
+    refreshCollectablesUI();
+    return { ok: true, label: `${CHEST_ITEM_DEFS[id].name} added to My Loot!` };
+  }
+  if (prizeDef.id === "stamp_8") {
+    const stamp = rollCatchStampPrize();
+    const result = grantCatchStamp(stamp.speciesId, { consolCoins: stamp.consolCoins || 180 });
+    if (result.granted) return { ok: true, label: `Catch stamp unlocked: ${result.name}!` };
+    return { ok: true, label: `Stamp album catch-up — +${result.consolCoins} coins!` };
+  }
+  if (prizeDef.id === "chest_rare") {
+    gameMeta.coins += 600;
+    saveMeta();
+    refreshCoinDisplays();
+    return { ok: true, label: `+600 coins · Rare chest: ${grantSeaPalLadderChest("rare")}!` };
+  }
+  if (prizeDef.id === "upgrade_14") {
+    const id = pickSeaPalLadderUpgrade(SEA_PAL_LADDER_UPGRADE_POOL_14);
+    if (!id) {
+      gameMeta.coins += 280;
+      saveMeta();
+      refreshCoinDisplays();
+      return { ok: true, label: "+280 coins (upgrades full)!" };
+    }
+    addChestItem(id, 1);
+    saveMeta();
+    refreshCollectablesUI();
+    return { ok: true, label: `${CHEST_ITEM_DEFS[id].name} added to My Loot!` };
+  }
+  if (prizeDef.id === "sea_pal_17") {
+    const result = grantSeaPalPrize({ consolCoins: 280 });
+    if (result.granted) return { ok: true, label: `Sea pal unlocked: ${result.name}!` };
+    return { ok: true, label: `All sea pals owned — +${result.consolCoins} coins!` };
+  }
+  if (prizeDef.id === "grand_20") {
+    return { ok: true, label: `Grand prize! Legendary chest: ${grantSeaPalLadderChest("legendary")}!` };
+  }
+  return { ok: false, label: "" };
+}
+
+function claimSeaPalLadderPrize(winsThreshold) {
+  if (seaPalLadderClaimInFlight) {
+    showToast("Still claiming…", 1600);
+    return;
+  }
+  ensureSeaPalLadderWeekRollover();
+  const prizeDef = SEA_PAL_LADDER_PRIZES.find((p) => p.wins === winsThreshold);
+  if (!prizeDef) return;
+  const wins = Math.max(0, Math.floor(Number(gameMeta.seaPalLadderWins) || 0));
+  if (wins < prizeDef.wins) {
+    showToast(`Need ${prizeDef.wins} wins this week to claim that.`, 2800);
+    return;
+  }
+  if (isSeaPalLadderPrizeClaimed(prizeDef.wins)) {
+    showToast("Already claimed this week.", 2200);
+    return;
+  }
+  seaPalLadderClaimInFlight = true;
+  try {
+    const granted = grantSeaPalLadderPrize(prizeDef);
+    if (!granted.ok) {
+      showToast("Couldn't grant that prize — try again.", 2400);
+      return;
+    }
+    markSeaPalLadderPrizeClaimed(prizeDef.wins);
+    showToast(granted.label, 4200);
+    playCatchCelebrationSound?.(3);
+    refreshSeaPalLadderCard();
+  } finally {
+    seaPalLadderClaimInFlight = false;
+  }
+}
+
+function renderSeaPalLadderPrizeTrack() {
+  const list = document.getElementById("seaPalLadderPrizes");
+  if (!list) return;
+  ensureSeaPalLadderWeekRollover();
+  const wins = Math.max(0, Math.floor(Number(gameMeta.seaPalLadderWins) || 0));
+  list.innerHTML = "";
+  for (const prize of SEA_PAL_LADDER_PRIZES) {
+    const claimed = isSeaPalLadderPrizeClaimed(prize.wins);
+    const unlocked = wins >= prize.wins;
+    const li = document.createElement("li");
+    li.className = "sea-pal-ladder__prize";
+    if (claimed) li.classList.add("is-claimed");
+    else if (unlocked) li.classList.add("is-ready");
+    else li.classList.add("is-locked");
+
+    const copy = document.createElement("p");
+    copy.className = "sea-pal-ladder__prize-copy";
+    copy.innerHTML = `<strong>${prize.wins} wins</strong> — ${prize.label}`;
+    li.appendChild(copy);
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "btn btn--secondary sea-pal-ladder__claim";
+    if (claimed) {
+      btn.textContent = "Claimed";
+      btn.disabled = true;
+    } else if (unlocked) {
+      btn.textContent = "Claim";
+      btn.addEventListener("click", () => claimSeaPalLadderPrize(prize.wins));
+    } else {
+      btn.textContent = "Locked";
+      btn.disabled = true;
+    }
+    li.appendChild(btn);
+    list.appendChild(li);
+  }
+}
+
+function renderSeaPalLadderBoard() {
+  const board = document.getElementById("seaPalLadderBoard");
+  if (!board) return;
+  board.innerHTML = "";
+  if (!seaPalLadderBoardRows.length) {
+    const empty = document.createElement("li");
+    empty.className = "leaderboard__empty";
+    empty.textContent = "No climbers yet this week — win a ladder duel to appear here.";
+    board.appendChild(empty);
+    return;
+  }
+  seaPalLadderBoardRows.forEach((row, i) => {
+    const li = document.createElement("li");
+    li.className = "leaderboard__row";
+    const name = row.display_name || row.initials || "Angler";
+    const wins = Math.max(0, Math.floor(Number(row.wins) || 0));
+    const losses = Math.max(0, Math.floor(Number(row.losses) || 0));
+    const rankEl = document.createElement("span");
+    rankEl.className = "leaderboard__rank";
+    rankEl.textContent = String(i + 1);
+    const nameEl = document.createElement("span");
+    nameEl.className = "leaderboard__name";
+    nameEl.textContent = String(name);
+    const scoreEl = document.createElement("span");
+    scoreEl.className = "leaderboard__score";
+    scoreEl.textContent = `${wins}W–${losses}L`;
+    li.append(rankEl, nameEl, scoreEl);
+    board.appendChild(li);
+  });
+}
+
+function seaPalLadderMyBoardRank() {
+  const myId = getDuelClientId();
+  const idx = seaPalLadderBoardRows.findIndex((r) => r.client_id === myId);
+  return idx >= 0 ? idx + 1 : null;
+}
+
+async function refreshSeaPalLadderCard() {
+  const card = document.getElementById("eventCardSeaPalLadder");
+  if (!card) return;
+  ensureSeaPalLadderWeekRollover();
+  const weekKey = getSeaPalLadderWeekKey();
+  const wins = Math.max(0, Math.floor(Number(gameMeta.seaPalLadderWins) || 0));
+  const losses = Math.max(0, Math.floor(Number(gameMeta.seaPalLadderLosses) || 0));
+  const weekLine = document.getElementById("seaPalLadderWeekLine");
+  const progress = document.getElementById("seaPalLadderProgress");
+  const rankLine = document.getElementById("seaPalLadderRankLine");
+  const btn = document.getElementById("btnSeaPalLadderClimb");
+  if (weekLine) weekLine.textContent = `Week of ${formatSeaPalLadderWeekLabel(weekKey)} · resets Monday`;
+  if (progress) {
+    progress.textContent = `Wins ${wins} / ${SEA_PAL_LADDER_GRAND_WINS} · Record ${wins}–${losses}`;
+  }
+  renderSeaPalLadderPrizeTrack();
+  await fetchSeaPalLadderBoard(weekKey);
+  renderSeaPalLadderBoard();
+  const rank = seaPalLadderMyBoardRank();
+  if (rankLine) {
+    rankLine.textContent = rank
+      ? `Board rank: #${rank}`
+      : wins + losses > 0
+        ? "Board rank: outside top climbers — keep winning!"
+        : "Board rank: — · climb to appear";
+  }
+  const envIssue = onlineDuelEnvironmentIssue();
+  refreshDuelTicketsForToday();
+  const tickets = getDuelTicketCount();
+  if (btn) {
+    btn.disabled = Boolean(envIssue) || tickets <= 0;
+    if (envIssue) btn.textContent = "Use live site link";
+    else if (tickets <= 0) btn.textContent = "No tickets — visit shop";
+    else if (wins >= SEA_PAL_LADDER_GRAND_WINS) btn.textContent = "Climb for board rank";
+    else btn.textContent = "Climb the ladder";
+  }
+}
+
+function startSeaPalLadderClimb() {
+  const envIssue = onlineDuelEnvironmentIssue();
+  if (envIssue) {
+    showToast(envIssue.message, 6200);
+    return;
+  }
+  refreshDuelTicketsForToday();
+  if (getDuelTicketCount() <= 0) {
+    showToast("No duel tickets left — buy more in the shop or come back tomorrow.", 2800);
+    refreshSeaPalLadderCard();
+    return;
+  }
+  if (playing || duelSession || eventMinigameSession || crabTrapSession || duelMatchmakingActive || coopMatchmakingActive) {
+    showToast("Finish your current run first.", 2400);
+    return;
+  }
+  ensureSeaPalLadderWeekRollover();
+  ladderRun = { weekKey: getSeaPalLadderWeekKey() };
+  pendingPartyIntent = "anyone";
+  pendingJoinPartyCode = null;
+  pendingEventFriendUserId = null;
+  openEventPrep("duel");
 }
 
 const DUEL_WIN_COINS = 800;
@@ -15329,7 +15767,7 @@ function renderProfileFriendsList() {
 function refreshEventPrepFriendsUI() {
   const kind = pendingEventPrepKind;
   const tourneyLockedMatch = Boolean(tournamentRun?.bracketMatch || pendingBracketMatch);
-  const show = (kind === "duel" || kind === "coop") && !tourneyLockedMatch && !tournamentRun;
+  const show = (kind === "duel" || kind === "coop") && !tourneyLockedMatch && !tournamentRun && !ladderRun;
   if (eventPrepFriends) eventPrepFriends.hidden = !show;
   if (!show) return;
   const joining = Boolean(pendingJoinPartyCode);
@@ -18395,6 +18833,7 @@ async function startDuelFromEvents(fromPrep = false) {
     }
     pendingPartyIntent = "anyone";
     pendingJoinPartyCode = null;
+    ladderRun = null;
     restoreEventsAfterDuelAbort();
   }
 }
@@ -18454,28 +18893,38 @@ async function endDuelRoundAsync() {
   }
 
   const wasTourney = Boolean(tournamentRun);
+  const wasLadder = Boolean(ladderRun);
   if (wasTourney) {
     await finishTournamentRun(playerScore, { opponentScore, won: playerScore > opponentScore });
   }
 
-  duelSession = null;
-  duelResultSettling = false;
-
   const won = playerScore > opponentScore;
   const tie = playerScore === opponentScore;
+
+  if (wasLadder && !wasTourney && !tie) {
+    applySeaPalLadderDuelResult(won);
+  }
+  ladderRun = null;
+
+  duelSession = null;
+  duelResultSettling = false;
 
   if (duelOverHeadline) {
     duelOverHeadline.textContent = wasTourney
       ? "Tourney event complete — good luck!"
-      : won
-        ? isPvp
-          ? `You beat ${rivalName}!`
-          : "You win the duel!"
-        : tie
-          ? "It's a tie!"
-          : isPvp
-            ? `${rivalName} wins`
-            : "Rival wins";
+      : wasLadder
+        ? won
+          ? "Ladder win!"
+          : "Ladder loss"
+        : won
+          ? isPvp
+            ? `You beat ${rivalName}!`
+            : "You win the duel!"
+          : tie
+            ? "It's a tie!"
+            : isPvp
+              ? `${rivalName} wins`
+              : "Rival wins";
   }
   if (duelOverScores) {
     duelOverScores.textContent = isPvp
@@ -18496,6 +18945,10 @@ async function endDuelRoundAsync() {
       duelOverDetail.textContent = won
         ? "Match result posted · chests are for the final top 3 only."
         : "Match result posted · hang in for the next heat.";
+    } else if (wasLadder) {
+      const w = Math.max(0, Math.floor(Number(gameMeta.seaPalLadderWins) || 0));
+      const l = Math.max(0, Math.floor(Number(gameMeta.seaPalLadderLosses) || 0));
+      duelOverDetail.textContent = `Sea Pal Ladder · ${w}/${SEA_PAL_LADDER_GRAND_WINS} wins · record ${w}–${l}`;
     } else {
       duelOverDetail.textContent = isPvp
         ? `${reefName} · live duel vs ${rivalName}`
@@ -18503,13 +18956,20 @@ async function endDuelRoundAsync() {
     }
   }
   if (duelOverPrize) {
-    if (won && !wasTourney) {
+    if (won && !wasTourney && !wasLadder) {
       const prize = grantDuelWinPrize();
       duelOverPrize.hidden = false;
       duelOverPrize.textContent = prize.label;
       duelOverPrize.classList.add("duel-over__prize--burst");
       if (prize.kind === "coins") spawnDuelWinCoinAnimation();
       playCatchCelebrationSound(3);
+    } else if (wasLadder) {
+      duelOverPrize.hidden = false;
+      const w = Math.max(0, Math.floor(Number(gameMeta.seaPalLadderWins) || 0));
+      duelOverPrize.textContent = won
+        ? `Ladder progress ${w}/${SEA_PAL_LADDER_GRAND_WINS} — claim prizes on Events`
+        : "Prize track unchanged — win to climb";
+      duelOverPrize.classList.remove("duel-over__prize--burst");
     } else {
       duelOverPrize.hidden = true;
       duelOverPrize.textContent = "";
@@ -19676,6 +20136,7 @@ function recoverToSafeHome(reason = "") {
     adventureSession = null;
     tournamentRun = null;
     pendingBracketMatch = null;
+    ladderRun = null;
     if (crabTrapSession?.rafId) {
       try {
         cancelAnimationFrame(crabTrapSession.rafId);
@@ -23782,6 +24243,14 @@ function openEventPrep(kind) {
       eventPrepDetail.textContent =
         "Pick bait and a rod, then tap I am ready. The heat timer does not start until you do.";
     }
+  } else if (ladderRun && kind === "duel") {
+    const w = Math.max(0, Math.floor(Number(gameMeta.seaPalLadderWins) || 0));
+    if (eventPrepEyebrow) eventPrepEyebrow.textContent = "Sea Pal Ladder";
+    if (eventPrepTitle) eventPrepTitle.textContent = "Climb for wins";
+    if (eventPrepDetail) {
+      eventPrepDetail.textContent =
+        `Weekly ladder · ${w}/${SEA_PAL_LADDER_GRAND_WINS} wins · live rival first, COM if none · spends 1 duel ticket.`;
+    }
   } else {
     if (eventPrepEyebrow) eventPrepEyebrow.textContent = copy.eyebrow;
     if (eventPrepTitle) eventPrepTitle.textContent = copy.title;
@@ -23820,6 +24289,7 @@ function closeEventPrep() {
     tournamentRun = null;
     pendingBracketMatch = null;
   }
+  ladderRun = null;
   if (panelEventPrep) panelEventPrep.hidden = true;
   syncEventPrepStartLabel();
   openEvents();
@@ -31436,7 +31906,11 @@ collectablesFrames?.addEventListener("click", (e) => {
   equipAvatarFrame(btn.dataset.equipFrame);
 });
 btnStartDuel?.addEventListener("click", () => {
+  ladderRun = null;
   void startDuelFromEvents();
+});
+document.getElementById("btnSeaPalLadderClimb")?.addEventListener("click", () => {
+  startSeaPalLadderClimb();
 });
 btnRefreshDuelSpectator?.addEventListener("click", () => {
   void refreshDuelSpectatorList();
