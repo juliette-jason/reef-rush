@@ -17,4 +17,4 @@ Deploy approve-feedback (one-time)
    (--no-verify-jwt is OK here: the function checks FEEDBACK_ADMIN_CODE + registered device.)
 
 4) Hard-refresh Reef Rush. On Approve, enter miles once when prompted.
-   Cursor should start a Cloud Agent and open a PR.
+   Cursor starts a Cloud Agent that pushes the fix straight to main.

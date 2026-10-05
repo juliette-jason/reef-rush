@@ -48,6 +48,7 @@ function buildAgentPrompt(row: {
     "You are fixing Reef Rush (static HTML/JS/CSS fishing game in this repo).",
     "Implement the player feedback below. Keep changes focused; match existing style.",
     "Do not add unrelated features. Prefer small, shippable diffs.",
+    "Push your finished fix directly to main (this run uses workOnCurrentBranch).",
     "",
     `Feedback id: ${row.id}`,
     `Kind: ${row.kind || "feedback"}`,
@@ -198,8 +199,10 @@ Deno.serve(async (req) => {
     body: JSON.stringify({
       prompt: { text: promptText },
       name: `Reef Rush feedback #${row.id}`.slice(0, 100),
+      // Land on main automatically — no draft PR / manual merge.
       repos: [{ url: repoUrl, startingRef: "main" }],
-      autoCreatePR: true,
+      workOnCurrentBranch: true,
+      autoCreatePR: false,
     }),
   });
 
