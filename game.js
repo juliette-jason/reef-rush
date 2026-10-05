@@ -32535,13 +32535,29 @@ async function ensureFeedbackAdminCode() {
 }
 
 async function callApproveFeedbackEdge(payload) {
-  const res = await fetch(APPROVE_FEEDBACK_FN_URL, {
-    method: "POST",
-    headers: leaderboardHeaders({
-      "Content-Type": "application/json",
-    }),
-    body: JSON.stringify(payload),
-  });
+  // Keep headers minimal — Safari fails CORS ("Load failed") if we send
+  // Cache-Control/Pragma that the Edge Function doesn’t allow.
+  const bearer = authSession?.access_token || SUPABASE_PUBLISHABLE_KEY;
+  let res;
+  try {
+    res = await fetch(APPROVE_FEEDBACK_FN_URL, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_PUBLISHABLE_KEY,
+        Authorization: `Bearer ${bearer}`,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    const msg = String(err?.message || err || "");
+    throw new Error(
+      /load failed|failed to fetch|networkerror/i.test(msg)
+        ? "Couldn’t reach Approve server — check connection, then hard-refresh."
+        : msg || "Couldn’t reach Approve server.",
+    );
+  }
   const text = await res.text().catch(() => "");
   let data = {};
   try {

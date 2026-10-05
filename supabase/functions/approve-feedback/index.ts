@@ -2,7 +2,7 @@
  * Reef Rush — Approve / Dismiss feedback; Approve starts a Cursor Cloud Agent.
  *
  * Secrets (Dashboard → Edge Functions → Secrets, or `supabase secrets set`):
- *   FEEDBACK_ADMIN_CODE              — owner code (e.g. 3x5p)
+ *   FEEDBACK_ADMIN_CODE              — owner code (e.g. miles)
  *   CURSOR_CLOUD_AGENT_API_KEY       — Cursor Cloud Agent API key (preferred)
  *   CURSOR_API_KEY                   — fallback name if the above isn’t set
  *   REEF_RUSH_REPO_URL               — optional, default https://github.com/juliette-jason/reef-rush
@@ -14,7 +14,8 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, accept, cache-control, pragma",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 

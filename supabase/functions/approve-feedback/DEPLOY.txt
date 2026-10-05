@@ -9,12 +9,12 @@ Deploy approve-feedback (one-time)
 
    npx supabase login
    npx supabase link --project-ref htnpfzjhicyzkqfgyhuu
-   npx supabase secrets set FEEDBACK_ADMIN_CODE=3x5p
+   npx supabase secrets set FEEDBACK_ADMIN_CODE=miles
    # Or set in Dashboard Secrets (you already used CURSOR_CLOUD_AGENT_API_KEY):
    # npx supabase secrets set CURSOR_CLOUD_AGENT_API_KEY=YOUR_CURSOR_API_KEY_HERE
    npx supabase functions deploy approve-feedback --no-verify-jwt
 
    (--no-verify-jwt is OK here: the function checks FEEDBACK_ADMIN_CODE + registered device.)
 
-4) Hard-refresh Reef Rush. On Approve, enter 3x5p once when prompted.
+4) Hard-refresh Reef Rush. On Approve, enter miles once when prompted.
    Cursor should start a Cloud Agent and open a PR.
