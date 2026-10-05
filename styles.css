@@ -1057,6 +1057,7 @@ body {
   background: linear-gradient(180deg, #4b5563, #1f2937);
   border-color: rgba(156, 163, 175, 0.45);
   padding: 4px;
+  overflow: visible;
 }
 
 .shop-item__icon--chest-rare {
@@ -1065,15 +1066,20 @@ body {
 }
 
 .shop-item__icon--chest-legendary {
+  width: 64px;
+  height: 64px;
   background: linear-gradient(180deg, #a16207, #431407);
   border-color: rgba(253, 224, 71, 0.55);
   box-shadow: inset 0 0 14px rgba(253, 224, 71, 0.4);
+  overflow: visible;
 }
 
 .shop-item__icon--chest svg {
   width: 48px;
-  height: 43px;
+  height: auto;
+  max-height: 54px;
   display: block;
+  overflow: visible;
 }
 
 .shop-item__icon--coin-vault {
@@ -11408,13 +11414,14 @@ button.is-tourney-blocked {
   align-items: center;
   width: min(78vw, 280px);
   margin: 8px 0 4px;
-  padding: 18px 8px 0;
+  padding: 28px 8px 0;
   border: 0;
   background: transparent;
   cursor: pointer;
   color: inherit;
   opacity: 0;
   transform: translateY(16px) scale(0.92);
+  overflow: visible;
 }
 
 .daily-prize-reveal--active .daily-prize-chest {
@@ -11453,6 +11460,7 @@ button.is-tourney-blocked {
   position: relative;
   z-index: 1;
   width: 100%;
+  overflow: visible;
   filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.55));
 }
 
@@ -11460,6 +11468,7 @@ button.is-tourney-blocked {
   width: 100%;
   height: auto;
   display: block;
+  overflow: visible;
 }
 
 .daily-prize-chest__plinth {
@@ -11795,7 +11804,8 @@ button.is-tourney-blocked {
   background: radial-gradient(ellipse at 50% 24%, rgba(255, 150, 70, 0.24), rgba(3, 21, 37, 0.95));
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .panel--chest-opening .panel__headline,
@@ -11812,6 +11822,8 @@ button.is-tourney-blocked {
 .panel--chest-opening .crab-reward__chests {
   min-height: min(54vh, 440px);
   align-items: center;
+  padding-top: 28px;
+  overflow: visible;
 }
 
 .crab-reward__prompt {
@@ -11829,6 +11841,7 @@ button.is-tourney-blocked {
   width: 100%;
   max-width: min(560px, 94vw);
   margin: 0 auto 8px;
+  overflow: visible;
 }
 
 .crab-chest {
@@ -11847,6 +11860,7 @@ button.is-tourney-blocked {
   align-items: center;
   gap: 8px;
   transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+  overflow: visible;
 }
 
 .crab-chest--shop-solo {
@@ -11854,6 +11868,7 @@ button.is-tourney-blocked {
   width: min(220px, 70vw);
   max-width: 220px;
   min-height: 200px;
+  overflow: visible;
 }
 
 .crab-chest:hover:not(:disabled) {
@@ -11879,6 +11894,9 @@ button.is-tourney-blocked {
   border-color: rgba(255, 205, 90, 0.78);
   background: linear-gradient(165deg, rgba(72, 42, 12, 0.96), rgba(32, 16, 8, 0.98));
   box-shadow: 0 0 22px rgba(255, 190, 70, 0.28);
+  padding-top: 26px;
+  min-height: 196px;
+  overflow: visible;
 }
 
 .crab-chest__art {
@@ -11887,12 +11905,15 @@ button.is-tourney-blocked {
   line-height: 1;
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5));
   animation: crabChestBob 2.4s ease-in-out infinite;
+  overflow: visible;
 }
 
 .crab-chest__art svg {
   width: 76px;
-  height: 68px;
+  height: auto;
+  max-height: 88px;
   display: block;
+  overflow: visible;
 }
 
 .crab-chest--rare .crab-chest__art {
@@ -12027,8 +12048,8 @@ button.is-tourney-blocked {
 .crab-chest--hero {
   flex: 0 0 auto;
   max-width: min(300px, 82vw);
-  min-height: 240px;
-  padding: 22px 16px 18px;
+  min-height: 260px;
+  padding: 36px 16px 18px;
   z-index: 2;
   overflow: visible;
   background: transparent;
@@ -12044,7 +12065,9 @@ button.is-tourney-blocked {
 
 .crab-chest--hero .crab-chest__art svg {
   width: 148px;
-  height: 132px;
+  height: auto;
+  max-height: 168px;
+  overflow: visible;
 }
 
 .crab-chest--hero .crab-chest__label {

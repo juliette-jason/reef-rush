@@ -25671,8 +25671,15 @@ function crabChestArtSvg(tier, opened) {
     `<circle cx="${cx - r * 0.3}" cy="${cy - r * 0.3}" r="${r * 0.32}" fill="#fff2b0"/>`;
   const corner = (x, y, flipX, flipY) =>
     `<path d="M${x} ${y} h${8 * flipX} v${2.2 * flipY} h${-5.8 * flipX} v${5.8 * flipY} h${-2.2 * flipX} z" fill="url(#${uid}m)" stroke="${p.stud}" stroke-width="0.45"/>`;
-  const wrap = (inner) =>
-    `<svg viewBox="0 0 80 72" width="72" height="64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${defs}${inner}</svg>`;
+  const wrap = (inner) => {
+    /* Legendary aura / open lid extend past the old 80×72 box — give headroom so nothing clips. */
+    const padTop = isLegendary ? 18 : opened ? 10 : 4;
+    const padBottom = isLegendary ? 4 : 2;
+    const vbY = -padTop;
+    const vbH = 72 + padTop + padBottom;
+    const h = Math.round(64 * (vbH / 72));
+    return `<svg viewBox="0 ${vbY} 80 ${vbH}" width="72" height="${h}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" overflow="visible">${defs}${inner}</svg>`;
+  };
 
   const shadow = `<ellipse cx="40" cy="67" rx="${isLegendary ? 30 : 27}" ry="3.2" fill="rgba(0,0,0,0.3)"/>`;
   const lootGlow = opened
