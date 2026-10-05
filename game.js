@@ -11942,14 +11942,52 @@ async function processDailyPrizePayouts() {
     .slice(0, 3);
   if (!ini) return;
   const yesterday = getPreviousDailyDayKey();
+
+  async function loadPrizeBoardRows() {
+    let dedicated = null;
+    try {
+      dedicated = await fetchDedicatedDailyLeaderboard(yesterday);
+    } catch (err) {
+      console.warn(err);
+      dedicated = null;
+    }
+    if (dedicated === null) {
+      dailyLeaderboardRemoteOk = false;
+      return null;
+    }
+    dailyLeaderboardRemoteOk = true;
+    return withKnownDailyDisplayNames(dedicated).filter((r) => Number(r.score) > 0);
+  }
+
   if (gameMeta.dailyPrizeCheckedDay === yesterday) {
-    if (gameMeta.pendingDailyPrizeCelebration) ensureDailyPrizeBundle(gameMeta.pendingDailyPrizeCelebration);
+    /* Drop a stale pending award if they didn't actually place on yesterday's real board. */
+    if (gameMeta.pendingDailyPrizeCelebration && !dailyPrizeCelebrationActive) {
+      const rows = await loadPrizeBoardRows();
+      if (rows) {
+        const rank = rows.findIndex((r) => String(r.initials || "").toUpperCase() === ini);
+        if (rank < 0 || rank >= DAILY_PRIZE_COUNT) {
+          gameMeta.pendingDailyPrizeCelebration = null;
+          saveMeta();
+          return;
+        }
+        ensureDailyPrizeBundle(gameMeta.pendingDailyPrizeCelebration);
+      }
+    } else if (gameMeta.pendingDailyPrizeCelebration) {
+      ensureDailyPrizeBundle(gameMeta.pendingDailyPrizeCelebration);
+    }
     return;
   }
 
-  const rows = await fetchDailyLeaderboardForDay(yesterday);
-  if (!dailyLeaderboardRemoteOk) {
-    /* Don't lock the day if we never reached the board — retry next home visit. */
+  /* Prizes only from the dedicated Fisher of the Day board — never the all-time table.
+     Empty dedicated board = nobody played yesterday = nobody wins. */
+  const rows = await loadPrizeBoardRows();
+  if (!rows) {
+    /* Board unreachable — retry next World Adventures visit. */
+    return;
+  }
+  if (!rows.length) {
+    gameMeta.dailyPrizeCheckedDay = yesterday;
+    saveMeta();
     return;
   }
   const rank = rows.findIndex((r) => String(r.initials || "").toUpperCase() === ini);
@@ -12217,8 +12255,10 @@ function canStartDailyPrizeCelebration() {
   if (!gameMeta.pendingDailyPrizeCelebration) return false;
   if (dailyPrizeCelebrationActive || treasureMapRevealPaused || playing) return false;
   if (crabTrapSession || duelSession || adventureSession || eventMinigameSession) return false;
+  if (duelMatchmakingActive || coopMatchmakingActive) return false;
   if (isSplashScreenActive()) return false;
   if (mapSeagullGuide && !mapSeagullGuide.hidden && mapSeagullMode === "howto") return false;
+  /* World Adventures home only — never Events, Shop, Adventure, or mid-play. */
   return isHomeScreenActive();
 }
 
@@ -19925,7 +19965,8 @@ function hideMenuPanelsOnly({ clearMatchup = true } = {}) {
   if (panelCrabReward) panelCrabReward.hidden = true;
   if (panelCollectables) panelCollectables.hidden = true;
   if (panelProfile) panelProfile.hidden = true;
-  /* Keep Fisher of the Day celebration up — don't dismiss mid-claim when opening menus. */
+  /* Leaving World Adventures — park Fisher of the Day until home returns. */
+  if (dailyPrizeCelebrationActive) deferDailyPrizeCelebration();
   appRoot?.classList.remove("app--events-mode", "app--splash");
   if (clearMatchup) appRoot?.classList.remove("app--matchup");
   clearAdventurePlayThemeClasses();
@@ -20135,9 +20176,11 @@ function showHomePanel() {
   showIntroIfNeeded();
   void fetchTodayDailyLeaderboard();
   void processDailyPrizePayouts().then(() => {
-    /* Only if still on World Adventures — don't drop the chest on Events/Shop. */
+    /* World Adventures home only — never Events / Shop / mid-play. */
     if (!isHomeScreenActive()) return;
     if (!gameMeta.pendingDailyPrizeCelebration || dailyPrizeCelebrationActive || playing) return;
+    if (crabTrapSession || duelSession || adventureSession || eventMinigameSession) return;
+    if (duelMatchmakingActive || coopMatchmakingActive) return;
     startDailyPrizeCelebration(gameMeta.pendingDailyPrizeCelebration, { force: true });
   });
 }
@@ -23848,10 +23891,7 @@ function openEvents() {
   }
   /* Paint Join UI before any network — phones were stuck waiting on daily prize fetch. */
   syncTourneyJoinCompeteButtons();
-  void processDailyPrizePayouts().then(() => {
-    refreshEventsPanel();
-    /* Do NOT start Fisher of the Day here — that belongs on World Adventures only. */
-  });
+  refreshEventsPanel();
   startDailyEventCountdown();
   if (musicEnabled) switchSceneMusic(startHomeMusic);
 }
@@ -26344,7 +26384,8 @@ function startRound() {
   if (adventureSession || crabTrapSession || duelSession || eventMinigameSession) {
     if (dailyPrizeCelebrationActive) {
       try {
-        endDailyPrizeCelebration();
+        /* Park the overlay — don't bank rewards mid-event; claim belongs on World home. */
+        deferDailyPrizeCelebration();
       } catch {
         dailyPrizeCelebrationActive = false;
       }
