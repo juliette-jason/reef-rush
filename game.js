@@ -15261,18 +15261,33 @@ function renderSeaPalLadderPrizeTrack() {
   ensureSeaPalLadderWeekRollover();
   const wins = Math.max(0, Math.floor(Number(gameMeta.seaPalLadderWins) || 0));
   list.innerHTML = "";
-  for (const prize of SEA_PAL_LADDER_PRIZES) {
+  /* Top of the ladder = grand prize (highest wins first). */
+  const rungs = [...SEA_PAL_LADDER_PRIZES].reverse();
+  let currentMarked = false;
+  rungs.forEach((prize, idx) => {
     const claimed = isSeaPalLadderPrizeClaimed(prize.wins);
     const unlocked = wins >= prize.wins;
     const li = document.createElement("li");
     li.className = "sea-pal-ladder__prize";
+    li.style.setProperty("--rung-i", String(idx));
     if (claimed) li.classList.add("is-claimed");
     else if (unlocked) li.classList.add("is-ready");
     else li.classList.add("is-locked");
+    if (!currentMarked && !unlocked) {
+      li.classList.add("is-current");
+      currentMarked = true;
+    } else if (!currentMarked && idx === rungs.length - 1 && unlocked) {
+      li.classList.add("is-current");
+      currentMarked = true;
+    }
 
     const copy = document.createElement("p");
     copy.className = "sea-pal-ladder__prize-copy";
-    copy.innerHTML = `<strong>${prize.wins} wins</strong> — ${prize.label}`;
+    const badge = document.createElement("span");
+    badge.className = "sea-pal-ladder__rung-badge";
+    badge.textContent = String(prize.wins);
+    copy.appendChild(badge);
+    copy.appendChild(document.createTextNode(` ${prize.label}`));
     li.appendChild(copy);
 
     const btn = document.createElement("button");
@@ -15285,11 +15300,28 @@ function renderSeaPalLadderPrizeTrack() {
       btn.textContent = "Claim";
       btn.addEventListener("click", () => claimSeaPalLadderPrize(prize.wins));
     } else {
-      btn.textContent = "Locked";
+      btn.textContent = "Climb";
       btn.disabled = true;
     }
     li.appendChild(btn);
     list.appendChild(li);
+  });
+}
+
+function syncSeaPalLadderClimbVisuals(wins = Math.max(0, Math.floor(Number(gameMeta.seaPalLadderWins) || 0))) {
+  const pct = Math.max(0, Math.min(100, (wins / SEA_PAL_LADDER_GRAND_WINS) * 100));
+  const card = document.getElementById("eventCardSeaPalLadder");
+  if (card) card.style.setProperty("--ladder-progress", `${pct}%`);
+  const fill = document.getElementById("seaPalLadderMeterFill");
+  if (fill) fill.style.setProperty("--ladder-progress", `${pct}%`);
+  const meterLabel = document.getElementById("seaPalLadderMeterLabel");
+  if (meterLabel) meterLabel.textContent = `${wins} / ${SEA_PAL_LADDER_GRAND_WINS}`;
+  const climber = document.getElementById("seaPalLadderClimber");
+  if (climber) {
+    /* Leave a little room at the top so the chip stays inside the rail. */
+    const climbPct = Math.max(0, Math.min(86, (wins / SEA_PAL_LADDER_GRAND_WINS) * 86));
+    climber.style.setProperty("--climb", `${climbPct}%`);
+    climber.classList.toggle("is-summit", wins >= SEA_PAL_LADDER_GRAND_WINS);
   }
 }
 
@@ -15345,6 +15377,7 @@ async function refreshSeaPalLadderCard() {
   if (progress) {
     progress.textContent = `Wins ${wins} / ${SEA_PAL_LADDER_GRAND_WINS} · Record ${wins}–${losses}`;
   }
+  syncSeaPalLadderClimbVisuals(wins);
   renderSeaPalLadderPrizeTrack();
   await fetchSeaPalLadderBoard(weekKey);
   renderSeaPalLadderBoard();

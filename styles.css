@@ -5400,6 +5400,143 @@ button.is-tourney-blocked {
   text-shadow: 0 0 14px rgba(45, 212, 191, 0.35);
 }
 
+.event-card__art--sea-pal-ladder {
+  overflow: hidden;
+}
+
+.sea-pal-ladder-art__rail {
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
+}
+
+.sea-pal-ladder-art__rung {
+  transform-origin: center;
+  animation: seaPalLadderRungPulse 2.8s ease-in-out infinite;
+}
+
+.sea-pal-ladder-art__rung:nth-child(2) { animation-delay: 0.15s; }
+.sea-pal-ladder-art__rung:nth-child(3) { animation-delay: 0.3s; }
+.sea-pal-ladder-art__rung:nth-child(4) { animation-delay: 0.45s; }
+.sea-pal-ladder-art__rung:nth-child(5) { animation-delay: 0.6s; }
+.sea-pal-ladder-art__rung:nth-child(6) { animation-delay: 0.75s; }
+
+.sea-pal-ladder-art__climber {
+  animation: seaPalLadderArtClimb 4.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  transform-origin: 28px 70px;
+}
+
+.sea-pal-ladder-art__crown {
+  animation: seaPalLadderCrownGlow 2.2s ease-in-out infinite;
+  transform-origin: 14px 8px;
+}
+
+.sea-pal-ladder-art__bubble {
+  animation: seaPalLadderBubbleRise 3.6s linear infinite;
+}
+
+.sea-pal-ladder-art__bubble--2 { animation-delay: 0.7s; animation-duration: 4.1s; }
+.sea-pal-ladder-art__bubble--3 { animation-delay: 1.3s; animation-duration: 3.4s; }
+.sea-pal-ladder-art__bubble--4 { animation-delay: 2s; animation-duration: 4.4s; }
+
+@keyframes seaPalLadderArtClimb {
+  0%,
+  8% {
+    transform: translate(0, 28px);
+  }
+  18% {
+    transform: translate(0, 14px) rotate(-4deg);
+  }
+  30% {
+    transform: translate(0, 0);
+  }
+  42% {
+    transform: translate(0, -14px) rotate(3deg);
+  }
+  55% {
+    transform: translate(0, -28px);
+  }
+  68% {
+    transform: translate(0, -42px) rotate(-3deg);
+  }
+  80%,
+  88% {
+    transform: translate(0, -52px);
+  }
+  100% {
+    transform: translate(0, 28px);
+  }
+}
+
+@keyframes seaPalLadderRungPulse {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.35);
+  }
+}
+
+@keyframes seaPalLadderCrownGlow {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: translate(20px, 0) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(20px, -2px) scale(1.08);
+  }
+}
+
+@keyframes seaPalLadderBubbleRise {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.55;
+  }
+  100% {
+    transform: translateY(-78px);
+    opacity: 0;
+  }
+}
+
+.sea-pal-ladder__meter {
+  position: relative;
+  height: 18px;
+  margin: 0 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(45, 212, 191, 0.4);
+  background: rgba(2, 6, 23, 0.55);
+  overflow: hidden;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.sea-pal-ladder__meter-fill {
+  height: 100%;
+  width: var(--ladder-progress, 0%);
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, #0f766e, #2dd4bf 55%, #fde68a);
+  box-shadow: 0 0 16px rgba(45, 212, 191, 0.45);
+  transition: width 0.65s cubic-bezier(0.22, 1.2, 0.36, 1);
+}
+
+.sea-pal-ladder__meter-label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: "Nunito", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #ecfeff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
+  pointer-events: none;
+}
+
 .sea-pal-ladder__progress,
 .sea-pal-ladder__rank {
   margin: 0 0 8px;
@@ -5418,14 +5555,16 @@ button.is-tourney-blocked {
 
 .sea-pal-ladder__track {
   margin: 0 0 14px;
-  padding: 10px 12px;
-  border-radius: 12px;
+  padding: 12px 12px 14px;
+  border-radius: 14px;
   border: 1px solid rgba(45, 212, 191, 0.28);
-  background: rgba(15, 23, 42, 0.45);
+  background:
+    linear-gradient(180deg, rgba(15, 118, 110, 0.12), transparent 40%),
+    rgba(15, 23, 42, 0.5);
 }
 
 .sea-pal-ladder__track-title {
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   font-family: "Bebas Neue", sans-serif;
   font-size: 0.95rem;
   letter-spacing: 0.08em;
@@ -5433,37 +5572,145 @@ button.is-tourney-blocked {
   color: #99f6e4;
 }
 
+.sea-pal-ladder__rail-wrap {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.sea-pal-ladder__structure {
+  position: relative;
+  min-height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(15, 118, 110, 0.2), rgba(2, 6, 23, 0.35));
+  border: 1px solid rgba(251, 191, 36, 0.28);
+}
+
+.sea-pal-ladder__side {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  width: 5px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fde68a, #b45309);
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.35);
+}
+
+.sea-pal-ladder__side--left {
+  left: 6px;
+}
+
+.sea-pal-ladder__side--right {
+  right: 6px;
+}
+
+.sea-pal-ladder__climber-chip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(8px + var(--climb, 0%));
+  width: 22px;
+  height: 22px;
+  margin-left: -11px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #7dd3fc, #0284c7 70%);
+  border: 2px solid #ecfeff;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.65), 0 4px 8px rgba(0, 0, 0, 0.35);
+  transition: bottom 0.7s cubic-bezier(0.22, 1.25, 0.36, 1);
+  z-index: 2;
+  animation: seaPalLadderClimberBob 1.8s ease-in-out infinite;
+}
+
+.sea-pal-ladder__climber-fish {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 68% 40%, #0f172a 0 18%, transparent 19%),
+    radial-gradient(circle at 30% 55%, #38bdf8 0 42%, transparent 43%);
+}
+
 .sea-pal-ladder__prizes {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 6px;
+  gap: 8px;
 }
 
 .sea-pal-ladder__prize {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 8px 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  background: rgba(2, 6, 23, 0.35);
+  padding: 9px 10px 9px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(2, 6, 23, 0.4);
+  transform-origin: left center;
+  animation: seaPalLadderRungIn 0.45s ease both;
+  animation-delay: calc(var(--rung-i, 0) * 0.05s);
+}
+
+.sea-pal-ladder__prize::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  width: 14px;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #fbbf24, #fde68a);
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.45);
 }
 
 .sea-pal-ladder__prize.is-locked {
-  opacity: 0.55;
+  opacity: 0.5;
+  filter: saturate(0.65);
+}
+
+.sea-pal-ladder__prize.is-locked::before {
+  background: linear-gradient(90deg, #64748b, #94a3b8);
+  box-shadow: none;
 }
 
 .sea-pal-ladder__prize.is-ready {
-  border-color: rgba(253, 230, 138, 0.55);
-  background: rgba(120, 53, 15, 0.28);
+  border-color: rgba(253, 230, 138, 0.65);
+  background: linear-gradient(90deg, rgba(120, 53, 15, 0.4), rgba(2, 6, 23, 0.45));
+  box-shadow: 0 0 18px rgba(253, 224, 71, 0.18);
+  animation: seaPalLadderRungIn 0.45s ease both, seaPalLadderReadyPulse 1.8s ease-in-out infinite;
+  animation-delay: calc(var(--rung-i, 0) * 0.05s), 0.5s;
 }
 
 .sea-pal-ladder__prize.is-claimed {
-  border-color: rgba(45, 212, 191, 0.4);
-  background: rgba(19, 78, 74, 0.35);
+  border-color: rgba(45, 212, 191, 0.5);
+  background: linear-gradient(90deg, rgba(19, 78, 74, 0.45), rgba(2, 6, 23, 0.4));
+}
+
+.sea-pal-ladder__prize.is-claimed::after {
+  content: "✓";
+  position: absolute;
+  right: 8px;
+  top: -8px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: #042f2e;
+  background: #5eead4;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.sea-pal-ladder__prize.is-current {
+  border-color: rgba(94, 234, 212, 0.75);
+  box-shadow: 0 0 0 1px rgba(94, 234, 212, 0.35), 0 0 20px rgba(45, 212, 191, 0.25);
 }
 
 .sea-pal-ladder__prize-copy {
@@ -5480,11 +5727,104 @@ button.is-tourney-blocked {
   font-weight: 800;
 }
 
+.sea-pal-ladder__rung-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.7em;
+  margin-right: 6px;
+  padding: 1px 5px;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  color: #422006;
+  background: linear-gradient(180deg, #fde68a, #f59e0b);
+  border: 1px solid #b45309;
+}
+
 .sea-pal-ladder__claim {
   flex-shrink: 0;
   min-height: 34px;
   padding: 6px 12px;
   font-size: 0.75rem;
+}
+
+.sea-pal-ladder__prize.is-ready .sea-pal-ladder__claim {
+  animation: seaPalLadderClaimGlow 1.6s ease-in-out infinite;
+}
+
+@keyframes seaPalLadderRungIn {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes seaPalLadderReadyPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 12px rgba(253, 224, 71, 0.12);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(253, 224, 71, 0.35);
+  }
+}
+
+@keyframes seaPalLadderClimberBob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes seaPalLadderClaimGlow {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.18);
+  }
+}
+
+.sea-pal-ladder__climber-chip.is-summit {
+  box-shadow: 0 0 18px rgba(253, 224, 71, 0.85), 0 0 8px rgba(94, 234, 212, 0.7);
+  border-color: #fde68a;
+  animation: seaPalLadderClimberBob 1.8s ease-in-out infinite, seaPalLadderSummitPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes seaPalLadderSummitPulse {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.25);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sea-pal-ladder-art__climber,
+  .sea-pal-ladder-art__rung,
+  .sea-pal-ladder-art__crown,
+  .sea-pal-ladder-art__bubble,
+  .sea-pal-ladder__climber-chip,
+  .sea-pal-ladder__prize,
+  .sea-pal-ladder__prize.is-ready,
+  .sea-pal-ladder__prize.is-ready .sea-pal-ladder__claim {
+    animation: none !important;
+  }
+
+  .sea-pal-ladder__meter-fill,
+  .sea-pal-ladder__climber-chip {
+    transition: none !important;
+  }
 }
 
 .duel-spectator {
