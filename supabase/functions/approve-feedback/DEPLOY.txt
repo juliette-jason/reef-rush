@@ -1,0 +1,20 @@
+Deploy approve-feedback (one-time)
+
+1) Supabase SQL editor — run:
+   supabase/game_feedback_agent.sql
+
+2) Create a Cursor API key (Dashboard → API Keys) and link GitHub for Cloud Agents on juliette-jason/reef-rush.
+
+3) Install Supabase CLI, then from the fishing game folder:
+
+   npx supabase login
+   npx supabase link --project-ref htnpfzjhicyzkqfgyhuu
+   npx supabase secrets set FEEDBACK_ADMIN_CODE=3x5p
+   # Or set in Dashboard Secrets (you already used CURSOR_CLOUD_AGENT_API_KEY):
+   # npx supabase secrets set CURSOR_CLOUD_AGENT_API_KEY=YOUR_CURSOR_API_KEY_HERE
+   npx supabase functions deploy approve-feedback --no-verify-jwt
+
+   (--no-verify-jwt is OK here: the function checks FEEDBACK_ADMIN_CODE + registered device.)
+
+4) Hard-refresh Reef Rush. On Approve, enter 3x5p once when prompted.
+   Cursor should start a Cloud Agent and open a PR.

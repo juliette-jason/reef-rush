@@ -10779,7 +10779,10 @@ const ADMIN_STATS_DEVICE_KEY = "reefRushAdminDevice_v1";
 const ADMIN_STATS_UNLOCK_CODE = "12c9";
 /** Owner-only Feedback Inbox — stays unlocked on devices that already unlocked. */
 const FEEDBACK_ADMIN_KEY = "reefRushFeedbackAdmin";
+/** Cached owner code for Edge Function Approve (prompted once per device). */
+const FEEDBACK_ADMIN_CODE_KEY = "reefRushFeedbackAdminCode_v1";
 const FEEDBACK_INBOX_FETCH_LIMIT = 40;
+const APPROVE_FEEDBACK_FN_URL = `${SUPABASE_URL}/functions/v1/approve-feedback`;
 const PLAY_EVENT_KINDS = {
   duel: "Duel Fishing",
   coop: "Co-op Haul",
@@ -32466,7 +32469,28 @@ function isFeedbackAdminUnlocked() {
 function setFeedbackAdminUnlocked(on) {
   try {
     if (on) localStorage.setItem(FEEDBACK_ADMIN_KEY, "1");
-    else localStorage.removeItem(FEEDBACK_ADMIN_KEY);
+    else {
+      localStorage.removeItem(FEEDBACK_ADMIN_KEY);
+      localStorage.removeItem(FEEDBACK_ADMIN_CODE_KEY);
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+function getStoredFeedbackAdminCode() {
+  try {
+    return String(localStorage.getItem(FEEDBACK_ADMIN_CODE_KEY) || "").trim();
+  } catch {
+    return "";
+  }
+}
+
+function setStoredFeedbackAdminCode(code) {
+  try {
+    const v = String(code || "").trim();
+    if (v) localStorage.setItem(FEEDBACK_ADMIN_CODE_KEY, v);
+    else localStorage.removeItem(FEEDBACK_ADMIN_CODE_KEY);
   } catch {
     /* ignore */
   }
@@ -32491,6 +32515,61 @@ function lockFeedbackAdminFromSettings() {
   closeFeedbackInboxOverlay();
   showToast("Feedback Inbox locked.", 2000);
   syncFeedbackAdminUi();
+}
+
+function promptForFeedbackAdminCode(reason = "Enter your owner code to start coding.") {
+  const typed = window.prompt(reason, "");
+  if (typed == null) return "";
+  return String(typed).trim();
+}
+
+async function ensureFeedbackAdminCode() {
+  let code = getStoredFeedbackAdminCode();
+  if (code) return code;
+  code = promptForFeedbackAdminCode(
+    "Enter your owner code once on this device (needed to start Cursor from Approve).",
+  );
+  if (!code) return "";
+  setStoredFeedbackAdminCode(code);
+  return code;
+}
+
+async function callApproveFeedbackEdge(payload) {
+  const res = await fetch(APPROVE_FEEDBACK_FN_URL, {
+    method: "POST",
+    headers: leaderboardHeaders({
+      "Content-Type": "application/json",
+    }),
+    body: JSON.stringify(payload),
+  });
+  const text = await res.text().catch(() => "");
+  let data = {};
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = {};
+  }
+  if (!res.ok) {
+    const tip =
+      (typeof data.error === "string" && data.error) ||
+      (/Failed to fetch|NetworkError|404/i.test(text)
+        ? "Approve function isn’t deployed yet — see supabase/functions/approve-feedback."
+        : text.slice(0, 220) || `Request failed (${res.status})`);
+    const err = new Error(tip);
+    err.status = res.status;
+    err.data = data;
+    throw err;
+  }
+  return data;
+}
+
+async function registerFeedbackOwnerDevice(adminCode) {
+  return callApproveFeedbackEdge({
+    action: "unlock",
+    adminCode,
+    clientId: getDuelClientId(),
+    playerName: String(gameMeta.playerName || gameMeta.playerInitials || "").slice(0, 80),
+  });
 }
 
 let feedbackInboxFilter = "pending";
@@ -32549,42 +32628,39 @@ function buildFeedbackFixPrompt(row) {
   return lines.join("\n");
 }
 
-async function copyTextToClipboard(text) {
-  const value = String(text || "");
-  if (!value) return false;
-  try {
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(value);
-      return true;
-    }
-  } catch {
-    /* fall through */
-  }
-  try {
-    const ta = document.createElement("textarea");
-    ta.value = value;
-    ta.setAttribute("readonly", "");
-    ta.style.position = "fixed";
-    ta.style.left = "-9999px";
-    document.body.appendChild(ta);
-    ta.select();
-    const ok = document.execCommand("copy");
-    ta.remove();
-    return ok;
-  } catch {
-    return false;
-  }
-}
-
 async function fetchGameFeedbackInbox(status = feedbackInboxFilter) {
   const wanted = status === "approved" ? "approved" : "pending";
   const url =
-    `${GAME_FEEDBACK_URL}?select=id,created_at,message,kind,player_name,screenshot_url,status,reviewed_at` +
+    `${GAME_FEEDBACK_URL}?select=id,created_at,message,kind,player_name,screenshot_url,status,reviewed_at,agent_id,agent_url` +
     `&status=eq.${encodeURIComponent(wanted)}` +
     `&order=created_at.desc&limit=${FEEDBACK_INBOX_FETCH_LIMIT}`;
   const res = await fetch(url, { headers: leaderboardHeaders(), ...LEADERBOARD_FETCH_OPTS });
   const text = await res.text();
   if (!res.ok) {
+    if (/agent_id|agent_url|PGRST204|column/i.test(text)) {
+      // Older schema without agent columns — retry without them.
+      const fallbackUrl =
+        `${GAME_FEEDBACK_URL}?select=id,created_at,message,kind,player_name,screenshot_url,status,reviewed_at` +
+        `&status=eq.${encodeURIComponent(wanted)}` +
+        `&order=created_at.desc&limit=${FEEDBACK_INBOX_FETCH_LIMIT}`;
+      const fallbackRes = await fetch(fallbackUrl, {
+        headers: leaderboardHeaders(),
+        ...LEADERBOARD_FETCH_OPTS,
+      });
+      const fallbackText = await fallbackRes.text();
+      if (!fallbackRes.ok) {
+        if (/status|PGRST204|column/i.test(fallbackText)) {
+          throw new Error("Inbox needs SQL — run supabase/game_feedback_admin.sql in Supabase.");
+        }
+        throw new Error(fallbackText || `Couldn’t load inbox (${fallbackRes.status})`);
+      }
+      try {
+        const rows = JSON.parse(fallbackText);
+        return Array.isArray(rows) ? rows : [];
+      } catch {
+        return [];
+      }
+    }
     if (/status|PGRST204|column/i.test(text)) {
       throw new Error("Inbox needs SQL — run supabase/game_feedback_admin.sql in Supabase.");
     }
@@ -32633,9 +32709,15 @@ function renderFeedbackInboxList() {
       const shot = row.screenshot_url
         ? `<img class="feedback-inbox-card__shot" src="${escapeFeedbackHtml(row.screenshot_url)}" alt="Feedback screenshot" loading="lazy" />`
         : "";
+      const agentLine =
+        !showActions && row.agent_url
+          ? `<p class="feedback-inbox-card__meta"><a href="${escapeFeedbackHtml(row.agent_url)}" target="_blank" rel="noopener noreferrer">Open Cursor agent</a></p>`
+          : !showActions && row.agent_id
+            ? `<p class="feedback-inbox-card__meta">Agent: ${escapeFeedbackHtml(row.agent_id)}</p>`
+            : "";
       const actions = showActions
         ? `<div class="feedback-inbox-card__actions">
-            <button type="button" class="btn btn--primary" data-feedback-approve="${row.id}">Approve</button>
+            <button type="button" class="btn btn--primary" data-feedback-approve="${row.id}">Approve &amp; code</button>
             <button type="button" class="btn btn--secondary" data-feedback-dismiss="${row.id}">Dismiss</button>
           </div>`
         : "";
@@ -32648,6 +32730,7 @@ function renderFeedbackInboxList() {
         </p>
         <p class="feedback-inbox-card__message">${escapeFeedbackHtml(row.message)}</p>
         ${shot}
+        ${agentLine}
         ${actions}
       </article>`;
     })
@@ -32701,46 +32784,54 @@ function closeFeedbackInboxOverlay() {
   setFeedbackInboxStatus("");
 }
 
-async function patchGameFeedbackStatus(id, status) {
-  const res = await fetch(`${GAME_FEEDBACK_URL}?id=eq.${encodeURIComponent(id)}`, {
-    method: "PATCH",
-    headers: leaderboardHeaders({
-      "Content-Type": "application/json",
-      Prefer: "return=minimal",
-    }),
-    body: JSON.stringify({
-      status,
-      reviewed_at: new Date().toISOString(),
-    }),
-  });
-  const text = await res.text().catch(() => "");
-  if (!res.ok) {
-    if (/status|PGRST204|column|policy|permission/i.test(text)) {
-      throw new Error("Inbox needs SQL — run supabase/game_feedback_admin.sql in Supabase.");
-    }
-    throw new Error(text || `Update failed (${res.status})`);
-  }
-}
-
 async function approveGameFeedback(id) {
   if (feedbackInboxActionLock) return;
   const row = feedbackInboxRows.find((r) => String(r.id) === String(id));
   if (!row) return;
   feedbackInboxActionLock = true;
-  setFeedbackInboxStatus("Approving…", "info");
+  setFeedbackInboxStatus("Starting Cursor…", "info");
   try {
-    const prompt = buildFeedbackFixPrompt(row);
-    const copied = await copyTextToClipboard(prompt);
-    await patchGameFeedbackStatus(row.id, "approved");
-    showToast(copied ? "Copied — paste into Cursor" : "Approved (clipboard blocked — copy manually)", copied ? 3200 : 4200);
-    if (!copied) setFeedbackInboxStatus(prompt, "info");
-    else setFeedbackInboxStatus("");
+    const adminCode = await ensureFeedbackAdminCode();
+    if (!adminCode) {
+      setFeedbackInboxStatus("Owner code needed to start coding.");
+      showToast("Owner code needed to start coding.", 2800);
+      return;
+    }
+    try {
+      await registerFeedbackOwnerDevice(adminCode);
+    } catch (regErr) {
+      if (regErr?.status === 401) {
+        setStoredFeedbackAdminCode("");
+        throw new Error("Wrong owner code.");
+      }
+      throw regErr;
+    }
+    const data = await callApproveFeedbackEdge({
+      action: "approve",
+      adminCode,
+      clientId: getDuelClientId(),
+      feedbackId: row.id,
+      playerName: String(gameMeta.playerName || gameMeta.playerInitials || "").slice(0, 80),
+    });
+    setFeedbackAdminUnlocked(true);
+    syncFeedbackAdminUi();
+    const agentUrl = String(data.agentUrl || "").trim();
+    if (data.alreadyStarted) {
+      showToast("Already coding — open agent in Cursor.", 3200);
+    } else {
+      showToast("Cursor is coding this fix.", 3200);
+    }
+    if (agentUrl) {
+      setFeedbackInboxStatus(`Coding started. ${agentUrl}`, "info");
+    } else {
+      setFeedbackInboxStatus("");
+    }
     await loadFeedbackInbox();
     void refreshFeedbackInboxBadge();
   } catch (err) {
     const tip = err?.message || "Couldn’t approve.";
     setFeedbackInboxStatus(tip);
-    showToast(tip, 3600);
+    showToast(tip, 4200);
   } finally {
     feedbackInboxActionLock = false;
   }
@@ -32753,7 +32844,28 @@ async function dismissGameFeedback(id) {
   feedbackInboxActionLock = true;
   setFeedbackInboxStatus("Dismissing…", "info");
   try {
-    await patchGameFeedbackStatus(row.id, "dismissed");
+    const adminCode = await ensureFeedbackAdminCode();
+    if (!adminCode) {
+      setFeedbackInboxStatus("Owner code needed to dismiss.");
+      showToast("Owner code needed to dismiss.", 2800);
+      return;
+    }
+    try {
+      await registerFeedbackOwnerDevice(adminCode);
+    } catch (regErr) {
+      if (regErr?.status === 401) {
+        setStoredFeedbackAdminCode("");
+        throw new Error("Wrong owner code.");
+      }
+      throw regErr;
+    }
+    await callApproveFeedbackEdge({
+      action: "dismiss",
+      adminCode,
+      clientId: getDuelClientId(),
+      feedbackId: row.id,
+      playerName: String(gameMeta.playerName || gameMeta.playerInitials || "").slice(0, 80),
+    });
     showToast("Dismissed.", 1600);
     setFeedbackInboxStatus("");
     await loadFeedbackInbox();
