@@ -5421,12 +5421,21 @@ button.is-tourney-blocked {
 
 .sea-pal-ladder-art__climber {
   animation: seaPalLadderArtClimb 4.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
-  transform-origin: 28px 70px;
+  transform-origin: 28px 78px;
 }
 
-.sea-pal-ladder-art__crown {
-  animation: seaPalLadderCrownGlow 2.2s ease-in-out infinite;
-  transform-origin: 14px 8px;
+.sea-pal-ladder-art__chest {
+  animation: seaPalLadderChestGlow 2.2s ease-in-out infinite;
+  transform-origin: 18px 14px;
+}
+
+.sea-pal-ladder-art__spark {
+  animation: seaPalLadderSparkTwinkle 1.8s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.sea-pal-ladder-art__spark--2 {
+  animation-delay: 0.55s;
 }
 
 .sea-pal-ladder-art__bubble {
@@ -5440,29 +5449,29 @@ button.is-tourney-blocked {
 @keyframes seaPalLadderArtClimb {
   0%,
   8% {
-    transform: translate(0, 28px);
+    transform: translate(0, 22px);
   }
   18% {
-    transform: translate(0, 14px) rotate(-4deg);
+    transform: translate(1px, 10px) rotate(-5deg);
   }
   30% {
-    transform: translate(0, 0);
+    transform: translate(0, 0) rotate(2deg);
   }
   42% {
-    transform: translate(0, -14px) rotate(3deg);
+    transform: translate(-1px, -12px) rotate(-4deg);
   }
   55% {
-    transform: translate(0, -28px);
+    transform: translate(0, -24px) rotate(3deg);
   }
   68% {
-    transform: translate(0, -42px) rotate(-3deg);
+    transform: translate(1px, -36px) rotate(-3deg);
   }
   80%,
   88% {
-    transform: translate(0, -52px);
+    transform: translate(0, -46px) rotate(0deg);
   }
   100% {
-    transform: translate(0, 28px);
+    transform: translate(0, 22px);
   }
 }
 
@@ -5476,15 +5485,29 @@ button.is-tourney-blocked {
   }
 }
 
-@keyframes seaPalLadderCrownGlow {
+@keyframes seaPalLadderChestGlow {
   0%,
   100% {
-    opacity: 0.75;
-    transform: translate(20px, 0) scale(1);
+    opacity: 0.92;
+    transform: translate(10px, -2px) scale(1);
+    filter: drop-shadow(0 0 4px rgba(253, 224, 71, 0.35));
   }
   50% {
     opacity: 1;
-    transform: translate(20px, -2px) scale(1.08);
+    transform: translate(10px, -4px) scale(1.06);
+    filter: drop-shadow(0 0 12px rgba(253, 224, 71, 0.85));
+  }
+}
+
+@keyframes seaPalLadderSparkTwinkle {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
   }
 }
 
@@ -5610,11 +5633,13 @@ button.is-tourney-blocked {
   position: absolute;
   left: 50%;
   bottom: calc(8px + var(--climb, 0%));
-  width: 22px;
-  height: 22px;
-  margin-left: -11px;
+  width: 26px;
+  height: 26px;
+  margin-left: -13px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #7dd3fc, #0284c7 70%);
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 35% 30%, rgba(125, 211, 252, 0.95), rgba(2, 132, 199, 0.92) 72%);
   border: 2px solid #ecfeff;
   box-shadow: 0 0 14px rgba(56, 189, 248, 0.65), 0 4px 8px rgba(0, 0, 0, 0.35);
   transition: bottom 0.7s cubic-bezier(0.22, 1.25, 0.36, 1);
@@ -5624,12 +5649,10 @@ button.is-tourney-blocked {
 
 .sea-pal-ladder__climber-fish {
   display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: inherit;
-  background:
-    radial-gradient(circle at 68% 40%, #0f172a 0 18%, transparent 19%),
-    radial-gradient(circle at 30% 55%, #38bdf8 0 42%, transparent 43%);
+  width: 18px;
+  height: 18px;
+  overflow: visible;
+  filter: drop-shadow(0 1px 1px rgba(15, 23, 42, 0.35));
 }
 
 .sea-pal-ladder__prizes {
@@ -5812,7 +5835,8 @@ button.is-tourney-blocked {
 @media (prefers-reduced-motion: reduce) {
   .sea-pal-ladder-art__climber,
   .sea-pal-ladder-art__rung,
-  .sea-pal-ladder-art__crown,
+  .sea-pal-ladder-art__chest,
+  .sea-pal-ladder-art__spark,
   .sea-pal-ladder-art__bubble,
   .sea-pal-ladder__climber-chip,
   .sea-pal-ladder__prize,
