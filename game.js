@@ -1402,10 +1402,10 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M64 78 H76 M84 78 H96" stroke="#f8fafc" stroke-width="1.2"/>`;
     case "viking_seal":
       return `<ellipse cx="104" cy="142" rx="42" ry="5" fill="#020617" opacity="0.28"/>
-        <path d="M62 106 C48 100 34 96 26 102 L32 106 C28 108 26 112 32 112 L38 108 C36 114 40 118 46 114 L52 110 C56 112 60 110 62 106Z" fill="#6d8294" stroke="#243044" stroke-width="1.2"/>
-        <path d="M50 108 L30 104 M48 112 L34 112 M50 114 L40 116" fill="none" stroke="#243044" stroke-width="0.9" opacity="0.4"/>
-        <path d="M64 116 C50 122 36 132 30 140 L38 136 C36 142 42 146 48 140 L52 136 C52 144 58 146 60 138 L62 128 C64 124 66 120 64 116Z" fill="#7c93a6" stroke="#243044" stroke-width="1.2"/>
-        <path d="M58 122 L36 136 M58 126 L44 142 M60 130 L52 144" fill="none" stroke="#243044" stroke-width="0.9" opacity="0.4"/>
+        <path d="M62 106 C46 99 30 94 20 101 L27 106 C23 108 20 113 27 113 L34 108 C32 115 36 120 43 115 L50 111 C55 113 60 111 62 106Z" fill="#6d8294" stroke="#243044" stroke-width="1.2"/>
+        <path d="M48 108 L25 104 M46 113 L30 113 M48 115 L36 118" fill="none" stroke="#243044" stroke-width="0.9" opacity="0.4"/>
+        <path d="M64 116 C48 123 32 135 25 144 L34 139 C32 146 38 151 45 144 L50 139 C50 148 57 151 59 142 L62 130 C64 125 66 121 64 116Z" fill="#7c93a6" stroke="#243044" stroke-width="1.2"/>
+        <path d="M57 123 L32 139 M57 128 L41 146 M59 132 L50 148" fill="none" stroke="#243044" stroke-width="0.9" opacity="0.4"/>
         <path d="M56 116 C50 100 60 82 80 74 C102 64 124 66 138 78 C148 68 162 64 170 78 C178 92 174 106 162 112 C154 118 146 114 140 114 C132 128 112 140 90 140 C70 140 56 130 56 116Z" fill="#a9bcc9" stroke="#243044" stroke-width="1.5"/>
         <path d="M78 116 C96 124 116 126 126 118 C114 132 96 136 80 128 C72 124 72 118 78 116Z" fill="#f6f1e6"/>
         <path d="M72 90 C96 74 126 74 146 90 C130 78 100 72 74 88Z" fill="#5c7284"/>
