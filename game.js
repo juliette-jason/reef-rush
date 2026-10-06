@@ -15088,6 +15088,19 @@ function getSeaPalLadderWeekKey(date = new Date()) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+/** Climbs only on Monday (1) and Friday (5), local time — same calendar as the week key. */
+function isSeaPalLadderOpenDay(date = new Date()) {
+  const day = date.getDay();
+  return day === 1 || day === 5;
+}
+
+function nextSeaPalLadderOpenDayName(date = new Date()) {
+  const day = date.getDay();
+  if (day === 1 || day === 5) return "today";
+  const until = (target) => (target - day + 7) % 7;
+  return until(5) < until(1) ? "Friday" : "Monday";
+}
+
 function formatSeaPalLadderWeekLabel(weekKey = getSeaPalLadderWeekKey()) {
   const parts = String(weekKey).split("-").map(Number);
   if (parts.length !== 3 || parts.some((n) => !n)) return "This week";
@@ -15465,12 +15478,32 @@ async function refreshSeaPalLadderCard() {
   const progress = document.getElementById("seaPalLadderProgress");
   const rankLine = document.getElementById("seaPalLadderRankLine");
   const btn = document.getElementById("btnSeaPalLadderClimb");
-  if (weekLine) weekLine.textContent = `Week of ${formatSeaPalLadderWeekLabel(weekKey)} · resets Monday`;
+  const openToday = isSeaPalLadderOpenDay();
+  if (weekLine) {
+    weekLine.textContent = openToday
+      ? `Week of ${formatSeaPalLadderWeekLabel(weekKey)} · open today · resets Monday`
+      : `Week of ${formatSeaPalLadderWeekLabel(weekKey)} · climbs ${nextSeaPalLadderOpenDayName()} · resets Monday`;
+  }
   if (progress) {
     progress.textContent = `Wins ${wins} / ${SEA_PAL_LADDER_GRAND_WINS} · Record ${wins}–${losses}`;
   }
   syncSeaPalLadderClimbVisuals(wins);
   renderSeaPalLadderPrizeTrack();
+  const envIssue = onlineDuelEnvironmentIssue();
+  refreshDuelTicketsForToday();
+  const tickets = getDuelTicketCount();
+  if (btn) {
+    if (!openToday) {
+      btn.disabled = true;
+      btn.textContent = `Opens ${nextSeaPalLadderOpenDayName()}`;
+    } else {
+      btn.disabled = Boolean(envIssue) || tickets <= 0;
+      if (envIssue) btn.textContent = "Use live site link";
+      else if (tickets <= 0) btn.textContent = "No tickets — visit shop";
+      else if (wins >= SEA_PAL_LADDER_GRAND_WINS) btn.textContent = "Climb for board rank";
+      else btn.textContent = "Climb the ladder";
+    }
+  }
   await fetchSeaPalLadderBoard(weekKey);
   renderSeaPalLadderBoard();
   const rank = seaPalLadderMyBoardRank();
@@ -15481,19 +15514,17 @@ async function refreshSeaPalLadderCard() {
         ? "Board rank: outside top climbers — keep winning!"
         : "Board rank: — · climb to appear";
   }
-  const envIssue = onlineDuelEnvironmentIssue();
-  refreshDuelTicketsForToday();
-  const tickets = getDuelTicketCount();
-  if (btn) {
-    btn.disabled = Boolean(envIssue) || tickets <= 0;
-    if (envIssue) btn.textContent = "Use live site link";
-    else if (tickets <= 0) btn.textContent = "No tickets — visit shop";
-    else if (wins >= SEA_PAL_LADDER_GRAND_WINS) btn.textContent = "Climb for board rank";
-    else btn.textContent = "Climb the ladder";
-  }
 }
 
 function startSeaPalLadderClimb() {
+  if (!isSeaPalLadderOpenDay()) {
+    showToast(
+      `Sea Pal Ladder climbs are only on Mondays and Fridays — next climb ${nextSeaPalLadderOpenDayName()}.`,
+      3600,
+    );
+    refreshSeaPalLadderCard();
+    return;
+  }
   const envIssue = onlineDuelEnvironmentIssue();
   if (envIssue) {
     showToast(envIssue.message, 6200);
@@ -24383,7 +24414,7 @@ function openEventPrep(kind) {
     if (eventPrepTitle) eventPrepTitle.textContent = "Climb for wins";
     if (eventPrepDetail) {
       eventPrepDetail.textContent =
-        `Weekly ladder · ${w}/${SEA_PAL_LADDER_GRAND_WINS} wins · live rival first, COM if none · spends 1 duel ticket.`;
+        `Mondays & Fridays · ${w}/${SEA_PAL_LADDER_GRAND_WINS} wins · live rival first, COM if none · spends 1 duel ticket.`;
     }
   } else {
     if (eventPrepEyebrow) eventPrepEyebrow.textContent = copy.eyebrow;
