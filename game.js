@@ -1402,26 +1402,35 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <path d="M64 78 H76 M84 78 H96" stroke="#f8fafc" stroke-width="1.2"/>`;
     case "viking_seal":
       return `${shadow}
-        <path d="M50 112 C38 102 32 114 40 124 C48 130 56 122 54 114Z" fill="#7f93a8" stroke="#334155" stroke-width="1.15"/>
-        <path d="M56 122 C44 126 40 138 52 144 C64 148 70 134 62 124Z" fill="#8aa0b4" stroke="#334155" stroke-width="1.15"/>
-        <path d="M60 116 C56 98 74 86 96 88 C106 100 102 122 88 132 C72 140 58 132 60 116Z" fill="#9aafc4" stroke="#334155" stroke-width="1.35"/>
-        <path d="M70 118 C82 130 98 128 104 118 C94 132 76 134 68 122Z" fill="#f8fafc"/>
-        <ellipse cx="78" cy="104" rx="4.2" ry="3" fill="#4d6176" opacity="0.45"/>
-        <ellipse cx="92" cy="116" rx="3.4" ry="2.4" fill="#4d6176" opacity="0.36"/>
-        <ellipse cx="70" cy="122" rx="2.6" ry="1.9" fill="#4d6176" opacity="0.3"/>
-        <path d="M96 118 C90 132 100 146 116 140 C126 136 122 120 108 114 C102 112 98 114 96 118Z" fill="#8aa0b4" stroke="#334155" stroke-width="1.2"/>
-        <path d="M104 130 C110 138 118 138 122 130" fill="none" stroke="#5c6f84" stroke-width="1.15" stroke-linecap="round"/>
-        <ellipse cx="118" cy="94" rx="30" ry="26" fill="#d5e0ea" stroke="#334155" stroke-width="1.35"/>
-        <ellipse cx="108" cy="88" rx="11" ry="7" fill="#f8fafc" opacity="0.45"/>
-        <ellipse cx="102" cy="106" rx="3.2" ry="2.2" fill="#6b7f94" opacity="0.28"/>
-        <ellipse cx="104" cy="108" rx="5.6" ry="3.5" fill="#fda4af" opacity="0.62"/>
-        <ellipse cx="138" cy="106" rx="15" ry="11" fill="#f8fafc" stroke="#64748b" stroke-width="0.9"/>
-        <path d="M136 102 L150 98 M138 106 L152 106 M136 110 L150 114" fill="none" stroke="#334155" stroke-width="1.2" stroke-linecap="round"/>
-        ${companionEye(122, 100, 7.2)}
-        <ellipse cx="150" cy="104" rx="4.2" ry="3.2" fill="#1e293b"/>
-        <ellipse cx="148.4" cy="102.6" rx="1.25" ry="0.65" fill="#fff" opacity="0.45"/>
-        <path d="M132 114 C136 118 144 118 148 114" fill="#fb7185"/>
-        <path d="M132 114 C136 117.5 144 117.5 148 114" fill="none" stroke="#9f1239" stroke-width="1.1" stroke-linecap="round"/>`;
+        <path d="M48 116 C36 106 38 94 52 96 C62 88 78 80 96 78 C108 70 124 66 138 74 C152 70 164 82 166 96 C168 108 160 118 150 120 C158 126 154 132 144 128 C138 140 126 152 112 150 C98 148 90 136 96 126 C84 138 70 142 58 132 C46 136 36 126 48 116Z" fill="#c5d4e0" stroke="#334155" stroke-width="1.45" stroke-linejoin="round"/>
+        <path d="M78 96 C96 88 120 90 132 100 C116 108 92 110 76 102Z" fill="#f8fafc" opacity="0.55"/>
+        <ellipse cx="84" cy="108" rx="4.2" ry="3" fill="#4d6176" opacity="0.4"/>
+        <ellipse cx="98" cy="120" rx="3.4" ry="2.4" fill="#4d6176" opacity="0.32"/>
+        <ellipse cx="74" cy="118" rx="2.6" ry="1.9" fill="#4d6176" opacity="0.28"/>
+        <path d="M100 132 C106 142 114 142 118 132" fill="none" stroke="#5c6f84" stroke-width="1.15" stroke-linecap="round"/>
+        <path d="M142 96 C156 100 164 110 158 118 C150 122 142 114 138 106 C136 100 136 96 142 96Z" fill="#f8fafc"/>
+        <ellipse cx="108" cy="112" rx="5.2" ry="3.3" fill="#fda4af" opacity="0.55"/>
+        <path d="M96 86 C98 62 114 46 128 44 C144 46 156 62 152 86 C140 94 110 94 96 86Z" fill="#5b6b7c" stroke="#1e293b" stroke-width="1.3"/>
+        <path d="M112 58 C124 50 138 52 148 64" fill="none" stroke="#94a3b8" stroke-width="2.4" stroke-linecap="round" opacity="0.6"/>
+        <path d="M104.4 70.6 L100.1 70.6 L96.3 70.3 L93 69.7 L90.1 68.9 L87.7 67.8 L85.6 66.4 L83.8 64.7 L82.2 62.6 L80.9 59.9 L79.9 56.6 L79.4 52.8 L79.2 48.4 L79.5 43.5 L80 38 L77.5 43 L75.9 47.9 L74.7 52.5 L74.2 57 L74.2 61.2 L74.9 65.4 L76.2 69.3 L78.3 72.9 L81.1 76.2 L84.6 79 L88.6 81.3 L93.1 83.1 L98.1 84.5 L103.6 85.4Z" fill="#e4b86a" stroke="#92400e" stroke-width="1.15" stroke-linejoin="round"/>
+        <path d="M140.9 81.3 L146 80.1 L150.7 78.5 L154.9 76.4 L158.6 73.9 L161.8 71 L164.2 67.6 L165.9 64 L166.9 60.1 L167.3 56.1 L167 51.9 L166.1 47.7 L164.7 43.3 L162.7 38.7 L160 34 L160.8 39.3 L161.3 44 L161.5 48.3 L161.2 52 L160.5 55.2 L159.4 57.9 L158.1 60 L156.5 61.8 L154.6 63.1 L152.4 64.3 L149.8 65.2 L146.7 65.9 L143.2 66.4 L139.1 66.7Z" fill="#e4b86a" stroke="#92400e" stroke-width="1.15" stroke-linejoin="round"/>
+        <path d="M96 74 C86 70 78 60 80 48" fill="none" stroke="#fff7e6" stroke-width="1.35" stroke-linecap="round" opacity="0.8"/>
+        <path d="M148 70 C158 66 164 56 160 46" fill="none" stroke="#fff7e6" stroke-width="1.35" stroke-linecap="round" opacity="0.75"/>
+        <path d="M92 76 Q86 72 88 64" fill="none" stroke="#a16207" stroke-width="1.1" stroke-linecap="round"/>
+        <path d="M154 72 Q160 68 158 60" fill="none" stroke="#a16207" stroke-width="1.1" stroke-linecap="round"/>
+        <circle cx="104" cy="80" r="2.1" fill="#44403c" stroke="#1e293b" stroke-width="0.55"/>
+        <circle cx="142" cy="76" r="2.1" fill="#44403c" stroke="#1e293b" stroke-width="0.55"/>
+        <path d="M100 88 C116 96 140 96 154 86" fill="none" stroke="#b45309" stroke-width="4.4" stroke-linecap="round"/>
+        <path d="M100 88 C116 96 140 96 154 86" fill="none" stroke="#fbbf24" stroke-width="2.4" stroke-linecap="round"/>
+        <circle cx="112" cy="92" r="1.4" fill="#fef3c7" stroke="#b45309" stroke-width="0.4"/>
+        <circle cx="128" cy="95" r="1.55" fill="#fde68a" stroke="#b45309" stroke-width="0.4"/>
+        <circle cx="144" cy="91" r="1.35" fill="#fef3c7" stroke="#b45309" stroke-width="0.4"/>
+        ${companionEye(126, 102, 7)}
+        <ellipse cx="156" cy="112" rx="4.2" ry="3.2" fill="#1e293b"/>
+        <ellipse cx="154.4" cy="110.6" rx="1.2" ry="0.62" fill="#fff" opacity="0.45"/>
+        <path d="M140 102 L154 98 M142 106 L156 106 M140 110 L154 114" fill="none" stroke="#334155" stroke-width="1.15" stroke-linecap="round"/>
+        <path d="M136 118 C142 122 150 122 156 118" fill="#fb7185"/>
+        <path d="M136 118 C142 121.5 150 121.5 156 118" fill="none" stroke="#9f1239" stroke-width="1.05" stroke-linecap="round"/>`;
     case "royal_manta":
       return `${shadow}${companionMantaMarkup({ top: "#1e3a8a", stroke: "#0f172a", belly: "#fde68a", bellyMid: "#fbbf24", fin: "#2563eb", ...mantaOpts })}
         <path d="M62 74 C66 58 74 56 80 66 C86 56 94 58 98 74 C90 84 80 86 70 82 C64 80 62 76 62 74Z" fill="#fbbf24" stroke="#b45309" stroke-width="1.2"/>
@@ -1567,7 +1576,7 @@ const COMPANION_ART_FIT = {
   super_dolphin: { cx: 84, cy: 85, scale: 0.784 },
   chef_crab: { cx: 80, cy: 88, scale: 0.98 },
   disco_jelly: { cx: 80, cy: 96, scale: 1.28 },
-  viking_seal: { cx: 93, cy: 108, scale: 1.08 },
+  viking_seal: { cx: 108, cy: 100, scale: 0.96 },
   baby_whale: { cx: 98, cy: 98, scale: 0.98 },
   royal_manta: { cx: 80, cy: 90, scale: 1.0 },
   starfish: { cx: 80, cy: 84, scale: 1.18 },
