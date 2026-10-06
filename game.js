@@ -11949,6 +11949,7 @@ function updateDailyGameOverStatus(score, submitted = null, rows = dailyLeaderbo
 function updateDailyEventResetLine() {
   if (dailyEventReset) dailyEventReset.textContent = formatDailyResetCountdown(msUntilDailyReset());
   if (dailyCatchReset) dailyCatchReset.textContent = formatDailyResetCountdown(msUntilDailyReset());
+  syncSeaPalLadderSchedule();
 }
 
 function stopDailyEventCountdown() {
@@ -15089,6 +15090,23 @@ function isSeaPalLadderTournamentDay(date = new Date()) {
   return day === 1 || day === 5;
 }
 
+/** Last open/closed state painted for the ladder card, so midnight can hide or show it. */
+let seaPalLadderScheduleOpen = null;
+
+function syncSeaPalLadderSchedule() {
+  const open = isSeaPalLadderTournamentDay();
+  const card = document.getElementById("eventCardSeaPalLadder");
+  if (card) card.hidden = !open;
+  if (seaPalLadderScheduleOpen === null) {
+    seaPalLadderScheduleOpen = open;
+    return;
+  }
+  if (seaPalLadderScheduleOpen !== open) {
+    seaPalLadderScheduleOpen = open;
+    void refreshSeaPalLadderCard();
+  }
+}
+
 function getSeaPalLadderTournamentKey(date = new Date()) {
   return isSeaPalLadderTournamentDay(date) ? seaPalLadderDateKey(date) : "";
 }
@@ -15510,6 +15528,9 @@ async function refreshSeaPalLadderCard() {
   if (!card) return;
   ensureSeaPalLadderWeekRollover();
   const open = isSeaPalLadderTournamentDay();
+  seaPalLadderScheduleOpen = open;
+  card.hidden = !open;
+  if (!open) return;
   const weekKey = getSeaPalLadderWeekKey();
   const wins = Math.max(0, Math.floor(Number(gameMeta.seaPalLadderWins) || 0));
   const losses = Math.max(0, Math.floor(Number(gameMeta.seaPalLadderLosses) || 0));
@@ -15518,56 +15539,32 @@ async function refreshSeaPalLadderCard() {
   const rankLine = document.getElementById("seaPalLadderRankLine");
   const btn = document.getElementById("btnSeaPalLadderClimb");
   const boardTitle = document.getElementById("seaPalLadderBoardTitle");
-  const nextWhen = seaPalLadderNextOpenLabel();
-  if (weekLine) {
-    weekLine.textContent = open
-      ? `${formatSeaPalLadderDayLabel(weekKey)} · ends tonight`
-      : `Closed · opens ${nextWhen}`;
-  }
+  if (weekLine) weekLine.textContent = `${formatSeaPalLadderDayLabel(weekKey)} · ends tonight`;
   if (progress) {
-    progress.textContent = open
-      ? `Wins ${wins} / ${SEA_PAL_LADDER_GRAND_WINS} · Record ${wins}–${losses}`
-      : weekKey
-        ? `Last tournament ${wins}–${losses} · resets ${nextWhen}`
-        : "One-day tournaments on Mondays and Fridays.";
+    progress.textContent = `Wins ${wins} / ${SEA_PAL_LADDER_GRAND_WINS} · Record ${wins}–${losses}`;
   }
-  if (boardTitle) boardTitle.textContent = open ? "Today’s climbers" : "Last tournament";
-  syncSeaPalLadderClimbVisuals(open || weekKey ? wins : 0);
+  if (boardTitle) boardTitle.textContent = "Today’s climbers";
+  syncSeaPalLadderClimbVisuals(wins);
   renderSeaPalLadderPrizeTrack();
   const envIssue = onlineDuelEnvironmentIssue();
   refreshDuelTicketsForToday();
   const tickets = getDuelTicketCount();
   if (btn) {
-    if (!open) {
-      const weekday = getNextSeaPalLadderTournamentDate().toLocaleDateString(undefined, { weekday: "long" });
-      btn.disabled = true;
-      btn.textContent = `Opens ${weekday}`;
-    } else {
-      btn.disabled = Boolean(envIssue) || tickets <= 0;
-      if (envIssue) btn.textContent = "Use live site link";
-      else if (tickets <= 0) btn.textContent = "No tickets — visit shop";
-      else if (wins >= SEA_PAL_LADDER_GRAND_WINS) btn.textContent = "Climb for board rank";
-      else btn.textContent = "Climb the ladder";
-    }
+    btn.disabled = Boolean(envIssue) || tickets <= 0;
+    if (envIssue) btn.textContent = "Use live site link";
+    else if (tickets <= 0) btn.textContent = "No tickets — visit shop";
+    else if (wins >= SEA_PAL_LADDER_GRAND_WINS) btn.textContent = "Climb for board rank";
+    else btn.textContent = "Climb the ladder";
   }
   await fetchSeaPalLadderBoard(weekKey);
   renderSeaPalLadderBoard();
   const rank = seaPalLadderMyBoardRank();
   if (rankLine) {
-    if (!open && !weekKey) {
-      rankLine.textContent = "Board rank: — · opens Monday or Friday";
-    } else {
-      const rankPrefix = open ? "Board rank" : "Last tournament rank";
-      rankLine.textContent = rank
-        ? `${rankPrefix}: #${rank}`
-        : wins + losses > 0
-          ? open
-            ? `${rankPrefix}: outside top climbers — keep winning!`
-            : `${rankPrefix}: outside top climbers`
-          : open
-            ? "Board rank: — · climb to appear"
-            : "Last tournament rank: —";
-    }
+    rankLine.textContent = rank
+      ? `Board rank: #${rank}`
+      : wins + losses > 0
+        ? "Board rank: outside top climbers — keep winning!"
+        : "Board rank: — · climb to appear";
   }
 }
 
