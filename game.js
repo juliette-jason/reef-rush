@@ -1414,19 +1414,6 @@ function companionInnerMarkup(id, { omitMantaTail = false } = {}) {
         <ellipse cx="118" cy="94" rx="30" ry="26" fill="#d5e0ea" stroke="#334155" stroke-width="1.35"/>
         <ellipse cx="108" cy="88" rx="11" ry="7" fill="#f8fafc" opacity="0.45"/>
         <ellipse cx="102" cy="106" rx="3.2" ry="2.2" fill="#6b7f94" opacity="0.28"/>
-        <path d="M90 88 C92 62 106 44 120 40 C136 44 150 60 148 86 C134 94 104 94 90 88Z" fill="#5b6b7c" stroke="#1e293b" stroke-width="1.35"/>
-        <path d="M106 54 C118 48 132 50 142 60" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
-        <path d="M104 74 C90 70 76 62 68 48 C62 38 74 36 82 46 C90 56 100 68 110 74 C108 80 106 80 104 74Z" fill="#e8c27a" stroke="#92400e" stroke-width="1.15"/>
-        <path d="M134 74 C146 68 156 58 158 46 C160 38 150 36 144 46 C138 56 134 68 126 74 C128 80 132 78 134 74Z" fill="#e8c27a" stroke="#92400e" stroke-width="1.15"/>
-        <path d="M74 46 C78 42 82 44 80 48" fill="none" stroke="#fef3c7" stroke-width="1.2" stroke-linecap="round"/>
-        <path d="M156 44 C158 40 154 40 154 44" fill="none" stroke="#fef3c7" stroke-width="1.2" stroke-linecap="round"/>
-        <circle cx="108" cy="70" r="2.05" fill="#78716c" stroke="#1e293b" stroke-width="0.55"/>
-        <circle cx="132" cy="68" r="2.05" fill="#78716c" stroke="#1e293b" stroke-width="0.55"/>
-        <path d="M96 86 C112 94 136 94 148 84" fill="none" stroke="#b45309" stroke-width="4.6" stroke-linecap="round"/>
-        <path d="M96 86 C112 94 136 94 148 84" fill="none" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round"/>
-        <circle cx="108" cy="90" r="1.45" fill="#fef3c7" stroke="#b45309" stroke-width="0.4"/>
-        <circle cx="122" cy="93" r="1.6" fill="#fde68a" stroke="#b45309" stroke-width="0.4"/>
-        <circle cx="136" cy="90" r="1.4" fill="#fef3c7" stroke="#b45309" stroke-width="0.4"/>
         <ellipse cx="104" cy="108" rx="5.6" ry="3.5" fill="#fda4af" opacity="0.62"/>
         <ellipse cx="138" cy="106" rx="15" ry="11" fill="#f8fafc" stroke="#64748b" stroke-width="0.9"/>
         <path d="M136 102 L150 98 M138 106 L152 106 M136 110 L150 114" fill="none" stroke="#334155" stroke-width="1.2" stroke-linecap="round"/>
@@ -1580,7 +1567,7 @@ const COMPANION_ART_FIT = {
   super_dolphin: { cx: 84, cy: 85, scale: 0.784 },
   chef_crab: { cx: 80, cy: 88, scale: 0.98 },
   disco_jelly: { cx: 80, cy: 96, scale: 1.28 },
-  viking_seal: { cx: 104, cy: 96, scale: 1.0 },
+  viking_seal: { cx: 93, cy: 108, scale: 1.08 },
   baby_whale: { cx: 98, cy: 98, scale: 0.98 },
   royal_manta: { cx: 80, cy: 90, scale: 1.0 },
   starfish: { cx: 80, cy: 84, scale: 1.18 },
