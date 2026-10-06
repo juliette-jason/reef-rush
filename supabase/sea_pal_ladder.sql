@@ -1,5 +1,6 @@
--- Run in Supabase SQL editor for Reef Rush Sea Pal Weekly Ladder.
--- Monday-local week_key; climb by wins (20 wins = grand prize). Board ranks by wins, then fewest losses.
+-- Run in Supabase SQL editor for Reef Rush Sea Pal Ladder.
+-- One-day tournaments on Monday and Friday (local calendar). week_key is that day (YYYY-MM-DD).
+-- Climb by wins (20 wins = grand prize). Board ranks by wins, then fewest losses.
 
 create table if not exists public.sea_pal_ladder (
   id bigserial primary key,

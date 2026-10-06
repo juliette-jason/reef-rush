@@ -15057,7 +15057,7 @@ async function refreshEventsPanel() {
   void refreshSeaPalLadderCard();
 }
 
-/* ─── Sea Pal Weekly Ladder (Pocket Champs–style 20-win climb) ─── */
+/* ─── Sea Pal Ladder — one-day tournaments on Monday and Friday ─── */
 const SEA_PAL_LADDER_URL = `${SUPABASE_REST_URL}/sea_pal_ladder`;
 const SEA_PAL_LADDER_GRAND_WINS = 20;
 const SEA_PAL_LADDER_BOARD_LIMIT = 15;
@@ -15079,41 +15079,56 @@ let ladderRun = null;
 let seaPalLadderBoardRows = [];
 let seaPalLadderClaimInFlight = false;
 
-function getSeaPalLadderWeekKey(date = new Date()) {
-  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const day = d.getDay();
-  const mondayOffset = day === 0 ? -6 : 1 - day;
-  d.setDate(d.getDate() + mondayOffset);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+function seaPalLadderDateKey(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-/** Climbs only on Monday (1) and Friday (5), local time — same calendar as the week key. */
-function isSeaPalLadderOpenDay(date = new Date()) {
+/** Local Monday (1) and Friday (5). Each tournament lasts that calendar day. */
+function isSeaPalLadderTournamentDay(date = new Date()) {
   const day = date.getDay();
   return day === 1 || day === 5;
 }
 
-function nextSeaPalLadderOpenDayName(date = new Date()) {
-  const day = date.getDay();
-  if (day === 1 || day === 5) return "today";
-  const until = (target) => (target - day + 7) % 7;
-  return until(5) < until(1) ? "Friday" : "Monday";
+function getSeaPalLadderTournamentKey(date = new Date()) {
+  return isSeaPalLadderTournamentDay(date) ? seaPalLadderDateKey(date) : "";
 }
 
-function formatSeaPalLadderWeekLabel(weekKey = getSeaPalLadderWeekKey()) {
-  const parts = String(weekKey).split("-").map(Number);
-  if (parts.length !== 3 || parts.some((n) => !n)) return "This week";
-  const start = new Date(parts[0], parts[1] - 1, parts[2]);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 6);
-  const fmt = (dt) =>
-    dt.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-  return `${fmt(start)} – ${fmt(end)}`;
+function getNextSeaPalLadderTournamentDate(date = new Date()) {
+  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  for (let i = 1; i <= 7; i++) {
+    const next = new Date(start);
+    next.setDate(start.getDate() + i);
+    if (isSeaPalLadderTournamentDay(next)) return next;
+  }
+  return start;
+}
+
+function formatSeaPalLadderDayLabel(dayKey) {
+  const parts = String(dayKey || "").split("-").map(Number);
+  if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n) || n <= 0)) return "Tournament day";
+  const dt = new Date(parts[0], parts[1] - 1, parts[2]);
+  if (Number.isNaN(dt.getTime())) return "Tournament day";
+  return dt.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
+}
+
+function seaPalLadderNextOpenLabel(date = new Date()) {
+  return getNextSeaPalLadderTournamentDate(date).toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+/** Open tournament day, or the saved record while the ladder is closed. */
+function getSeaPalLadderWeekKey(date = new Date()) {
+  const todayKey = getSeaPalLadderTournamentKey(date);
+  if (todayKey) return todayKey;
+  return typeof gameMeta.seaPalLadderWeekKey === "string" ? gameMeta.seaPalLadderWeekKey : "";
 }
 
 function ensureSeaPalLadderWeekRollover() {
-  const weekKey = getSeaPalLadderWeekKey();
-  if (gameMeta.seaPalLadderWeekKey === weekKey) return false;
+  const weekKey = getSeaPalLadderTournamentKey();
+  if (!weekKey || gameMeta.seaPalLadderWeekKey === weekKey) return false;
   gameMeta.seaPalLadderWeekKey = weekKey;
   gameMeta.seaPalLadderWins = 0;
   gameMeta.seaPalLadderLosses = 0;
@@ -15128,13 +15143,15 @@ function ensureSeaPalLadderWeekRollover() {
 
 function getSeaPalLadderClaimedMap(weekKey = getSeaPalLadderWeekKey()) {
   ensureSeaPalLadderWeekRollover();
+  const key = weekKey || getSeaPalLadderWeekKey();
   if (!gameMeta.seaPalLadderClaimed || typeof gameMeta.seaPalLadderClaimed !== "object") {
     gameMeta.seaPalLadderClaimed = {};
   }
-  if (!gameMeta.seaPalLadderClaimed[weekKey] || typeof gameMeta.seaPalLadderClaimed[weekKey] !== "object") {
-    gameMeta.seaPalLadderClaimed[weekKey] = {};
+  if (!key) return {};
+  if (!gameMeta.seaPalLadderClaimed[key] || typeof gameMeta.seaPalLadderClaimed[key] !== "object") {
+    gameMeta.seaPalLadderClaimed[key] = {};
   }
-  return gameMeta.seaPalLadderClaimed[weekKey];
+  return gameMeta.seaPalLadderClaimed[key];
 }
 
 function isSeaPalLadderPrizeClaimed(winsThreshold, weekKey = getSeaPalLadderWeekKey()) {
@@ -15152,6 +15169,10 @@ function seaPalLadderIdentity() {
 }
 
 async function fetchSeaPalLadderBoard(weekKey = getSeaPalLadderWeekKey()) {
+  if (!weekKey) {
+    seaPalLadderBoardRows = [];
+    return [];
+  }
   try {
     const res = await fetchWithTimeout(
       `${SEA_PAL_LADDER_URL}?week_key=eq.${encodeURIComponent(weekKey)}` +
@@ -15176,7 +15197,8 @@ async function fetchSeaPalLadderBoard(weekKey = getSeaPalLadderWeekKey()) {
 
 async function syncSeaPalLadderRemote() {
   ensureSeaPalLadderWeekRollover();
-  const weekKey = getSeaPalLadderWeekKey();
+  const weekKey = getSeaPalLadderTournamentKey();
+  if (!weekKey) return;
   const identity = seaPalLadderIdentity();
   const body = {
     week_key: weekKey,
@@ -15209,6 +15231,11 @@ async function syncSeaPalLadderRemote() {
 }
 
 function applySeaPalLadderDuelResult(won) {
+  const todayKey = getSeaPalLadderTournamentKey();
+  if (!todayKey || (ladderRun?.weekKey && ladderRun.weekKey !== todayKey)) {
+    showToast("Sea Pal Ladder only counts on Mondays and Fridays.", 3200);
+    return;
+  }
   ensureSeaPalLadderWeekRollover();
   if (won) {
     gameMeta.seaPalLadderWins = Math.max(0, Math.floor(Number(gameMeta.seaPalLadderWins) || 0) + 1);
@@ -15229,7 +15256,7 @@ function applySeaPalLadderDuelResult(won) {
     }
   } else {
     showToast(
-      `Ladder loss recorded · still ${wins}/${SEA_PAL_LADDER_GRAND_WINS} wins this week`,
+      `Ladder loss recorded · still ${wins}/${SEA_PAL_LADDER_GRAND_WINS} wins today`,
       3000,
     );
   }
@@ -15332,15 +15359,19 @@ function claimSeaPalLadderPrize(winsThreshold) {
     return;
   }
   ensureSeaPalLadderWeekRollover();
+  if (!isSeaPalLadderTournamentDay()) {
+    showToast(`Claim Sea Pal Ladder prizes on tournament day. Next one opens ${seaPalLadderNextOpenLabel()}.`, 3200);
+    return;
+  }
   const prizeDef = SEA_PAL_LADDER_PRIZES.find((p) => p.wins === winsThreshold);
   if (!prizeDef) return;
   const wins = Math.max(0, Math.floor(Number(gameMeta.seaPalLadderWins) || 0));
   if (wins < prizeDef.wins) {
-    showToast(`Need ${prizeDef.wins} wins this week to claim that.`, 2800);
+    showToast(`Need ${prizeDef.wins} wins this tournament to claim that.`, 2800);
     return;
   }
   if (isSeaPalLadderPrizeClaimed(prizeDef.wins)) {
-    showToast("Already claimed this week.", 2200);
+    showToast("Already claimed this tournament.", 2200);
     return;
   }
   seaPalLadderClaimInFlight = true;
@@ -15363,6 +15394,7 @@ function renderSeaPalLadderPrizeTrack() {
   const list = document.getElementById("seaPalLadderPrizes");
   if (!list) return;
   ensureSeaPalLadderWeekRollover();
+  const open = isSeaPalLadderTournamentDay();
   const wins = Math.max(0, Math.floor(Number(gameMeta.seaPalLadderWins) || 0));
   list.innerHTML = "";
   /* Top of the ladder = grand prize (highest wins first). */
@@ -15375,7 +15407,7 @@ function renderSeaPalLadderPrizeTrack() {
     li.className = "sea-pal-ladder__prize";
     li.style.setProperty("--rung-i", String(idx));
     if (claimed) li.classList.add("is-claimed");
-    else if (unlocked) li.classList.add("is-ready");
+    else if (unlocked && open) li.classList.add("is-ready");
     else li.classList.add("is-locked");
     if (!currentMarked && !unlocked) {
       li.classList.add("is-current");
@@ -15400,9 +15432,12 @@ function renderSeaPalLadderPrizeTrack() {
     if (claimed) {
       btn.textContent = "Claimed";
       btn.disabled = true;
-    } else if (unlocked) {
+    } else if (unlocked && open) {
       btn.textContent = "Claim";
       btn.addEventListener("click", () => claimSeaPalLadderPrize(prize.wins));
+    } else if (!open) {
+      btn.textContent = "Closed";
+      btn.disabled = true;
     } else {
       btn.textContent = "Climb";
       btn.disabled = true;
@@ -15436,7 +15471,11 @@ function renderSeaPalLadderBoard() {
   if (!seaPalLadderBoardRows.length) {
     const empty = document.createElement("li");
     empty.className = "leaderboard__empty";
-    empty.textContent = "No climbers yet this week — win a ladder duel to appear here.";
+    empty.textContent = isSeaPalLadderTournamentDay()
+      ? "No climbers yet today — win a ladder duel to appear here."
+      : getSeaPalLadderWeekKey()
+        ? "No climbers in the last tournament."
+        : "Climbers show up on Mondays and Fridays.";
     board.appendChild(empty);
     return;
   }
@@ -15470,6 +15509,7 @@ async function refreshSeaPalLadderCard() {
   const card = document.getElementById("eventCardSeaPalLadder");
   if (!card) return;
   ensureSeaPalLadderWeekRollover();
+  const open = isSeaPalLadderTournamentDay();
   const weekKey = getSeaPalLadderWeekKey();
   const wins = Math.max(0, Math.floor(Number(gameMeta.seaPalLadderWins) || 0));
   const losses = Math.max(0, Math.floor(Number(gameMeta.seaPalLadderLosses) || 0));
@@ -15477,24 +15517,31 @@ async function refreshSeaPalLadderCard() {
   const progress = document.getElementById("seaPalLadderProgress");
   const rankLine = document.getElementById("seaPalLadderRankLine");
   const btn = document.getElementById("btnSeaPalLadderClimb");
-  const openToday = isSeaPalLadderOpenDay();
+  const boardTitle = document.getElementById("seaPalLadderBoardTitle");
+  const nextWhen = seaPalLadderNextOpenLabel();
   if (weekLine) {
-    weekLine.textContent = openToday
-      ? `Week of ${formatSeaPalLadderWeekLabel(weekKey)} · open today · resets Monday`
-      : `Week of ${formatSeaPalLadderWeekLabel(weekKey)} · climbs ${nextSeaPalLadderOpenDayName()} · resets Monday`;
+    weekLine.textContent = open
+      ? `${formatSeaPalLadderDayLabel(weekKey)} · ends tonight`
+      : `Closed · opens ${nextWhen}`;
   }
   if (progress) {
-    progress.textContent = `Wins ${wins} / ${SEA_PAL_LADDER_GRAND_WINS} · Record ${wins}–${losses}`;
+    progress.textContent = open
+      ? `Wins ${wins} / ${SEA_PAL_LADDER_GRAND_WINS} · Record ${wins}–${losses}`
+      : weekKey
+        ? `Last tournament ${wins}–${losses} · resets ${nextWhen}`
+        : "One-day tournaments on Mondays and Fridays.";
   }
-  syncSeaPalLadderClimbVisuals(wins);
+  if (boardTitle) boardTitle.textContent = open ? "Today’s climbers" : "Last tournament";
+  syncSeaPalLadderClimbVisuals(open || weekKey ? wins : 0);
   renderSeaPalLadderPrizeTrack();
   const envIssue = onlineDuelEnvironmentIssue();
   refreshDuelTicketsForToday();
   const tickets = getDuelTicketCount();
   if (btn) {
-    if (!openToday) {
+    if (!open) {
+      const weekday = getNextSeaPalLadderTournamentDate().toLocaleDateString(undefined, { weekday: "long" });
       btn.disabled = true;
-      btn.textContent = `Opens ${nextSeaPalLadderOpenDayName()}`;
+      btn.textContent = `Opens ${weekday}`;
     } else {
       btn.disabled = Boolean(envIssue) || tickets <= 0;
       if (envIssue) btn.textContent = "Use live site link";
@@ -15507,20 +15554,26 @@ async function refreshSeaPalLadderCard() {
   renderSeaPalLadderBoard();
   const rank = seaPalLadderMyBoardRank();
   if (rankLine) {
-    rankLine.textContent = rank
-      ? `Board rank: #${rank}`
-      : wins + losses > 0
-        ? "Board rank: outside top climbers — keep winning!"
-        : "Board rank: — · climb to appear";
+    if (!open && !weekKey) {
+      rankLine.textContent = "Board rank: — · opens Monday or Friday";
+    } else {
+      const rankPrefix = open ? "Board rank" : "Last tournament rank";
+      rankLine.textContent = rank
+        ? `${rankPrefix}: #${rank}`
+        : wins + losses > 0
+          ? open
+            ? `${rankPrefix}: outside top climbers — keep winning!`
+            : `${rankPrefix}: outside top climbers`
+          : open
+            ? "Board rank: — · climb to appear"
+            : "Last tournament rank: —";
+    }
   }
 }
 
 function startSeaPalLadderClimb() {
-  if (!isSeaPalLadderOpenDay()) {
-    showToast(
-      `Sea Pal Ladder climbs are only on Mondays and Fridays — next climb ${nextSeaPalLadderOpenDayName()}.`,
-      3600,
-    );
+  if (!isSeaPalLadderTournamentDay()) {
+    showToast(`Sea Pal Ladder is a one-day tournament. Next one opens ${seaPalLadderNextOpenLabel()}.`, 3600);
     refreshSeaPalLadderCard();
     return;
   }
@@ -24437,7 +24490,7 @@ function openEventPrep(kind) {
     if (eventPrepTitle) eventPrepTitle.textContent = "Climb for wins";
     if (eventPrepDetail) {
       eventPrepDetail.textContent =
-        `Mondays & Fridays · ${w}/${SEA_PAL_LADDER_GRAND_WINS} wins · live rival first, COM if none · spends 1 duel ticket.`;
+        `Today’s ladder · ${w}/${SEA_PAL_LADDER_GRAND_WINS} wins · live rival first, COM if none · spends 1 duel ticket.`;
     }
   } else {
     if (eventPrepEyebrow) eventPrepEyebrow.textContent = copy.eyebrow;
