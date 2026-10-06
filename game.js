@@ -16164,6 +16164,7 @@ const COM_FIRST_NAMES = [
   "Jamie",
   "Robin",
   "Ben",
+  "Bob",
   "Chloe",
   "Daniel",
   "Elena",
@@ -16358,6 +16359,27 @@ function pickComNamePart(list, rng) {
   return list[Math.floor(rng() * list.length)] || list[0];
 }
 
+/**
+ * Plain first names outnumber first-and-last names five to one
+ * (Bob, not Bob Smith). Handles and titles stay a smaller slice.
+ */
+const COM_PLAIN_NAME_SHARE = 0.53;
+const COM_FIRST_NAME_WEIGHT = 5;
+const COM_FULL_NAME_WEIGHT = 1;
+
+function rollComPlainOrFullName(first, last, mid, roll) {
+  const plainWeight = COM_FIRST_NAME_WEIGHT + COM_FULL_NAME_WEIGHT;
+  const firstOnlyUntil = COM_PLAIN_NAME_SHARE * (COM_FIRST_NAME_WEIGHT / plainWeight);
+  const fullNameUntil = COM_PLAIN_NAME_SHARE;
+  if (roll < firstOnlyUntil) return first;
+  if (roll < fullNameUntil) {
+    const midCut = firstOnlyUntil + (fullNameUntil - firstOnlyUntil) * 0.82;
+    if (roll < midCut) return `${first} ${last}`;
+    return `${first} ${mid}. ${last}`;
+  }
+  return null;
+}
+
 /** Name-heavy handles that read like real people, with little theme filler. */
 function rollComPlayerNameFromRng(rng = Math.random) {
   const first = pickComNamePart(COM_FIRST_NAMES, rng);
@@ -16370,28 +16392,30 @@ function rollComPlayerNameFromRng(rng = Math.random) {
   const suffix = pickComNamePart(COM_ROLE_SUFFIXES, rng);
   const mid = pickComNamePart(COM_MIDDLE_INITIALS, rng);
   const roll = rng();
-  if (roll < 0.34) return `${first} ${last}`;
-  if (roll < 0.46) return `${first} ${mid}. ${last}`;
-  if (roll < 0.58) return pickComNamePart(COM_NATURAL_HANDLES, rng);
-  if (roll < 0.68) return `${prefix} ${first}`;
-  if (roll < 0.78) return `${first} ${suffix}`;
-  if (roll < 0.86) return `${first} the ${title}`;
-  if (roll < 0.93) return first;
+  const plain = rollComPlainOrFullName(first, last, mid, roll);
+  if (plain) return plain;
+  if (roll < 0.65) return pickComNamePart(COM_NATURAL_HANDLES, rng);
+  if (roll < 0.75) return `${prefix} ${first}`;
+  if (roll < 0.85) return `${first} ${suffix}`;
+  if (roll < 0.93) return `${first} the ${title}`;
   return `the ${title}`;
 }
 
 function rollUniqueComPlayerName(rng, usedNames, attempts = 28) {
   const used = usedNames instanceof Set ? usedNames : new Set();
+  const firstOnlyCut = COM_FIRST_NAME_WEIGHT / (COM_FIRST_NAME_WEIGHT + COM_FULL_NAME_WEIGHT);
   for (let attempt = 0; attempt < attempts; attempt++) {
     let name = rollComPlayerNameFromRng(rng);
     if (attempt > 12) {
-      name = `${pickComNamePart(COM_FIRST_NAMES, rng)} ${pickComNamePart(COM_LAST_NAMES, rng)}`;
-    } else if (attempt > 20) {
-      name = `${pickComNamePart(COM_ROLE_PREFIXES, rng)} ${pickComNamePart(COM_FIRST_NAMES, rng)}`;
+      const first = pickComNamePart(COM_FIRST_NAMES, rng);
+      const last = pickComNamePart(COM_LAST_NAMES, rng);
+      name = rng() < firstOnlyCut ? first : `${first} ${last}`;
     }
     if (!used.has(name.toLowerCase())) return name;
   }
-  return `${pickComNamePart(COM_FIRST_NAMES, rng)} ${pickComNamePart(COM_LAST_NAMES, rng)}`;
+  const first = pickComNamePart(COM_FIRST_NAMES, rng);
+  if (rng() < firstOnlyCut && !used.has(first.toLowerCase())) return first;
+  return `${first} ${pickComNamePart(COM_LAST_NAMES, rng)}`;
 }
 
 function rollComPlayerName() {
