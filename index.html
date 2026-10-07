@@ -33,12 +33,12 @@
       rel="stylesheet"
     />
     <link rel="canonical" href="https://reef-rush.com/" />
-    <link rel="icon" href="favicon.ico?v=circle" sizes="any" />
-    <link rel="icon" href="assets/rr-icon-48.png" type="image/png" sizes="48x48" />
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/rr-icon-32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="assets/rr-icon-16.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=circle" />
-    <link rel="manifest" href="site.webmanifest?v=circle" />
+    <link rel="icon" href="assets/favicon-48.png?v=transparent-logo" type="image/png" sizes="48x48" />
+    <link rel="icon" href="assets/favicon.ico?v=transparent-logo" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png?v=transparent-logo" />
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png?v=transparent-logo" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=transparent-logo" />
+    <link rel="manifest" href="site.webmanifest?v=transparent-logo" />
     <link rel="stylesheet" href="styles.css?v=2026-10-05-feedback-agent2" />
   </head>
   <body>
@@ -2584,13 +2584,13 @@
                 </summary>
                 <div class="event-card__blurb event-card__blurb--stack">
                   <p class="event-card__hint">
-                    One-day tournaments on Monday and Friday. Duel live rivals — COM if nobody’s waiting. Wins move the prize track;
+                    Weekly climb (Monday reset). Duel live rivals — COM if nobody’s waiting. Wins move the prize track;
                     <strong>20 wins</strong> unlocks the grand prize. Uses a duel ticket each match.
                   </p>
                 </div>
               </details>
             </div>
-            <p id="seaPalLadderWeekLine" class="event-card__reset">Mondays &amp; Fridays</p>
+            <p id="seaPalLadderWeekLine" class="event-card__reset">Week resets Monday</p>
           </header>
           <div class="sea-pal-ladder__meter" aria-hidden="true">
             <div id="seaPalLadderMeterFill" class="sea-pal-ladder__meter-fill"></div>
@@ -2622,7 +2622,7 @@
           </div>
           <button type="button" id="btnSeaPalLadderClimb" class="btn event-card__play">Climb the ladder</button>
           <div class="leaderboard-block leaderboard-block--compact">
-            <h4 id="seaPalLadderBoardTitle" class="leaderboard-block__title">Today’s climbers</h4>
+            <h4 class="leaderboard-block__title">This week’s climbers</h4>
             <ol id="seaPalLadderBoard" class="leaderboard leaderboard--daily" aria-label="Sea Pal Ladder standings"></ol>
           </div>
         </article>
@@ -3626,6 +3626,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-10-06-seal-flippers" defer></script>
+    <script src="game.js?v=2026-10-05-viking-seal" defer></script>
   </body>
 </html>
