@@ -6017,6 +6017,122 @@ button.is-tourney-blocked {
   line-height: 1.4;
 }
 
+.duel-spectator__loading:not([hidden]) {
+  display: grid;
+  place-items: center;
+  padding: 8px 0 4px;
+}
+
+/* --- Fish swirl loader (Reef Rush style) --- */
+.fish-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 8px 6px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.fish-loader__stage {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(56, 189, 248, 0.18), transparent 55%),
+    radial-gradient(circle at 50% 50%, rgba(8, 47, 73, 0.55), rgba(2, 12, 27, 0.15) 70%, transparent 72%);
+}
+
+.fish-loader__orbit {
+  position: absolute;
+  inset: 0;
+  animation: fishLoaderSpin 2.75s linear infinite;
+}
+
+.fish-loader__fish {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 30px;
+  height: 18px;
+  margin: -9px 0 0 -15px;
+  transform: rotate(var(--fish-a, 0deg)) translateY(-34px) rotate(90deg);
+  transform-origin: 50% 50%;
+}
+
+.fish-loader__fish svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 1px 1px rgba(2, 12, 27, 0.35));
+}
+
+.fish-loader__bubbles {
+  position: absolute;
+  inset: 8%;
+  pointer-events: none;
+}
+
+.fish-loader__bubble {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid rgba(186, 230, 253, 0.75);
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.85), rgba(125, 211, 252, 0.25) 55%, rgba(14, 165, 233, 0.08));
+  animation: fishLoaderBubble 2.4s ease-in infinite;
+  opacity: 0.85;
+}
+
+.fish-loader__bubble--1 { width: 7px; height: 7px; left: 18%; bottom: 22%; animation-delay: 0s; }
+.fish-loader__bubble--2 { width: 5px; height: 5px; left: 72%; bottom: 18%; animation-delay: -0.5s; }
+.fish-loader__bubble--3 { width: 9px; height: 9px; left: 48%; bottom: 10%; animation-delay: -1.1s; }
+.fish-loader__bubble--4 { width: 4px; height: 4px; left: 30%; bottom: 36%; animation-delay: -1.6s; }
+.fish-loader__bubble--5 { width: 6px; height: 6px; left: 62%; bottom: 40%; animation-delay: -0.9s; }
+.fish-loader__bubble--6 { width: 5px; height: 5px; left: 42%; bottom: 28%; animation-delay: -2s; }
+
+.fish-loader__label {
+  margin: 0;
+  max-width: 16rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  color: rgba(186, 230, 253, 0.95);
+}
+
+.leaderboard__empty--loading {
+  display: grid;
+  place-items: center;
+  padding: 14px 8px !important;
+  list-style: none;
+}
+
+.feedback-inbox-list .fish-loader {
+  margin: 12px auto;
+}
+
+@keyframes fishLoaderSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fishLoaderBubble {
+  0% { transform: translateY(8px) scale(0.7); opacity: 0; }
+  20% { opacity: 0.9; }
+  100% { transform: translateY(-42px) scale(1.05); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fish-loader__orbit,
+  .fish-loader__bubble {
+    animation: none;
+  }
+  .fish-loader__orbit {
+    transform: rotate(18deg);
+  }
+}
+
 .duel-spectator__list {
   list-style: none;
   margin: 0;

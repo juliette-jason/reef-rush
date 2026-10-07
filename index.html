@@ -39,7 +39,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png?v=transparent-logo" />
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=transparent-logo" />
     <link rel="manifest" href="site.webmanifest?v=transparent-logo" />
-    <link rel="stylesheet" href="styles.css?v=2026-10-05-feedback-agent2" />
+    <link rel="stylesheet" href="styles.css?v=2026-10-07-fish-loader" />
   </head>
   <body>
     <div id="app" class="app--splash">
@@ -2437,7 +2437,7 @@
           <button type="button" id="btnStartDuel" class="btn event-card__play">Find duel rival</button>
           <div id="duelSpectatorSection" class="duel-spectator">
             <h4 class="duel-spectator__title">Watch live duels</h4>
-            <p id="duelSpectatorLoading" class="duel-spectator__loading" hidden>Loading live matches…</p>
+            <div id="duelSpectatorLoading" class="duel-spectator__loading" hidden aria-live="polite"></div>
             <p id="duelSpectatorEmpty" class="duel-spectator__empty" hidden>No live duels right now — check back soon.</p>
             <ul id="duelSpectatorList" class="duel-spectator__list" aria-label="Live duel matches"></ul>
             <button type="button" id="btnRefreshDuelSpectator" class="btn btn--secondary btn--small duel-spectator__refresh">Refresh list</button>
@@ -3626,6 +3626,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="game.js?v=2026-10-05-viking-seal" defer></script>
+    <script src="game.js?v=2026-10-07-fish-loader" defer></script>
   </body>
 </html>

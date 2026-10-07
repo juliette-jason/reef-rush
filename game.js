@@ -11099,6 +11099,62 @@ function leaderboardEmptyMessage() {
   return leaderboardLoading ? "Loading global scores..." : "No global scores yet — be the first.";
 }
 
+/** Compact Reef Rush splash-style fish for the swirl loader. */
+const FISH_LOADER_FISH_SVGS = [
+  // Hero blue
+  `<svg viewBox="-40 -20 80 40" aria-hidden="true"><path d="M-28 0 L-46 -10 L-42 0 L-46 10 Z" fill="#0369a1"/><path d="M-6 -12 Q2 -24 14 -12" fill="#0284c7"/><path d="M-4 12 Q4 24 12 10" fill="#0284c7"/><ellipse cx="0" cy="0" rx="28" ry="13" fill="#38bdf8"/><ellipse cx="6" cy="-2" rx="14" ry="7" fill="#bae6fd" opacity="0.4"/><circle cx="16" cy="-2" r="2.6" fill="#0f172a"/><circle cx="16.8" cy="-2.8" r="0.9" fill="#fff"/></svg>`,
+  // Yellow minnow
+  `<svg viewBox="-18 -8 36 16" aria-hidden="true"><path d="M-10 0 L-16 -4 L-15 0 L-16 4 Z" fill="#d97706"/><ellipse cx="0" cy="0" rx="9" ry="4.2" fill="#fde68a"/><ellipse cx="2" cy="-1" rx="5" ry="2.2" fill="#fef9c3" opacity="0.75"/><circle cx="5" cy="-1" r="1.05" fill="#1e293b"/><circle cx="5.4" cy="-1.4" r="0.35" fill="#fff"/></svg>`,
+  // Clownfish
+  `<svg viewBox="-28 -12 56 24" aria-hidden="true"><path d="M-16 0 L-28 -7 L-24 0 L-28 7 Z" fill="#c2410c"/><ellipse cx="0" cy="0" rx="18" ry="9" fill="#f97316"/><path d="M-6 -8 Q-6 8 -4 8" fill="none" stroke="#fff" stroke-width="3.2"/><path d="M5 -8 Q5 8 7 8" fill="none" stroke="#fff" stroke-width="2.8"/><circle cx="11" cy="-2" r="1.8" fill="#0f172a"/><circle cx="11.6" cy="-2.5" r="0.55" fill="#fff"/></svg>`,
+  // Angelfish
+  `<svg viewBox="-22 -24 44 48" aria-hidden="true"><path d="M-4 -16 L0 -28 L6 -14" fill="#0ea5e9"/><path d="M-4 16 L0 28 L6 14" fill="#0ea5e9"/><path d="M-12 0 L-22 -7 L-19 0 L-22 7 Z" fill="#0284c7"/><ellipse cx="0" cy="0" rx="12" ry="16" fill="#e0f2fe"/><path d="M-3 -10 L-3 10" stroke="#f97316" stroke-width="2"/><path d="M4 -11 L4 11" stroke="#f97316" stroke-width="1.6"/><circle cx="6" cy="-2" r="1.7" fill="#0f172a"/><circle cx="6.5" cy="-2.5" r="0.5" fill="#fff"/></svg>`,
+  // Soft gold minnow
+  `<svg viewBox="-16 -7 32 14" aria-hidden="true"><path d="M-9 0 L-14 -3.5 L-13 0 L-14 3.5 Z" fill="#b45309"/><ellipse cx="0" cy="0" rx="8" ry="3.5" fill="#fef08a"/><circle cx="4.2" cy="-0.7" r="0.95" fill="#1e293b"/><circle cx="4.55" cy="-1.05" r="0.3" fill="#fff"/></svg>`,
+  // Teal logo-ish
+  `<svg viewBox="-34 -18 68 36" aria-hidden="true"><path d="M-24 0 L-38 -9 L-34 0 L-38 9 Z" fill="#0e7490"/><path d="M-4 -10 Q4 -20 12 -10" fill="#22d3ee"/><ellipse cx="0" cy="0" rx="24" ry="12" fill="#2dd4bf"/><ellipse cx="4" cy="-2" rx="12" ry="6" fill="#a5f3fc" opacity="0.45"/><path d="M-10 1 Q-2 5 8 2" fill="none" stroke="#0f766e" stroke-width="1.1" opacity="0.55"/><circle cx="14" cy="-2" r="2.4" fill="#0f172a"/><circle cx="14.7" cy="-2.7" r="0.8" fill="#fff"/></svg>`,
+];
+
+function fishLoaderMarkup(label = "Loading…") {
+  const safeLabel = String(label || "Loading…");
+  const fish = FISH_LOADER_FISH_SVGS.map(
+    (svg, i) =>
+      `<span class="fish-loader__fish" style="--fish-a:${i * 60}deg">${svg}</span>`,
+  ).join("");
+  const bubbles = [1, 2, 3, 4, 5, 6]
+    .map((n) => `<span class="fish-loader__bubble fish-loader__bubble--${n}"></span>`)
+    .join("");
+  return `<div class="fish-loader" role="status" aria-live="polite" aria-label="${safeLabel
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")}">
+  <div class="fish-loader__stage" aria-hidden="true">
+    <div class="fish-loader__bubbles">${bubbles}</div>
+    <div class="fish-loader__orbit">${fish}</div>
+  </div>
+  <p class="fish-loader__label">${safeLabel
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")}</p>
+</div>`;
+}
+
+function mountFishLoader(el, label = "Loading…") {
+  if (!el) return;
+  el.innerHTML = fishLoaderMarkup(label);
+}
+
+function showFishLoaderHost(el, label = "Loading…") {
+  if (!el) return;
+  el.hidden = false;
+  mountFishLoader(el, label);
+}
+
+function hideFishLoaderHost(el) {
+  if (!el) return;
+  el.hidden = true;
+  el.innerHTML = "";
+}
+
 let leaderboardBackendMissing = false;
 
 function leaderboardHeaders(extra = {}) {
@@ -11483,7 +11539,12 @@ function renderLeaderboardOl(el, rows = loadLeaderboard()) {
   if (rows.length === 0) {
     const li = document.createElement("li");
     li.className = "leaderboard__empty";
-    li.textContent = leaderboardEmptyMessage();
+    if (leaderboardLoading && !leaderboardBackendMissing) {
+      li.classList.add("leaderboard__empty--loading");
+      mountFishLoader(li, "Loading global scores…");
+    } else {
+      li.textContent = leaderboardEmptyMessage();
+    }
     el.appendChild(li);
     return;
   }
@@ -11849,11 +11910,14 @@ function renderDailyLeaderboardOl(el, rows = dailyLeaderboardRows) {
   if (!rows.length) {
     const li = document.createElement("li");
     li.className = "leaderboard__empty";
-    li.textContent = dailyLeaderboardLoading
-      ? "Loading today's scores..."
-      : dailyLeaderboardRemoteOk
+    if (dailyLeaderboardLoading) {
+      li.classList.add("leaderboard__empty--loading");
+      mountFishLoader(li, "Loading today’s scores…");
+    } else {
+      li.textContent = dailyLeaderboardRemoteOk
         ? "No scores yet today — play a reef run to climb the board!"
         : "Can't reach today's board — check your connection and reopen Events.";
+    }
     el.appendChild(li);
     return;
   }
@@ -16536,12 +16600,12 @@ function formatDuelSpectatorMatchLabel(row) {
 
 async function refreshDuelSpectatorList() {
   if (!duelSpectatorList) return;
-  if (duelSpectatorLoading) duelSpectatorLoading.hidden = false;
+  showFishLoaderHost(duelSpectatorLoading, "Loading live matches…");
   if (duelSpectatorEmpty) duelSpectatorEmpty.hidden = true;
   duelSpectatorList.innerHTML = "";
   try {
     const matches = await fetchActiveDuelMatchesForSpectator();
-    if (duelSpectatorLoading) duelSpectatorLoading.hidden = true;
+    hideFishLoaderHost(duelSpectatorLoading);
     if (!matches.length) {
       if (duelSpectatorEmpty) duelSpectatorEmpty.hidden = false;
       return;
@@ -16562,7 +16626,7 @@ async function refreshDuelSpectatorList() {
     }
   } catch (err) {
     console.warn(err);
-    if (duelSpectatorLoading) duelSpectatorLoading.hidden = true;
+    hideFishLoaderHost(duelSpectatorLoading);
     if (duelSpectatorEmpty) {
       duelSpectatorEmpty.hidden = false;
       duelSpectatorEmpty.textContent = "Couldn't load live duels — try again.";
@@ -32914,7 +32978,8 @@ function syncFeedbackInboxTabs() {
 async function loadFeedbackInbox() {
   if (!isFeedbackAdminUnlocked()) return;
   const loadId = ++feedbackInboxLoadId;
-  setFeedbackInboxStatus("Loading…", "info");
+  setFeedbackInboxStatus("");
+  if (feedbackInboxList) mountFishLoader(feedbackInboxList, "Loading feedback…");
   try {
     const rows = await fetchGameFeedbackInbox(feedbackInboxFilter);
     if (loadId !== feedbackInboxLoadId) return;
@@ -32955,10 +33020,12 @@ async function approveGameFeedback(id) {
   const row = feedbackInboxRows.find((r) => String(r.id) === String(id));
   if (!row) return;
   feedbackInboxActionLock = true;
-  setFeedbackInboxStatus("Starting Cursor…", "info");
+  setFeedbackInboxStatus("");
+  if (feedbackInboxList) mountFishLoader(feedbackInboxList, "Starting Cursor…");
   try {
     const adminCode = await ensureFeedbackAdminCode();
     if (!adminCode) {
+      renderFeedbackInboxList();
       setFeedbackInboxStatus("Owner code needed to start coding.");
       showToast("Owner code needed to start coding.", 2800);
       return;
@@ -32995,6 +33062,7 @@ async function approveGameFeedback(id) {
     await loadFeedbackInbox();
     void refreshFeedbackInboxBadge();
   } catch (err) {
+    renderFeedbackInboxList();
     const tip = err?.message || "Couldn’t approve.";
     setFeedbackInboxStatus(tip);
     showToast(tip, 4200);
@@ -33008,10 +33076,12 @@ async function dismissGameFeedback(id) {
   const row = feedbackInboxRows.find((r) => String(r.id) === String(id));
   if (!row) return;
   feedbackInboxActionLock = true;
-  setFeedbackInboxStatus("Dismissing…", "info");
+  setFeedbackInboxStatus("");
+  if (feedbackInboxList) mountFishLoader(feedbackInboxList, "Dismissing…");
   try {
     const adminCode = await ensureFeedbackAdminCode();
     if (!adminCode) {
+      renderFeedbackInboxList();
       setFeedbackInboxStatus("Owner code needed to dismiss.");
       showToast("Owner code needed to dismiss.", 2800);
       return;
@@ -33037,6 +33107,7 @@ async function dismissGameFeedback(id) {
     await loadFeedbackInbox();
     void refreshFeedbackInboxBadge();
   } catch (err) {
+    renderFeedbackInboxList();
     const tip = err?.message || "Couldn’t dismiss.";
     setFeedbackInboxStatus(tip);
     showToast(tip, 3600);
