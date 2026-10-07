@@ -66,7 +66,7 @@ const FISH_SPECIES = [
   { id: "striped_bass", name: "Striped Bass", rarity: "uncommon", size: "medium", morph: "bass", speed: 1.12, hue: 142, colors: ["#4ade80", "#14532d", "#bbf7d0"] },
   { id: "atlantic_cod", name: "Atlantic Cod", rarity: "uncommon", size: "medium", morph: "cod", speed: 0.78, hue: 205, colors: ["#cbd5e1", "#475569", "#f8fafc"] },
   { id: "red_snapper", name: "Red Snapper", rarity: "uncommon", size: "medium", morph: "snapper", speed: 0.95, hue: 350, colors: ["#f87171", "#7f1d1d", "#fecaca"] },
-  { id: "coral_trout_gbr", name: "Coral Trout", rarity: "uncommon", size: "medium", morph: "snapper", speed: 0.88, hue: 12, colors: ["#fb7185", "#881337", "#ffe4e6"] },
+  { id: "coral_trout_gbr", name: "Coral Trout", rarity: "uncommon", size: "medium", morph: "snapper", speed: 0.88, hue: 12, colors: ["#e85d4c", "#7a1f18", "#fde8c8"] },
   { id: "european_seabass", name: "European Seabass", rarity: "uncommon", size: "medium", morph: "bass", speed: 1.08, hue: 160, colors: ["#5eead4", "#134e4a", "#ccfbf1"] },
   { id: "queen_angelfish", name: "Queen Angelfish", rarity: "uncommon", size: "small", morph: "angelfish", speed: 0.98, hue: 200, colors: ["#e0f2fe", "#0284c7", "#f97316"] },
   { id: "lined_seahorse", name: "Lined Seahorse", rarity: "uncommon", size: "small", morph: "seahorse", speed: 0.48, hue: 32, colors: ["#fdba74", "#b45309", "#ffedd5"] },
@@ -9755,25 +9755,26 @@ const REEFS = [
       "sea_otter",
     ],
     visuals: {
-      gradient: ["#6ebfd0", "#2a8f9c", "#126878", "#053848"],
-      shaft: ["rgba(255, 248, 220, 0.16)", "rgba(255, 248, 220, 0)"],
-      silhouette: "rgba(6, 55, 58, 0.48)",
+      /* Clearer tropical GBR water — style preview (more photographic than cartoon). */
+      gradient: ["#7ec8d9", "#3aa8b8", "#1a6f82", "#0a3d4a", "#042832"],
+      shaft: ["rgba(255, 252, 230, 0.22)", "rgba(200, 240, 255, 0.06)", "rgba(255, 248, 220, 0)"],
+      silhouette: "rgba(4, 48, 52, 0.55)",
       corals: [
-        { x: 0.04, c: "#d4a574", h: 0.4 },
-        { x: 0.1, c: "#2a9d8f", h: 0.34 },
-        { x: 0.16, c: "#e07a5f", h: 0.38 },
-        { x: 0.24, c: "#3d8b7a", h: 0.31 },
-        { x: 0.32, c: "#e9c46a", h: 0.36 },
-        { x: 0.4, c: "#4a9b8e", h: 0.29 },
-        { x: 0.49, c: "#c97b63", h: 0.42 },
-        { x: 0.58, c: "#5aa9a0", h: 0.33 },
-        { x: 0.66, c: "#d4a017", h: 0.39 },
-        { x: 0.74, c: "#2f855a", h: 0.3 },
-        { x: 0.82, c: "#c0846a", h: 0.41 },
-        { x: 0.9, c: "#3b8c80", h: 0.35 },
-        { x: 0.96, c: "#d97706", h: 0.28 },
+        { x: 0.04, c: "#c4785a", h: 0.42 },
+        { x: 0.1, c: "#1f8a7a", h: 0.36 },
+        { x: 0.16, c: "#d4654a", h: 0.4 },
+        { x: 0.24, c: "#2f9b88", h: 0.33 },
+        { x: 0.32, c: "#e0b85c", h: 0.38 },
+        { x: 0.4, c: "#3d8f7e", h: 0.31 },
+        { x: 0.49, c: "#b86a52", h: 0.44 },
+        { x: 0.58, c: "#4aa99a", h: 0.35 },
+        { x: 0.66, c: "#c9a227", h: 0.4 },
+        { x: 0.74, c: "#267a58", h: 0.32 },
+        { x: 0.82, c: "#b87858", h: 0.43 },
+        { x: 0.9, c: "#2f8a7c", h: 0.36 },
+        { x: 0.96, c: "#c96a28", h: 0.3 },
       ],
-      bubble: "rgba(200, 245, 235, 0.32)",
+      bubble: "rgba(210, 248, 255, 0.38)",
     },
   },
   {
@@ -28625,19 +28626,33 @@ function drawReefAmbience(reefId, waterTopY) {
   }
 
   if (reefId === "australia") {
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.045)";
-    ctx.lineWidth = 1.15 * dpr;
-    for (let i = 0; i < perfN(10); i++) {
-      const x0 = (i / perfN(10)) * w + Math.sin(t + i) * dpr * 10;
+    /* Soft volumetric shafts + turquoise haze (realistic GBR preview). */
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
+    ctx.lineWidth = 1.35 * dpr;
+    for (let i = 0; i < perfN(14); i++) {
+      const x0 = (i / perfN(14)) * w + Math.sin(t + i * 0.9) * dpr * 14;
       ctx.beginPath();
-      ctx.moveTo(x0, waterTopY + dpr * 24);
-      ctx.bezierCurveTo(x0 + dpr * 36, waterTopY + waterH * 0.32, x0 - dpr * 28, waterTopY + waterH * 0.58, x0 + dpr * 18, h - dpr * 70);
+      ctx.moveTo(x0, waterTopY + dpr * 18);
+      ctx.bezierCurveTo(
+        x0 + dpr * 42,
+        waterTopY + waterH * 0.3,
+        x0 - dpr * 34,
+        waterTopY + waterH * 0.55,
+        x0 + dpr * 22,
+        h - dpr * 64,
+      );
       ctx.stroke();
     }
-    const g = ctx.createRadialGradient(w * 0.72, waterTopY + dpr * 30, 2, w * 0.52, waterTopY + waterH * 0.28, w * 0.55);
-    g.addColorStop(0, "rgba(190, 245, 235, 0.09)");
+    const g = ctx.createRadialGradient(w * 0.68, waterTopY + dpr * 20, 2, w * 0.48, waterTopY + waterH * 0.32, w * 0.62);
+    g.addColorStop(0, "rgba(180, 245, 255, 0.14)");
+    g.addColorStop(0.45, "rgba(90, 200, 210, 0.06)");
     g.addColorStop(1, "rgba(0, 0, 0, 0)");
     ctx.fillStyle = g;
+    ctx.fillRect(0, waterTopY, w, waterH);
+    const g2 = ctx.createRadialGradient(w * 0.22, h - dpr * 40, 4, w * 0.3, h, w * 0.5);
+    g2.addColorStop(0, "rgba(40, 140, 130, 0.1)");
+    g2.addColorStop(1, "rgba(0, 0, 0, 0)");
+    ctx.fillStyle = g2;
     ctx.fillRect(0, waterTopY, w, waterH);
   } else if (reefId === "caribbean") {
     const g = ctx.createRadialGradient(w * 0.18, h - dpr * 110, 10, w * 0.22, h, w * 0.55);
@@ -28762,66 +28777,138 @@ function drawLiveAquaticOverlay() {
   fog.addColorStop(1, "rgba(4, 18, 28, 0.16)");
   ctx.fillStyle = fog;
   ctx.fillRect(0, sandTop - dpr * 40, w, h - (sandTop - dpr * 40));
+
+  /* Great Barrier Reef preview — stronger caustics + floating bubble sparkle */
+  if (rid === "australia" && !PERF_CHROMEBOOK) {
+    ctx.globalCompositeOperation = "lighter";
+    ctx.strokeStyle = "rgba(200, 245, 255, 0.07)";
+    ctx.lineWidth = 1.4 * dpr;
+    for (let i = 0; i < 9; i++) {
+      const y = sandTop + dpr * (2 + i * 8) + Math.sin(t * 1.25 + i * 0.8) * dpr * 2.5;
+      ctx.beginPath();
+      for (let x = 0; x <= w; x += dpr * 12) {
+        const yy =
+          y +
+          Math.sin(x * 0.014 + t * 1.85 + i) * dpr * 4.2 +
+          Math.cos(x * 0.025 - t * 1.35 + i * 0.6) * dpr * 2.4;
+        if (x === 0) ctx.moveTo(x, yy);
+        else ctx.lineTo(x, yy);
+      }
+      ctx.stroke();
+    }
+    ctx.fillStyle = "rgba(220, 250, 255, 0.12)";
+    for (let i = 0; i < 10; i++) {
+      const bx = ((i * 97 + t * 18) % w + w) % w;
+      const by = waterTop + dpr * (40 + ((i * 53) % 160)) + Math.sin(t * 1.6 + i) * dpr * 6;
+      ctx.beginPath();
+      ctx.arc(bx, by, dpr * (1.4 + (i % 3) * 0.7), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalCompositeOperation = "source-over";
+  }
   ctx.restore();
 }
 
 function drawGreatBarrierReefBed() {
-  const reefTop = h - dpr * 150;
-  const reefBase = h - dpr * 12;
+  /* Style preview: denser, more photographic coral mound + sand pockets. */
+  const reefTop = h - dpr * 168;
+  const reefBase = h - dpr * 8;
   const reefGrad = ctx.createLinearGradient(0, reefTop, 0, reefBase);
-  reefGrad.addColorStop(0, "rgba(24, 140, 118, 0.1)");
-  reefGrad.addColorStop(0.38, "rgba(28, 100, 90, 0.42)");
-  reefGrad.addColorStop(1, "rgba(10, 70, 65, 0.78)");
+  reefGrad.addColorStop(0, "rgba(30, 150, 130, 0.08)");
+  reefGrad.addColorStop(0.28, "rgba(22, 110, 100, 0.38)");
+  reefGrad.addColorStop(0.62, "rgba(14, 72, 68, 0.62)");
+  reefGrad.addColorStop(1, "rgba(8, 42, 48, 0.88)");
   ctx.fillStyle = reefGrad;
   ctx.beginPath();
   ctx.moveTo(0, reefBase);
-  ctx.lineTo(0, reefTop + dpr * 34);
-  for (let i = 0; i <= 18; i++) {
-    const x = (i / 18) * w;
-    const y = reefTop + dpr * (28 + Math.sin(i * 1.2) * 18 + Math.cos(i * 0.55) * 14);
+  ctx.lineTo(0, reefTop + dpr * 40);
+  for (let i = 0; i <= 24; i++) {
+    const x = (i / 24) * w;
+    const y =
+      reefTop +
+      dpr * (30 + Math.sin(i * 1.05) * 22 + Math.cos(i * 0.48) * 16 + Math.sin(i * 2.1) * 6);
     ctx.lineTo(x, y);
   }
   ctx.lineTo(w, reefBase);
   ctx.closePath();
   ctx.fill();
 
-  const colors = ["#c97b63", "#d4a574", "#e9c46a", "#2a9d8f", "#3d8b7a", "#e07a5f", "#4a9b8e"];
-  for (let i = 0; i < perfN(30); i++) {
-    const x = ((i * 83) % 1000) / 1000 * w;
-    const y = h - dpr * (24 + ((i * 37) % 96));
-    const sx = dpr * (18 + (i % 5) * 7);
-    const sy = dpr * (9 + (i % 4) * 5);
-    ctx.globalAlpha = 0.58;
-    ctx.fillStyle = colors[i % colors.length];
+  /* Pale sand pockets between coral heads */
+  ctx.globalAlpha = 0.35;
+  for (let i = 0; i < perfN(8); i++) {
+    const x = ((i * 127 + 40) % 1000) / 1000 * w;
+    const y = h - dpr * (18 + (i % 3) * 10);
+    const sand = ctx.createRadialGradient(x, y, 1, x, y, dpr * (28 + (i % 3) * 10));
+    sand.addColorStop(0, "rgba(232, 214, 170, 0.55)");
+    sand.addColorStop(0.55, "rgba(196, 168, 120, 0.22)");
+    sand.addColorStop(1, "rgba(160, 130, 90, 0)");
+    ctx.fillStyle = sand;
     ctx.beginPath();
-    ctx.ellipse(x, y, sx, sy, (i % 6) * 0.25, 0, Math.PI * 2);
+    ctx.ellipse(x, y, dpr * (32 + (i % 4) * 8), dpr * (10 + (i % 3) * 3), 0.1, 0, Math.PI * 2);
     ctx.fill();
-
-    ctx.globalAlpha = 0.34;
-    ctx.strokeStyle = "rgba(255, 255, 240, 0.7)";
-    ctx.lineWidth = Math.max(1, dpr * 0.7);
-    ctx.beginPath();
-    ctx.ellipse(x, y, sx * 0.62, sy * 0.56, (i % 6) * 0.25, 0, Math.PI * 2);
-    ctx.stroke();
   }
 
-  for (let i = 0; i < perfN(12); i++) {
-    const x = ((i * 157) % 1000) / 1000 * w;
-    const y = h - dpr * (42 + (i % 4) * 24);
-    const r = dpr * (18 + (i % 3) * 9);
-    ctx.globalAlpha = 0.5;
-    ctx.strokeStyle = colors[(i + 3) % colors.length];
-    ctx.lineWidth = dpr * 2.2;
+  const colors = ["#c4785a", "#d4a06a", "#e0b85c", "#1f8a7a", "#2f9b88", "#d4654a", "#3d8f7e", "#b86a52"];
+  /* Brain / boulder coral heads with soft volume */
+  for (let i = 0; i < perfN(34); i++) {
+    const x = ((i * 83) % 1000) / 1000 * w;
+    const y = h - dpr * (22 + ((i * 37) % 108));
+    const sx = dpr * (16 + (i % 6) * 6);
+    const sy = dpr * (9 + (i % 5) * 4);
+    const g = ctx.createRadialGradient(x - sx * 0.25, y - sy * 0.35, 1, x, y, sx);
+    g.addColorStop(0, "rgba(255, 240, 220, 0.55)");
+    g.addColorStop(0.35, colors[i % colors.length]);
+    g.addColorStop(1, "rgba(30, 40, 38, 0.55)");
+    ctx.globalAlpha = 0.72;
+    ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.moveTo(x, y);
-    for (let a = -3; a <= 3; a++) {
-      const ang = -Math.PI * 0.5 + a * 0.28;
-      ctx.moveTo(x, y);
-      ctx.quadraticCurveTo(x + Math.cos(ang) * r * 0.6, y + Math.sin(ang) * r * 0.55, x + Math.cos(ang) * r, y + Math.sin(ang) * r);
+    ctx.ellipse(x, y, sx, sy, (i % 7) * 0.22, 0, Math.PI * 2);
+    ctx.fill();
+    /* Brain folds */
+    ctx.globalAlpha = 0.28;
+    ctx.strokeStyle = "rgba(255, 248, 230, 0.65)";
+    ctx.lineWidth = Math.max(1, dpr * 0.85);
+    for (let k = -2; k <= 2; k++) {
+      ctx.beginPath();
+      ctx.ellipse(x, y + k * sy * 0.18, sx * (0.55 - Math.abs(k) * 0.06), sy * 0.35, (i % 6) * 0.2, 0, Math.PI * 2);
+      ctx.stroke();
     }
-    ctx.stroke();
   }
+
+  /* Staghorn / branching fans */
+  for (let i = 0; i < perfN(16); i++) {
+    const x = ((i * 157) % 1000) / 1000 * w;
+    const y = h - dpr * (48 + (i % 5) * 22);
+    const r = dpr * (20 + (i % 4) * 8);
+    const tip = colors[(i + 3) % colors.length];
+    ctx.globalAlpha = 0.62;
+    ctx.strokeStyle = tip;
+    ctx.lineWidth = dpr * (2.4 + (i % 3) * 0.4);
+    ctx.lineCap = "round";
+    for (let a = -4; a <= 4; a++) {
+      const ang = -Math.PI * 0.5 + a * 0.22;
+      const tipX = x + Math.cos(ang) * r;
+      const tipY = y + Math.sin(ang) * r * 0.95;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.quadraticCurveTo(x + Math.cos(ang) * r * 0.45, y + Math.sin(ang) * r * 0.4, tipX, tipY);
+      ctx.stroke();
+      ctx.globalAlpha = 0.35;
+      ctx.fillStyle = "rgba(255, 250, 230, 0.5)";
+      ctx.beginPath();
+      ctx.arc(tipX, tipY, dpr * 2.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 0.62;
+    }
+  }
+
+  /* Soft green algae haze on crest */
+  const haze = ctx.createLinearGradient(0, reefTop, 0, reefTop + dpr * 70);
+  haze.addColorStop(0, "rgba(80, 200, 170, 0.08)");
+  haze.addColorStop(1, "rgba(80, 200, 170, 0)");
   ctx.globalAlpha = 1;
+  ctx.fillStyle = haze;
+  ctx.fillRect(0, reefTop, w, dpr * 70);
 }
 
 function drawMesoamericanReefBed() {
@@ -29020,57 +29107,72 @@ function drawReefStructure(reefId, corals) {
       ctx.ellipse(cx, base - dpr * 8, dpr * 30 * ch, dpr * 12, 0, 0, Math.PI * 2);
       ctx.fill();
     } else if (reefId === "australia") {
-      for (let s = 0; s < 6; s++) {
-        const py = base - s * dpr * 15 * ch;
-        const pw = dpr * (68 - s * 6) * ch;
-        const plate = ctx.createLinearGradient(cx - pw * 0.5, py, cx + pw * 0.5, py - dpr * 24 * ch);
-        plate.addColorStop(0, c.c);
-        plate.addColorStop(0.55, c.c);
-        plate.addColorStop(1, "rgba(255, 250, 230, 0.5)");
+      /* Table coral shelves with volume + staghorn crowns (realistic preview). */
+      for (let s = 0; s < 7; s++) {
+        const py = base - s * dpr * 14 * ch;
+        const pw = dpr * (72 - s * 7) * ch;
+        const plate = ctx.createLinearGradient(cx - pw * 0.5, py, cx + pw * 0.5, py - dpr * 26 * ch);
+        plate.addColorStop(0, "rgba(40, 50, 48, 0.55)");
+        plate.addColorStop(0.35, c.c);
+        plate.addColorStop(0.75, c.c);
+        plate.addColorStop(1, "rgba(255, 248, 230, 0.55)");
+        ctx.globalAlpha = 0.85;
         ctx.fillStyle = plate;
         ctx.beginPath();
-        ctx.moveTo(cx - pw * 0.5, py);
-        ctx.lineTo(cx + pw * 0.5, py);
-        ctx.lineTo(cx + pw * 0.34, py - dpr * 24 * ch);
-        ctx.lineTo(cx - pw * 0.34, py - dpr * 24 * ch);
+        ctx.moveTo(cx - pw * 0.52, py);
+        ctx.quadraticCurveTo(cx, py + dpr * 4 * ch, cx + pw * 0.52, py);
+        ctx.lineTo(cx + pw * 0.36, py - dpr * 22 * ch);
+        ctx.quadraticCurveTo(cx, py - dpr * 28 * ch, cx - pw * 0.36, py - dpr * 22 * ch);
         ctx.closePath();
         ctx.fill();
       }
       ctx.strokeStyle = c.c;
-      ctx.lineWidth = 3.4 * dpr;
+      ctx.lineWidth = 3.2 * dpr;
       ctx.lineCap = "round";
-      ctx.globalAlpha = 0.82;
-      for (let b = -3; b <= 3; b++) {
-        const bx = cx + b * dpr * 18 * ch;
-        const by = base - dpr * (10 + Math.abs(b) * 5) * ch;
-        const tipX = bx + b * dpr * 16 * ch;
-        const tipY = by - dpr * (74 + Math.abs(b) * 7) * ch;
+      ctx.globalAlpha = 0.88;
+      for (let b = -4; b <= 4; b++) {
+        const bx = cx + b * dpr * 16 * ch;
+        const by = base - dpr * (12 + Math.abs(b) * 4) * ch;
+        const tipX = bx + b * dpr * 14 * ch;
+        const tipY = by - dpr * (78 + Math.abs(b) * 8) * ch;
+        const branch = ctx.createLinearGradient(bx, by, tipX, tipY);
+        branch.addColorStop(0, c.c);
+        branch.addColorStop(1, "rgba(255, 236, 200, 0.75)");
+        ctx.strokeStyle = branch;
         ctx.beginPath();
         ctx.moveTo(bx, by);
-        ctx.quadraticCurveTo(bx + b * dpr * 10 * ch, by - dpr * 42 * ch, tipX, tipY);
+        ctx.quadraticCurveTo(bx + b * dpr * 9 * ch, by - dpr * 44 * ch, tipX, tipY);
         ctx.stroke();
+        ctx.lineWidth = 2.2 * dpr;
         ctx.beginPath();
-        ctx.moveTo(bx, by - dpr * 36 * ch);
-        ctx.lineTo(bx + dpr * (b < 0 ? -22 : 22) * ch, by - dpr * 54 * ch);
+        ctx.moveTo(bx, by - dpr * 34 * ch);
+        ctx.lineTo(bx + dpr * (b < 0 ? -20 : 20) * ch, by - dpr * 52 * ch);
         ctx.stroke();
+        ctx.globalAlpha = 0.4;
+        ctx.fillStyle = "rgba(255, 250, 235, 0.7)";
         ctx.beginPath();
-        ctx.moveTo(tipX, tipY + dpr * 18 * ch);
-        ctx.lineTo(tipX + dpr * (b <= 0 ? 18 : -18) * ch, tipY + dpr * 4 * ch);
-        ctx.stroke();
+        ctx.arc(tipX, tipY, dpr * 2.6 * ch, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 0.88;
+        ctx.lineWidth = 3.2 * dpr;
       }
-      ctx.globalAlpha = 0.58;
-      ctx.fillStyle = c.c;
-      for (let p = 0; p < 9; p++) {
-        const px = cx + (p - 4) * dpr * 13 * ch;
-        const py = base - dpr * (10 + (p % 3) * 11) * ch;
+      ctx.globalAlpha = 0.65;
+      for (let p = 0; p < 11; p++) {
+        const px = cx + (p - 5) * dpr * 12 * ch;
+        const py = base - dpr * (10 + (p % 4) * 10) * ch;
+        const blob = ctx.createRadialGradient(px - dpr * 3, py - dpr * 3, 1, px, py, dpr * 14 * ch);
+        blob.addColorStop(0, "rgba(255, 240, 220, 0.5)");
+        blob.addColorStop(0.45, c.c);
+        blob.addColorStop(1, "rgba(25, 35, 32, 0.45)");
+        ctx.fillStyle = blob;
         ctx.beginPath();
-        ctx.ellipse(px, py, dpr * 15 * ch, dpr * 9 * ch, p * 0.34, 0, Math.PI * 2);
+        ctx.ellipse(px, py, dpr * 14 * ch, dpr * 8.5 * ch, p * 0.3, 0, Math.PI * 2);
         ctx.fill();
       }
-      ctx.globalAlpha = 0.28;
+      ctx.globalAlpha = 0.32;
       ctx.fillStyle = "#fff8e7";
       ctx.beginPath();
-      ctx.ellipse(cx + dpr * 12 * ch, base - dpr * 94 * ch, dpr * 24 * ch, dpr * 12 * ch, 0.3, 0, Math.PI * 2);
+      ctx.ellipse(cx + dpr * 10 * ch, base - dpr * 100 * ch, dpr * 26 * ch, dpr * 13 * ch, 0.28, 0, Math.PI * 2);
       ctx.fill();
     } else if (reefId === "mediterranean") {
       for (let g = 0; g < 7; g++) {
@@ -30109,13 +30211,26 @@ function drawFishMorph(morph, L, body, shade, accent, speciesId, phase = 0) {
     ctx.fill();
     ctx.globalAlpha = 1;
     if (sid === "coral_trout_gbr") {
-      ctx.fillStyle = "#38bdf8";
-      for (let i = 0; i < 9; i++) {
-        const a = (i / 9) * Math.PI * 1.6 - 0.4;
+      /* Mottled coral trout — blue spots on warmer body (GBR preview). */
+      const mott = ctx.createLinearGradient(-L * 0.35, -L * 0.2, L * 0.4, L * 0.22);
+      mott.addColorStop(0, "rgba(255, 200, 160, 0.35)");
+      mott.addColorStop(0.55, "rgba(200, 60, 50, 0.15)");
+      mott.addColorStop(1, "rgba(80, 20, 20, 0.25)");
+      ctx.fillStyle = mott;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, L * 0.42, L * 0.2, 0, 0, Math.PI * 2);
+      ctx.fill();
+      for (let i = 0; i < 16; i++) {
+        const a = (i / 16) * Math.PI * 2;
+        const rx = Math.cos(a) * L * (0.12 + (i % 3) * 0.04);
+        const ry = Math.sin(a) * L * (0.08 + (i % 2) * 0.03);
+        ctx.fillStyle = i % 2 ? "#5ec8f0" : "#7dd3fc";
+        ctx.globalAlpha = 0.85;
         ctx.beginPath();
-        ctx.arc(Math.cos(a) * L * 0.18, Math.sin(a) * L * 0.12, L * 0.028, 0, Math.PI * 2);
+        ctx.ellipse(rx, ry, L * 0.032, L * 0.024, a, 0, Math.PI * 2);
         ctx.fill();
       }
+      ctx.globalAlpha = 1;
     }
     forkTail(0.2);
     eye();
@@ -30728,6 +30843,42 @@ function drawFish(f) {
 
   drawFishMorph(spec.morph || "silverside", L, body, shade, accent, spec.id, swim);
 
+  /* Great Barrier Reef style preview — softer volume + scale hints on reef fish. */
+  if (getReef().id === "australia" && !scary && spec.morph !== "jellyfish") {
+    paintGbrFishRealismPass(L, body, shade);
+  }
+
+  ctx.restore();
+}
+
+/** Extra shading / scale glitter for the GBR realism preview (does not change other reefs). */
+function paintGbrFishRealismPass(L, body, shade) {
+  ctx.save();
+  ctx.globalCompositeOperation = "soft-light";
+  const vol = ctx.createLinearGradient(0, -L * 0.28, 0, L * 0.3);
+  vol.addColorStop(0, "rgba(255, 255, 255, 0.35)");
+  vol.addColorStop(0.45, "rgba(200, 230, 240, 0.08)");
+  vol.addColorStop(1, "rgba(10, 30, 40, 0.35)");
+  ctx.fillStyle = vol;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, L * 0.46, L * 0.22, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalCompositeOperation = "source-over";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.14)";
+  ctx.lineWidth = Math.max(0.6, L * 0.012);
+  for (let i = 0; i < 5; i++) {
+    const y = -L * 0.1 + i * L * 0.045;
+    ctx.beginPath();
+    ctx.moveTo(-L * 0.28, y);
+    ctx.quadraticCurveTo(0, y + L * 0.02, L * 0.3, y - L * 0.01);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 0.22;
+  ctx.fillStyle = shade || body;
+  ctx.beginPath();
+  ctx.ellipse(-L * 0.02, L * 0.06, L * 0.32, L * 0.1, 0.05, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
   ctx.restore();
 }
 
